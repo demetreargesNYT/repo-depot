@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<!--
+  SKELETON SHIMMER — developer handoff
+  =====================================
+  Games collections-loading state: a 3x3 (or fewer) grid of flat tiles,
+  each with an identical looping diagonal shimmer, 0 delay between tiles.
+  Open this file directly in a browser — no build step, no dependencies.
+
+  WHAT TO IMPLEMENT
+  ------------------
+  Two CSS classes: `.skeleton-tile` (the flat placeholder — your existing
+  tile size/radius/fill) and `.skeleton-tile__shimmer` (one absolutely-
+  positioned child, added once per tile). All the interesting logic is in
+  the `.skeleton-tile__shimmer` rule and its `@keyframes shimmer-sweep` —
+  copy those two blocks essentially as-is; they're already parametrized
+  off `--tile-size`, `--shimmer-color`, and `--sweep-duration` custom
+  properties so they adapt to whatever tile size/theme you're rendering.
+  Apply `.skeleton-tile` to every Mini Card while its data is loading, in
+  whatever grid/flex layout renders 2–9 tiles — see the flex-wrap note
+  below for why it must be flex, not CSS Grid.
+
+  FINAL VALUES (as shipped in this file)
+  ------------------
+  - Tile background: #dfdfdf (light). Dark-mode preset: #363636.
+  - Shimmer overlay: #ffffff at 35% opacity, fixed — only the base tile
+    color is meant to vary per theme.
+  - Sweep angle: 45deg (top-left -> bottom-right), achieved by rotating an
+    elongated rectangle, not by an angled gradient on a square — see the
+    comment on `.skeleton-tile__shimmer` for why a square doesn't work.
+  - Loop: 1.2s, ease-in-out, with a ~300ms flat "trough" between passes
+    (the 75%/100% keyframe split below).
+
+  ONE GOTCHA WORTH KNOWING: LOW-CONTRAST BANDING
+  ------------------------------------------------
+  Earlier light-mode candidates (#ebebeb tile / white-at-65%-alpha
+  shimmer) showed visible stepped banding instead of a smooth gradient —
+  confirmed by sampling actual rendered pixel values: colors advanced in
+  blocks of 3-5 identical pixels rather than a continuous ramp. Root
+  cause: 8-bit color only has ~10 distinct levels between a light tile
+  and a subtle white overlay, spread across a ~150px gradient — too few
+  levels for a smooth ramp, and it reads as "pixelated." The current
+  #dfdfdf/35% pairing has enough range that this isn't visible, but if
+  you change either color, sanity-check contrast before assuming a
+  banding artifact is a rendering bug rather than a contrast problem.
+
+  CONTROLS IN THIS FILE (for your own testing, not part of the shipped
+  component): tile/shimmer hex fields, a speed (duration) field, and a
+  tile-count selector to confirm 2-9 tiles all lay out and center
+  correctly. Remove the `.controls` block and its script wiring when
+  lifting the CSS into production; the tile/shimmer markup and animation
+  underneath is the actual deliverable.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Skeleton Shimmer — Developer Handoff</title>
+<style>
+  :root {
+    --tile-bg: #dfdfdf;
+    --shimmer-color: rgba(255, 255, 255, 0.35);
+    --page-bg: #ffffff;
+    --page-fg: #17171c;
+    --sweep-duration: 1.2s;
+  }
+  [data-theme="dark"] {
+    --tile-bg: #363636;
+    --shimmer-color: rgba(255, 255, 255, 0.35);
+    --page-bg: #17171c;
+    --page-fg: #f2f2f2;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    padding: 40px 20px;
+    background: var(--page-bg);
+    color: var(--page-fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+  }
+
+  .controls button {
+    font: inherit;
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid currentColor;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  .controls select {
+    font: inherit;
+    padding: 4px 8px;
+    border-radius: 8px;
+  }
+
+  .controls input[type="text"],
+  .controls input[type="number"] {
+    font: inherit;
+    font-family: ui-monospace, SFMono-Regular, monospace;
+    width: 5.5em;
+    padding: 4px 8px;
+    border-radius: 8px;
+    border: 1px solid rgba(127, 127, 127, 0.4);
+    background: transparent;
+    color: inherit;
+  }
+
+  .controls input[type="text"].invalid,
+  .controls input[type="number"].invalid {
+    border-color: #d94848;
+  }
+
+  .controls label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .phone {
+    width: 375px;
+    padding: 24px 20px;
+    border-radius: 28px;
+    background: var(--page-bg);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 20px 40px rgba(0, 0, 0, 0.12);
+  }
+
+  h1 {
+    font-size: 20px;
+    text-align: center;
+    margin: 0 0 24px;
+  }
+
+  /* Flexbox wrap, not CSS Grid: grid auto-placement left-aligns a partial
+     last row (e.g. 5 tiles = row of 3, then 2 stuck to the left). Flexbox
+     centers each wrapped line independently, so a partial row centers
+     itself — the container width is pinned to exactly 3 tiles + 2 gaps so
+     a row never fits more than 3. */
+  .games-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    width: 334px;
+  }
+
+  /* Skeleton tile. The shimmer is a separate oversized layer that translates
+     across the tile, rather than a background-position/background-size trick —
+     that approach tiles the gradient image under the hood (background-repeat),
+     which shows a seam/flash at the diagonal corners when the position wraps
+     at the end of each loop. Translating a single non-repeating layer avoids
+     tiling entirely, so there's nothing to seam. */
+  .skeleton-tile {
+    --tile-size: 106px;
+    position: relative;
+    flex: 0 0 var(--tile-size);
+    width: var(--tile-size);
+    height: var(--tile-size);
+    border-radius: 12px;
+    background-color: var(--tile-bg);
+    overflow: hidden;
+  }
+
+  /* Single shimmer component, parametrized so this exact block can be
+     reused at any tile size (see gradient-reference-sheet.html, which
+     renders the identical component larger for close inspection).
+
+     A same-size square with an angled gradient is WRONG: a linear gradient
+     only varies along one axis, so a diagonal gradient on a square leaves
+     the two off-axis corners (for 135deg: top-right, bottom-left) sitting
+     at the 50%-peak color with no transparent margin — that's a real hard
+     edge, visible as "a square sliding across", not a rendering illusion.
+     This is why the Figma version rotates an ELONGATED rectangle instead:
+     the gradient runs along the SHORT axis (transparent/bright/transparent,
+     tile-width across), so BOTH long edges are transparent along their
+     entire length, not just at two corners. Rotating 45deg then points
+     that band diagonally (top-left → bottom-right) with no exposed edge
+     anywhere.
+       --sweep-travel: how far the band slides, in multiples of its own
+                        width (like react-loading-skeleton's translateX(100%)) —
+                        self-scaling, no pixel amplitude to calibrate per tile size */
+  .skeleton-tile__shimmer {
+    --sweep-travel: 1.2;
+
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: var(--tile-size, 106px);
+    height: calc(var(--tile-size, 106px) * 1.41421);
+    margin-left: calc(var(--tile-size, 106px) * -0.5);
+    margin-top: calc(var(--tile-size, 106px) * -0.70711);
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      var(--shimmer-color) 50%,
+      transparent 100%
+    );
+    /* duration is a variable, not the literal 1.2s, so the speed control
+       can rescale it — the 0%/75%/100% keyframe split stays proportional
+       (75%/25%) regardless of total duration, so the sweep/trough ratio
+       is preserved at any speed */
+    animation: shimmer-sweep var(--sweep-duration) ease-in-out infinite;
+  }
+
+  @keyframes shimmer-sweep {
+    0% {
+      transform: rotate(45deg) translateX(calc(var(--sweep-travel) * -100%));
+    }
+    75% {
+      transform: rotate(45deg) translateX(calc(var(--sweep-travel) * 100%));
+    }
+    100% {
+      transform: rotate(45deg) translateX(calc(var(--sweep-travel) * 100%));
+    }
+  }
+
+  .tile-count-note {
+    font-size: 12px;
+    text-align: center;
+    opacity: 0.6;
+    margin-top: 16px;
+  }
+</style>
+</head>
+<body data-theme="light">
+
+  <div class="controls">
+    <button id="theme-toggle" type="button">Switch to dark mode</button>
+    <label>
+      Tile hex:
+      <input type="text" id="tile-hex" value="#dfdfdf" spellcheck="false" />
+    </label>
+    <label>
+      Shimmer hex:
+      <input type="text" id="shimmer-hex" value="#ffffff" spellcheck="false" />
+    </label>
+    <label>
+      Speed (duration, s):
+      <input type="number" id="speed-input" value="1.2" min="0.1" max="10" step="0.1" style="width: 4em" />
+    </label>
+    <label>
+      Tile count:
+      <select id="tile-count">
+        <option value="9" selected>9</option>
+        <option value="7">7</option>
+        <option value="5">5</option>
+        <option value="2">2</option>
+      </select>
+    </label>
+  </div>
+  <p class="tile-count-note" style="margin: -12px 0 0;">Shimmer opacity is fixed at 35% — only the base color is editable here.</p>
+
+  <div class="phone">
+    <h1>Football Frenzy</h1>
+    <div class="games-grid" id="games-grid"></div>
+    <p class="tile-count-note">Every tile runs the identical animation, 0 delay — no per-count layout logic.</p>
+  </div>
+
+  <script>
+    const grid = document.getElementById('games-grid');
+    const tileCountSelect = document.getElementById('tile-count');
+    const themeToggle = document.getElementById('theme-toggle');
+    const tileHexInput = document.getElementById('tile-hex');
+    const shimmerHexInput = document.getElementById('shimmer-hex');
+    const speedInput = document.getElementById('speed-input');
+    const SHIMMER_ALPHA = 0.35;
+
+    // Preset pairs the toggle button cycles through — editing a hex field
+    // overrides these live but doesn't change what the toggle cycles to.
+    const THEME_PRESETS = {
+      light: { tile: '#dfdfdf', shimmer: '#ffffff' },
+      dark: { tile: '#363636', shimmer: '#ffffff' },
+    };
+
+    function renderTiles(count) {
+      grid.innerHTML = '';
+      for (let i = 0; i < count; i++) {
+        const tile = document.createElement('div');
+        tile.className = 'skeleton-tile';
+        const shimmer = document.createElement('div');
+        shimmer.className = 'skeleton-tile__shimmer';
+        tile.appendChild(shimmer);
+        grid.appendChild(tile);
+      }
+    }
+
+    function normalizeHex(raw) {
+      let value = raw.trim();
+      if (!value.startsWith('#')) value = '#' + value;
+      const isShort = /^#[0-9a-fA-F]{3}$/.test(value);
+      const isLong = /^#[0-9a-fA-F]{6}$/.test(value);
+      if (!isShort && !isLong) return null;
+      if (isShort) {
+        value = '#' + [...value.slice(1)].map((c) => c + c).join('');
+      }
+      return value.toLowerCase();
+    }
+
+    function hexToRgb(hex) {
+      const n = parseInt(hex.slice(1), 16);
+      return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+    }
+
+    function applyTileHex(raw) {
+      const hex = normalizeHex(raw);
+      tileHexInput.classList.toggle('invalid', hex === null);
+      if (hex === null) return;
+      document.documentElement.style.setProperty('--tile-bg', hex);
+    }
+
+    function applyShimmerHex(raw) {
+      const hex = normalizeHex(raw);
+      shimmerHexInput.classList.toggle('invalid', hex === null);
+      if (hex === null) return;
+      const { r, g, b } = hexToRgb(hex);
+      document.documentElement.style.setProperty('--shimmer-color', `rgba(${r}, ${g}, ${b}, ${SHIMMER_ALPHA})`);
+    }
+
+    tileHexInput.addEventListener('input', () => applyTileHex(tileHexInput.value));
+    shimmerHexInput.addEventListener('input', () => applyShimmerHex(shimmerHexInput.value));
+
+    speedInput.addEventListener('input', () => {
+      const seconds = parseFloat(speedInput.value);
+      const valid = !isNaN(seconds) && seconds > 0;
+      speedInput.classList.toggle('invalid', !valid);
+      if (!valid) return;
+      document.documentElement.style.setProperty('--sweep-duration', `${seconds}s`);
+    });
+
+    tileCountSelect.addEventListener('change', () => {
+      renderTiles(Number(tileCountSelect.value));
+    });
+
+    themeToggle.addEventListener('click', () => {
+      const isDark = document.body.dataset.theme === 'dark';
+      const next = isDark ? 'light' : 'dark';
+      document.body.dataset.theme = next;
+      themeToggle.textContent = next === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
+
+      // Reset the hex fields (and the live override they set) back to this
+      // theme's preset, so toggling doesn't leave a stale manual override applied.
+      document.documentElement.style.removeProperty('--tile-bg');
+      document.documentElement.style.removeProperty('--shimmer-color');
+      tileHexInput.value = THEME_PRESETS[next].tile;
+      shimmerHexInput.value = THEME_PRESETS[next].shimmer;
+      applyTileHex(tileHexInput.value);
+      applyShimmerHex(shimmerHexInput.value);
+    });
+
+    applyShimmerHex(shimmerHexInput.value); // apply the fixed 35% alpha to the initial #ffffff default
+    renderTiles(9);
+  </script>
+</body>
+</html>
