@@ -29,6 +29,7 @@ payload box + card JSON box  ->  renderCard()  ->  the card
 | `renderer.js` | Turns card JSON plus a payload into a card. Knows nothing about the page |
 | `sample-data.js` | Example payloads and the starting card |
 | `styles.css` | Design tokens, the page, and one section per card style |
+| `fonts/` | The Karnak and Franklin font files, loaded by `styles.css` |
 | `icons/` | The seven game icons, from Figma |
 | `ui-icons/` | Small icons for the page's controls |
 
@@ -53,6 +54,7 @@ A placeholder that isn't in the payload shows as blank. Line styles: `headline`,
 
 ## Things to know
 
-- The NYT fonts (Karnak, Franklin) are not included, so the page uses Georgia and Helvetica unless they are installed on your machine.
+- The NYT fonts are included in `fonts/` (Karnak Medium, Semibold and Bold; Franklin Light, Medium, Semibold and Bold), so the page looks the same on any machine. They are licensed NYT typefaces; use them under that license. If a file fails to load, the page falls back to Georgia and Helvetica.
+- There is no Franklin Book (400) file. The `label` style is set at 400, so it shows in Franklin Light.
 - Payloads, numbers and copy in `sample-data.js` are made up for the prototype.
 - Sizes and colors marked `[figma]` in `styles.css` were read from the YIG Prototype and Playbook Figma files; `[provisional]` ones are guesses.
