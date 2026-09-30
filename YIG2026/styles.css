@@ -1,11 +1,25 @@
 /*
- * Design tokens first, then the page, then one section per card style.
+ * Fonts, then design tokens, then the page, then one section per card style.
  * [figma] = read from the "YIG - Prototype" Figma file. [provisional] = my guess, not in a design yet.
- * NYTKarnak / NYTFranklin are licensed fonts; system fallbacks are used until they're loaded.
+ * NYTKarnak / NYTFranklin are licensed fonts, shipped in fonts/. The system fonts in --font-serif and
+ * --font-sans are used until a file loads, or if it fails to.
  */
+
+/* Karnak: Medium (headline), Semibold (headline-strong), Bold (display). */
+@font-face { font-family: "NYTKarnak"; font-weight: 500; font-style: normal; font-display: swap; src: url("fonts/NYTKarnak-Medium.otf") format("opentype"); }
+@font-face { font-family: "NYTKarnak"; font-weight: 600; font-style: normal; font-display: swap; src: url("fonts/NYTKarnak-Semibold.otf") format("opentype"); }
+@font-face { font-family: "NYTKarnak"; font-weight: 700; font-style: normal; font-display: swap; src: url("fonts/NYTKarnak-Bold.otf") format("opentype"); }
+
+/* Franklin: Light, Medium, Semibold, Bold. There is no Book (400) file, so the range 300-400 maps to
+   Light and text set at 400 (the label style) shows in Light. */
+@font-face { font-family: "NYTFranklin"; font-weight: 300 400; font-style: normal; font-display: swap; src: url("fonts/NYTFranklinLight.otf") format("opentype"); }
+@font-face { font-family: "NYTFranklin"; font-weight: 500; font-style: normal; font-display: swap; src: url("fonts/NYTFranklinMedium.otf") format("opentype"); }
+@font-face { font-family: "NYTFranklin"; font-weight: 600; font-style: normal; font-display: swap; src: url("fonts/NYTFranklinSemibold.otf") format("opentype"); }
+@font-face { font-family: "NYTFranklin"; font-weight: 700; font-style: normal; font-display: swap; src: url("fonts/NYTFranklinBold.otf") format("opentype"); }
+
 :root {
-  --font-serif: NYTKarnak, Georgia, "Times New Roman", serif;   /* [figma] Karnak Medium 500 / Bold 700 */
-  --font-sans: NYTFranklin, "Helvetica Neue", Arial, sans-serif; /* [figma] Franklin Semibold 600 */
+  --font-serif: "NYTKarnak", Georgia, "Times New Roman", serif;   /* [figma] Karnak Medium 500 / Semibold 600 / Bold 700 */
+  --font-sans: "NYTFranklin", "Helvetica Neue", Arial, sans-serif; /* [figma] Franklin Medium 500 / Semibold 600 / Bold 700 */
 
   --color-card: #ffffff;        /* [figma] */
   --color-ink: #000000;         /* [figma] Core Black */
