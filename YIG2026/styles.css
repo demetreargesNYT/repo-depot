@@ -34,7 +34,6 @@
      Icon Button, Toast, Tile and Rule. The card itself does not use these. */
   --ui-bg: #ebebeb;             /* color.background.tertiary */
   --ui-surface: #ffffff;        /* color.background.primary */
-  --ui-highlight: #fefad1;      /* color.background.highlight */
   --ui-ink: #121212;            /* content primary; button emphasis background */
   --ui-ink-secondary: #363636;  /* dialog description */
   --ui-on-dark: #f8f8f8;        /* text on the dark button and toast */
@@ -42,7 +41,6 @@
   --ui-error: #d64545;          /* [provisional] */
   --ui-radius-panel: 16px;      /* dialog corner radius */
   --ui-radius-field: 12px;      /* tile corner radius */
-  --ui-radius-small: 8px;       /* toast corner radius */
   --ui-radius-pill: 100px;      /* button corner radius */
   --ui-button-height: 36px;     /* [provisional] compact; the standard button is 44px */
 
@@ -151,8 +149,8 @@ hr, .rule { border: 0; border-top: 1px solid var(--ui-border); margin: 16px 0; }
 .button-emphasis:hover { background: var(--ui-ink-secondary); }
 .button:focus-visible, .add-line button:focus-visible { outline: 2px solid var(--ui-ink); outline-offset: 2px; }
 
-/* Icon button: round, hairline border, Close/Up/Down icons (Icon Button). */
-.icon-button, .line-action {
+/* Icon button: round, hairline border, the close icon (Icon Button). */
+.line-action {
   display: inline-grid; place-items: center; padding: 0; cursor: pointer;
   border: 1px solid var(--ui-border); border-radius: 50%; background: var(--ui-surface); color: var(--ui-ink);
 }
@@ -168,9 +166,12 @@ hr, .rule { border: 0; border-top: 1px solid var(--ui-border); margin: 16px 0; }
   border: 1px solid var(--ui-border); border-radius: var(--ui-radius-field);
 }
 /* Dropdowns: our own thick caret (ui-icons/caret-down.svg), with room between it and the right edge. */
-select {
+/* Uses the same selectors as the field rule above: the field rule sets `background` and `padding`, and a
+   plain `select` rule is less specific, so it would lose and the caret would never show. */
+.line-row select, .add-line select, .field-head select {
   appearance: none; -webkit-appearance: none;
   padding-right: 40px;
+  background-color: var(--ui-surface);
   background-image: url("ui-icons/caret-down.svg");
   background-repeat: no-repeat; background-position: right 14px center; background-size: 16px 16px;
   text-overflow: ellipsis;
