@@ -1,0 +1,376 @@
+/*
+ * Design tokens first, then the page, then one section per card style.
+ * [figma] = read from the "YIG - Prototype" Figma file. [provisional] = my guess, not in a design yet.
+ * NYTKarnak / NYTFranklin are licensed fonts; system fallbacks are used until they're loaded.
+ */
+:root {
+  --font-serif: NYTKarnak, Georgia, "Times New Roman", serif;   /* [figma] Karnak Medium 500 / Bold 700 */
+  --font-sans: NYTFranklin, "Helvetica Neue", Arial, sans-serif; /* [figma] Franklin Semibold 600 */
+
+  --color-card: #ffffff;        /* [figma] */
+  --color-ink: #000000;         /* [figma] Core Black */
+  --color-muted: #5a5a5a;       /* [provisional] label text */
+
+  /* The tool around the card. Values from the TPL / Playbook (games theme) components: Dialog, Button,
+     Icon Button, Toast, Tile and Rule. The card itself does not use these. */
+  --ui-bg: #ebebeb;             /* color.background.tertiary */
+  --ui-surface: #ffffff;        /* color.background.primary */
+  --ui-highlight: #fefad1;      /* color.background.highlight */
+  --ui-ink: #121212;            /* content primary; button emphasis background */
+  --ui-ink-secondary: #363636;  /* dialog description */
+  --ui-on-dark: #f8f8f8;        /* text on the dark button and toast */
+  --ui-border: #dfdfdf;         /* tile border, icon button border, tertiary rule */
+  --ui-error: #d64545;          /* [provisional] */
+  --ui-radius-panel: 16px;      /* dialog corner radius */
+  --ui-radius-field: 12px;      /* tile corner radius */
+  --ui-radius-small: 8px;       /* toast corner radius */
+  --ui-radius-pill: 100px;      /* button corner radius */
+  --ui-button-height: 36px;     /* [provisional] compact; the standard button is 44px */
+
+  --card-width: 375px;          /* [figma] */
+  --card-padding: 20px;         /* [figma] horizontal padding */
+  --card-radius: 16px;          /* [provisional] */
+
+  /* Playbook spacing scale (TPL / Playbook, 8px base). Token number = value / 8. */
+  --space-0-5: 4px;  --space-1: 8px;   --space-1-5: 12px; --space-2: 16px;  --space-2-5: 20px;
+  --space-3: 24px;   --space-4: 32px;  --space-5: 40px;   --space-6: 48px;  --space-7: 56px;
+  --space-8: 64px;   --space-9: 72px;  --space-10: 80px;
+  --stack-gap: var(--space-2);      /* default gap between lines; extra space = a spacer line */
+  --spacer-color: #f8f;             /* solid pink, as the spacing spec in Figma */
+  --spacer-width: 160px;            /* as in the Figma spacer spec */
+
+  --headline-size: 26px;            /* [figma] H2 */
+  --headline-line: 1.2;             /* [figma] */
+  --display-size: 40px;
+  --display-line: 1;                   /* [figma] */
+  --display-transform: none;           /* [figma] display text is mixed-case in the design; see note in display rule */
+  --headline-strong-size: 26px;                  /* [figma] H1: Karnak Semibold */
+  --headline-strong-line: 1.2;                   /* [figma] */
+  --stat-size: 30px;             /* [figma] H2 Stat: Franklin Bold, uppercase */
+  --stat-line: 1;                /* [figma] */
+  --body-size: 20px;                  /* [figma] H3: Franklin Medium */
+  --body-line: 1.15;                  /* [figma] */
+  --label-size: 12px;               /* [provisional] */
+  --label-line: 1.3;                /* [provisional] */
+  --label-tracking: 0.08em;         /* [provisional] */
+  --icon-size: 75px;                /* [figma] Games icons */
+
+  /* Chart — Figma node 10:328 (guess distribution), bar colors from nodes 14:513-14:593 */
+  --chart-row-gap: var(--space-1);
+  --chart-bar-height: 12px;   /* matches the 12px label text beside it */
+  --chart-bar-radius: 6px;
+  --chart-track: rgba(97, 97, 97, 0.05);
+  --game-wordle: #58a351;
+  --game-connections: #b4a8ff;
+  --game-spelling_bee: #f7da21;
+  --game-mini: #95befa;
+  --game-midi: #7eaaf1;
+  --game-crossword: #6493e6;
+  --game-strands: #c0ddd9;
+
+  /* Wordle Squares — [figma] node 5:579 */
+  --wordle-tile-size: 55px;
+  --wordle-tile-gap: 4px;
+  --wordle-tile-radius: 0px;
+  --wordle-tile-border: 1.5px;
+  --wordle-tile-font-size: 30px;
+  --wordle-correct: #6aaa64;   /* [figma] "Wordle Tiles" fill */
+
+  /* Connections stat swatch — [figma] node 5:584; all four colors confirmed by design */
+  --connections-swatch-width: 195px;
+  --connections-swatch-height: 54px;
+  --connections-swatch-radius: 7px;
+  --connections-swatch-border: 2px;
+  --connections-swatch-font-size: 30px;
+  --connections-yellow: #f9e16e;  /* [design] confirmed */
+  --connections-green: #a0c35a;   /* [design] confirmed */
+  --connections-blue: #b0c4ed;    /* [design] confirmed */
+  --connections-purple: #bc70c4;  /* [design] confirmed */
+}
+
+* { box-sizing: border-box; }
+
+/* ---------- the tool around the card (Playbook games theme) ---------- */
+
+body {
+  margin: 0;
+  background: var(--ui-bg);
+  color: var(--ui-ink);
+  font-family: var(--font-sans);
+}
+
+.page-head, main { max-width: 1200px; margin: 0 auto; padding: 24px; }
+.page-head { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: center; padding-bottom: 8px; }
+.page-head h1 { margin: 0; font-family: var(--font-serif); font-weight: 500; font-size: 24px; line-height: 1.15; }
+.page-head h1 span { color: var(--ui-ink-secondary); font-size: 14px; font-family: var(--font-sans); font-weight: 500; margin-left: 8px; }
+
+/* Panel: a white surface with the dialog corner radius. The gray page is the tertiary background. */
+.style-list, .lines-panel, .editor {
+  background: var(--ui-surface); border-radius: var(--ui-radius-panel); padding: 20px;
+}
+.style-list, .lines-panel { min-width: 0; }
+
+/* Section heading inside a panel: small, bold, uppercase Franklin (like the tile's top label). */
+.editor-caption {
+  margin: 0; font-size: 11px; line-height: 14px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--ui-ink);
+}
+
+/* Rule between sections (horizontal rule, tertiary). */
+hr, .rule { border: 0; border-top: 1px solid var(--ui-border); margin: 16px 0; }
+
+/* ---------- controls ---------- */
+
+/* Buttons: pill, Franklin Semibold. Standard = outlined, emphasis = dark fill (Button / Button (Emphasis)). */
+.button, .add-line button {
+  font: inherit; font-size: 14px; font-weight: 600; line-height: 18px; height: var(--ui-button-height);
+  padding: 0 20px; border-radius: var(--ui-radius-pill); cursor: pointer;
+  border: 1px solid var(--ui-ink); background: transparent; color: var(--ui-ink);
+}
+.button:hover, .add-line button:hover { background: var(--ui-ink); color: var(--ui-on-dark); }
+.button-emphasis { background: var(--ui-ink); color: var(--ui-on-dark); }
+.button-emphasis:hover { background: var(--ui-ink-secondary); }
+.button:focus-visible, .add-line button:focus-visible { outline: 2px solid var(--ui-ink); outline-offset: 2px; }
+
+/* Icon button: round, hairline border, Close/Up/Down icons (Icon Button). */
+.icon-button, .line-action {
+  display: inline-grid; place-items: center; padding: 0; cursor: pointer;
+  border: 1px solid var(--ui-border); border-radius: 50%; background: var(--ui-surface); color: var(--ui-ink);
+}
+.line-action { width: 32px; height: 32px; }
+.line-action img { display: block; width: 20px; height: 20px; }
+.line-action:hover { border-color: var(--ui-ink); }
+.line-action:focus-visible { outline: 2px solid var(--ui-ink); outline-offset: 2px; }
+
+/* Text fields and dropdowns: white, hairline border, tile corner radius. */
+.line-text, .save-recipe input, .line-row select, .add-line select, .field-head select {
+  font: inherit; font-size: 14px; font-weight: 500; line-height: 18px; height: 36px; padding: 0 12px;
+  min-width: 0; color: var(--ui-ink); background: var(--ui-surface);
+  border: 1px solid var(--ui-border); border-radius: var(--ui-radius-field);
+}
+/* Dropdowns: our own thick caret (ui-icons/caret-down.svg), with room between it and the right edge. */
+select {
+  appearance: none; -webkit-appearance: none;
+  padding-right: 40px;
+  background-image: url("ui-icons/caret-down.svg");
+  background-repeat: no-repeat; background-position: right 14px center; background-size: 16px 16px;
+  text-overflow: ellipsis;
+}
+/* The text box in a line row grows with its text (see growToFit in configurator.js). */
+.line-text { width: 100%; height: auto; min-height: 36px; padding: 8px 12px; resize: none; overflow: hidden; }
+.line-text:hover, .save-recipe input:hover, .line-row select:hover, .add-line select:hover, .field-head select:hover { border-color: var(--ui-ink-secondary); }
+.line-text:focus, .save-recipe input:focus, .line-row select:focus, .add-line select:focus, .field-head select:focus,
+.editor textarea:focus { outline: 2px solid var(--ui-ink); outline-offset: 0; border-color: var(--ui-ink); }
+
+/* ---------- editors ---------- */
+
+.editor { display: flex; flex-direction: column; gap: 8px; }
+.editor textarea {
+  width: 100%; resize: vertical; padding: 12px 14px;
+  font: 13px/1.5 ui-monospace, Menlo, Consolas, monospace; tab-size: 2; white-space: pre;
+  background: var(--ui-bg); color: var(--ui-ink); border: 1px solid transparent; border-radius: var(--ui-radius-field);
+}
+.editor textarea.invalid { border-color: var(--ui-error); outline: 2px solid var(--ui-error); }
+.editor-status.is-info { color: var(--ui-ink-secondary); }
+.editor-status { margin: 0; min-height: 18px; font-size: 13px; line-height: 18px; font-weight: 500; color: var(--ui-error); }
+.editor .editor-caption + textarea, .field-head + textarea { margin-top: 0; }
+.field-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.field-head select { max-width: 60%; }
+.preview { min-width: 0; }
+
+/* Payload and card JSON boxes are short, the same width, and resize by dragging the corner. */
+.configurator .editor textarea { height: 150px; min-height: 90px; overflow: auto; }
+.configurator #card-input { height: 200px; }
+
+/* ---------- layout ---------- */
+
+/* Left: lines in this card, then the available styles. Right: the sample card, then the payload and JSON. */
+.creator { display: grid; grid-template-columns: minmax(340px, 480px) minmax(420px, 1fr); gap: 24px; align-items: stretch; }
+.creator-left, .creator-right { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+
+/* The sample card sits on a large panel so there is room to see it and edit its text. */
+.creator-right .preview {
+  display: flex; justify-content: center; align-items: center;
+  padding: 40px 24px; /* as tall as the card needs, no more */
+  background: var(--ui-surface); border-radius: var(--ui-radius-panel);
+}
+
+@media (max-width: 960px) {
+  .creator { grid-template-columns: 1fr; }
+}
+
+/* ---------- available styles list ---------- */
+
+.style-list .editor-caption { margin-bottom: 12px; }
+/* The list is as tall as the right column: it ignores its own content height (contain: size) so it does not
+   stretch the row, fills the space left under the lines panel, and scrolls inside. */
+.creator-left .style-list { flex: 1 1 0; min-height: 260px; contain: size; display: flex; flex-direction: column; }
+.style-list #style-list { flex: 1 1 0; min-height: 0; overflow-y: auto; display: grid; align-content: start; padding-right: 4px; }
+/* One row per style, separated by hairline rules. */
+.style-item { display: grid; grid-template-columns: 120px 1fr; gap: 12px; align-items: center; padding: 12px 0; border-top: 1px solid var(--ui-border); }
+.style-item:first-child { border-top: 0; padding-top: 0; }
+.style-name { font-size: 11px; line-height: 14px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ui-ink-secondary); }
+.style-sample { display: flex; justify-content: center; min-width: 0; }
+/* Samples are just the styled content, without the tall card frame. */
+.style-sample .card { width: 100%; min-height: 0; padding: 4px 0; background: transparent; box-shadow: none; border-radius: 0; }
+
+/* ---------- the card preview ---------- */
+
+/* Text on the card is editable in place. */
+.card [contenteditable] { min-height: 1em; cursor: text; border-radius: 4px; outline: 2px solid transparent; outline-offset: 3px; }
+.card [contenteditable]:hover { outline-color: var(--ui-border); }
+.card [contenteditable]:focus { outline-color: var(--ui-ink); }
+
+/* ---------- saved recipes ---------- */
+
+.save-recipe { display: flex; gap: 8px; }
+.save-recipe input { flex: 1; }
+.recipe-transfer { display: flex; gap: 8px; margin-top: 4px; }
+.button:disabled { opacity: 0.35; cursor: default; }
+.button:disabled:hover { background: transparent; color: var(--ui-ink); }
+.recipe-list { list-style: none; margin: 0; padding: 0; display: grid; }
+.recipe-item { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; padding: 6px 0; border-top: 1px solid var(--ui-border); }
+.recipe-item:first-child { border-top: 0; }
+.recipe-load {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px; min-width: 0;
+  padding: 8px 12px; text-align: left; font: inherit; font-size: 14px; line-height: 18px; font-weight: 600;
+  color: var(--ui-ink); background: transparent; border: 1px solid transparent; border-radius: var(--ui-radius-field); cursor: pointer;
+}
+.recipe-load:hover { background: var(--ui-bg); }
+.recipe-load:focus-visible { outline: 2px solid var(--ui-ink); }
+.recipe-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.recipe-meta { flex: none; font-size: 11px; line-height: 14px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ui-ink-secondary); }
+.recipe-empty { padding: 8px 0; font-size: 14px; line-height: 18px; color: var(--ui-ink-secondary); }
+
+/* ---------- lines panel ---------- */
+
+.lines-panel .editor-caption { margin-bottom: 12px; }
+.line-row {
+  position: relative; display: grid; grid-template-columns: 24px 130px 1fr auto; gap: 8px; align-items: start;
+  padding: 6px 0;
+}
+.line-row > select, .line-row > .line-text, .line-row > .line-action { align-self: start; }
+.line-row.dragging { opacity: 0.4; }
+/* Drop indicator: a black line above or below the row the line will land next to. */
+.line-row.drop-before::before, .line-row.drop-after::after {
+  content: ""; position: absolute; left: 0; right: 0; height: 2px; background: var(--ui-ink); border-radius: 1px;
+}
+.line-row.drop-before::before { top: -1px; }
+.line-row.drop-after::after { bottom: -1px; }
+
+/* Grip: six dots (ui-icons/grip.svg). Only this part drags. */
+.line-handle {
+  align-self: start; width: 24px; height: 36px; cursor: grab; border-radius: 6px;
+  background: url("ui-icons/grip.svg") center / 24px 36px no-repeat;
+}
+.line-handle:hover { background-color: var(--ui-bg); }
+.line-handle:active { cursor: grabbing; }
+.add-line { display: flex; gap: 8px; margin-top: 12px; padding-top: 16px; border-top: 1px solid var(--ui-border); }
+.add-line select { flex: 1; }
+
+/* ---------- card ---------- */
+
+.card {
+  position: relative;
+  width: var(--card-width);
+  min-height: 0;
+  padding: var(--card-padding);
+  background: var(--color-card);
+  border-radius: var(--card-radius);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 15%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+}
+
+/* ---------- line stack ---------- */
+
+.stack { display: flex; flex-direction: column; align-items: center; gap: var(--stack-gap); }
+.line { margin: 0; }
+/* A \n in the text (added with Shift+Enter on the card, or Enter in the lines panel) shows as a break. */
+p.line { white-space: pre-line; }
+
+.headline { font-family: var(--font-serif); font-weight: 500; font-size: var(--headline-size); line-height: var(--headline-line); }
+.display {
+  font-family: var(--font-serif); font-weight: 700;
+  font-size: var(--display-size); line-height: var(--display-line);
+  /* Casing lives here, not in the copy. Figma shows "Connections" mixed-case, so the
+     default is none; set --display-transform: uppercase to switch. */
+  text-transform: var(--display-transform);
+  overflow-wrap: anywhere;
+}
+/* headline-strong, stat and body come from the Figma "More styles" frames (21:1363, 21:1319). */
+.headline-strong { font-family: var(--font-serif); font-weight: 600; font-size: var(--headline-strong-size); line-height: var(--headline-strong-line); }
+.stat {
+  font-family: var(--font-sans); font-weight: 700; text-transform: uppercase;
+  font-size: var(--stat-size); line-height: var(--stat-line);
+}
+.body { font-family: var(--font-sans); font-weight: 500; font-size: var(--body-size); line-height: var(--body-line); }
+
+/* label / label-bold: small uppercase text, two weights. Sizes are provisional (not in Figma). */
+.label, .label-bold {
+  font-family: var(--font-sans); font-size: var(--label-size); line-height: var(--label-line);
+  letter-spacing: var(--label-tracking); text-transform: uppercase; color: var(--color-muted);
+}
+.label { font-weight: 400; }
+.label-bold { font-weight: 700; color: var(--color-ink); }
+
+/* Height is set inline from the spacing token in the JSON; this is a solid block so the space is visible. */
+.spacer {
+  width: var(--spacer-width); background: var(--spacer-color);
+  display: grid; place-items: center; overflow: hidden;
+  font-family: var(--font-sans); font-weight: 700; font-size: 12px; line-height: 14px; color: #fff; text-transform: uppercase;
+}
+
+.game-icon { width: var(--icon-size); height: var(--icon-size); }
+.game-icon img { display: block; width: 100%; height: 100%; }
+/* Shown when the game id has no icon file. */
+.game-icon-missing {
+  display: grid; place-items: center;
+  background: var(--ui-bg); border: 1px dashed var(--color-muted);
+}
+.game-icon-label { font-size: 10px; color: var(--color-muted); overflow: hidden; }
+
+/* ---------- chart (line style) ---------- */
+
+/* Three columns (name, bar, count) shared by every row so they line up; rows only carry the game id. */
+.games-chart {
+  list-style: none; padding: 0; margin: 0; width: 100%;
+  display: grid; grid-template-columns: max-content 1fr max-content;
+  column-gap: var(--space-1); row-gap: var(--chart-row-gap); align-items: center;
+}
+.games-chart-row { display: contents; }
+.games-chart-label { text-align: left; white-space: nowrap; }
+.games-chart-value { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.games-chart-track { height: var(--chart-bar-height); border-radius: var(--chart-bar-radius); background: var(--chart-track); overflow: hidden; }
+/* --bar-color is set per row by renderer.js from the game id (--game-<id> below). */
+.games-chart-bar { display: block; height: 100%; border-radius: var(--chart-bar-radius); background: var(--bar-color, var(--color-muted)); }
+/* ---------- wordle-grid (node 5:579) ---------- */
+
+.wordle-grid { display: flex; gap: var(--wordle-tile-gap); }
+.wordle-tile {
+  display: grid; place-items: center;
+  width: var(--wordle-tile-size); height: var(--wordle-tile-size);
+  border: var(--wordle-tile-border) solid var(--color-ink); border-radius: var(--wordle-tile-radius);
+  background: var(--wordle-correct); color: #fff;
+  font-family: var(--font-sans); font-weight: 700; text-transform: uppercase;
+  font-size: var(--wordle-tile-font-size);
+}
+
+/* ---------- connections-color (node 7:600 / 5:584) ---------- */
+
+.connections-color {
+  display: grid; place-items: center;
+  width: var(--connections-swatch-width); height: var(--connections-swatch-height);
+  border: var(--connections-swatch-border) solid var(--color-ink); border-radius: var(--connections-swatch-radius);
+}
+.connections-color[data-color="yellow"] { background: var(--connections-yellow); }
+.connections-color[data-color="green"] { background: var(--connections-green); }
+.connections-color[data-color="blue"] { background: var(--connections-blue); }
+.connections-color[data-color="purple"] { background: var(--connections-purple); }
+.connections-color[data-color="unknown"] { background: var(--ui-bg); border-style: dashed; }
+.connections-label {
+  font-family: var(--font-sans); font-weight: 700; text-transform: uppercase;
+  font-size: var(--connections-swatch-font-size); color: var(--color-ink);
+}

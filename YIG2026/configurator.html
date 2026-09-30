@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Year in Games 2026 — card creator</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="configurator">
+  <header class="page-head">
+    <h1>Card creator <span>payload + JSON = card</span></h1>
+  </header>
+
+  <main class="creator">
+    <div class="creator-left">
+      <section class="lines-panel" aria-label="Lines in this card">
+        <p class="editor-caption">Lines in this card: drag to reorder</p>
+        <div id="line-list"></div>
+        <div class="add-line">
+          <select id="add-line-style" aria-label="Style for the new line"></select>
+          <button type="button" class="button button-emphasis" id="add-line">Add line</button>
+        </div>
+      </section>
+
+      <section class="style-list" aria-label="Available styles">
+        <p class="editor-caption">Available styles</p>
+        <div id="style-list"></div>
+      </section>
+    </div>
+
+    <div class="creator-right">
+      <div class="preview" id="card"></div>
+
+      <div class="editor">
+        <div class="field-head">
+          <label class="editor-caption" for="payload-input">Payload: the player's data</label>
+          <select id="payload-select" aria-label="Choose a payload"></select>
+        </div>
+        <textarea id="payload-input" spellcheck="false"></textarea>
+        <p class="editor-status" id="payload-status"></p>
+
+        <hr>
+        <label class="editor-caption" for="card-input">Card JSON: which styles, in what order</label>
+        <textarea id="card-input" spellcheck="false"></textarea>
+        <p class="editor-status" id="card-status"></p>
+
+        <hr>
+        <label class="editor-caption" for="recipe-name">Saved recipes</label>
+        <div class="save-recipe">
+          <input id="recipe-name" type="text" placeholder="Recipe name" spellcheck="false" autocomplete="off">
+          <button type="button" class="button button-emphasis" id="save-recipe">Save recipe</button>
+        </div>
+        <p class="editor-status" id="recipe-status" role="status"></p>
+        <ul class="recipe-list" id="recipe-list"></ul>
+        <div class="recipe-transfer">
+          <button type="button" class="button" id="export-recipes">Export recipes</button>
+          <button type="button" class="button" id="import-recipes">Import recipes</button>
+          <input type="file" id="import-file" accept="application/json,.json" hidden>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="renderer.js"></script>
+  <script src="sample-data.js"></script>
+  <script src="configurator.js"></script>
+</body>
+</html>
