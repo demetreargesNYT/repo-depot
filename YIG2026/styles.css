@@ -3,19 +3,24 @@
  * [figma] = read from the "YIG - Prototype" Figma file. [provisional] = my guess, not in a design yet.
  * NYTKarnak / NYTFranklin are licensed fonts, shipped in fonts/. The system fonts in --font-serif and
  * --font-sans are used until a file loads, or if it fails to.
+ *
+ * The web fonts (woff2) come from github.com/nytimes/web-fonts. Each rule lists the woff2 first and the
+ * older OTF from fonts/ second, so the OTF only loads if the woff2 fails. Once the woff2 files are
+ * confirmed to render, the OTF lines and the OTF files can be removed.
  */
 
 /* Karnak: Medium (headline), Semibold (headline-strong), Bold (display). */
-@font-face { font-family: "NYTKarnak"; font-weight: 500; font-style: normal; font-display: swap; src: url("fonts/NYTKarnak-Medium.otf") format("opentype"); }
-@font-face { font-family: "NYTKarnak"; font-weight: 600; font-style: normal; font-display: swap; src: url("fonts/NYTKarnak-Semibold.otf") format("opentype"); }
-@font-face { font-family: "NYTKarnak"; font-weight: 700; font-style: normal; font-display: swap; src: url("fonts/NYTKarnak-Bold.otf") format("opentype"); }
+@font-face { font-family: "NYTKarnak"; font-weight: 500; font-style: normal; font-display: swap; src: url("fonts/woff2/karnak-normal-500.woff2") format("woff2"), url("fonts/NYTKarnak-Medium.otf") format("opentype"); }
+@font-face { font-family: "NYTKarnak"; font-weight: 600; font-style: normal; font-display: swap; src: url("fonts/woff2/karnak-normal-600.woff2") format("woff2"), url("fonts/NYTKarnak-Semibold.otf") format("opentype"); }
+@font-face { font-family: "NYTKarnak"; font-weight: 700; font-style: normal; font-display: swap; src: url("fonts/woff2/karnak-normal-700.woff2") format("woff2"), url("fonts/NYTKarnak-Bold.otf") format("opentype"); }
 
-/* Franklin: Light, Medium, Semibold, Bold. There is no Book (400) file, so the range 300-400 maps to
-   Light and text set at 400 (the label style) shows in Light. */
-@font-face { font-family: "NYTFranklin"; font-weight: 300 400; font-style: normal; font-display: swap; src: url("fonts/NYTFranklinLight.otf") format("opentype"); }
-@font-face { font-family: "NYTFranklin"; font-weight: 500; font-style: normal; font-display: swap; src: url("fonts/NYTFranklinMedium.otf") format("opentype"); }
-@font-face { font-family: "NYTFranklin"; font-weight: 600; font-style: normal; font-display: swap; src: url("fonts/NYTFranklinSemibold.otf") format("opentype"); }
-@font-face { font-family: "NYTFranklin"; font-weight: 700; font-style: normal; font-display: swap; src: url("fonts/NYTFranklinBold.otf") format("opentype"); }
+/* Franklin: Light, Medium, Semibold, Bold. There is no Book (400) in production either, where 400 falls
+   back to Medium, so nothing here is set at 400: the label style uses 500. Light (300) is loaded for any
+   style that needs to be lighter. */
+@font-face { font-family: "NYTFranklin"; font-weight: 300; font-style: normal; font-display: swap; src: url("fonts/woff2/franklin-normal-300.woff2") format("woff2"), url("fonts/NYTFranklinLight.otf") format("opentype"); }
+@font-face { font-family: "NYTFranklin"; font-weight: 500; font-style: normal; font-display: swap; src: url("fonts/woff2/franklin-normal-500.woff2") format("woff2"), url("fonts/NYTFranklinMedium.otf") format("opentype"); }
+@font-face { font-family: "NYTFranklin"; font-weight: 600; font-style: normal; font-display: swap; src: url("fonts/woff2/franklin-normal-600.woff2") format("woff2"), url("fonts/NYTFranklinSemibold.otf") format("opentype"); }
+@font-face { font-family: "NYTFranklin"; font-weight: 700; font-style: normal; font-display: swap; src: url("fonts/woff2/franklin-normal-700.woff2") format("woff2"), url("fonts/NYTFranklinBold.otf") format("opentype"); }
 
 :root {
   --font-serif: "NYTKarnak", Georgia, "Times New Roman", serif;   /* [figma] Karnak Medium 500 / Semibold 600 / Bold 700 */
@@ -327,7 +332,7 @@ p.line { white-space: pre-line; }
   font-family: var(--font-sans); font-size: var(--label-size); line-height: var(--label-line);
   letter-spacing: var(--label-tracking); text-transform: uppercase; color: var(--color-muted);
 }
-.label { font-weight: 400; }
+.label { font-weight: 500; }
 .label-bold { font-weight: 700; color: var(--color-ink); }
 
 /* Height is set inline from the spacing token in the JSON; this is a solid block so the space is visible. */
