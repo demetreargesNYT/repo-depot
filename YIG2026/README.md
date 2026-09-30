@@ -29,7 +29,7 @@ payload box + card JSON box  ->  renderCard()  ->  the card
 | `renderer.js` | Turns card JSON plus a payload into a card. Knows nothing about the page |
 | `sample-data.js` | Example payloads and the starting card |
 | `styles.css` | Design tokens, the page, and one section per card style |
-| `fonts/` | The Karnak and Franklin font files, loaded by `styles.css` |
+| `fonts/` | The Karnak and Franklin font files, loaded by `styles.css` (`woff2/` first, the OTFs as a fallback) |
 | `icons/` | The seven game icons, from Figma |
 | `ui-icons/` | Small icons for the page's controls |
 
@@ -54,7 +54,7 @@ A placeholder that isn't in the payload shows as blank. Line styles: `headline`,
 
 ## Things to know
 
-- The NYT fonts are included in `fonts/` (Karnak Medium, Semibold and Bold; Franklin Light, Medium, Semibold and Bold), so the page looks the same on any machine. They are licensed NYT typefaces; use them under that license. If a file fails to load, the page falls back to Georgia and Helvetica.
-- There is no Franklin Book (400) file. The `label` style is set at 400, so it shows in Franklin Light.
+- The NYT fonts are included, so the page looks the same on any machine. They are licensed NYT typefaces; use them under that license. The web fonts (woff2) in `fonts/woff2/` come from [nytimes/web-fonts](https://github.com/nytimes/web-fonts): Karnak 500, 600, 700 and Franklin 300, 500, 600, 700. The older OTF files in `fonts/` are kept as a fallback and can be removed once the woff2 files are confirmed. If neither loads, the page falls back to Georgia and Helvetica.
+- Franklin Book (400) is not in the web fonts, the same as on nytimes.com, where 400 falls back to Medium. Nothing here is set at 400; the `label` style uses 500.
 - Payloads, numbers and copy in `sample-data.js` are made up for the prototype.
 - Sizes and colors marked `[figma]` in `styles.css` were read from the YIG Prototype and Playbook Figma files; `[provisional]` ones are guesses.

@@ -396,6 +396,16 @@
       node.spellcheck = false;
       node.setAttribute("aria-label", "Edit text");
 
+      // The first click on a line would put the cursor where you clicked in the filled-in text ("of Wordle"),
+      // but the line then switches to its raw text ("of {streak.game}"), so that spot lands in the middle of a
+      // placeholder and typing would split it. So the first click focuses the line itself, and the focus
+      // handler below puts the cursor at the end. Clicks on a line that is already being edited work normally.
+      node.addEventListener("mousedown", (event) => {
+        if (document.activeElement === node) return;
+        event.preventDefault();
+        node.focus();
+      });
+
       node.addEventListener("focus", () => {
         const raw = readRaw();
         if (raw === null) return;
