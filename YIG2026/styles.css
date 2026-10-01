@@ -15,8 +15,8 @@
 @font-face { font-family: "NYTKarnak"; font-weight: 700; font-style: normal; font-display: swap; src: url("fonts/woff2/karnak-normal-700.woff2") format("woff2"), url("fonts/NYTKarnak-Bold.otf") format("opentype"); }
 
 /* Franklin: Light, Medium, Semibold, Bold. There is no Book (400) in production either, where 400 falls
-   back to Medium, so nothing here is set at 400: the label style uses 500. Light (300) is loaded for any
-   style that needs to be lighter. */
+   back to Medium, so nothing here is set at 400: the label style uses 600 and label-bold 700. Light (300)
+   is loaded for any style that needs to be lighter. */
 @font-face { font-family: "NYTFranklin"; font-weight: 300; font-style: normal; font-display: swap; src: url("fonts/woff2/franklin-normal-300.woff2") format("woff2"), url("fonts/NYTFranklinLight.otf") format("opentype"); }
 @font-face { font-family: "NYTFranklin"; font-weight: 500; font-style: normal; font-display: swap; src: url("fonts/woff2/franklin-normal-500.woff2") format("woff2"), url("fonts/NYTFranklinMedium.otf") format("opentype"); }
 @font-face { font-family: "NYTFranklin"; font-weight: 600; font-style: normal; font-display: swap; src: url("fonts/woff2/franklin-normal-600.woff2") format("woff2"), url("fonts/NYTFranklinSemibold.otf") format("opentype"); }
@@ -26,16 +26,13 @@
   --font-serif: "NYTKarnak", Georgia, "Times New Roman", serif;   /* [figma] Karnak Medium 500 / Semibold 600 / Bold 700 */
   --font-sans: "NYTFranklin", "Helvetica Neue", Arial, sans-serif; /* [figma] Franklin Medium 500 / Semibold 600 / Bold 700 */
 
-  --color-card: #ffffff;        /* [figma] */
-  --color-ink: #000000;         /* [figma] Core Black */
-  --color-muted: #5a5a5a;       /* [provisional] label text */
-
-  /* The tool around the card. Values from the TPL / Playbook (games theme) components: Dialog, Button,
-     Icon Button, Toast, Tile and Rule. The card itself does not use these. */
+  /* Colors are the TPL / Playbook (games theme) ones, used for the page and for the cards alike. Values from
+     the Dialog, Button, Icon Button, Toast, Tile and Rule components, and Playbook's Light/Content colors. */
   --ui-bg: #ebebeb;             /* color.background.tertiary */
-  --ui-surface: #ffffff;        /* color.background.primary */
-  --ui-ink: #121212;            /* content primary; button emphasis background */
-  --ui-ink-secondary: #363636;  /* dialog description */
+  --ui-surface: #ffffff;        /* color.background.primary: page panels, the card, and white text on color */
+  --ui-ink: #121212;            /* content primary: all text; button emphasis background */
+  --ui-ink-secondary: #363636;  /* content secondary: dialog description */
+  --ui-ink-tertiary: #5a5a5a;   /* content tertiary: placeholders only (missing-icon box, chart bar fallback) */
   --ui-on-dark: #f8f8f8;        /* text on the dark button and toast */
   --ui-border: #dfdfdf;         /* tile border, icon button border, tertiary rule */
   --ui-error: #d64545;          /* [provisional] */
@@ -53,7 +50,7 @@
   --space-3: 24px;   --space-4: 32px;  --space-5: 40px;   --space-6: 48px;  --space-7: 56px;
   --space-8: 64px;   --space-9: 72px;  --space-10: 80px;
   --stack-gap: var(--space-2);      /* default gap between lines; extra space = a spacer line */
-  --spacer-color: #f8f;             /* solid pink, as the spacing spec in Figma */
+  --spacer-color: #f8f;             /* development aid only: the pink of the Figma spacing spec. Never shipped. */
   --spacer-width: 160px;            /* as in the Figma spacer spec */
 
   --headline-size: 26px;            /* [figma] H2 */
@@ -295,7 +292,7 @@ hr, .rule { border: 0; border-top: 1px solid var(--ui-border); margin: 16px 0; }
   width: var(--card-width);
   min-height: 0;
   padding: var(--card-padding);
-  background: var(--color-card);
+  background: var(--ui-surface);
   border-radius: var(--card-radius);
   box-shadow: 0 1px 3px rgb(0 0 0 / 15%);
   display: flex;
@@ -328,19 +325,22 @@ p.line { white-space: pre-line; }
 }
 .body { font-family: var(--font-sans); font-weight: 500; font-size: var(--body-size); line-height: var(--body-line); }
 
-/* label / label-bold: small uppercase text, two weights. Sizes are provisional (not in Figma). */
+/* label / label-bold: small uppercase text, two weights. They set no color, so they take the same black as
+   the rest of the card text (inherited from the page). Sizes are provisional (not in Figma). */
 .label, .label-bold {
   font-family: var(--font-sans); font-size: var(--label-size); line-height: var(--label-line);
-  letter-spacing: var(--label-tracking); text-transform: uppercase; color: var(--color-muted);
+  letter-spacing: var(--label-tracking); text-transform: uppercase;
 }
-.label { font-weight: 500; }
-.label-bold { font-weight: 700; color: var(--color-ink); }
+.label { font-weight: 600; }
+.label-bold { font-weight: 700; }
 
-/* Height is set inline from the spacing token in the JSON; this is a solid block so the space is visible. */
+/* DEVELOPMENT AID ONLY. The pink block and the white token number exist so you can see a spacer while
+   building a card. A spacer is empty space: on the live site it draws nothing and has no color or text.
+   Height is set inline from the spacing token in the JSON. */
 .spacer {
   width: var(--spacer-width); background: var(--spacer-color);
   display: grid; place-items: center; overflow: hidden;
-  font-family: var(--font-sans); font-weight: 700; font-size: 12px; line-height: 14px; color: #fff; text-transform: uppercase;
+  font-family: var(--font-sans); font-weight: 700; font-size: 12px; line-height: 14px; color: var(--ui-surface); text-transform: uppercase;
 }
 
 .game-icon { width: var(--icon-size); height: var(--icon-size); }
@@ -348,9 +348,9 @@ p.line { white-space: pre-line; }
 /* Shown when the game id has no icon file. */
 .game-icon-missing {
   display: grid; place-items: center;
-  background: var(--ui-bg); border: 1px dashed var(--color-muted);
+  background: var(--ui-bg); border: 1px dashed var(--ui-ink-tertiary);
 }
-.game-icon-label { font-size: 10px; color: var(--color-muted); overflow: hidden; }
+.game-icon-label { font-size: 10px; color: var(--ui-ink-tertiary); overflow: hidden; }
 
 /* ---------- chart (line style) ---------- */
 
@@ -365,15 +365,15 @@ p.line { white-space: pre-line; }
 .games-chart-value { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .games-chart-track { height: var(--chart-bar-height); border-radius: var(--chart-bar-radius); background: var(--chart-track); overflow: hidden; }
 /* --bar-color is set per row by renderer.js from the game id (--game-<id> below). */
-.games-chart-bar { display: block; height: 100%; border-radius: var(--chart-bar-radius); background: var(--bar-color, var(--color-muted)); }
+.games-chart-bar { display: block; height: 100%; border-radius: var(--chart-bar-radius); background: var(--bar-color, var(--ui-ink-tertiary)); }
 /* ---------- wordle-grid (node 5:579) ---------- */
 
 .wordle-grid { display: flex; gap: var(--wordle-tile-gap); }
 .wordle-tile {
   display: grid; place-items: center;
   width: var(--wordle-tile-size); height: var(--wordle-tile-size);
-  border: var(--wordle-tile-border) solid var(--color-ink); border-radius: var(--wordle-tile-radius);
-  background: var(--wordle-correct); color: #fff;
+  border: var(--wordle-tile-border) solid var(--ui-ink); border-radius: var(--wordle-tile-radius);
+  background: var(--wordle-correct); color: var(--ui-surface);
   font-family: var(--font-sans); font-weight: 700; text-transform: uppercase;
   font-size: var(--wordle-tile-font-size);
 }
@@ -383,7 +383,7 @@ p.line { white-space: pre-line; }
 .connections-color {
   display: grid; place-items: center;
   width: var(--connections-swatch-width); height: var(--connections-swatch-height);
-  border: var(--connections-swatch-border) solid var(--color-ink); border-radius: var(--connections-swatch-radius);
+  border: var(--connections-swatch-border) solid var(--ui-ink); border-radius: var(--connections-swatch-radius);
 }
 .connections-color[data-color="yellow"] { background: var(--connections-yellow); }
 .connections-color[data-color="green"] { background: var(--connections-green); }
@@ -392,5 +392,5 @@ p.line { white-space: pre-line; }
 .connections-color[data-color="unknown"] { background: var(--ui-bg); border-style: dashed; }
 .connections-label {
   font-family: var(--font-sans); font-weight: 700; text-transform: uppercase;
-  font-size: var(--connections-swatch-font-size); color: var(--color-ink);
+  font-size: var(--connections-swatch-font-size); color: var(--ui-ink);
 }

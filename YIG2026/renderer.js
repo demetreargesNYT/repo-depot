@@ -84,8 +84,9 @@ function renderText(style, value, scope) {
   return el("p", `line ${style}`, fill(value, scope));
 }
 
-// { "spacer": "2" }: a block as tall as the Playbook spacing token. Shown as a solid color so the
-// space is visible.
+// { "spacer": "2" }: empty space as tall as the Playbook spacing token. In this prototype it is drawn as a
+// pink block with the token number inside, purely so you can see it while building. On a live card it
+// would be invisible: no color, no text. The block and the number are development aids, not design.
 function renderSpacer(value) {
   const token = String(value || DEFAULT_SPACER_TOKEN);
   if (!Object.hasOwn(SPACING_PX, token)) {

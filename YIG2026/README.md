@@ -50,11 +50,12 @@ A card is a list of lines. Each line is one `style: value` pair. Text styles tak
 }
 ```
 
-A placeholder that isn't in the payload shows as blank. Line styles: `headline`, `headline-strong`, `display`, `stat`, `body`, `label`, `label-bold`, `game-icon`, `spacer`, `wordle-grid`, `connections-color`, `games-chart`, `none`. Spacers take a Playbook spacing token (`"2"` is 16px).
+A placeholder that isn't in the payload shows as blank. Line styles: `headline`, `headline-strong`, `display`, `stat`, `body`, `label`, `label-bold`, `game-icon`, `spacer`, `wordle-grid`, `connections-color`, `games-chart`, `none`. Spacers take a Playbook spacing token (`"2"` is 16px). A spacer shows as a pink block with its token number so you can see it while building, but that is a development aid only: on a live card a spacer is empty space and renders nothing.
 
 ## Things to know
 
+- Colors are the TPL / Playbook (games theme) ones, in the `--ui-*` tokens at the top of `styles.css`. All text is `#121212`; the only white text is the Wordle tiles.
 - The NYT fonts are included, so the page looks the same on any machine. They are licensed NYT typefaces; use them under that license. The web fonts (woff2) in `fonts/woff2/` come from [nytimes/web-fonts](https://github.com/nytimes/web-fonts): Karnak 500, 600, 700 and Franklin 300, 500, 600, 700. The older OTF files in `fonts/` are kept as a fallback and can be removed once the woff2 files are confirmed. If neither loads, the page falls back to Georgia and Helvetica.
-- Franklin Book (400) is not in the web fonts, the same as on nytimes.com, where 400 falls back to Medium. Nothing here is set at 400; the `label` style uses 500.
+- Franklin Book (400) is not in the web fonts, the same as on nytimes.com, where 400 falls back to Medium. Nothing here is set at 400; the `label` style uses 600 (Semibold) and `label-bold` uses 700 (Bold).
 - Payloads, numbers and copy in `sample-data.js` are made up for the prototype.
 - Sizes and colors marked `[figma]` in `styles.css` were read from the YIG Prototype and Playbook Figma files; `[provisional]` ones are guesses.
