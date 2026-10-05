@@ -58,6 +58,7 @@ A placeholder that isn't in the payload shows as blank. Line styles: `headline`,
 
 **Copy for Figma** builds an SVG of the card on screen and Figma turns it into layers when you paste. Each line of the card becomes a group named after its style (`headline`, `wordle-grid`, ...), text stays editable text, and game icons arrive as vectors. Spacers are left out (they are a development aid), but the space they take is kept.
 
+- **No white background.** The export is only the elements, so it pastes onto any frame. The canvas is 375px wide and the elements sit inside the card's 20px side padding (20px to 355px, 335px wide). Nothing is shrunk to fit: if a line goes past 335px, the status line names it and the fix is in its CSS.
 - **The layers are flat.** Everything is placed at a fixed position: no auto layout, no Playbook text styles or variables. A native Figma plugin is the planned next step for that.
 - **Fonts.** Text uses the `NYTKarnak` and `NYTFranklin` fonts from the YIG Prototype file, so they need to be available in Figma. Weights are sent as `NYTFranklin-Semibold` and so on, because Figma's SVG import ignores a plain `font-weight` of 600.
 - **Icons need a server.** Opened straight from disk, the browser blocks reading the icon files and they paste as gray boxes (the status line says so). The GitHub Pages address or any local server works.

@@ -188,7 +188,19 @@ async function cardToSvg(card) {
   const box = card.getBoundingClientRect();
   const origin = { left: box.left, top: box.top };
 
-  let body = boxSvg(getComputedStyle(card), box, origin);
+  // No background rectangle: the card's white is a page look, and the export is just the elements, so it
+  // pastes onto whatever frame it lands in. The canvas is still the full card width (375px), which leaves
+  // the card's 20px padding on each side.
+  let body = "";
+  const cs = getComputedStyle(card);
+  const content = { left: box.left + parseFloat(cs.paddingLeft), right: box.right - parseFloat(cs.paddingRight) };
+  for (const node of card.querySelectorAll("[data-style] *, [data-style]")) {
+    const r = node.getBoundingClientRect();
+    if (r.width && (r.left < content.left - 0.5 || r.right > content.right + 0.5)) {
+      warnings.push(`A ${node.closest("[data-style]").dataset.style} line is wider than the ${round(content.right - content.left)}px content area. Adjust its CSS.`);
+      break;
+    }
+  }
   for (const child of card.children) {
     for (const line of child.classList.contains("stack") ? child.children : [child]) {
       const inner = await elementSvg(line, origin, warnings);
