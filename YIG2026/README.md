@@ -59,3 +59,5 @@ A placeholder that isn't in the payload shows as blank. Line styles: `headline`,
 - Franklin Book (400) is not in the web fonts, the same as on nytimes.com, where 400 falls back to Medium. Nothing here is set at 400; the `label` style uses 600 (Semibold) and `label-bold` uses 700 (Bold).
 - Payloads, numbers and copy in `sample-data.js` are made up for the prototype.
 - Sizes and colors marked `[figma]` in `styles.css` were read from the YIG Prototype and Playbook Figma files; `[provisional]` ones are guesses.
+
+See `YIG2026/responsive-stage/` for the responsive stage prototype (one Rive artboard, fixed header and text across desktop and mobile).
