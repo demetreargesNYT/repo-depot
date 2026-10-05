@@ -212,6 +212,9 @@ hr, .rule { border: 0; border-top: 1px solid var(--ui-border); margin: 16px 0; }
   background: var(--ui-surface); border-radius: var(--ui-radius-panel);
 }
 
+.figma-copy { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.figma-copy .editor-status { flex: 1 1 100%; }
+
 @media (max-width: 960px) {
   .creator { grid-template-columns: 1fr; }
 }
