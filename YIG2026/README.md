@@ -13,6 +13,7 @@ Keep the folder together: the page loads the other files and the `icons/` and `u
 - **Lines in this card** (top left): change a line's style, edit its text, drag the grip to reorder, remove it, or add a line.
 - **Available styles** (below it): every style a line can use, with an example.
 - **Sample card** (right): edit the text right on the card. Shift+Enter adds a line break.
+- **Copy for Figma** (under the sample card): copies the card as SVG. Click into a Figma file and paste (Cmd+V) to get editable layers. **Download SVG** saves the same thing as `card.svg` to drag into Figma. See "Paste into Figma" below.
 - **Payload** and **Card JSON** (below the sample): the two boxes the card is drawn from. Edit either one; the card updates as you type.
 - **Saved recipes**: save the current Card JSON under a name, load or delete it later. Recipes are stored in your own browser. **Export recipes** downloads them as a file and **Import recipes** loads a file, which is how to share them.
 
@@ -27,6 +28,7 @@ payload box + card JSON box  ->  renderCard()  ->  the card
 | `configurator.html` | The page |
 | `configurator.js` | The page's behavior: the boxes, lines panel, editing on the card, saved recipes |
 | `renderer.js` | Turns card JSON plus a payload into a card. Knows nothing about the page |
+| `figma-export.js` | Turns a rendered card into SVG for Figma. Knows nothing about the page |
 | `sample-data.js` | Example payloads and the starting card |
 | `styles.css` | Design tokens, the page, and one section per card style |
 | `fonts/` | The Karnak and Franklin font files, loaded by `styles.css` (`woff2/` first, the OTFs as a fallback) |
@@ -51,6 +53,16 @@ A card is a list of lines. Each line is one `style: value` pair. Text styles tak
 ```
 
 A placeholder that isn't in the payload shows as blank. Line styles: `headline`, `headline-strong`, `display`, `stat`, `body`, `label`, `label-bold`, `game-icon`, `spacer`, `wordle-grid`, `connections-color`, `games-chart`, `none`. Spacers take a Playbook spacing token (`"2"` is 16px). A spacer shows as a pink block with its token number so you can see it while building, but that is a development aid only: on a live card a spacer is empty space and renders nothing.
+
+## Paste into Figma
+
+**Copy for Figma** builds an SVG of the card on screen and Figma turns it into layers when you paste. Each line of the card becomes a group named after its style (`headline`, `wordle-grid`, ...), text stays editable text, and game icons arrive as vectors. Spacers are left out (they are a development aid), but the space they take is kept.
+
+- **The layers are flat.** Everything is placed at a fixed position: no auto layout, no Playbook text styles or variables. A native Figma plugin is the planned next step for that.
+- **Fonts.** Text uses the `NYTKarnak` and `NYTFranklin` fonts from the YIG Prototype file, so they need to be available in Figma. Weights are sent as `NYTFranklin-Semibold` and so on, because Figma's SVG import ignores a plain `font-weight` of 600.
+- **Icons need a server.** Opened straight from disk, the browser blocks reading the icon files and they paste as gray boxes (the status line says so). The GitHub Pages address or any local server works.
+- **Copy needs a secure page** (https or localhost). If the copy is blocked, use Download SVG and drag the file into Figma.
+- It exports the sample card only, as shown: finish any text edit first (the button does this for you).
 
 ## Things to know
 

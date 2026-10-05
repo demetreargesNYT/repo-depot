@@ -30,6 +30,11 @@
 
     <div class="creator-right">
       <div class="preview" id="card"></div>
+      <div class="figma-copy">
+        <button type="button" class="button button-emphasis" id="copy-figma">Copy for Figma</button>
+        <button type="button" class="button" id="download-svg">Download SVG</button>
+        <p class="editor-status" id="figma-status" role="status"></p>
+      </div>
 
       <div class="editor">
         <div class="field-head">
@@ -63,6 +68,7 @@
 
   <script src="renderer.js"></script>
   <script src="sample-data.js"></script>
+  <script src="figma-export.js"></script>
   <script src="configurator.js"></script>
 </body>
 </html>

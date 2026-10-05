@@ -667,6 +667,71 @@
     renderRecipeList();
   }
 
+  // ---------- copy for Figma ----------
+
+  const figmaStatus = document.getElementById("figma-status");
+
+  function figmaMessage(text, isError = false) {
+    figmaStatus.textContent = text;
+    figmaStatus.classList.toggle("is-info", !isError);
+  }
+
+  // Builds the SVG for the card on screen. A line being edited shows its {placeholders}, so finish the
+  // edit first and let the card redraw with the filled-in text.
+  async function currentCardSvg() {
+    const active = document.activeElement;
+    if (active && cardMount.contains(active)) active.blur();
+    return cardToSvg(cardMount.querySelector(".card"));
+  }
+
+  async function copyText(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(text);
+      return;
+    }
+    const box = el("textarea");
+    box.value = text;
+    box.style.position = "fixed";
+    box.style.opacity = "0";
+    document.body.appendChild(box);
+    box.select();
+    const ok = document.execCommand("copy");
+    box.remove();
+    if (!ok) throw new Error("copy was blocked");
+  }
+
+  async function copyForFigma() {
+    try {
+      const { svg, warnings } = await currentCardSvg();
+      await copyText(svg);
+      figmaMessage(warnings.length ? `Copied, but: ${warnings[0]}` : "Copied. Paste into Figma with Cmd+V.", warnings.length > 0);
+    } catch (error) {
+      figmaMessage("Could not copy. Use Download SVG and drag the file into Figma.", true);
+    }
+  }
+
+  async function downloadSvg() {
+    try {
+      const { svg } = await currentCardSvg();
+      const url = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" }));
+      const link = el("a");
+      link.href = url;
+      link.download = "card.svg";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      figmaMessage("Downloaded card.svg. Drag it into Figma.");
+    } catch (error) {
+      figmaMessage("Could not build the SVG.", true);
+    }
+  }
+
+  function mountFigmaExport() {
+    document.getElementById("copy-figma").addEventListener("click", copyForFigma);
+    document.getElementById("download-svg").addEventListener("click", downloadSvg);
+  }
+
   // ---------- start ----------
 
   payloadInput.addEventListener("input", () => redraw());
@@ -676,5 +741,6 @@
   mountAddLine();
   mountPayloadSelect();
   mountRecipes();
+  mountFigmaExport();
   selectPayload(payloadId);
 })();
