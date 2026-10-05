@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en" data-layout="card">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Year in Games 2026: responsive stage prototype (Chapter 1)</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="screens.css">
+</head>
+<body>
+  <!-- One stage in Figma artboard coordinates. The 375px phone frame sits at --column-x, so the header,
+       text and art keep their positions relative to each other at every window size. The art inside each
+       .screen is a stand-in for the Rive file: replace a screen's art with one <canvas> and keep .phone. -->
+  <main class="stage">
+    <header class="nav">
+      <button class="nav-icon" type="button" aria-label="Menu"></button>
+      <div class="progress" role="presentation">
+        <i class="seg" style="--w:11px"></i>
+        <i class="seg" style="--w:12px"></i>
+        <i class="seg" style="--w:12px"></i>
+        <i class="seg" style="--w:13px"></i>
+        <i class="seg" style="--w:12px"></i>
+        <i class="seg" style="--w:13px"></i>
+        <i class="seg" style="--w:12px"></i>
+        <i class="seg" style="--w:12px"></i>
+        <i class="seg" style="--w:11px"></i>
+        <i class="seg" style="--w:12px"></i>
+        <i class="seg" style="--w:11px"></i>
+        <i class="seg" style="--w:11px"></i>
+        <i class="seg" style="--w:11px"></i>
+        <i class="seg" style="--w:11px"></i>
+        <i class="seg" style="--w:12px"></i>
+        <i class="seg" style="--w:12px"></i>
+        <i class="seg" style="--w:13px"></i>
+        <i class="seg" style="--w:13px"></i>
+        <i class="seg" style="--w:12px"></i>
+        <i class="seg" style="--w:11px"></i>
+        <i class="seg" style="--w:11px"></i>
+        <i class="seg" style="--w:11px"></i>
+        <i class="seg" style="--w:12px"></i>
+        <i class="seg" style="--w:11px"></i>
+        <i class="seg" style="--w:13px"></i>
+        <i class="seg" style="--w:13px"></i>
+      </div>
+      <img class="wordmark" src="assets/year-in-games.svg" alt="Year in Games">
+      <button class="nav-close" type="button" aria-label="Close"></button>
+    </header>
+
+    <section class="screen" data-step="1" aria-label="This year, you gave the puzzles your time">
+      <div class="phone">
+      <img class="ball ball-s1" src="assets/s1-ball.svg" alt="" style="left:150px;top:542px">
+      <div class="tube">
+        <div class="tube-top"><img src="assets/s1-tube.svg" alt=""></div>
+        <div class="tube-body"></div>
+      </div>
+      <div class="lockup" style="top:176px;height:149px;justify-content:center">
+        <p class="headline">This year, you gave the puzzles your time.</p>
+      </div>
+      </div>
+    </section>
+    <section class="screen" data-step="2" aria-label="Your first puzzle of the year" hidden>
+      <div class="phone">
+      <div class="river">
+        <div class="river-rot">
+          <span class="inset" style="inset:-0.2% 0"><img src="assets/s2-river.svg" alt=""></span>
+          <i class="river-ext river-ext-start"></i>
+          <i class="river-ext river-ext-end"></i>
+        </div>
+      </div>
+      <div class="ball-s2-box">
+        <img class="ball-s2" src="assets/s2-ball.svg" alt="">
+      </div>
+      <div class="lockup" style="top:207px">
+        <p class="headline">You first puzzle of<br>the year was</p>
+        <img class="game-icon" src="assets/wordle-icon.svg" alt="">
+        <p class="display">Wordle</p>
+        <p class="label">Jan 3, 2026 7:35AM</p>
+      </div>
+      </div>
+    </section>
+    <section class="screen" data-step="3" aria-label="Your longest streak" hidden>
+      <div class="phone">
+      <div class="art top-face" style="left:223.51px;top:474px;width:219.952px;height:129.952px"><span class="inset" style="inset:-0.77% -0.45%"><img src="assets/s3-para-1.svg" alt=""></span></div>
+      <div class="art" style="left:90.52px;top:553px;width:219.952px;height:51.374px"><span class="inset" style="inset:-1.95% -0.45%"><img src="assets/s3-para-2.svg" alt=""></span></div>
+      <div class="art" style="left:110.52px;top:643px;width:219.952px;height:51.374px"><span class="inset" style="inset:-1.95% -0.45%"><img src="assets/s3-para-3.svg" alt=""></span></div>
+      <div class="art top-face" style="left:-56.48px;top:708px;width:219.952px;height:129.952px"><span class="inset" style="inset:-0.77% -0.45%"><img src="assets/s3-para-4.svg" alt=""></span></div>
+      <img class="ball ball-s3" src="assets/s3-ball.svg" alt="" style="left:375.71px;top:366.65px">
+      <div class="lockup" style="top:210px">
+        <p class="headline">Your longest streak was</p>
+        <div class="game-icon game-icon-stack">
+          <img src="assets/connections-icon.svg" alt="">
+          <span class="inset" style="inset:0.07%"><img src="assets/connections-glyph.svg" alt=""></span>
+        </div>
+        <p class="display">74 days</p>
+        <p class="label">Jan 3 - mar 28, 2026</p>
+      </div>
+      </div>
+    </section>
+    <section class="screen" data-step="4" aria-label="Total puzzles played" hidden>
+      <div class="phone">
+      <div class="art flip" style="left:-174.52px;top:581px;width:675px;height:316px"><span class="inset" style="inset:0"><img src="assets/s4-stairs-base.svg" alt=""></span></div>
+      <div class="art flip" style="left:-174.52px;top:530px;width:674.477px;height:367.5px"><span class="inset" style="inset:-0.27% -0.15%"><img src="assets/s4-stairs-steps.svg" alt=""></span></div>
+      <div class="art flip" style="left:111px;top:609px;width:220.475px;height:129.952px"><span class="inset" style="inset:-0.77% -0.45% -0.77% -0.22%"><img src="assets/s4-stairs-step-mid.svg" alt=""></span></div>
+      <div class="art flip" style="left:-226px;top:767px;width:220.475px;height:129.952px"><span class="inset" style="inset:-0.77% -0.45% -0.77% -0.22%"><img src="assets/s4-stairs-step-low.svg" alt=""></span></div>
+      <img class="ball ball-s4" src="assets/s4-ball.svg" alt="" style="left:150.71px;top:484.65px">
+      <div class="lockup" style="top:207px">
+        <p class="headline">You played a total of</p>
+        <p class="display">152 puzzles</p>
+        <p class="label">Across all games</p>
+      </div>
+      </div>
+    </section>
+    <section class="screen" data-step="5" aria-label="Wordle tiles to the moon" hidden>
+      <div class="phone">
+      <div class="bubble"><p>&ldquo;If you lined up all the Wordle tiles guessed in 2026, they would reach the moon faster than you can say PSHAW.&rdquo;</p></div>
+      <div class="art flip" style="left:100px;top:346px;width:43.413px;height:24.399px"><span class="inset" style="inset:0"><img src="assets/s5-speech-tail.svg" alt=""></span></div>
+      <div class="robot">
+      <div class="art" style="left:154.73px;top:492.4px;width:62.206px;height:37.637px"><span class="inset" style="inset:-5.42% -3.28% -5.42% -3.31%"><img src="assets/s5-robot-feet.svg" alt=""></span></div>
+      <div class="art" style="left:164.58px;top:380.76px;width:51.93px;height:51.848px"><span class="inset" style="inset:-3.93%"><img src="assets/s5-robot-dome.svg" alt=""></span></div>
+      <div class="art" style="left:160.7px;top:370px;width:62.194px;height:16.725px"><span class="inset" style="inset:-12.2% -3.28%"><img src="assets/s5-robot-antenna.svg" alt=""></span></div>
+      <div class="art" style="left:130.01px;top:397.58px;width:117.81px;height:108.737px"><span class="inset" style="inset:-1.88% -1.73%"><img src="assets/s5-robot-body.svg" alt=""></span></div>
+      <div class="art" style="left:150.12px;top:459.06px;width:76.538px;height:19.234px"><span class="inset" style="inset:-10.6% -2.66%"><img src="assets/s5-robot-knobs.svg" alt=""></span></div>
+      <div class="art" style="left:146.57px;top:417.14px;width:86.066px;height:31.154px"><span class="inset" style="inset:-6.55% -2.37%"><img src="assets/s5-robot-screen.svg" alt=""></span></div>
+      <div class="art" style="left:147.6px;top:512.58px;width:38.529px;height:30.209px"><span class="inset" style="inset:-6.37% -5% -6.38% -5%"><img src="assets/s5-robot-boot-left.svg" alt=""></span></div>
+      <div class="art" style="left:192.74px;top:512.79px;width:38.529px;height:30.209px"><span class="inset" style="inset:-6.37% -5% -6.38% -5%"><img src="assets/s5-robot-boot-right.svg" alt=""></span></div>
+      </div>
+      <div class="tile" style="left:128px;top:543px"><span>W</span></div>
+      <div class="tile" style="left:-38px;top:543px"><span>A</span></div>
+      </div>
+    </section>
+
+    <div class="phone-outline" aria-hidden="true"></div>
+  </main>
+
+  <div class="controls">
+    <div class="controls-group">
+      <button id="prev" type="button" aria-label="Previous screen">&larr;</button>
+      <span id="step-label" aria-live="polite">1 / 5</span>
+      <button id="next" type="button" aria-label="Next screen">&rarr;</button>
+    </div>
+    <div class="controls-group">
+      <button id="layout-toggle" type="button">Layout: Card (M)</button>
+      <button id="overlay-toggle" type="button" aria-pressed="false">Mobile overlay (O)</button>
+    </div>
+  </div>
+  <script src="controls.js"></script>
+</body>
+</html>

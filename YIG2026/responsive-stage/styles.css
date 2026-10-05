@@ -1,0 +1,171 @@
+/* One stage in Figma artboard coordinates. The 375px phone frame sits at --column-x, so header, text and art
+   keep their positions relative to each other at every window size; only the stage itself moves.
+   Two layout modes are compared: data-layout="card" (1495x1067 card on one constant outside color) and
+   data-layout="large" (2555x1440 artboard on the chapter color). */
+@font-face { font-family: "NYTKarnak"; font-weight: 500; font-style: normal; font-display: swap; src: url("../fonts/woff2/karnak-normal-500.woff2") format("woff2"), url("../fonts/NYTKarnak-Medium.otf") format("opentype"); }
+@font-face { font-family: "NYTKarnak"; font-weight: 700; font-style: normal; font-display: swap; src: url("../fonts/woff2/karnak-normal-700.woff2") format("woff2"), url("../fonts/NYTKarnak-Bold.otf") format("opentype"); }
+@font-face { font-family: "NYTFranklin"; font-weight: 500; font-style: normal; font-display: swap; src: url("../fonts/woff2/franklin-normal-500.woff2") format("woff2"), url("../fonts/NYTFranklinMedium.otf") format("opentype"); }
+@font-face { font-family: "NYTFranklin"; font-weight: 700; font-style: normal; font-display: swap; src: url("../fonts/woff2/franklin-normal-700.woff2") format("woff2"), url("../fonts/NYTFranklinBold.otf") format("opentype"); }
+
+:root {
+  --font-serif: "NYTKarnak", Georgia, "Times New Roman", serif;
+  --font-sans: "NYTFranklin", "Helvetica Neue", Arial, sans-serif;
+  --color-ink: #000;
+  --chapter-bg: #e7f1e1;   /* Chapter 1 */
+  --outside: #ebebeb;      /* card mode only: one constant color for the whole experience (TPL color.background.tertiary) */
+  --card-radius: 30px;
+
+  --phone-w: 375px;
+  --phone-h: 812px;
+  --stage-y: 0px;
+}
+
+html[data-layout="card"]  { --stage-w: 1495px; --stage-h: 1067px; --column-x: 560px;  --page-bg: var(--outside); }
+html[data-layout="large"] { --stage-w: 2555px; --stage-h: 1440px; --column-x: 1090px; --page-bg: var(--chapter-bg); }
+
+/* Phones: the viewport already starts below the device status bar, so the fake 56px iOS bar from the Figma
+   mobile frame is dropped and the whole stage moves up by its height. */
+@media (max-width: 599px) {
+  :root { --stage-y: -56px; }
+}
+
+* { box-sizing: border-box; margin: 0; }
+html, body { height: 100%; }
+body {
+  background: var(--page-bg);
+  color: var(--color-ink);
+  overflow: hidden;
+  position: relative;
+}
+
+.stage {
+  position: absolute;
+  top: var(--stage-y);
+  left: 50%;
+  width: var(--stage-w);
+  height: var(--stage-h);
+  transform: translateX(-50%);
+  background: var(--chapter-bg);
+  overflow: hidden;
+  cursor: pointer;
+}
+html[data-layout="card"] .stage { border-radius: var(--card-radius); }
+
+.screen { position: absolute; inset: 0; }
+.screen[hidden] { display: none; }
+
+/* The 375x812 frame from the Figma mobile designs. Not clipped: the art runs past it, as on the desktop artboard. */
+.phone {
+  position: absolute;
+  left: var(--column-x);
+  top: 0;
+  width: var(--phone-w);
+  height: var(--phone-h);
+}
+
+.nav {
+  position: absolute;
+  left: var(--column-x);
+  top: 56px;
+  width: var(--phone-w);
+  height: 84px;
+  z-index: 2;
+}
+.nav-icon, .nav-close { position: absolute; padding: 0; border: 0; background: none; }
+.nav-icon { left: 13px; top: 10px; width: 24px; height: 24px; }
+.nav-close { left: 92.53%; right: 4.27%; top: 16px; aspect-ratio: 1; }
+
+.wordmark {
+  position: absolute;
+  left: 50%;
+  top: 14px;
+  width: 170.215px;
+  height: 18.549px;
+  transform: translateX(-50%);
+}
+
+.progress {
+  position: absolute;
+  left: 50%;
+  bottom: 25px;
+  width: 341px;
+  height: 2px;
+  display: flex;
+  gap: 1.31px;
+  transform: translateX(-50%);
+}
+.seg {
+  flex: none;
+  width: var(--w);
+  height: 2px;
+  border-radius: 1.286px;
+  background: var(--color-ink);
+  opacity: 0.4;
+}
+.seg.is-active { opacity: 1; }
+
+.lockup {
+  position: absolute;
+  left: 0;
+  width: var(--phone-w);
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+  z-index: 1;
+}
+.headline { font: 500 26px/1.2 var(--font-serif); }
+.game-icon { width: 50px; height: 48.837px; border-radius: 8px; display: block; flex: none; }
+.display { font: 700 40px/1.2 var(--font-serif); }
+.label { font: 700 12px/1.2 var(--font-sans); letter-spacing: 0.5px; text-transform: uppercase; }
+
+/* Where a 375x812 phone sits on the artboard (Figma: Desktop-Mobile-Overlay) */
+.phone-outline {
+  display: none;
+  position: absolute;
+  left: var(--column-x);
+  top: 0;
+  width: var(--phone-w);
+  height: var(--phone-h);
+  border: 10px solid var(--color-ink);
+  border-radius: 20px;
+  pointer-events: none;
+  z-index: 3;
+}
+.show-overlay .phone-outline { display: block; }
+
+.controls {
+  position: fixed;
+  left: 50%;
+  bottom: 12px;
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  transform: translateX(-50%);
+  font: 700 12px/1 var(--font-sans);
+}
+.controls-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px;
+  border: 1px solid var(--color-ink);
+  border-radius: 100px;
+  background: #fff;
+}
+.controls button {
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 100px;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+.controls button:hover:not(:disabled) { background: #ebebeb; }
+.controls button:disabled { opacity: 0.3; cursor: default; }
+.controls button[aria-pressed="true"] { background: var(--color-ink); color: #fff; }
+#step-label { min-width: 36px; text-align: center; }

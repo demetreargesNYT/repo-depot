@@ -1,0 +1,61 @@
+/* Per-screen art. Positions are Figma mobile-frame coordinates (375x812). The @keyframes are copied from
+   Figma's motion export unchanged; only the selectors are ours. */
+.art { position: absolute; }
+.art.flip { transform: scaleX(-1); }   /* Figma: rotate 180deg + scaleY(-1) */
+.inset { position: absolute; display: block; }
+.inset img, .art img { display: block; width: 100%; height: 100%; max-width: none; }
+.ball { position: absolute; width: 90px; height: 91.241px; max-width: none; }
+/* The parallelogram files also contain a side face that Figma's mobile frame doesn't show; keep the top face only. */
+.top-face img { clip-path: polygon(51px 0, -1px 53.4px, 171px 53.4px, 222px 0); }
+.game-icon-stack { position: relative; }
+.game-icon-stack > img { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+/* 1 — ball bounces out of the tube (Figma 52:1257). The tube is drawn after the ball so it hides it. */
+.ball-s1 { animation: kf_52_1257_translate_0 2s linear; animation-iteration-count: infinite; }
+@keyframes kf_52_1257_translate_0 { 0% { animation-timing-function: ease-in-out; translate: -1px 270px; } 35% { translate: 0.465px -89.387px; } 67.9% { translate: -1px 276px; } 100% { translate: -1px 276px; } }
+
+/* Tube: the cap is the Figma artwork; the body is extended with CSS so it reaches the bottom of any artboard. */
+.tube { position: absolute; left: 126.17px; top: 672.17px; width: 145.028px; }
+.tube-top { position: relative; height: 27px; overflow: hidden; z-index: 1; }
+.tube-top img { display: block; width: 145.028px; height: 279.287px; max-width: none; }
+.tube-body {
+  position: absolute; top: 13.08px; left: 0; width: 145.028px; height: 1600px;
+  background: #95BEFA; border-left: 1.672px solid #1F1D1D; border-right: 1.672px solid #1F1D1D;
+}
+
+/* 2 — ball rolls along the river (Figma 52:1112) */
+.river { position: absolute; left: -647px; top: -105px; width: 1692.779px; height: 1256.938px; display: flex; align-items: center; justify-content: center; }
+.river-rot { position: relative; flex: none; width: 1671.96px; height: 488.317px; transform: rotate(-29.91deg); }
+/* The river art stops at its own ends; these straight continuations keep it running past the frame. */
+.river-ext { position: absolute; display: block; width: 3200px; height: 145.75px; background: #95BEFA; border-top: 2px solid #000; border-bottom: 2px solid #000; }
+.river-ext-start { right: 100%; top: -1px; margin-right: -3px; }
+.river-ext-end { left: 100%; top: 343.6px; margin-left: -3px; }
+.ball-s2-box { position: absolute; left: -99px; top: 468px; width: 91.241px; height: 90px; display: flex; align-items: center; justify-content: center; animation: kf_52_1112_translate_0 2s linear; animation-iteration-count: infinite; }
+.ball-s2 { flex: none; width: 90px; height: 91.241px; max-width: none; transform: rotate(90deg); }
+@keyframes kf_52_1112_translate_0 { 0% { translate: -9.722px -50.23px; } 20.648% { translate: 174.555px 105.907px; } 30.728% { translate: 226.768px 156.213px; } 41.8% { translate: 312px 178px; } 54.5% { translate: 423px 144px; } 65.05% { translate: 501px 123px; } 100% { translate: 501px 123px; } }
+
+/* 3 — ball hops across parallelograms (Figma 52:1138) */
+@property --rotate-transform { syntax: '<angle>'; initial-value: 0rad; inherits: false; }
+.ball-s3 { transform: rotate(var(--rotate-transform, -1.833rad)); animation: kf_52_1138_rotate_0 3.528816s linear, kf_52_1138_translate_0 3.528816s linear, kf_52_1138_scale_0 3.528816s linear; animation-iteration-count: infinite; }
+@keyframes kf_52_1138_rotate_0 { 0% { animation-timing-function: ease-in-out; --rotate-transform: -1.833rad; } 29.755% { animation-timing-function: ease-in-out; --rotate-transform: -6.37rad; } 58.093% { animation-timing-function: ease-in-out; --rotate-transform: -10.908rad; } 86.431% { animation-timing-function: ease-out; --rotate-transform: -15.446rad; } 94.083% { animation-timing-function: step-end; --rotate-transform: -15.795rad; } 100% { --rotate-transform: -1.833rad; } }
+@keyframes kf_52_1138_translate_0 { 0% { translate: -62px 109px; } 3.401% { animation-timing-function: ease-out; translate: -62px 109px; } 6.801% { animation-timing-function: ease-out; translate: -74px 81px; } 18.136% { animation-timing-function: ease-in; translate: -127px -12px; } 29.755% { translate: -192px 188px; } 33.156% { animation-timing-function: ease-out; translate: -192px 188px; } 36.84% { animation-timing-function: ease-out; translate: -204px 159px; } 47.041% { animation-timing-function: ease-in; translate: -228px 51px; } 58.093% { translate: -255px 279px; } 61.494% { animation-timing-function: ease-out; translate: -255px 279px; } 65.178% { animation-timing-function: ease-out; translate: -268px 247px; } 75.379% { animation-timing-function: ease-in; translate: -310px 127px; } 86.431% { translate: -370px 344px; } 94.083% { animation-timing-function: step-end; translate: -370px 344px; } 100% { translate: -62px 109px; } }
+@keyframes kf_52_1138_scale_0 { 0% { animation-timing-function: ease-out; scale: 1 1; } 3.401% { animation-timing-function: ease-out; scale: 1.14 0.8; } 6.801% { animation-timing-function: ease-out; scale: 0.9 1.14; } 11.335% { scale: 1 1; } 29.755% { animation-timing-function: ease-out; scale: 1 1; } 33.156% { animation-timing-function: ease-out; scale: 1.14 0.8; } 36.84% { animation-timing-function: ease-out; scale: 0.9 1.14; } 41.374% { scale: 1 1; } 58.093% { animation-timing-function: ease-out; scale: 1 1; } 61.494% { animation-timing-function: ease-out; scale: 1.14 0.8; } 65.178% { animation-timing-function: ease-out; scale: 0.9 1.14; } 69.712% { scale: 1 1; } 86.431% { animation-timing-function: ease-out; scale: 1 1; } 89.832% { animation-timing-function: ease-out; scale: 1.14 0.8; } 94.083% { scale: 1 1; } 100% { scale: 1 1; } }
+
+/* 4 — ball hops up the stairs (Figma 52:1185) */
+.ball-s4 { transform: rotate(var(--rotate-transform, -1.833rad)); animation: kf_52_1185_rotate_0 2.9s linear, kf_52_1185_translate_0 2.9s linear, kf_52_1185_scale_0 2.9s linear; animation-iteration-count: infinite; }
+@keyframes kf_52_1185_rotate_0 { 0% { animation-timing-function: ease-in-out; --rotate-transform: -1.833rad; } 21.379% { animation-timing-function: ease-in-out; --rotate-transform: -7.418rad; } 45.172% { animation-timing-function: ease-in-out; --rotate-transform: -13.526rad; } 71.724% { animation-timing-function: ease-in-out; --rotate-transform: -19.809rad; } 95.862% { animation-timing-function: step-end; --rotate-transform: -25.744rad; } 100% { --rotate-transform: -1.833rad; } }
+@keyframes kf_52_1185_translate_0 { 0% { animation-timing-function: ease-out; translate: 170px -28px; } 10.345% { animation-timing-function: ease-in; translate: 126px -92px; } 21.379% { translate: 82px 4px; } 24.138% { animation-timing-function: ease-out; translate: 82px 4px; } 26.897% { animation-timing-function: ease-out; translate: 72px -8px; } 35.517% { animation-timing-function: ease-in; translate: 28px -52px; } 45.172% { translate: -12px 44px; } 47.931% { animation-timing-function: ease-out; translate: -12px 44px; } 51.034% { animation-timing-function: ease-out; translate: -22px 31px; } 60.69% { animation-timing-function: ease-in; translate: -70px -2px; } 71.724% { translate: -112px 92px; } 74.483% { animation-timing-function: ease-out; translate: -112px 92px; } 78.621% { animation-timing-function: ease-in-out; translate: -124px 92px; } 95.862% { animation-timing-function: step-end; translate: -240px 104px; } 100% { translate: 170px -28px; } }
+@keyframes kf_52_1185_scale_0 { 0% { scale: 1 1; } 21.379% { animation-timing-function: ease-out; scale: 1 1; } 24.138% { animation-timing-function: ease-out; scale: 1.12 0.82; } 26.897% { animation-timing-function: ease-out; scale: 0.94 1.08; } 31.034% { scale: 1 1; } 45.172% { animation-timing-function: ease-out; scale: 1 1; } 47.931% { animation-timing-function: ease-out; scale: 1.12 0.82; } 51.034% { animation-timing-function: ease-out; scale: 0.94 1.08; } 55.172% { scale: 1 1; } 71.724% { animation-timing-function: ease-out; scale: 1 1; } 74.483% { animation-timing-function: ease-out; scale: 1.12 0.82; } 78.621% { scale: 1 1; } 100% { scale: 1 1; } }
+
+/* 5 — robot bobs on the tiles (Figma 52:1199) */
+.bubble { position: absolute; left: 49px; top: 225px; width: 280px; padding: 24px; background: #fff; border: 2px solid #000; border-radius: 15px; z-index: 1; }
+.bubble p { font: 500 17px/21px var(--font-sans); text-align: left; text-box: trim-both cap alphabetic; }
+.bubble + .art { z-index: 2; }
+.robot { position: absolute; inset: 0; animation: kf_52_1199_translate_0 0.980944s linear; animation-iteration-count: infinite; }
+@keyframes kf_52_1199_translate_0 { 0% { animation-timing-function: ease-out; translate: 0px 0px; } 31.704% { animation-timing-function: ease-out; translate: 0px -9px; } 56.68% { translate: 0px 0px; } 100% { translate: 0px 0px; } }
+.tile { position: absolute; width: 145px; height: 145px; display: flex; align-items: center; justify-content: center; background: #6aaa64; border: 2.377px solid #000; }
+.tile span { font: 700 78.44px/1 var(--font-sans); color: #f8f8f8; text-transform: uppercase; }
+
+@media (prefers-reduced-motion: reduce) {
+  .screen, .screen * { animation: none !important; }
+}
