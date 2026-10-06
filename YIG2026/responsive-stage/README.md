@@ -18,7 +18,7 @@ Everything (art, header, text) is absolutely positioned inside one `.stage`, in 
 
 ## The artboard
 
-The Rive file is **1495×1067**. A pink stroke on the card marks exactly where it ends (a prototype aid; remove the `.stage::after` rule in `styles.css` to hide it). It is shown as shown as a rounded card (30px corners) on one constant outside color (`--outside`, #ebebeb). Nothing is drawn outside the artboard: art that runs off the frame (the river, the tube) simply ends at the card edge, so animators never need to draw filler. The earlier 2555×1440 "Large" option and its CSS extensions have been removed.
+The Rive file is **1495×1067**. It is shown as a rounded card (30px corners) on one constant outside color (`--outside`), currently black so the artboard edge is easy to see; the final outside color is still to be decided. Nothing is drawn outside the artboard: art that runs off the frame (the river, the tube) simply ends at the card edge, so animators never need to draw filler. The earlier 2555×1440 "Large" option and its CSS extensions have been removed.
 
 ## Fit to window
 
