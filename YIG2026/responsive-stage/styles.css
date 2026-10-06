@@ -18,6 +18,8 @@
   --phone-w: 375px;
   --phone-h: 812px;
   --stage-y: 0px;
+  --art-scale: 1;          /* Fit: Art only; set by controls.js */
+  --art-y: 0px;
   --scale: 1;              /* set by controls.js: grows the card on big windows, never below 1 */
 }
 
@@ -54,6 +56,14 @@ body {
 html[data-layout="card"] .stage { border-radius: var(--card-radius); }
 
 .screen { position: absolute; inset: 0; }
+
+/* All the art of a screen. Identity unless Fit is "Art only", which shrinks just this layer. */
+.art-layer {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 0;
+  transform: translateY(var(--art-y)) scale(var(--art-scale));
+}
 .screen[hidden] { display: none; }
 
 /* The 375x812 frame from the Figma mobile designs. Not clipped: the art runs past it, as on the desktop artboard. */
