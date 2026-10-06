@@ -18,6 +18,7 @@
   --phone-w: 375px;
   --phone-h: 812px;
   --stage-y: 0px;
+  --scale: 1;              /* set by controls.js: grows the card on big windows, never below 1 */
 }
 
 html[data-layout="card"]  { --stage-w: 1495px; --stage-h: 1067px; --column-x: 560px;  --page-bg: var(--outside); }
@@ -44,7 +45,8 @@ body {
   left: 50%;
   width: var(--stage-w);
   height: var(--stage-h);
-  transform: translateX(-50%);
+  transform: translateX(-50%) scale(var(--scale));
+  transform-origin: top center;
   background: var(--chapter-bg);
   overflow: hidden;
   cursor: pointer;
