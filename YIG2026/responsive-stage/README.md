@@ -8,9 +8,10 @@ Double-click `index.html`. No install, no server.
 
 - Click the stage, press `→` / `←`, or use the arrows at the bottom to move between the 5 screens.
 - `S` (or the Fit button) cycles the short-window behavior: All, Art only, Off (see below).
+- The Min scale slider (or `?min=65`) sets how far the stage may shrink on a short window. All controls are in the panel at the top right (at the bottom on phone-width windows).
 - `M` (or the Layout button) switches between the two artboard options below.
 - `O` (or the Mobile overlay button) draws the 375×812 phone outline.
-- `?layout=large&step=3&overlay=1&fit=art` in the URL sets all three, for repeatable screenshots.
+- `?layout=large&step=3&overlay=1&fit=art&min=65` in the URL sets all three, for repeatable screenshots.
 
 ## How it works
 
@@ -20,7 +21,7 @@ Everything (art, header, text) is absolutely positioned inside one `.stage`, in 
 
 | | Card | Large |
 |---|---|---|
-| Artboard | 1495×1067 | 2555×1440 |
+| Artboard (Rive file size) | 1495×1067 | 2555×1440 |
 | Outside the artboard | one constant color, `--outside` (#ebebeb) | nothing; the chapter color fills the window |
 | Edge | 30px rounded corners | hard edge, only visible beyond 2555×1440 |
 | Extra art needed | none | extend art that runs off the frame (river, tube) |
@@ -33,11 +34,11 @@ Card is the default. Big windows scale the whole stage up to fit (capped at 1.5�
 
 | Mode | What scales | On a short window |
 |---|---|---|
-| **All** (default) | the whole stage | Text, nav and art shrink together so the artboard is visible down to y 812 (the Figma phone frame's bottom). Never below 75%, so the headline stays about 19px. Alignment stays exact. |
-| **Art only** | the art layer only | Header and text stay full size; the art shrinks to fit (down to 40%) with its y 812 line at the window bottom. Relative positions of text and art change: on a short window the ball can overlap the label, and the speech bubble covers the robot. |
+| **All** (default) | the whole stage | Text, nav and art shrink together so the artboard is visible down to y 812 (the Figma phone frame's bottom). Never below the Min scale floor (default 75%, so the headline stays about 19px). Alignment stays exact. |
+| **Art only** | the art layer only | Header and text stay full size; the art layer shrinks toward the top of the stage (down to the Min scale floor) while the text keeps its size, so art and text can overlap: on a short window the ball can sit on the label, and the speech bubble covers the robot. |
 | **Off** | nothing | 1:1 as designed; the bottom of the artboard is cropped. |
 
-Constants (`MAX_SCALE`, `FIT_HEIGHT`, `MIN_SCALE_ALL`, `MIN_SCALE_ART`) are at the top of `controls.js`. `?scale=0` is the old name for `?fit=off`.
+**Min scale** is the breakpoint where shrinking stops: below `812 × floor` px of window height (609px at 75%) the bottom of the artboard crops instead. Raising the floor keeps text larger but crops sooner; lowering it keeps more of the animation visible but makes the small text (the 12px label is 9px at 75%) harder to read. Recommended: 75%. Constants (`MAX_SCALE`, `FIT_HEIGHT`) are at the top of `controls.js`. `?scale=0` is the old name for `?fit=off`.
 
 ## Notes for the Rive hand-off
 
