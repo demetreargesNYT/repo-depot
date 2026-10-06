@@ -12,7 +12,7 @@
   --font-sans: "NYTFranklin", "Helvetica Neue", Arial, sans-serif;
   --color-ink: #000;
   --chapter-bg: #e7f1e1;   /* Chapter 1 */
-  --outside: #ebebeb;      /* one constant color for the whole experience (TPL color.background.tertiary) */
+  --outside: #000;         /* one constant color for the whole experience. Black for now so the artboard edge is obvious; the final color is still open */
   --card-radius: 30px;
 
   --phone-w: 375px;
@@ -52,16 +52,6 @@ body {
 }
 .stage { border-radius: var(--card-radius); }
 
-/* Prototype aid: marks exactly where the 1495x1067 Rive artboard ends and the outside color begins. */
-.stage::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border: 3px solid #ff2d78;
-  border-radius: var(--card-radius);
-  pointer-events: none;
-  z-index: 4;
-}
 
 .screen { position: absolute; inset: 0; }
 
