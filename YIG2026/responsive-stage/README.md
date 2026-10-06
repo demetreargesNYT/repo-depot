@@ -7,10 +7,10 @@ Shows how one Rive artboard, authored at desktop size, can serve desktop and mob
 Double-click `index.html`. No install, no server.
 
 - Click the stage, press `→` / `←`, or use the arrows at the bottom to move between the 5 screens.
-- `S` (or the Scale up button) turns the grow-to-fit behavior on and off (Card only).
+- `S` (or the Fit button) cycles the short-window behavior: All, Art only, Off (see below).
 - `M` (or the Layout button) switches between the two artboard options below.
 - `O` (or the Mobile overlay button) draws the 375×812 phone outline.
-- `?layout=large&step=3&overlay=1&scale=0` in the URL sets all three, for repeatable screenshots.
+- `?layout=large&step=3&overlay=1&fit=art` in the URL sets all three, for repeatable screenshots.
 
 ## How it works
 
@@ -27,9 +27,17 @@ Everything (art, header, text) is absolutely positioned inside one `.stage`, in 
 
 Any artboard has a maximum size. Large only postpones the edge; Card makes it a designed feature.
 
-## Recommended: Card, with capped scale-up
+## Recommended: Card, with fit-to-window
 
-Card is the default. On windows bigger than the 1495×1067 artboard the whole stage scales up to fit, so header, text and art grow together and stay aligned. The scale is never below 1 (laptops and phones are unchanged) and is capped at 1.5×; past the cap the outside color shows around the card. Change `MAX_SCALE` in `controls.js` to tune it. Scaling is skipped in Large.
+Card is the default. Big windows scale the whole stage up to fit (capped at 1.5×, then the outside color shows around the card). Phones (under 600px wide) are never scaled. For windows that are **shorter** than the artboard, three modes are compared with the Fit button / `S` / `?fit=`:
+
+| Mode | What scales | On a short window |
+|---|---|---|
+| **All** (default) | the whole stage | Text, nav and art shrink together so the artboard is visible down to y 812 (the Figma phone frame's bottom). Never below 75%, so the headline stays about 19px. Alignment stays exact. |
+| **Art only** | the art layer only | Header and text stay full size; the art shrinks to fit (down to 40%) with its y 812 line at the window bottom. Relative positions of text and art change: on a short window the ball can overlap the label, and the speech bubble covers the robot. |
+| **Off** | nothing | 1:1 as designed; the bottom of the artboard is cropped. |
+
+Constants (`MAX_SCALE`, `FIT_HEIGHT`, `MIN_SCALE_ALL`, `MIN_SCALE_ART`) are at the top of `controls.js`. `?scale=0` is the old name for `?fit=off`.
 
 ## Notes for the Rive hand-off
 
