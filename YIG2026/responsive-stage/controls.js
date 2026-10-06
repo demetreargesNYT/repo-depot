@@ -20,7 +20,7 @@ const MAX_SCALE = 1.5;
 const FIT_HEIGHT = 812;       // bottom of the Figma phone frame
 const STAGE_W = 1495, STAGE_H = 1067;   // the Rive artboard
 let fit = true;
-let minScale = 0.75;          // slider; at 75% the 26px headline is about 19px and the 12px label 9px
+let minScale = 0.9;           // slider; at 90% the 26px headline is about 23px and the 12px label 11px
 
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
