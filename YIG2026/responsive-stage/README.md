@@ -7,9 +7,10 @@ Shows how one Rive artboard, authored at desktop size, can serve desktop and mob
 Double-click `index.html`. No install, no server.
 
 - Click the stage, press `→` / `←`, or use the arrows at the bottom to move between the 5 screens.
+- `S` (or the Scale up button) turns the grow-to-fit behavior on and off (Card only).
 - `M` (or the Layout button) switches between the two artboard options below.
 - `O` (or the Mobile overlay button) draws the 375×812 phone outline.
-- `?layout=large&step=3&overlay=1` in the URL sets all three, for repeatable screenshots.
+- `?layout=large&step=3&overlay=1&scale=0` in the URL sets all three, for repeatable screenshots.
 
 ## How it works
 
@@ -25,6 +26,10 @@ Everything (art, header, text) is absolutely positioned inside one `.stage`, in 
 | Extra art needed | none | extend art that runs off the frame (river, tube) |
 
 Any artboard has a maximum size. Large only postpones the edge; Card makes it a designed feature.
+
+## Recommended: Card, with capped scale-up
+
+Card is the default. On windows bigger than the 1495×1067 artboard the whole stage scales up to fit, so header, text and art grow together and stay aligned. The scale is never below 1 (laptops and phones are unchanged) and is capped at 1.5×; past the cap the outside color shows around the card. Change `MAX_SCALE` in `controls.js` to tune it. Scaling is skipped in Large.
 
 ## Notes for the Rive hand-off
 
