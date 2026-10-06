@@ -1,4 +1,4 @@
-// Steps between the five Chapter 1 screens and toggles the two comparison aids.
+// Steps between the five Chapter 1 screens and runs the comparison controls.
 const STEPS = 5;
 const root = document.documentElement;
 const screens = [...document.querySelectorAll(".screen")];
@@ -12,17 +12,14 @@ const minSlider = document.getElementById("min-scale");
 const minValue = document.getElementById("min-scale-value");
 const minNote = document.getElementById("min-scale-note");
 
-// Fit modes. All of them grow the stage to fit big windows (capped), and leave phones alone.
-//   off: never shrink; short windows crop the bottom of the artboard
-//   all: shrink the whole stage (text, nav and art) so the artboard is visible down to FIT_HEIGHT
-//   art: shrink only the art layer, toward the top; header and text keep full size, so the art can run into the text
-// Neither shrinks below minScale (the slider): below that window height the bottom of the artboard crops instead.
+// Fit to window. On: grow the stage to fit big windows (capped), and on short windows shrink the whole stage
+// (text, nav and art together) so the artboard is visible down to FIT_HEIGHT, but never below minScale (the
+// slider): below that window height the bottom of the artboard crops instead. Off: 1:1, always cropped.
+// Phone-width windows are never scaled.
 const MAX_SCALE = 1.5;
 const FIT_HEIGHT = 812;       // bottom of the Figma phone frame
 const STAGE_W = 1495, STAGE_H = 1067;   // the Rive artboard
-const FIT_MODES = ["all", "art", "off"];
-const FIT_LABELS = { all: "All", art: "Art only", off: "Off" };
-let fit = "all";
+let fit = true;
 let minScale = 0.75;          // slider; at 75% the 26px headline is about 19px and the 12px label 9px
 
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
@@ -30,22 +27,14 @@ const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 function updateScale() {
   const bigFit = Math.min(innerWidth / STAGE_W, innerHeight / STAGE_H);
   const isPhone = innerWidth < 600;
-  let scale = 1, artScale = 1;
-  if (fit !== "off" && !isPhone) {
-    if (bigFit >= 1) {
-      scale = Math.min(MAX_SCALE, bigFit);
-    } else if (fit === "all") {
-      scale = clamp(innerHeight / FIT_HEIGHT, minScale, 1);
-    } else {
-      artScale = clamp(innerHeight / FIT_HEIGHT, minScale, 1);
-    }
+  let scale = 1;
+  if (fit && !isPhone) {
+    scale = bigFit >= 1 ? Math.min(MAX_SCALE, bigFit) : clamp(innerHeight / FIT_HEIGHT, minScale, 1);
   }
   root.style.setProperty("--scale", scale.toFixed(4));
-  root.style.setProperty("--art-scale", artScale.toFixed(4));
-  const shown = fit === "art" ? artScale : scale;
   const crops = minScale >= 1 ? "Never shrinks" : `Crops below ${Math.round(FIT_HEIGHT * minScale)}px tall`;
   const idle = bigFit >= 1 && !isPhone ? " The window is larger than the artboard, so the slider has no effect yet." : "";
-  minNote.textContent = `Scale now ${shown.toFixed(2)}x. ${crops}.${idle}`;
+  minNote.textContent = `Scale now ${scale.toFixed(2)}x. ${crops}.${idle}`;
 }
 
 function setMinScale(percent) {
@@ -55,9 +44,10 @@ function setMinScale(percent) {
   updateScale();
 }
 
-function setFit(mode) {
-  fit = mode;
-  scaleToggle.textContent = `Fit: ${FIT_LABELS[mode]} (S)`;
+function setFit(on) {
+  fit = on;
+  scaleToggle.textContent = `Fit to window: ${on ? "On" : "Off"} (S)`;
+  scaleToggle.setAttribute("aria-pressed", String(on));
   updateScale();
 }
 
@@ -81,7 +71,7 @@ prev.addEventListener("click", () => showStep(step() - 1));
 next.addEventListener("click", () => showStep(step() + 1));
 overlayToggle.addEventListener("click", toggleOverlay);
 minSlider.addEventListener("input", () => setMinScale(Number(minSlider.value)));
-scaleToggle.addEventListener("click", () => setFit(FIT_MODES[(FIT_MODES.indexOf(fit) + 1) % FIT_MODES.length]));
+scaleToggle.addEventListener("click", () => setFit(!fit));
 addEventListener("resize", updateScale);
 document.querySelector(".stage").addEventListener("click", (e) => {
   if (!e.target.closest("button")) showStep(step() + 1);
@@ -94,10 +84,8 @@ document.addEventListener("keydown", (e) => {
   else if (e.key.toLowerCase() === "s") scaleToggle.click();
 });
 
-// ?step=3&fit=art&min=65 sets the screen and the fit settings, for repeatable screenshots. ?scale=0 is the old name for fit=off.
+// ?step=3&fit=off&min=65 sets the screen and the fit settings, for repeatable screenshots.
 const params = new URLSearchParams(location.search);
 showStep(parseInt(params.get("step"), 10) || 1);
 if (params.get("overlay") === "1") toggleOverlay();
-const fitParam = params.get("fit") || (params.get("scale") === "0" ? "off" : "all");
-setMinScale(parseInt(params.get("min"), 10) || 75);
-setFit(FIT_MODES.includes(fitParam) ? fitParam : "all");
+setFit(params.get("fit") !== "off");
