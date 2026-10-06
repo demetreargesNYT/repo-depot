@@ -7,10 +7,10 @@ Shows how one Rive artboard, authored at desktop size, can serve desktop and mob
 Double-click `index.html`. No install, no server.
 
 - Click the stage, press `→` / `←`, or use the arrows at the bottom to move between the 5 screens.
-- `S` (or the Fit button) cycles the short-window behavior: All, Art only, Off (see below).
+- `S` (or the Fit to window button) turns scaling on and off (see below).
 - The Min scale slider (or `?min=65`) sets how far the stage may shrink on a short window. All controls are in the panel at the top right (at the bottom on phone-width windows).
 - `O` (or the Mobile overlay button) draws the 375×812 phone outline.
-- `?step=3&overlay=1&fit=art&min=65` in the URL sets all three, for repeatable screenshots.
+- `?step=3&overlay=1&fit=off&min=65` in the URL sets all three, for repeatable screenshots.
 
 ## How it works
 
@@ -22,15 +22,13 @@ The Rive file is **1495×1067**, shown as a rounded card (30px corners) on one c
 
 ## Fit to window
 
-Big windows scale the whole stage up to fit (capped at 1.5×, then the outside color shows around the card). Phones (under 600px wide) are never scaled. For windows that are **shorter** than the artboard, three modes are compared with the Fit button / `S` / `?fit=`:
+With Fit to window on (the default) the whole stage (text, nav and art together, so alignment stays exact) scales to the browser window:
 
-| Mode | What scales | On a short window |
-|---|---|---|
-| **All** (default) | the whole stage | Text, nav and art shrink together so the artboard is visible down to y 812 (the Figma phone frame's bottom). Never below the Min scale floor (default 75%, so the headline stays about 19px). Alignment stays exact. |
-| **Art only** | the art layer only | Header and text stay full size; the art layer shrinks toward the top of the stage (down to the Min scale floor) while the text keeps its size, so art and text can overlap: on a short window the ball can sit on the label, and the speech bubble covers the robot. |
-| **Off** | nothing | 1:1 as designed; the bottom of the artboard is cropped. |
+- **Bigger than the artboard:** it grows to fit, capped at 1.5×, then the outside color shows around the card.
+- **Shorter than the artboard:** it shrinks so the artboard is visible down to y 812 (the bottom of the Figma phone frame), but never below the **Min scale** floor (default 75%, so the 26px headline stays about 19px). Below `812 × floor` px of window height (609px at 75%) the bottom of the artboard crops instead.
+- **Phone-width windows** (under 600px) are never scaled.
 
-**Min scale** is the breakpoint where shrinking stops: below `812 × floor` px of window height (609px at 75%) the bottom of the artboard crops instead. Raising the floor keeps text larger but crops sooner; lowering it keeps more of the animation visible but makes the small text (the 12px label is 9px at 75%) harder to read. Recommended: 75%. Constants (`MAX_SCALE`, `FIT_HEIGHT`) are at the top of `controls.js`. `?scale=0` is the old name for `?fit=off`.
+Raising the floor keeps text larger but crops sooner; lowering it keeps more of the animation visible but makes the small text (the 12px label is 9px at 75%) harder to read. Recommended: 75%. `MAX_SCALE` and `FIT_HEIGHT` are at the top of `controls.js`. Turning Fit to window off (`?fit=off`) shows the artboard 1:1, cropped.
 
 ## Notes for the Rive hand-off
 
