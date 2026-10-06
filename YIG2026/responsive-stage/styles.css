@@ -19,7 +19,6 @@
   --phone-h: 812px;
   --stage-y: 0px;
   --art-scale: 1;          /* Fit: Art only; set by controls.js */
-  --art-y: 0px;
   --scale: 1;              /* set by controls.js: grows the card on big windows, never below 1 */
 }
 
@@ -62,7 +61,7 @@ html[data-layout="card"] .stage { border-radius: var(--card-radius); }
   position: absolute;
   inset: 0;
   transform-origin: 50% 0;
-  transform: translateY(var(--art-y)) scale(var(--art-scale));
+  transform: scale(var(--art-scale));
 }
 .screen[hidden] { display: none; }
 
@@ -150,29 +149,36 @@ html[data-layout="card"] .stage { border-radius: var(--card-radius); }
 
 .controls {
   position: fixed;
-  left: 50%;
-  bottom: 12px;
+  top: 12px;
+  right: 12px;
   z-index: 10;
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  flex-direction: column;
+  align-items: stretch;
   gap: 8px;
-  transform: translateX(-50%);
+  width: 168px;
   font: 700 12px/1 var(--font-sans);
 }
 .controls-group {
   display: flex;
-  align-items: center;
-  gap: 6px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
   padding: 4px;
   border: 1px solid var(--color-ink);
-  border-radius: 100px;
+  border-radius: 16px;
   background: #fff;
 }
+.controls-group:first-child { flex-direction: row; align-items: center; justify-content: space-between; }
+.controls-slider { padding: 10px 12px; gap: 8px; }
+.controls-slider label { display: flex; justify-content: space-between; }
+.controls-slider input { width: 100%; accent-color: var(--color-ink); }
+#min-scale-note { font-weight: 500; color: #555; }
 .controls button {
   padding: 8px 12px;
   border: 0;
   border-radius: 100px;
+  text-align: left;
   background: none;
   font: inherit;
   cursor: pointer;
@@ -181,3 +187,10 @@ html[data-layout="card"] .stage { border-radius: var(--card-radius); }
 .controls button:disabled { opacity: 0.3; cursor: default; }
 .controls button[aria-pressed="true"] { background: var(--color-ink); color: #fff; }
 #step-label { min-width: 36px; text-align: center; }
+
+/* Phone-width windows: keep the panel at the bottom so it does not cover the page. */
+@media (max-width: 599px) {
+  .controls { top: auto; right: auto; bottom: 12px; left: 50%; width: auto; flex-direction: row; flex-wrap: wrap; justify-content: center; transform: translateX(-50%); }
+  .controls-group, .controls-group:first-child { flex-direction: row; align-items: center; border-radius: 100px; }
+  .controls-slider { display: none; }
+}

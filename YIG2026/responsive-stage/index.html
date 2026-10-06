@@ -153,6 +153,11 @@
       <button id="scale-toggle" type="button">Fit: All (S)</button>
       <button id="overlay-toggle" type="button" aria-pressed="false">Mobile overlay (O)</button>
     </div>
+    <div class="controls-group controls-slider">
+      <label for="min-scale">Min scale <output id="min-scale-value">75%</output></label>
+      <input id="min-scale" type="range" min="50" max="100" step="5" value="75">
+      <span id="min-scale-note">Crops below 609px tall</span>
+    </div>
   </div>
   <script src="controls.js"></script>
 </body>
