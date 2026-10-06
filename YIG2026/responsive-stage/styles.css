@@ -1,7 +1,7 @@
 /* One stage in Figma artboard coordinates. The 375px phone frame sits at --column-x, so header, text and art
    keep their positions relative to each other at every window size; only the stage itself moves.
-   Two layout modes are compared: data-layout="card" (1495x1067 card on one constant outside color) and
-   data-layout="large" (2555x1440 artboard on the chapter color). */
+   The stage is the 1495x1067 Rive artboard: a rounded card on one constant outside color. Nothing is drawn
+   outside it. */
 @font-face { font-family: "NYTKarnak"; font-weight: 500; font-style: normal; font-display: swap; src: url("../fonts/woff2/karnak-normal-500.woff2") format("woff2"), url("../fonts/NYTKarnak-Medium.otf") format("opentype"); }
 @font-face { font-family: "NYTKarnak"; font-weight: 700; font-style: normal; font-display: swap; src: url("../fonts/woff2/karnak-normal-700.woff2") format("woff2"), url("../fonts/NYTKarnak-Bold.otf") format("opentype"); }
 @font-face { font-family: "NYTFranklin"; font-weight: 500; font-style: normal; font-display: swap; src: url("../fonts/woff2/franklin-normal-500.woff2") format("woff2"), url("../fonts/NYTFranklinMedium.otf") format("opentype"); }
@@ -12,7 +12,7 @@
   --font-sans: "NYTFranklin", "Helvetica Neue", Arial, sans-serif;
   --color-ink: #000;
   --chapter-bg: #e7f1e1;   /* Chapter 1 */
-  --outside: #ebebeb;      /* card mode only: one constant color for the whole experience (TPL color.background.tertiary) */
+  --outside: #ebebeb;      /* one constant color for the whole experience (TPL color.background.tertiary) */
   --card-radius: 30px;
 
   --phone-w: 375px;
@@ -22,8 +22,7 @@
   --scale: 1;              /* set by controls.js: grows the card on big windows, never below 1 */
 }
 
-html[data-layout="card"]  { --stage-w: 1495px; --stage-h: 1067px; --column-x: 560px;  --page-bg: var(--outside); }
-html[data-layout="large"] { --stage-w: 2555px; --stage-h: 1440px; --column-x: 1090px; --page-bg: var(--chapter-bg); }
+:root { --stage-w: 1495px; --stage-h: 1067px; --column-x: 560px; --page-bg: var(--outside); }
 
 /* Phones: the viewport already starts below the device status bar, so the fake 56px iOS bar from the Figma
    mobile frame is dropped and the whole stage moves up by its height. */
@@ -52,7 +51,7 @@ body {
   overflow: hidden;
   cursor: pointer;
 }
-html[data-layout="card"] .stage { border-radius: var(--card-radius); }
+.stage { border-radius: var(--card-radius); }
 
 .screen { position: absolute; inset: 0; }
 
@@ -173,7 +172,7 @@ html[data-layout="card"] .stage { border-radius: var(--card-radius); }
 .controls-slider { padding: 10px 12px; gap: 8px; }
 .controls-slider label { display: flex; justify-content: space-between; }
 .controls-slider input { width: 100%; accent-color: var(--color-ink); }
-#min-scale-note { font-weight: 500; color: #555; }
+#min-scale-note { font-weight: 500; color: #555; line-height: 1.35; }
 .controls button {
   padding: 8px 12px;
   border: 0;
