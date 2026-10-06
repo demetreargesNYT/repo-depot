@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="en" data-layout="card">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Year in Games 2026: responsive stage prototype (Chapter 1)</title>
-  <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="screens.css">
+  <link rel="stylesheet" href="styles.css?v=20261006b">
+  <link rel="stylesheet" href="screens.css?v=20261006b">
 </head>
 <body>
   <!-- One stage in Figma artboard coordinates. The 375px phone frame sits at --column-x, so the header,
@@ -50,10 +50,7 @@
       <div class="phone">
       <div class="art-layer">
       <img class="ball ball-s1" src="assets/s1-ball.svg" alt="" style="left:150px;top:542px">
-      <div class="tube">
-        <div class="tube-top"><img src="assets/s1-tube.svg" alt=""></div>
-        <div class="tube-body"></div>
-      </div>
+      <img class="tube" src="assets/s1-tube.svg" alt="">
       </div>
       <div class="lockup" style="top:176px;height:149px;justify-content:center">
         <p class="headline">This year, you gave the puzzles your time.</p>
@@ -66,8 +63,6 @@
       <div class="river">
         <div class="river-rot">
           <span class="inset" style="inset:-0.2% 0"><img src="assets/s2-river.svg" alt=""></span>
-          <i class="river-ext river-ext-start"></i>
-          <i class="river-ext river-ext-end"></i>
         </div>
       </div>
       <div class="ball-s2-box">
@@ -149,7 +144,6 @@
       <button id="next" type="button" aria-label="Next screen">&rarr;</button>
     </div>
     <div class="controls-group">
-      <button id="layout-toggle" type="button">Layout: Card (M)</button>
       <button id="scale-toggle" type="button">Fit: All (S)</button>
       <button id="overlay-toggle" type="button" aria-pressed="false">Mobile overlay (O)</button>
     </div>
@@ -159,6 +153,6 @@
       <span id="min-scale-note">Crops below 609px tall</span>
     </div>
   </div>
-  <script src="controls.js"></script>
+  <script src="controls.js?v=20261006b"></script>
 </body>
 </html>

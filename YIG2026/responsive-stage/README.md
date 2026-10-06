@@ -9,28 +9,20 @@ Double-click `index.html`. No install, no server.
 - Click the stage, press `→` / `←`, or use the arrows at the bottom to move between the 5 screens.
 - `S` (or the Fit button) cycles the short-window behavior: All, Art only, Off (see below).
 - The Min scale slider (or `?min=65`) sets how far the stage may shrink on a short window. All controls are in the panel at the top right (at the bottom on phone-width windows).
-- `M` (or the Layout button) switches between the two artboard options below.
 - `O` (or the Mobile overlay button) draws the 375×812 phone outline.
-- `?layout=large&step=3&overlay=1&fit=art&min=65` in the URL sets all three, for repeatable screenshots.
+- `?step=3&overlay=1&fit=art&min=65` in the URL sets all three, for repeatable screenshots.
 
 ## How it works
 
 Everything (art, header, text) is absolutely positioned inside one `.stage`, in Figma coordinates. The 375px phone frame from the mobile designs sits at `--column-x`, exactly centered. The stage is centered horizontally and pinned to the top of the window, so the header, text and art never move relative to each other. Under 600px wide the stage shifts up 56px (the Figma mobile frame's fake iOS status bar is dropped, because a real device draws its own).
 
-## The two options being compared
+## The artboard
 
-| | Card | Large |
-|---|---|---|
-| Artboard (Rive file size) | 1495×1067 | 2555×1440 |
-| Outside the artboard | one constant color, `--outside` (#ebebeb) | nothing; the chapter color fills the window |
-| Edge | 30px rounded corners | hard edge, only visible beyond 2555×1440 |
-| Extra art needed | none | extend art that runs off the frame (river, tube) |
+The Rive file is **1495×1067**, shown as a rounded card (30px corners) on one constant outside color (`--outside`, #ebebeb). Nothing is drawn outside the artboard: art that runs off the frame (the river, the tube) simply ends at the card edge, so animators never need to draw filler. The earlier 2555×1440 "Large" option and its CSS extensions have been removed.
 
-Any artboard has a maximum size. Large only postpones the edge; Card makes it a designed feature.
+## Fit to window
 
-## Recommended: Card, with fit-to-window
-
-Card is the default. Big windows scale the whole stage up to fit (capped at 1.5×, then the outside color shows around the card). Phones (under 600px wide) are never scaled. For windows that are **shorter** than the artboard, three modes are compared with the Fit button / `S` / `?fit=`:
+Big windows scale the whole stage up to fit (capped at 1.5×, then the outside color shows around the card). Phones (under 600px wide) are never scaled. For windows that are **shorter** than the artboard, three modes are compared with the Fit button / `S` / `?fit=`:
 
 | Mode | What scales | On a short window |
 |---|---|---|
