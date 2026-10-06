@@ -52,6 +52,17 @@ body {
 }
 .stage { border-radius: var(--card-radius); }
 
+/* Prototype aid: marks exactly where the 1495x1067 Rive artboard ends and the outside color begins. */
+.stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 3px solid #ff2d78;
+  border-radius: var(--card-radius);
+  pointer-events: none;
+  z-index: 4;
+}
+
 .screen { position: absolute; inset: 0; }
 
 .screen[hidden] { display: none; }

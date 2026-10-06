@@ -18,17 +18,17 @@ Everything (art, header, text) is absolutely positioned inside one `.stage`, in 
 
 ## The artboard
 
-The Rive file is **1495×1067**, shown as a rounded card (30px corners) on one constant outside color (`--outside`, #ebebeb). Nothing is drawn outside the artboard: art that runs off the frame (the river, the tube) simply ends at the card edge, so animators never need to draw filler. The earlier 2555×1440 "Large" option and its CSS extensions have been removed.
+The Rive file is **1495×1067**. A pink stroke on the card marks exactly where it ends (a prototype aid; remove the `.stage::after` rule in `styles.css` to hide it). It is shown as shown as a rounded card (30px corners) on one constant outside color (`--outside`, #ebebeb). Nothing is drawn outside the artboard: art that runs off the frame (the river, the tube) simply ends at the card edge, so animators never need to draw filler. The earlier 2555×1440 "Large" option and its CSS extensions have been removed.
 
 ## Fit to window
 
 With Fit to window on (the default) the whole stage (text, nav and art together, so alignment stays exact) scales to the browser window:
 
 - **Bigger than the artboard:** it grows to fit, capped at 1.5×, then the outside color shows around the card.
-- **Shorter than the artboard:** it shrinks so the artboard is visible down to y 812 (the bottom of the Figma phone frame), but never below the **Min scale** floor (default 75%, so the 26px headline stays about 19px). Below `812 × floor` px of window height (609px at 75%) the bottom of the artboard crops instead.
+- **Shorter than the artboard:** it shrinks so the artboard is visible down to y 812 (the bottom of the Figma phone frame), but never below the **Min scale** floor (default 90%, so the 26px headline stays about 23px). Below `812 × floor` px of window height (731px at 90%) the bottom of the artboard crops instead.
 - **Phone-width windows** (under 600px) are never scaled.
 
-Raising the floor keeps text larger but crops sooner; lowering it keeps more of the animation visible but makes the small text (the 12px label is 9px at 75%) harder to read. Recommended: 75%. `MAX_SCALE` and `FIT_HEIGHT` are at the top of `controls.js`. Turning Fit to window off (`?fit=off`) shows the artboard 1:1, cropped.
+Raising the floor keeps text larger but crops sooner; lowering it keeps more of the animation visible but makes the small text (the 12px label is 11px at 90%, 9px at 75%) harder to read. Current default: 90%, which holds together without scaling until the window is shorter than 731px. `MAX_SCALE` and `FIT_HEIGHT` are at the top of `controls.js`. Turning Fit to window off (`?fit=off`) shows the artboard 1:1, cropped.
 
 ## Notes for the Rive hand-off
 
