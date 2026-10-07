@@ -14,8 +14,8 @@
 .ball-s1 { animation: kf_52_1257_translate_0 2s linear; animation-iteration-count: infinite; }
 @keyframes kf_52_1257_translate_0 { 0% { animation-timing-function: ease-in-out; translate: -1px 270px; } 35% { translate: 0.465px -89.387px; } 67.9% { translate: -1px 276px; } 100% { translate: -1px 276px; } }
 
-/* Tube: the SVG is drawn long enough to run past the bottom of the 1495x1067 artboard, as in the desktop frame. */
-.tube { position: absolute; left: 126.17px; top: 672.17px; width: 145.028px; height: 439.287px; max-width: none; }
+/* Tube: the SVG is drawn long enough to run past the bottom of the 1495x1067 artboard (the tube top is 120px higher than the Figma frame so it stays in view on short windows). */
+.tube { position: absolute; left: 126.17px; top: 552.17px; width: 145.028px; height: 559.287px; max-width: none; }
 
 /* 2 — ball rolls along the river (Figma 52:1112) */
 .river { position: absolute; left: -647px; top: -105px; width: 1692.779px; height: 1256.938px; display: flex; align-items: center; justify-content: center; }
