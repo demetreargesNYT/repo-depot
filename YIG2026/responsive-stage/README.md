@@ -7,10 +7,9 @@ Shows how one Rive artboard, authored at desktop size, can serve desktop and mob
 Double-click `index.html`. No install, no server.
 
 - Click the stage, press `→` / `←`, or use the arrows at the bottom to move between the 5 screens.
-- `S` (or the Fit to window button) turns scaling on and off (see below).
 - The Min scale slider (or `?min=65`) sets how far the stage may shrink on a short window. All controls are in the panel at the top right (at the bottom on phone-width windows).
 - `O` (or the Mobile overlay button) draws the 375×812 phone outline.
-- `?step=3&overlay=1&fit=off&min=65` in the URL sets all three, for repeatable screenshots.
+- `?step=3&overlay=1&min=65` in the URL sets all three, for repeatable screenshots.
 
 ## How it works
 
@@ -22,13 +21,13 @@ The Rive file is **1495×1067**. It is shown as a rounded card (30px corners) on
 
 ## Fit to window
 
-With Fit to window on (the default) the whole stage (text, nav and art together, so alignment stays exact) scales to the browser window:
+The whole stage (text, nav and art together, so alignment stays exact) scales to the browser window:
 
 - **Bigger than the artboard:** it grows to fit, capped at 1.5×, then the outside color shows around the card.
 - **Shorter than the artboard:** it shrinks so the artboard is visible down to y 812 (the bottom of the Figma phone frame), but never below the **Min scale** floor (default 90%, so the 26px headline stays about 23px). Below `812 × floor` px of window height (731px at 90%) the bottom of the artboard crops instead.
 - **Phone-width windows** (under 600px) are never scaled.
 
-Raising the floor keeps text larger but crops sooner; lowering it keeps more of the animation visible but makes the small text (the 12px label is 11px at 90%, 9px at 75%) harder to read. Current default: 90%, which holds together without scaling until the window is shorter than 731px. `MAX_SCALE` and `FIT_HEIGHT` are at the top of `controls.js`. Turning Fit to window off (`?fit=off`) shows the artboard 1:1, cropped.
+Raising the floor keeps text larger but crops sooner; lowering it keeps more of the animation visible but makes the small text (the 12px label is 11px at 90%, 9px at 75%) harder to read. Current default: 90%, which holds together without scaling until the window is shorter than 731px. `MAX_SCALE` and `FIT_HEIGHT` are at the top of `controls.js`. 
 
 ## Notes for the Rive hand-off
 
