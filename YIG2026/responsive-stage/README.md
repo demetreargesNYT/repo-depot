@@ -17,7 +17,7 @@ Everything (art, header, text) is absolutely positioned inside one `.stage`, in 
 
 ## The artboard
 
-The Rive file is **1495×1067**. It is shown as a rounded card (30px corners) on one constant outside color (`--outside`), currently black so the artboard edge is easy to see; the final outside color is still to be decided. Nothing is drawn outside the artboard: art that runs off the frame (the river, the tube) simply ends at the card edge, so animators never need to draw filler. The earlier 2555×1440 "Large" option and its CSS extensions have been removed.
+The Rive file is **1495×1067**. It is shown as a rounded card (30px corners) on one constant outside color (`--outside`), currently dark grey (#4a4a4a) so the artboard edge is easy to see and black device frames stay visible where they extend past it; the final outside color is still to be decided. Nothing is drawn outside the artboard: art that runs off the frame (the river, the tube) simply ends at the card edge, so animators never need to draw filler. The earlier 2555×1440 "Large" option and its CSS extensions have been removed.
 
 ## Fit to window
 
@@ -39,7 +39,7 @@ The Overlay button (or `O`) shows a black rounded frame at a device's real size,
 | Tablet | iPad Mini 744 × 1133, iPad Pro 834 × 1194, iPad Pro 1024 × 1366 |
 | Mobile | iPhone 14 375 × 812, iPhone 13 & 14 390 × 844, iPhone 17 402 × 874, iPhone 16 Plus 430 × 932, iPhone 16 & 17 Pro Max 440 × 956, iPhone Duo Closed 466 × 678, iPhone Duo Open 890 × 626 |
 
-Frames are drawn at their real size in artboard pixels and are not clipped by the card: a device wider or taller than 1495 × 1067 extends past the card edge, with a thin white outer line so it stays visible on the black outside color. They scale with the stage.
+Frames are drawn at their real size in artboard pixels and are not clipped by the card: a device wider or taller than 1495 × 1067 extends past the card edge, with a thin white outer line so it stays visible on the dark outside color. They scale with the stage.
 
 ## Notes for the Rive hand-off
 
