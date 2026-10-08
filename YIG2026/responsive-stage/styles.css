@@ -124,20 +124,43 @@ body {
 .display { font: 700 40px/1.2 var(--font-serif); }
 .label { font: 700 12px/1.2 var(--font-sans); letter-spacing: 0.5px; text-transform: uppercase; }
 
-/* Where a 375x812 phone sits on the artboard (Figma: Desktop-Mobile-Overlay) */
-.phone-outline {
+/* Device overlay. A sibling of .stage with the same position and scale (so frames are in artboard pixels),
+   but not clipped: a device wider or taller than the 1495x1067 artboard is drawn at its real size. */
+.overlay-root {
   display: none;
   position: absolute;
-  left: var(--column-x);
-  top: 0;
-  width: var(--phone-w);
-  height: var(--phone-h);
-  border: 10px solid var(--color-ink);
-  border-radius: 20px;
+  top: var(--stage-y);
+  left: 50%;
+  width: var(--stage-w);
+  height: var(--stage-h);
+  transform: translateX(-50%) scale(var(--scale));
+  transform-origin: top center;
   pointer-events: none;
-  z-index: 3;
+  z-index: 5;
 }
-.show-overlay .phone-outline { display: block; }
+.show-overlay .overlay-root { display: block; }
+.device-frame {
+  position: absolute;
+  top: 0;
+  left: calc((var(--stage-w) - var(--device-w)) / 2);
+  width: var(--device-w);
+  height: var(--device-h);
+  border: 4px solid var(--color-ink);
+  border-radius: 30px;
+  box-shadow: 0 0 0 2px #fff;   /* keeps the frame visible on the black outside color */
+}
+.device-label {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 4px 10px;
+  border: 2px solid var(--color-ink);
+  border-radius: 100px;
+  background: #fff;
+  color: var(--color-ink);
+  font: 700 12px/1.2 var(--font-sans);
+  white-space: nowrap;
+}
 
 .controls {
   position: fixed;
@@ -148,7 +171,7 @@ body {
   flex-direction: column;
   align-items: stretch;
   gap: 8px;
-  width: 168px;
+  width: 216px;
   font: 700 12px/1 var(--font-sans);
 }
 .controls-group {
@@ -165,6 +188,15 @@ body {
 .controls-slider { padding: 10px 12px; gap: 8px; }
 .controls-slider label { display: flex; justify-content: space-between; }
 .controls-slider input { width: 100%; accent-color: var(--color-ink); }
+#device-select {
+  width: 100%;
+  margin-top: 2px;
+  padding: 7px 8px;
+  border: 1px solid var(--color-ink);
+  border-radius: 8px;
+  background: #fff;
+  font: 700 12px/1.2 var(--font-sans);
+}
 #min-scale-note { font-weight: 500; color: #555; line-height: 1.35; }
 .controls button {
   padding: 8px 12px;
