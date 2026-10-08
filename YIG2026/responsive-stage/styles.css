@@ -12,7 +12,7 @@
   --font-sans: "NYTFranklin", "Helvetica Neue", Arial, sans-serif;
   --color-ink: #000;
   --chapter-bg: #e7f1e1;   /* Chapter 1 */
-  --outside: #000;         /* one constant color for the whole experience. Black for now so the artboard edge is obvious; the final color is still open */
+  --outside: #4a4a4a;      /* one constant color for the whole experience. Dark grey for now: the artboard edge stays obvious and black device frames stay visible past it; the final color is still open */
   --card-radius: 30px;
 
   --phone-w: 375px;
