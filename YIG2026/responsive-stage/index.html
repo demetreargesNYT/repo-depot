@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Year in Games 2026: responsive stage prototype (Chapter 1)</title>
-  <link rel="stylesheet" href="styles.css?v=20261007h">
-  <link rel="stylesheet" href="screens.css?v=20261007h">
+  <link rel="stylesheet" href="styles.css?v=20261007i">
+  <link rel="stylesheet" href="screens.css?v=20261007i">
 </head>
 <body>
   <!-- One stage in Figma artboard coordinates. The 375px phone frame sits at --column-x, so the header,
@@ -124,8 +124,12 @@
       </div>
     </section>
 
-    <div class="phone-outline" aria-hidden="true"></div>
   </main>
+
+  <!-- Device overlay: same position and scale as the stage, but not clipped by the card. -->
+  <div class="overlay-root" aria-hidden="true">
+    <div class="device-frame"><span class="device-label"></span></div>
+  </div>
 
   <div class="controls">
     <div class="controls-group">
@@ -134,7 +138,8 @@
       <button id="next" type="button" aria-label="Next screen">&rarr;</button>
     </div>
     <div class="controls-group">
-      <button id="overlay-toggle" type="button" aria-pressed="false">Mobile overlay (O)</button>
+      <button id="overlay-toggle" type="button" aria-pressed="false">Overlay: Off (O)</button>
+      <select id="device-select" aria-label="Overlay device"></select>
     </div>
     <div class="controls-group controls-slider">
       <label for="min-scale">Min scale <output id="min-scale-value">90%</output></label>
@@ -142,6 +147,6 @@
       <span id="min-scale-note">Crops below 609px tall</span>
     </div>
   </div>
-  <script src="controls.js?v=20261007h"></script>
+  <script src="controls.js?v=20261007i"></script>
 </body>
 </html>
