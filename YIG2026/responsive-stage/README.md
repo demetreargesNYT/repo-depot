@@ -8,9 +8,16 @@ Shows how one Rive artboard, authored at desktop size, can serve desktop and mob
 |---|---|
 | **Screens** | 45 (full Subscriber/Registered order in `FLOW_NODE_IDS` / `SCREENS`) |
 | **Shared Rive** | Same `assets/2026_yig-test_no-template.riv` on every screen (artboard `YIG Test`, state machine `Scene Loop`). Do not invent new `.riv` files. |
-| **Stats / copy** | Figma placeholders (`X guesses`, `X%`, `TKTKTKTKTK`, etc.) until a real Games API payload replaces `PROTOTYPE_PAYLOAD`. Not from `sample-data.js`. |
+| **Stats / copy** | Exact Figma placeholders (`X guesses`, `X times`, `X%`, `X:XX`, `XXX players`, `TKTKTKTKTK`, `Month XX`, starting-word lines, chart sample values). Not from `sample-data.js`. |
+| **Fonts** | Bundled only: `YIG2026/fonts/woff2` Karnak 500/600/700 + Franklin 300/500/600/700. No SF Pro / Inter / downloaded faces. |
 
 Figma file: [YIG - Prototype](https://www.figma.com/design/SPgdDz5gM1VQIg2Z6gLqZf/YIG---Prototype) (`SPgdDz5gM1VQIg2Z6gLqZf`).
+
+### Placeholders and the future API
+
+API details are not available yet. Screen definitions stay data-driven (`SCREENS` + `{ style: value }` lines), with placeholder text authored as Figma wrote it.
+
+When an API exists it will provide **raw play data**. A **front-end stats calculation layer** will turn that into the strings and chart rows shown on screen. Do **not** assume the API returns precomputed fields like “X guesses” or “solve rate,” and do not implement those calculations until the schema is known. `PROTOTYPE_PAYLOAD` today only holds Figma-authored chart/end-card samples for the click-through — it is not a stand-in API contract.
 
 ### Special screens
 
@@ -46,8 +53,8 @@ Live URL pattern: `https://demetreargesnyt.github.io/repo-depot/YIG2026/responsi
 
 ## How screens are defined
 
-- `screens.js` — `SCREENS` (45 steps), `PROTOTYPE_PAYLOAD`, `FLOW_NODE_IDS`.
-- `stage-render.js` — mounts one screen into `#screen-root` with `{ style: value }` lines plus special kinds (`ad`, `start`, `bot`, badges, video, end card). Text styles: `headline` (Karnak Medium 26), `headline-strong` (Karnak Semibold 26), `body` (Franklin Medium 20), plus `connections-color`, `weekday-chart`, game icons from `YIG2026/icons/` / stage assets.
+- `screens.js` — `SCREENS` (45 steps), `PROTOTYPE_PAYLOAD` (Figma chart/end-card samples only), `FLOW_NODE_IDS`.
+- `stage-render.js` — mounts one screen into `#screen-root` with `{ style: value }` lines plus special kinds (`ad`, `start`, `bot`, badges, video, end card). Text styles from bundled woff2: `headline` (Karnak 500 / 26), `headline-strong` (Karnak 600 / 26), `body` (Franklin 500 / 20), `label` (Franklin 600), `label-bold` (Franklin 700), plus `connections-color`, `weekday-chart`, game icons from `YIG2026/icons/` / stage assets.
 - `controls.js` — navigation, shared Rive, progress proportion, chapter bg, device overlay, template guides, min-scale.
 
 ## How the stage works

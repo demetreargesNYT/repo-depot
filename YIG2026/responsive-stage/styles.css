@@ -169,9 +169,9 @@ body {
 .display { font: 700 40px/1.2 var(--font-serif); color: var(--color-ink); }
 .stat { font: 700 30px/1 var(--font-sans); text-transform: uppercase; color: var(--color-ink); }
 .body { font: 500 20px/1.15 var(--font-sans); color: var(--color-ink); }
-.label, .label-bold { font: 700 12px/1.2 var(--font-sans); letter-spacing: 0.5px; text-transform: uppercase; color: var(--color-ink); }
-.label { font-weight: 700; }
-.label-bold { font-weight: 700; }
+.label, .label-bold { font: 600 12px/1.2 var(--font-sans); letter-spacing: 0.5px; text-transform: uppercase; color: var(--color-ink); }
+.label { font-weight: 600; }           /* Franklin Semibold — bundled woff2 600 */
+.label-bold { font-weight: 700; }      /* Franklin Bold — bundled woff2 700 */
 
 .connections-color {
   width: 195px;

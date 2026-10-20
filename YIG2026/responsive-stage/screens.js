@@ -18,44 +18,15 @@ const FLOW_NODE_IDS = [
   "103:52328", "103:52283", "103:52293", "103:53013", "103:53019",
 ];
 
-// Figma placeholders only — wire a real Games API payload later.
+// Scope passed to stage-render. Screen copy keeps exact Figma placeholders inline
+// ("X guesses", "X%", "TKTKTKTKTK", "Month XX", "XXX players", etc.).
+//
+// Do NOT treat this object as a Games API response of precomputed stats. When the
+// API lands it will supply raw play data; a front-end stats calculation layer will
+// derive display strings and chart rows — schema unknown, so no calculations here.
+// The chart / end-tile entries below are Figma-authored samples for the prototype only.
 const PROTOTYPE_PAYLOAD = {
-  first_puzzle: { game: "strands", at: "January 4, 1:23 p.m." },
-  streak: { game: "connections", days: "X" },
-  total_puzzles: "X",
-  wordle: {
-    best_guesses: "X",
-    best_times: "X",
-    avg_guesses: "X",
-    community_avg: "X",
-    solve_rate: "X",
-    hardest_date: "Month XX",
-    hardest_miss_pct: "X",
-  },
-  starting_words: ["ADIEU x24", "BREAD x15", "MOUSE x10"],
-  connections: {
-    purple_first: "X",
-    mistakes: "X",
-    perfect: "X",
-    solve_rate: "X",
-    order: ["blue", "green", "yellow", "purple"],
-  },
-  spelling_bee: {
-    words: "X",
-    longest: "TKTKTKTKTK",
-    pangrams: "X",
-    genius: "X",
-    queen_bee: "X",
-  },
-  mini: { puzzles: "X", fastest: "X", streak: "X" },
-  midi: { puzzles: "X", fastest: "X:XX", average: "X:XX", streak: "X" },
-  crossword: {
-    streak: "X",
-    average: "X:XX",
-    fastest: "X:XX",
-    most_day: "Mondays",
-  },
-  strands: { puzzles: "X", spangram_first: "X", no_hints: "X" },
+  // Figma chart on Ch2 Daily 11 (node 103:52737) — labels and values as drawn.
   weekday_solves: [
     { day: "MONDAY", value: 24, bar: 110 },
     { day: "TUESDAY", value: 18, bar: 63 },
@@ -65,6 +36,7 @@ const PROTOTYPE_PAYLOAD = {
     { day: "SATURDAY", value: 5, bar: 29 },
     { day: "SUNDAY", value: 2, bar: 29 },
   ],
+  // Figma chart on Ch2 Daily 12 (node 103:52762) — each value 12; equal bars in UI.
   weekday_times: [
     { day: "MONDAY", value: 12, bar: 137 },
     { day: "TUESDAY", value: 12, bar: 137 },
@@ -74,6 +46,7 @@ const PROTOTYPE_PAYLOAD = {
     { day: "SATURDAY", value: 12, bar: 137 },
     { day: "SUNDAY", value: 12, bar: 137 },
   ],
+  // Figma End Card tiles spelling 2026 (node 103:53019).
   end_tiles: [
     { letter: "2", state: "absent" },
     { letter: "0", state: "present" },
