@@ -1,8 +1,7 @@
-// Steps between the five Chapter 1 screens and runs the comparison controls.
-const STEPS = 5;
+// Steps through the data-driven Subscriber/Registered screens and runs the comparison controls.
 const root = document.documentElement;
-const screens = [...document.querySelectorAll(".screen")];
-const segments = [...document.querySelectorAll(".seg")];
+const screenRoot = document.getElementById("screen-root");
+const progressEl = document.querySelector(".progress");
 const prev = document.getElementById("prev");
 const next = document.getElementById("next");
 const label = document.getElementById("step-label");
@@ -15,13 +14,32 @@ const minSlider = document.getElementById("min-scale");
 const minValue = document.getElementById("min-scale-value");
 const minNote = document.getElementById("min-scale-note");
 
-// Fit to window: grow the stage to fit big windows (capped), and on short windows shrink the whole stage
-// (text, nav and art together) so the artboard is visible down to FIT_HEIGHT, but never below minScale (the
-// slider): below that window height the bottom of the artboard crops instead. Phone-width windows are never scaled.
+const STEPS = SCREENS.length;
+const PROGRESS_SEGMENTS = 26;
+
+// Figma carousel widths (26 segments). Fill proportionally across the 45-screen flow.
+const DEFAULT_SEG_WIDTHS = [
+  11, 12, 12, 13, 12, 13, 12, 12, 11, 12, 11, 11, 11, 11, 12, 12, 13, 13, 12, 11, 11, 11, 12, 11, 13, 13,
+];
+
+function buildProgress() {
+  if (!progressEl) return [];
+  progressEl.replaceChildren();
+  for (const w of DEFAULT_SEG_WIDTHS) {
+    const seg = document.createElement("i");
+    seg.className = "seg";
+    seg.style.setProperty("--w", `${w}px`);
+    progressEl.append(seg);
+  }
+  return [...progressEl.querySelectorAll(".seg")];
+}
+
+let segments = buildProgress();
+
 const MAX_SCALE = 1.5;
-const FIT_HEIGHT = 812;       // bottom of the Figma phone frame
-const STAGE_W = 1495, STAGE_H = 1067;   // the Rive artboard
-let minScale = 0.9;           // slider; at 90% the 26px headline is about 23px and the 12px label 11px
+const FIT_HEIGHT = 812;
+const STAGE_W = 1495, STAGE_H = 1067;
+let minScale = 0.9;
 
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
@@ -39,10 +57,6 @@ function updateScale() {
   minNote.textContent = `Scale now ${scale.toFixed(2)}x. ${crops}.${idle}`;
 }
 
-// The one Rive artboard (1495x1067) draws every graphic and animation. The canvas is CSS-scaled with the stage
-// (clientWidth ignores that), so the drawing surface is resized by devicePixelRatio (capped at 2) times the stage
-// scale to stay sharp when the stage grows. Fit.Contain with Center is exact because the artboard and the canvas
-// have the same aspect ratio.
 const riveCanvas = document.getElementById("rive-canvas");
 let riveInstance = null;
 let lastScale = 1;
@@ -71,17 +85,28 @@ function setMinScale(percent) {
   updateScale();
 }
 
+function activeSegmentCount(step) {
+  if (!STEPS) return 0;
+  return Math.max(1, Math.min(PROGRESS_SEGMENTS, Math.ceil((step / STEPS) * PROGRESS_SEGMENTS)));
+}
+
 function showStep(n) {
+  if (!STEPS) {
+    label.textContent = "0 / 0";
+    return;
+  }
   const step = Math.min(STEPS, Math.max(1, n));
-  screens.forEach((s) => { s.hidden = Number(s.dataset.step) !== step; });
-  segments.forEach((seg, i) => seg.classList.toggle("is-active", i < step));
+  const screen = SCREENS[step - 1];
+  renderStageScreen(screen, PROTOTYPE_PAYLOAD);
+  const lit = activeSegmentCount(step);
+  segments.forEach((seg, i) => seg.classList.toggle("is-active", i < lit));
   label.textContent = `${step} / ${STEPS}`;
   prev.disabled = step === 1;
   next.disabled = step === STEPS;
   root.dataset.step = step;
+  if (screenRoot) screenRoot.hidden = false;
 }
 
-// Device frames from the Figma overlay sheets (Desktop 60:1756, Tablet 60:1806, Mobile 60:1781): width x height in px.
 const DEVICES = [
   { id: "macbook-air-1280", group: "Desktop", name: "MacBook Air 1280px", w: 1280, h: 832 },
   { id: "macbook-pro-14-1512", group: "Desktop", name: 'MacBook Pro 14" 1512px', w: 1512, h: 982 },
@@ -140,9 +165,23 @@ templateToggle.addEventListener("click", () => toggleTemplate());
 deviceSelect.addEventListener("change", () => setDevice(deviceSelect.value));
 minSlider.addEventListener("input", () => setMinScale(Number(minSlider.value)));
 addEventListener("resize", updateScale);
+
+// Stage click advances unless the target is (or is inside) a control that advances / is interactive.
 document.querySelector(".stage").addEventListener("click", (e) => {
-  if (!e.target.closest("button")) showStep(step() + 1);
+  if (e.target.closest("button, a, input, select, textarea, [data-advance]")) return;
+  showStep(step() + 1);
 });
+
+// Primary / skip buttons inside #screen-root advance without the stage handler double-firing.
+if (screenRoot) {
+  screenRoot.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-advance], .primary-btn, .ad-skip");
+    if (!btn) return;
+    e.stopPropagation();
+    showStep(step() + 1);
+  });
+}
+
 document.addEventListener("keydown", (e) => {
   if (e.metaKey || e.ctrlKey || e.altKey) return;
   if (e.key === "ArrowRight") showStep(step() + 1);
@@ -151,7 +190,6 @@ document.addEventListener("keydown", (e) => {
   else if (e.key.toLowerCase() === "t") toggleTemplate();
 });
 
-// ?step=3&overlay=1&device=ipad-pro-1024&template=1&min=65 sets the screen, overlay, device, template guides and Min scale.
 const params = new URLSearchParams(location.search);
 showStep(parseInt(params.get("step"), 10) || 1);
 setDevice(params.get("device"));

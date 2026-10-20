@@ -1,6 +1,38 @@
-# Responsive stage prototype: Chapter 1
+# Responsive stage prototype: Subscriber / Registered flow
 
-Shows how one Rive artboard, authored at desktop size, can serve desktop and mobile while the header and text stay in the same spot relative to the animation. Built from the Chapter 1 mobile frames in the "YIG - Prototype" Figma file (5 regular screens). The 3 tunnel interstitials are not built yet.
+Shows how one Rive artboard, authored at desktop size, can serve desktop and mobile while the header and text stay in the same spot relative to the animation. Built as a **data-driven click-through of all 45 Subscriber/Registered frames** in the "YIG - Prototype" Figma file.
+
+## Status
+
+| | |
+|---|---|
+| **Screens** | 45 (full Subscriber/Registered order in `FLOW_NODE_IDS` / `SCREENS`) |
+| **Shared Rive** | Same `assets/2026_yig-test_no-template.riv` on every screen (artboard `YIG Test`, state machine `Scene Loop`). Do not invent new `.riv` files. |
+| **Stats / copy** | Exact Figma placeholders (`X guesses`, `X times`, `X%`, `X:XX`, `XXX players`, `TKTKTKTKTK`, `Month XX`, starting-word lines, chart sample values). Not from `sample-data.js`. |
+| **Fonts** | Bundled only: `YIG2026/fonts/woff2` Karnak 500/600/700 + Franklin 300/500/600/700. No SF Pro / Inter / downloaded faces. |
+
+Figma file: [YIG - Prototype](https://www.figma.com/design/SPgdDz5gM1VQIg2Z6gLqZf/YIG---Prototype) (`SPgdDz5gM1VQIg2Z6gLqZf`).
+
+### Placeholders and the future API
+
+API details are not available yet. Screen definitions stay data-driven (`SCREENS` + `{ style: value }` lines), with placeholder text authored as Figma wrote it.
+
+When an API exists it will provide **raw play data**. A **front-end stats calculation layer** will turn that into the strings and chart rows shown on screen. Do **not** assume the API returns precomputed fields like “X guesses” or “solve rate,” and do not implement those calculations until the schema is known. `PROTOTYPE_PAYLOAD` today only holds Figma-authored chart/end-card samples for the click-through — it is not a stand-in API contract.
+
+### Special screens
+
+| Kind | Steps (1-based) | Notes |
+|---|---|---|
+| **Ads** | 3, 4, 14 | Full-screen ad creative + “Continue in 5” skip control. Stage click and the skip control advance. No live countdown timer — the “5” is static Figma art. No global nav. |
+| **Start** | 15 | Games logo, “Year in Games 2026”, **Let’s go** primary button, Supported by T-Mobile. No global nav. Button advances. |
+| **Bot** | 16 | Speech bubble + bot illustration assets. |
+| **Badges** | 38, 41 | Badge images + **Share** primary button (advances). Hidden “SHARE FROM HERE” layers ignored. |
+| **Editor video** | 44 | Poster frame + “Tracy Bennett / Editor of Wordle”. No playable video URL. |
+| **End card** | 45 | Four Wordle tiles (`2026`) + closing headline. Next disabled. |
+
+Global nav (wordmark, 26 progress segments, empty menu/close) is hidden on Start and ad screens. Progress fills the existing 26 Figma segment widths in proportion to step / 45 (not 45 segments).
+
+Per-screen chapter background colors (e.g. Wordle `#c3e2c0`, Crossword `#c0d8f8`, badges `#f3eec2`) are set on `--chapter-bg` when the step changes. The Rive canvas still covers the artboard; the chapter color is the fallback behind/around it.
 
 ## Open it
 
@@ -10,53 +42,25 @@ The page loads the `.riv` file, and browsers block that over `file://`, so serve
 python3 -m http.server 8000
 ```
 
-then open http://localhost:8000/index.html. (The GitHub Pages URL works as is.)
+then open http://localhost:8000/index.html.
 
-- Click the stage, press `→` / `←`, or use the arrows at the bottom to move between the 5 screens.
-- The Min scale slider (or `?min=65`) sets how far the stage may shrink on a short window. All controls are in the panel at the top right (at the bottom on phone-width windows).
-- `O` (or the Overlay button) shows or hides a device frame; the dropdown below it picks which of 13 devices (see Device overlay).
-- `?step=3&overlay=1&device=ipad-pro-1024&template=1&min=65` in the URL sets all three, for repeatable screenshots.
+- Click the stage (not a primary/skip button), press `→` / `←`, or use the arrows in the controls panel.
+- Primary buttons (**Let’s go**, **Share**) and the ad skip control advance and are keyboard-focusable; stage click does not steal those clicks.
+- `?step=1` … `?step=45` deep-links a screen. Step label reads `n / 45`.
+- Min scale, Overlay (`O`), Rive template (`T`), and device frames work as before.
 
-## How it works
+Live URL pattern: `https://demetreargesnyt.github.io/repo-depot/YIG2026/responsive-stage/index.html`
 
-Everything (art, header, text) is absolutely positioned inside one `.stage`, in Figma coordinates. The 375px phone frame from the mobile designs sits at `--column-x`, exactly centered. The stage is centered horizontally and pinned to the top of the window, so the header, text and art never move relative to each other. Under 600px wide the stage shifts up 56px (the Figma mobile frame's fake iOS status bar is dropped, because a real device draws its own).
+## How screens are defined
 
-## The artboard
+- `screens.js` — `SCREENS` (45 steps), `PROTOTYPE_PAYLOAD` (Figma chart/end-card samples only), `FLOW_NODE_IDS`.
+- `stage-render.js` — mounts one screen into `#screen-root` with `{ style: value }` lines plus special kinds (`ad`, `start`, `bot`, badges, video, end card). Text styles from bundled woff2: `headline` (Karnak 500 / 26), `headline-strong` (Karnak 600 / 26), `body` (Franklin 500 / 20), `label` (Franklin 600), `label-bold` (Franklin 700), plus `connections-color`, `weekday-chart`, game icons from `YIG2026/icons/` / stage assets.
+- `controls.js` — navigation, shared Rive, progress proportion, chapter bg, device overlay, template guides, min-scale.
 
-The Rive file is **1495×1067**. It is shown as a rounded card (30px corners) on one constant outside color (`--outside`), currently dark grey (#4a4a4a) so the artboard edge is easy to see and black device frames stay visible where they extend past it; the final outside color is still to be decided. Nothing is drawn outside the artboard: art that runs off the frame (the river, the tube) simply ends at the card edge, so animators never need to draw filler. The earlier 2555×1440 "Large" option and its CSS extensions have been removed.
+## How the stage works
 
-## Fit to window
+Everything (art, header, text) is absolutely positioned inside one `.stage`, in Figma coordinates. The 375px phone frame sits at `--column-x`. Under 600px wide the stage shifts up 56px (fake iOS status bar dropped).
 
-The whole stage (text, nav and art together, so alignment stays exact) scales to the browser window:
+## Fit to window / device overlay / Rive
 
-- **Bigger than the artboard:** it grows to fit, capped at 1.5×, then the outside color shows around the card.
-- **Shorter than the artboard:** it shrinks so the artboard is visible down to y 812 (the bottom of the Figma phone frame), but never below the **Min scale** floor (default 90%, so the 26px headline stays about 23px). Below `812 × floor` px of window height (731px at 90%) the bottom of the artboard crops instead.
-- **Phone-width windows** (under 600px) are never scaled.
-
-Raising the floor keeps text larger but crops sooner; lowering it keeps more of the animation visible but makes the small text (the 12px label is 11px at 90%, 9px at 75%) harder to read. Current default: 90%, which holds together without scaling until the window is shorter than 731px. `MAX_SCALE` and `FIT_HEIGHT` are at the top of `controls.js`. 
-
-## Device overlay
-
-The Overlay button (or `O`) shows a black rounded frame at a device's real size, centered on the artboard and aligned to its top, with a label such as "iPhone 14 – 375px · 375×812". The dropdown picks the device; choosing one while the overlay is off just selects it. The devices come from the Figma overlay sheets (plus iPhone SE, added by hand) (Desktop, Tablet, Mobile) and are listed in `DEVICES` at the top of the overlay section of `controls.js`; `?device=<id>` selects one in the URL (ids are the `id` values there, for example `ipad-pro-1024`). `?overlay=1` alone shows the default, iPhone 14 – 375px.
-
-| Group | Devices (width × height) |
-|---|---|
-| Desktop | MacBook Air 1280 × 832, MacBook Pro 14" 1512 × 982, MacBook Pro 16" 1728 × 1117 |
-| Tablet | iPad Mini 744 × 1133, iPad Pro 834 × 1194, iPad Pro 1024 × 1366 |
-| Mobile | iPhone SE 375 × 667 (added by hand, not in the Figma sheets), iPhone 14 375 × 812, iPhone 13 & 14 390 × 844, iPhone 17 402 × 874, iPhone 16 Plus 430 × 932, iPhone 16 & 17 Pro Max 440 × 956, iPhone Duo Closed 466 × 678, iPhone Duo Open 890 × 626 |
-
-Frames are drawn at their real size in artboard pixels and are not clipped by the card: a device wider or taller than 1495 × 1067 extends past the card edge, with a thin white outer line so it stays visible on the dark outside color. They scale with the stage.
-
-## Notes for the Rive hand-off
-
-- Keep the important content inside the center 375px column; everything outside it is only seen on wider windows.
-- All graphics and animation come from one Rive file, `assets/2026_yig-test_no-template.riv` (artboard `YIG Test`, state machine `Scene Loop`), drawn on one `<canvas>` by the Rive runtime (`assets/vendor/rive.js`, `@rive-app/canvas-single` 2.45.0, MIT). The text and stats in the HTML are the dynamic part.
-- The same animation plays behind every step for now. Per-step control (state machine inputs or data binding) is not wired up yet.
-- The `.riv` is the no-template version: no guide shapes are drawn in it. The **Rive template** button (or `T`, or `?template=1`) overlays the guides from `assets/yig-rive-template-guides.svg` (zones, safe columns, the y 812 line, device width ruler) exactly over the artboard. That SVG is a copy of `rive-template/yig-rive-template.svg` with its off-white background rect removed so the art shows through; regenerate it if the template changes.
-- `prefers-reduced-motion` turns all animation off.
-
-## Known gaps
-
-- The Figma copy reads "You first puzzle of the year was"; probably meant to be "Your". Matched to Figma as is.
-- The left icon and close buttons are empty placeholders, as in Figma.
-- The desktop frames in Figma are FPO; where they differ from the mobile frames, the mobile frames were used.
+Unchanged from the prior stage architecture: fit-to-window scaling, Min scale slider, device overlay frames, one shared Rive canvas, Rive template guides overlay. See prior notes in git history for the full device table and scale math.

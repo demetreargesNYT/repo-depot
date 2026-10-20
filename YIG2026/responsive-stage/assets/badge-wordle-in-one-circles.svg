@@ -1,0 +1,18 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="178" height="178" viewBox="0 0 178 178" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="Circles" clip-path="url(#clip0_0_392)">
+<path id="Vector" d="M89 178C138.15 178 178 138.15 178 89C178 39.85 138.15 0 89 0C39.85 0 0 39.85 0 89C0 138.15 39.85 178 89 178Z" fill="#CCF1C9"/>
+<g id="Vector_2">
+<use xlink:href="#stroke0_0_392" fill="#CEB135"/>
+<mask id="stroke1_0_392" fill="white">
+<use xlink:href="#stroke0_0_392"/>
+</mask>
+<path d="M89 168.53C132.92 168.53 168.53 132.92 168.53 89C168.53 45.08 132.92 9.47 89 9.47C45.08 9.47 9.47 45.08 9.47 89C9.47 132.92 45.08 168.53 89 168.53Z" stroke-width="8" stroke="black" mask="url(#stroke1_0_392)"/>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_0_392">
+<rect width="178" height="178" fill="white"/>
+</clipPath>
+<path id="stroke0_0_392" d="M89 168.53C132.92 168.53 168.53 132.92 168.53 89C168.53 45.08 132.92 9.47 89 9.47C45.08 9.47 9.47 45.08 9.47 89C9.47 132.92 45.08 168.53 89 168.53Z"/>
+</defs>
+</svg>
