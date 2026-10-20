@@ -3,8 +3,11 @@
    The stage is the 1495x1067 Rive artboard: a rounded card on one constant outside color. Nothing is drawn
    outside it. */
 @font-face { font-family: "NYTKarnak"; font-weight: 500; font-style: normal; font-display: swap; src: url("../fonts/woff2/karnak-normal-500.woff2") format("woff2"), url("../fonts/NYTKarnak-Medium.otf") format("opentype"); }
+@font-face { font-family: "NYTKarnak"; font-weight: 600; font-style: normal; font-display: swap; src: url("../fonts/woff2/karnak-normal-600.woff2") format("woff2"), url("../fonts/NYTKarnak-Semibold.otf") format("opentype"); }
 @font-face { font-family: "NYTKarnak"; font-weight: 700; font-style: normal; font-display: swap; src: url("../fonts/woff2/karnak-normal-700.woff2") format("woff2"), url("../fonts/NYTKarnak-Bold.otf") format("opentype"); }
+@font-face { font-family: "NYTFranklin"; font-weight: 300; font-style: normal; font-display: swap; src: url("../fonts/woff2/franklin-normal-300.woff2") format("woff2"), url("../fonts/NYTFranklinLight.otf") format("opentype"); }
 @font-face { font-family: "NYTFranklin"; font-weight: 500; font-style: normal; font-display: swap; src: url("../fonts/woff2/franklin-normal-500.woff2") format("woff2"), url("../fonts/NYTFranklinMedium.otf") format("opentype"); }
+@font-face { font-family: "NYTFranklin"; font-weight: 600; font-style: normal; font-display: swap; src: url("../fonts/woff2/franklin-normal-600.woff2") format("woff2"), url("../fonts/NYTFranklinSemibold.otf") format("opentype"); }
 @font-face { font-family: "NYTFranklin"; font-weight: 700; font-style: normal; font-display: swap; src: url("../fonts/woff2/franklin-normal-700.woff2") format("woff2"), url("../fonts/NYTFranklinBold.otf") format("opentype"); }
 
 :root {
