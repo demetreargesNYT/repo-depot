@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Year in Games 2026: responsive stage prototype (Chapter 1)</title>
-  <link rel="stylesheet" href="styles.css?v=20261020a">
+  <link rel="stylesheet" href="styles.css?v=20261021a">
 </head>
 <body>
   <!-- One stage in Figma artboard coordinates. The 375px phone frame sits at --column-x, so the header and
@@ -12,6 +12,8 @@
   <main class="stage">
     <!-- All graphics and animation: the one Rive artboard (1495x1067). Everything else here is HTML text. -->
     <canvas class="rive-canvas" id="rive-canvas" aria-hidden="true"></canvas>
+    <!-- Rive template guides (prototype aid), toggled with the Rive template button / T. -->
+    <img class="template-guides" src="assets/yig-rive-template-guides.svg" alt="" aria-hidden="true">
     <header class="nav">
       <button class="nav-icon" type="button" aria-label="Menu"></button>
       <div class="progress" role="presentation">
@@ -107,6 +109,7 @@
       <button id="next" type="button" aria-label="Next screen">&rarr;</button>
     </div>
     <div class="controls-group">
+      <button id="template-toggle" type="button" aria-pressed="false">Rive template: Off (T)</button>
       <button id="overlay-toggle" type="button" aria-pressed="false">Overlay: Off (O)</button>
       <select id="device-select" aria-label="Overlay device"></select>
     </div>
@@ -117,6 +120,6 @@
     </div>
   </div>
   <script src="assets/vendor/rive.js"></script>
-  <script src="controls.js?v=20261020a"></script>
+  <script src="controls.js?v=20261021a"></script>
 </body>
 </html>

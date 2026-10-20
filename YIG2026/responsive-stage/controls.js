@@ -8,6 +8,7 @@ const next = document.getElementById("next");
 const label = document.getElementById("step-label");
 const overlayToggle = document.getElementById("overlay-toggle");
 const deviceSelect = document.getElementById("device-select");
+const templateToggle = document.getElementById("template-toggle");
 const deviceFrame = document.querySelector(".device-frame");
 const deviceLabel = document.querySelector(".device-label");
 const minSlider = document.getElementById("min-scale");
@@ -52,7 +53,7 @@ function resizeRive(scale = lastScale) {
 function startRive() {
   if (!window.rive) { console.warn("Rive runtime failed to load"); return; }
   riveInstance = new rive.Rive({
-    src: "assets/2026_yig-test_template.riv",
+    src: "assets/2026_yig-test_no-template.riv",
     canvas: riveCanvas,
     artboard: "YIG Test",
     stateMachines: "State Machine 1",
@@ -88,6 +89,7 @@ const DEVICES = [
   { id: "ipad-mini-744", group: "Tablet", name: "iPad Mini 744px", w: 744, h: 1133 },
   { id: "ipad-pro-834", group: "Tablet", name: "iPad Pro 834px", w: 834, h: 1194 },
   { id: "ipad-pro-1024", group: "Tablet", name: "iPad Pro 1024px", w: 1024, h: 1366 },
+  { id: "iphone-se-375", group: "Mobile", name: "iPhone SE \u2013 375px", w: 375, h: 667 },
   { id: "iphone-14-375", group: "Mobile", name: "iPhone 14 \u2013 375px", w: 375, h: 812 },
   { id: "iphone-13-14-390", group: "Mobile", name: "iPhone 13 & 14 \u2013 390px", w: 390, h: 844 },
   { id: "iphone-17-402", group: "Mobile", name: "iPhone 17 \u2013 402px", w: 402, h: 874 },
@@ -118,6 +120,12 @@ function setDevice(id) {
   deviceLabel.textContent = `${d.name} \u00b7 ${d.w}\u00d7${d.h}`;
 }
 
+function toggleTemplate(force) {
+  const on = document.body.classList.toggle("show-template", force);
+  templateToggle.setAttribute("aria-pressed", String(on));
+  templateToggle.textContent = `Rive template: ${on ? "On" : "Off"} (T)`;
+}
+
 function toggleOverlay() {
   const on = document.body.classList.toggle("show-overlay");
   overlayToggle.setAttribute("aria-pressed", String(on));
@@ -128,6 +136,7 @@ const step = () => Number(root.dataset.step);
 prev.addEventListener("click", () => showStep(step() - 1));
 next.addEventListener("click", () => showStep(step() + 1));
 overlayToggle.addEventListener("click", toggleOverlay);
+templateToggle.addEventListener("click", () => toggleTemplate());
 deviceSelect.addEventListener("change", () => setDevice(deviceSelect.value));
 minSlider.addEventListener("input", () => setMinScale(Number(minSlider.value)));
 addEventListener("resize", updateScale);
@@ -139,12 +148,14 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "ArrowRight") showStep(step() + 1);
   else if (e.key === "ArrowLeft") showStep(step() - 1);
   else if (e.key.toLowerCase() === "o") toggleOverlay();
+  else if (e.key.toLowerCase() === "t") toggleTemplate();
 });
 
-// ?step=3&overlay=1&device=ipad-pro-1024&min=65 sets the screen, overlay, device and Min scale, for repeatable screenshots.
+// ?step=3&overlay=1&device=ipad-pro-1024&template=1&min=65 sets the screen, overlay, device, template guides and Min scale.
 const params = new URLSearchParams(location.search);
 showStep(parseInt(params.get("step"), 10) || 1);
 setDevice(params.get("device"));
 if (params.get("overlay") === "1") toggleOverlay();
+if (params.get("template") === "1") toggleTemplate(true);
 updateScale();
 startRive();
