@@ -56,7 +56,7 @@ function startRive() {
     src: "assets/2026_yig-test_no-template.riv",
     canvas: riveCanvas,
     artboard: "YIG Test",
-    stateMachines: "State Machine 1",
+    stateMachines: "Scene Loop",
     autoplay: true,
     layout: new rive.Layout({ fit: rive.Fit.Contain, alignment: rive.Alignment.Center }),
     onLoad: () => resizeRive(),

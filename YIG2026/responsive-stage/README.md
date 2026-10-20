@@ -50,7 +50,7 @@ Frames are drawn at their real size in artboard pixels and are not clipped by th
 ## Notes for the Rive hand-off
 
 - Keep the important content inside the center 375px column; everything outside it is only seen on wider windows.
-- All graphics and animation come from one Rive file, `assets/2026_yig-test_no-template.riv` (artboard `YIG Test`, state machine `State Machine 1`), drawn on one `<canvas>` by the Rive runtime (`assets/vendor/rive.js`, `@rive-app/canvas-single` 2.45.0, MIT). The text and stats in the HTML are the dynamic part.
+- All graphics and animation come from one Rive file, `assets/2026_yig-test_no-template.riv` (artboard `YIG Test`, state machine `Scene Loop`), drawn on one `<canvas>` by the Rive runtime (`assets/vendor/rive.js`, `@rive-app/canvas-single` 2.45.0, MIT). The text and stats in the HTML are the dynamic part.
 - The same animation plays behind every step for now. Per-step control (state machine inputs or data binding) is not wired up yet.
 - The `.riv` is the no-template version: no guide shapes are drawn in it. The **Rive template** button (or `T`, or `?template=1`) overlays the guides from `assets/yig-rive-template-guides.svg` (zones, safe columns, the y 812 line, device width ruler) exactly over the artboard. That SVG is a copy of `rive-template/yig-rive-template.svg` with its off-white background rect removed so the art shows through; regenerate it if the template changes.
 - `prefers-reduced-motion` turns all animation off.
