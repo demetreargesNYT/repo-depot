@@ -1,0 +1,20 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="32.223" height="32.223" viewBox="0 0 32.223 32.223" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="video/audio-off">
+<g id="Oval 5">
+<use xlink:href="#stroke0_0_242" fill="black" fill-opacity="0.5"/>
+<mask id="stroke1_0_242" maskUnits="userSpaceOnUse" x="-0.657374" y="-0.657374" width="33" height="33" fill="black">
+<rect fill="white" x="-0.657374" y="-0.657374" width="33" height="33"/>
+<use xlink:href="#stroke0_0_242"/>
+</mask>
+<path d="M16.1115 30.8804C24.2681 30.8804 30.8804 24.2681 30.8804 16.1115C30.8804 7.95488 24.2681 1.34263 16.1115 1.34263C7.95488 1.34263 1.34263 7.95488 1.34263 16.1115C1.34263 24.2681 7.95488 30.8804 16.1115 30.8804Z" stroke-width="2.57784" stroke="white" mask="url(#stroke1_0_242)"/>
+</g>
+<path id="mute" d="M15.8813 19.2835V16.1152V16.1207V16.1023V16.106V12.9395V11.8967V9.66691H14.9607L11.2781 13.3495H8.51608C8.00972 13.3495 7.59543 13.7632 7.59543 14.2702V17.9528C7.59543 18.458 8.00972 18.8735 8.51608 18.8735H11.2781L14.9607 22.5561H15.8813V20.3263V19.2835Z" fill-rule="evenodd" clip-rule="evenodd" fill="white"/>
+<g id="X">
+<path id="Line" d="M19.6791 18.5282L24.5125 13.6948" stroke-width="1.28892" stroke-linecap="square" stroke="white"/>
+<path id="Line_2" d="M19.6791 13.6948L24.5125 18.5282" stroke-width="1.28892" stroke-linecap="square" stroke="white"/>
+</g>
+</g>
+<defs>
+<path id="stroke0_0_242" d="M16.1115 30.8804C24.2681 30.8804 30.8804 24.2681 30.8804 16.1115C30.8804 7.95488 24.2681 1.34263 16.1115 1.34263C7.95488 1.34263 1.34263 7.95488 1.34263 16.1115C1.34263 24.2681 7.95488 30.8804 16.1115 30.8804Z" fill-rule="evenodd" clip-rule="evenodd"/>
+</defs>
+</svg>
