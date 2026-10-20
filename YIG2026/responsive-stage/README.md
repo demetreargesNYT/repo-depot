@@ -4,7 +4,13 @@ Shows how one Rive artboard, authored at desktop size, can serve desktop and mob
 
 ## Open it
 
-Double-click `index.html`. No install, no server.
+The page loads the `.riv` file, and browsers block that over `file://`, so serve the folder over HTTP. From this folder:
+
+```
+python3 -m http.server 8000
+```
+
+then open http://localhost:8000/index.html. (The GitHub Pages URL works as is.)
 
 - Click the stage, press `→` / `←`, or use the arrows at the bottom to move between the 5 screens.
 - The Min scale slider (or `?min=65`) sets how far the stage may shrink on a short window. All controls are in the panel at the top right (at the bottom on phone-width windows).
@@ -44,7 +50,9 @@ Frames are drawn at their real size in artboard pixels and are not clipped by th
 ## Notes for the Rive hand-off
 
 - Keep the important content inside the center 375px column; everything outside it is only seen on wider windows.
-- Motion is CSS copied from Figma's motion export (`screens.css`) as a stand-in. Replace a screen's art with one `<canvas>` for the `.riv` and keep the `.phone` box.
+- All graphics and animation come from one Rive file, `assets/2026_yig-test_template.riv` (artboard `YIG Test`, state machine `State Machine 1`), drawn on one `<canvas>` by the Rive runtime (`assets/vendor/rive.js`, `@rive-app/canvas-single` 2.45.0, MIT). The text and stats in the HTML are the dynamic part.
+- The same animation plays behind every step for now. Per-step control (state machine inputs or data binding) is not wired up yet.
+- The `.riv` here is the template version, so the guide shapes are drawn inside it.
 - `prefers-reduced-motion` turns all animation off.
 
 ## Known gaps
