@@ -1,8 +1,7 @@
-// Steps between the five Chapter 1 screens and runs the comparison controls.
-const STEPS = 5;
+// Steps through the data-driven Subscriber/Registered screens and runs the comparison controls.
 const root = document.documentElement;
-const screens = [...document.querySelectorAll(".screen")];
-const segments = [...document.querySelectorAll(".seg")];
+const screenRoot = document.getElementById("screen-root");
+const progressEl = document.querySelector(".progress");
 const prev = document.getElementById("prev");
 const next = document.getElementById("next");
 const label = document.getElementById("step-label");
@@ -14,6 +13,30 @@ const deviceLabel = document.querySelector(".device-label");
 const minSlider = document.getElementById("min-scale");
 const minValue = document.getElementById("min-scale-value");
 const minNote = document.getElementById("min-scale-note");
+
+// SCREENS / PROTOTYPE_PAYLOAD come from screens.js (classic script globals).
+const STEPS = SCREENS.length;
+
+// Progress chrome: keep the Chapter 1 Figma segment widths when we only have those screens.
+// When the full 45-frame flow is filled in from Figma, regenerate segments to match that bar.
+const DEFAULT_SEG_WIDTHS = [
+  11, 12, 12, 13, 12, 13, 12, 12, 11, 12, 11, 11, 11, 11, 12, 12, 13, 13, 12, 11, 11, 11, 12, 11, 13, 13,
+];
+
+function buildProgress() {
+  if (!progressEl) return [];
+  progressEl.replaceChildren();
+  const widths = DEFAULT_SEG_WIDTHS;
+  for (const w of widths) {
+    const seg = document.createElement("i");
+    seg.className = "seg";
+    seg.style.setProperty("--w", `${w}px`);
+    progressEl.append(seg);
+  }
+  return [...progressEl.querySelectorAll(".seg")];
+}
+
+let segments = buildProgress();
 
 // Fit to window: grow the stage to fit big windows (capped), and on short windows shrink the whole stage
 // (text, nav and art together) so the artboard is visible down to FIT_HEIGHT, but never below minScale (the
@@ -72,13 +95,20 @@ function setMinScale(percent) {
 }
 
 function showStep(n) {
+  if (!STEPS) {
+    label.textContent = "0 / 0";
+    return;
+  }
   const step = Math.min(STEPS, Math.max(1, n));
-  screens.forEach((s) => { s.hidden = Number(s.dataset.step) !== step; });
+  const screen = SCREENS[step - 1];
+  renderStageScreen(screen, PROTOTYPE_PAYLOAD);
+  // Light the first `step` segments (Chapter 1 chrome). Full-flow progress will follow Figma once we have it.
   segments.forEach((seg, i) => seg.classList.toggle("is-active", i < step));
   label.textContent = `${step} / ${STEPS}`;
   prev.disabled = step === 1;
   next.disabled = step === STEPS;
   root.dataset.step = step;
+  if (screenRoot) screenRoot.hidden = false;
 }
 
 // Device frames from the Figma overlay sheets (Desktop 60:1756, Tablet 60:1806, Mobile 60:1781): width x height in px.

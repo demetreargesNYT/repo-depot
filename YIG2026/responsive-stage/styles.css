@@ -144,10 +144,22 @@ body {
 .game-icon-stack > img { position: absolute; inset: 0; width: 100%; height: 100%; }
 .inset { position: absolute; display: block; }
 .inset img { display: block; width: 100%; height: 100%; max-width: none; }
-.headline { font: 500 26px/1.2 var(--font-serif); }
+.headline, .headline-strong { font: 500 26px/1.2 var(--font-serif); }
+.headline-strong { font-weight: 700; }
 .game-icon { width: 50px; height: 48.837px; border-radius: 8px; display: block; flex: none; }
+.game-icon-missing {
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.06);
+  font: 700 10px/1.2 var(--font-sans);
+  color: #555;
+}
 .display { font: 700 40px/1.2 var(--font-serif); }
-.label { font: 700 12px/1.2 var(--font-sans); letter-spacing: 0.5px; text-transform: uppercase; }
+.stat { font: 700 30px/1 var(--font-sans); text-transform: uppercase; }
+.body { font: 500 20px/1.15 var(--font-sans); }
+.label, .label-bold { font: 700 12px/1.2 var(--font-sans); letter-spacing: 0.5px; text-transform: uppercase; }
+.label { font-weight: 700; }
+.label-bold { font-weight: 700; }
 
 /* Device overlay. A sibling of .stage with the same position and scale (so frames are in artboard pixels),
    but not clipped: a device wider or taller than the 1495x1067 artboard is drawn at its real size. */
