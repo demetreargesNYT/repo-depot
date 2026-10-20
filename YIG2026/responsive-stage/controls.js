@@ -32,9 +32,35 @@ function updateScale() {
     scale = bigFit >= 1 ? Math.min(MAX_SCALE, bigFit) : clamp(innerHeight / FIT_HEIGHT, minScale, 1);
   }
   root.style.setProperty("--scale", scale.toFixed(4));
+  resizeRive(scale);
   const crops = minScale >= 1 ? "Never shrinks" : `Crops below ${Math.round(FIT_HEIGHT * minScale)}px tall`;
   const idle = bigFit >= 1 && !isPhone ? " The window is larger than the artboard, so the slider has no effect yet." : "";
   minNote.textContent = `Scale now ${scale.toFixed(2)}x. ${crops}.${idle}`;
+}
+
+// The one Rive artboard (1495x1067) draws every graphic and animation. The canvas is CSS-scaled with the stage
+// (clientWidth ignores that), so the drawing surface is resized by devicePixelRatio (capped at 2) times the stage
+// scale to stay sharp when the stage grows. Fit.Contain with Center is exact because the artboard and the canvas
+// have the same aspect ratio.
+const riveCanvas = document.getElementById("rive-canvas");
+let riveInstance = null;
+let lastScale = 1;
+function resizeRive(scale = lastScale) {
+  lastScale = scale;
+  if (riveInstance) riveInstance.resizeDrawingSurfaceToCanvas(Math.min(window.devicePixelRatio || 1, 2) * scale);
+}
+function startRive() {
+  if (!window.rive) { console.warn("Rive runtime failed to load"); return; }
+  riveInstance = new rive.Rive({
+    src: "assets/2026_yig-test_template.riv",
+    canvas: riveCanvas,
+    artboard: "YIG Test",
+    stateMachines: "State Machine 1",
+    autoplay: true,
+    layout: new rive.Layout({ fit: rive.Fit.Contain, alignment: rive.Alignment.Center }),
+    onLoad: () => resizeRive(),
+    onLoadError: (e) => console.warn("Rive failed to load the .riv", e),
+  });
 }
 
 function setMinScale(percent) {
@@ -121,3 +147,4 @@ showStep(parseInt(params.get("step"), 10) || 1);
 setDevice(params.get("device"));
 if (params.get("overlay") === "1") toggleOverlay();
 updateScale();
+startRive();
