@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1495" height="1067" viewBox="0 0 1495 1067" font-family="Helvetica Neue, Arial, sans-serif">
+<rect x="0" y="812" width="1495" height="255" fill="#000" fill-opacity="0.07"/>
+<rect x="527.5" y="0" width="440" height="1067" fill="#00a05a" fill-opacity="0.10" stroke="#00a05a" stroke-width="2" stroke-dasharray="10 6"/>
+<rect x="560" y="0" width="375" height="1067" fill="#1e64ff" fill-opacity="0.09" stroke="#1e64ff" stroke-width="2"/>
+<line x1="514" y1="0" x2="514" y2="1067" stroke="#777" stroke-width="1.5" stroke-dasharray="2 5"/>
+<line x1="980" y1="0" x2="980" y2="1067" stroke="#777" stroke-width="1.5" stroke-dasharray="2 5"/>
+<rect x="0" y="0" width="1495" height="56" fill="#e00000" fill-opacity="0.16"/>
+<line x1="0" y1="56" x2="1495" y2="56" stroke="#e00000" stroke-width="2"/>
+<rect x="560" y="56" width="375" height="84" fill="#000" fill-opacity="0.14"/>
+<rect x="560" y="176" width="375" height="254" fill="#ff9600" fill-opacity="0.20" stroke="#ff9600" stroke-width="2" stroke-dasharray="6 5"/>
+<line x1="0" y1="720" x2="1495" y2="720" stroke="#c0189a" stroke-width="2" stroke-dasharray="4 8"/>
+<line x1="0" y1="812" x2="1495" y2="812" stroke="#7a3cff" stroke-width="3"/>
+<line x1="747.5" y1="0" x2="747.5" y2="1067" stroke="#000" stroke-opacity="0.35" stroke-width="1" stroke-dasharray="3 5"/>
+<rect x="0" y="888" width="1495" height="179" fill="#f4f4f2"/>
+<rect x="377" y="896" width="742" height="16" rx="4" fill="#2a9d8f" fill-opacity="0.16" stroke="#2a9d8f" stroke-width="1.5"/>
+<text x="384" y="908" font-size="12" font-weight="600" fill="#2a9d8f">iPad Mini 744  ·  sees x 376–1120</text>
+<rect x="331" y="916" width="832" height="16" rx="4" fill="#457b9d" fill-opacity="0.16" stroke="#457b9d" stroke-width="1.5"/>
+<text x="338" y="928" font-size="12" font-weight="600" fill="#457b9d">iPad Pro 834  ·  sees x 330–1164</text>
+<rect x="237" y="936" width="1022" height="16" rx="4" fill="#6a4c93" fill-opacity="0.16" stroke="#6a4c93" stroke-width="1.5"/>
+<text x="244" y="948" font-size="12" font-weight="600" fill="#6a4c93">iPad Pro 1024  ·  sees x 236–1260</text>
+<rect x="109" y="956" width="1278" height="16" rx="4" fill="#e76f51" fill-opacity="0.16" stroke="#e76f51" stroke-width="1.5"/>
+<text x="116" y="968" font-size="12" font-weight="600" fill="#e76f51">MacBook Air 1280  ·  sees x 108–1388</text>
+<rect x="1" y="976" width="1493" height="16" rx="4" fill="#555" fill-opacity="0.16" stroke="#555" stroke-width="1.5"/>
+<text x="8" y="988" font-size="12" font-weight="600" fill="#555">MacBook Pro 14"/16" and larger  ·  sees x 0–1495</text>
+<rect x="1" y="1" width="1493" height="1065" fill="none" stroke="#000" stroke-width="2"/>
+<text x="20" y="32" font-size="14" text-anchor="start" fill="#a00000" font-weight="600">TOP 56 px: PHONES ONLY (under 600 px wide)</text>
+<text x="20" y="48" font-size="12" text-anchor="start" fill="#a00000" font-weight="400">Tablets and desktops show this strip. Keep key art out of it.</text>
+<text x="747.5" y="102" font-size="13" text-anchor="middle" fill="#111" font-weight="600">Header  y 56–140</text>
+<text x="747.5" y="198" font-size="14" text-anchor="middle" fill="#8a4a00" font-weight="600">TEXT ZONE  y 176–430</text>
+<text x="20" y="196" font-size="13" text-anchor="start" fill="#8a4a00" font-weight="600">TEXT ZONE: starts y 176–207, ends up to y 430 (Wordle)</text>
+<text x="20" y="214" font-size="12" text-anchor="start" fill="#8a4a00" font-weight="400">Keep animation clear of it, or plan around it.</text>
+<text x="747.5" y="520" font-size="13" text-anchor="middle" fill="#1040c0" font-weight="600">Design column  x 560–935 (375 wide)</text>
+<text x="747.5" y="538" font-size="12" text-anchor="middle" fill="#1040c0" font-weight="400">Always visible. Everything essential lives here.</text>
+<text x="747.5" y="578" font-size="13" text-anchor="middle" fill="#006a3a" font-weight="600">Phone-safe  x 527.5–967.5 (440 wide)</text>
+<text x="747.5" y="596" font-size="12" text-anchor="middle" fill="#006a3a" font-weight="400">Fits every iPhone up to the Pro Max (440).</text>
+<text x="990" y="560" font-size="12" text-anchor="start" fill="#555" font-weight="600">Duo Closed 466 (x 514–980): best effort</text>
+<text x="990" y="578" font-size="12" text-anchor="start" fill="#555" font-weight="400">Duo Open 890×626 sees x 253–1242, y 0–696:</text>
+<text x="990" y="594" font-size="12" text-anchor="start" fill="#555" font-weight="400">best effort, not covered by the safe zones.</text>
+<text x="20" y="702" font-size="13" text-anchor="start" fill="#c0189a" font-weight="600">y 720 (estimate): bottom of a phone with browser toolbars</text>
+<text x="20" y="718" font-size="12" text-anchor="start" fill="#c0189a" font-weight="400">e.g. an iPhone 14 sees about y 718 in Safari. Dashed.</text>
+<text x="20" y="772" font-size="14" text-anchor="start" fill="#5a22d0" font-weight="600">y 812: KEEP ALL KEY ACTION ABOVE THIS LINE</text>
+<text x="20" y="790" font-size="12" text-anchor="start" fill="#5a22d0" font-weight="400">Bottom of the Figma phone frame (375×812). Fully visible on windows</text>
+<text x="20" y="806" font-size="12" text-anchor="start" fill="#5a22d0" font-weight="400">731 px tall or more; a MacBook Air with toolbars sees to about y 780.</text>
+<text x="20" y="836" font-size="14" text-anchor="start" fill="#444" font-weight="600">BELOW y 812: MAY BE CROPPED</text>
+<text x="20" y="854" font-size="12" text-anchor="start" fill="#444" font-weight="400">Art may continue here (stairs base, tube, river), nothing essential.</text>
+<text x="20" y="872" font-size="12" text-anchor="start" fill="#444" font-weight="400">Art that bleeds off the frame should run to the artboard edge.</text>
+<text x="1475" y="32" font-size="15" text-anchor="end" fill="#111" font-weight="600">1495 × 1067</text>
+<text x="1475" y="50" font-size="12" text-anchor="end" fill="#111" font-weight="400">Rive artboard, background transparent</text>
+<text x="20" y="1019" font-size="12" text-anchor="start" fill="#111" font-weight="600">WIDTH RULER: the part of the artboard each device sees (x), at its own width.</text>
+<text x="20" y="1035" font-size="12" text-anchor="start" fill="#111" font-weight="400">Shown 0.9× to 1.5× depending on the window; Rive is vector, so it stays sharp. Nothing outside the artboard is shown.</text>
+<text x="20" y="1051" font-size="12" text-anchor="start" fill="#111" font-weight="400">Estimates assume the device size as the window; real browsers lose roughly 80–170 px of height to toolbars.</text>
+</svg>

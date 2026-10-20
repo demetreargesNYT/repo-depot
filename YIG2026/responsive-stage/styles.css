@@ -62,6 +62,17 @@ body {
   display: block;
 }
 
+.template-guides {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--stage-w);
+  height: var(--stage-h);
+  pointer-events: none;
+}
+.show-template .template-guides { display: block; }
+
 .screen { position: absolute; inset: 0; }
 
 .screen[hidden] { display: none; }

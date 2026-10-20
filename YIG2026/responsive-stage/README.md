@@ -15,7 +15,7 @@ then open http://localhost:8000/index.html. (The GitHub Pages URL works as is.)
 - Click the stage, press `→` / `←`, or use the arrows at the bottom to move between the 5 screens.
 - The Min scale slider (or `?min=65`) sets how far the stage may shrink on a short window. All controls are in the panel at the top right (at the bottom on phone-width windows).
 - `O` (or the Overlay button) shows or hides a device frame; the dropdown below it picks which of 13 devices (see Device overlay).
-- `?step=3&overlay=1&device=ipad-pro-1024&min=65` in the URL sets all three, for repeatable screenshots.
+- `?step=3&overlay=1&device=ipad-pro-1024&template=1&min=65` in the URL sets all three, for repeatable screenshots.
 
 ## How it works
 
@@ -37,22 +37,22 @@ Raising the floor keeps text larger but crops sooner; lowering it keeps more of 
 
 ## Device overlay
 
-The Overlay button (or `O`) shows a black rounded frame at a device's real size, centered on the artboard and aligned to its top, with a label such as "iPhone 14 – 375px · 375×812". The dropdown picks the device; choosing one while the overlay is off just selects it. The 13 devices come from the Figma overlay sheets (Desktop, Tablet, Mobile) and are listed in `DEVICES` at the top of the overlay section of `controls.js`; `?device=<id>` selects one in the URL (ids are the `id` values there, for example `ipad-pro-1024`). `?overlay=1` alone shows the default, iPhone 14 – 375px.
+The Overlay button (or `O`) shows a black rounded frame at a device's real size, centered on the artboard and aligned to its top, with a label such as "iPhone 14 – 375px · 375×812". The dropdown picks the device; choosing one while the overlay is off just selects it. The devices come from the Figma overlay sheets (plus iPhone SE, added by hand) (Desktop, Tablet, Mobile) and are listed in `DEVICES` at the top of the overlay section of `controls.js`; `?device=<id>` selects one in the URL (ids are the `id` values there, for example `ipad-pro-1024`). `?overlay=1` alone shows the default, iPhone 14 – 375px.
 
 | Group | Devices (width × height) |
 |---|---|
 | Desktop | MacBook Air 1280 × 832, MacBook Pro 14" 1512 × 982, MacBook Pro 16" 1728 × 1117 |
 | Tablet | iPad Mini 744 × 1133, iPad Pro 834 × 1194, iPad Pro 1024 × 1366 |
-| Mobile | iPhone 14 375 × 812, iPhone 13 & 14 390 × 844, iPhone 17 402 × 874, iPhone 16 Plus 430 × 932, iPhone 16 & 17 Pro Max 440 × 956, iPhone Duo Closed 466 × 678, iPhone Duo Open 890 × 626 |
+| Mobile | iPhone SE 375 × 667 (added by hand, not in the Figma sheets), iPhone 14 375 × 812, iPhone 13 & 14 390 × 844, iPhone 17 402 × 874, iPhone 16 Plus 430 × 932, iPhone 16 & 17 Pro Max 440 × 956, iPhone Duo Closed 466 × 678, iPhone Duo Open 890 × 626 |
 
 Frames are drawn at their real size in artboard pixels and are not clipped by the card: a device wider or taller than 1495 × 1067 extends past the card edge, with a thin white outer line so it stays visible on the dark outside color. They scale with the stage.
 
 ## Notes for the Rive hand-off
 
 - Keep the important content inside the center 375px column; everything outside it is only seen on wider windows.
-- All graphics and animation come from one Rive file, `assets/2026_yig-test_template.riv` (artboard `YIG Test`, state machine `State Machine 1`), drawn on one `<canvas>` by the Rive runtime (`assets/vendor/rive.js`, `@rive-app/canvas-single` 2.45.0, MIT). The text and stats in the HTML are the dynamic part.
+- All graphics and animation come from one Rive file, `assets/2026_yig-test_no-template.riv` (artboard `YIG Test`, state machine `State Machine 1`), drawn on one `<canvas>` by the Rive runtime (`assets/vendor/rive.js`, `@rive-app/canvas-single` 2.45.0, MIT). The text and stats in the HTML are the dynamic part.
 - The same animation plays behind every step for now. Per-step control (state machine inputs or data binding) is not wired up yet.
-- The `.riv` here is the template version, so the guide shapes are drawn inside it.
+- The `.riv` is the no-template version: no guide shapes are drawn in it. The **Rive template** button (or `T`, or `?template=1`) overlays the guides from `assets/yig-rive-template-guides.svg` (zones, safe columns, the y 812 line, device width ruler) exactly over the artboard. That SVG is a copy of `rive-template/yig-rive-template.svg` with its off-white background rect removed so the art shows through; regenerate it if the template changes.
 - `prefers-reduced-motion` turns all animation off.
 
 ## Known gaps
