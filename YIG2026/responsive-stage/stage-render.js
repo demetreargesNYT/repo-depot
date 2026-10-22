@@ -9,7 +9,11 @@ const STAGE_GAMES = {
     icon: "assets/connections-icon.svg",
     glyph: "assets/connections-glyph.svg",
   },
-  spelling_bee: { name: "Spelling Bee", icon: "../icons/spelling_bee.svg" },
+  spelling_bee: {
+    name: "Spelling Bee",
+    icon: "assets/spelling-bee-icon.svg",
+    iconLarge: "../icons/spelling_bee.svg",
+  },
   midi: { name: "The Midi", icon: "../icons/midi.svg" },
   mini: { name: "The Mini", icon: "../icons/mini.svg" },
   crossword: { name: "The Crossword", icon: "../icons/crossword.svg" },
@@ -67,9 +71,49 @@ function renderStageText(style, value, scope) {
   const parts = text.split("\n");
   parts.forEach((part, i) => {
     if (i) node.appendChild(document.createElement("br"));
-    node.appendChild(document.createTextNode(part));
+    // **text** marks an inline emphasis run (e.g. the game name in a headline).
+    part.split(/\*\*(.+?)\*\*/).forEach((run, j) => {
+      if (!run) return;
+      node.appendChild(j % 2 ? stageEl("strong", "", run) : document.createTextNode(run));
+    });
   });
   return node;
+}
+
+function renderStageImage(line, scope) {
+  const img = stageEl("img", "stage-image");
+  img.src = stageFill(line.image, scope, true);
+  img.alt = line.alt || "";
+  if (line.width != null) img.style.width = `${line.width}px`;
+  if (line.height != null) img.style.height = `${line.height}px`;
+  return img;
+}
+
+function renderWordleRow(word, state) {
+  const row = stageEl("div", "wordle-row");
+  for (const letter of String(word)) {
+    row.appendChild(stageEl("span", `wordle-row-tile wordle-row-tile-${state}`, letter));
+  }
+  return row;
+}
+
+function renderWordleRows(line, scope) {
+  const state = line.state === "correct" ? "correct" : "empty";
+  const words = (Array.isArray(line["wordle-row"]) ? line["wordle-row"] : [line["wordle-row"]])
+    .map((word) => stageFill(word, scope, true));
+  if (words.length === 1) return renderWordleRow(words[0], state);
+  const stack = stageEl("div", "wordle-rows");
+  for (const word of words) stack.appendChild(renderWordleRow(word, state));
+  return stack;
+}
+
+function renderHoneycomb(value, scope) {
+  const wrap = stageEl("div", "honeycomb");
+  const img = stageEl("img", "honeycomb-art");
+  img.src = "assets/spelling-bee-honeycomb.svg";
+  img.alt = "";
+  wrap.append(img, stageEl("span", "honeycomb-word", stageFill(value, scope)));
+  return wrap;
 }
 
 function renderStageIcon(value, scope, size) {
@@ -80,8 +124,12 @@ function renderStageIcon(value, scope, size) {
     missing.appendChild(stageEl("span", "game-icon-label", id || "no game"));
     return missing;
   }
-  const img = stageEl("img", size === 75 ? "game-icon game-icon-lg" : "game-icon");
-  img.src = game.icon;
+  const large = size === 75;
+  const img = stageEl(
+    "img",
+    large ? `game-icon game-icon-${id} game-icon-lg` : `game-icon game-icon-${id}`
+  );
+  img.src = (large && game.iconLarge) || game.icon;
   img.alt = "";
   return img;
 }
@@ -108,6 +156,11 @@ function renderStageIconStack(value, scope) {
 }
 
 function renderConnectionsColor(value, scope) {
+  if (Array.isArray(value)) {
+    const stack = stageEl("div", "connections-colors");
+    for (const item of value) stack.appendChild(renderConnectionsColor(item, scope));
+    return stack;
+  }
   const color = stageFill(value, scope, true).toLowerCase();
   const node = stageEl("div", "connections-color");
   node.dataset.color = CONNECTIONS_COLORS.includes(color) ? color : "unknown";
@@ -119,14 +172,12 @@ function renderWeekdayChart(path, scope) {
   const rows = stageGet(scope, path);
   const list = stageEl("ol", "weekday-chart");
   if (!Array.isArray(rows)) return list;
-  const maxBar = Math.max(...rows.map((r) => Number(r.bar) || 0), 1);
   const trackW = 137;
   for (const row of rows) {
     const item = stageEl("li", "weekday-chart-row");
-    const barW = Math.max(20, Math.round(((Number(row.bar) || trackW) / maxBar) * trackW));
-    // Equal-value charts (all 12): force equal bars per design note.
-    const equal = rows.every((r) => Number(r.value) === Number(rows[0].value));
-    const width = equal ? trackW : barW;
+    // `bar` is the Figma-authored width in pixels. Values may intentionally be
+    // identical while bar lengths vary (the Daily average/fastest placeholders).
+    const width = Math.max(20, Math.min(trackW, Math.round(Number(row.bar) || 0)));
     const track = stageEl("span", "weekday-chart-track");
     const bar = stageEl("span", "weekday-chart-bar");
     bar.style.width = `${width}px`;
@@ -155,16 +206,28 @@ function applyLockup(lockupEl, lockup) {
   lockupEl.style.justifyContent = (lockup && lockup.justifyContent) || "";
 }
 
-function renderStageLine(line, scope) {
-  const [style, value] = Object.entries(line)[0] || [];
-  if (style === undefined) return null;
+// The first key of a line is its style; later keys (size, state, marginTop, nowrap, ...) are options.
+function renderStageLineNode(style, value, line, scope) {
   if (style === "game-icon") return renderStageIcon(value, scope, line.size);
   if (style === "game-icon-stack") return renderStageIconStack(value, scope);
   if (style === "connections-color") return renderConnectionsColor(value, scope);
   if (style === "weekday-chart") return renderWeekdayChart(value, scope);
+  if (style === "image") return renderStageImage(line, scope);
+  if (style === "wordle-row") return renderWordleRows(line, scope);
+  if (style === "honeycomb") return renderHoneycomb(value, scope);
   if (STAGE_TEXT_STYLES.includes(style)) return renderStageText(style, value, scope);
   console.warn(`Unknown stage line style "${style}"`);
   return null;
+}
+
+function renderStageLine(line, scope) {
+  const [style, value] = Object.entries(line)[0] || [];
+  if (style === undefined) return null;
+  const node = renderStageLineNode(style, value, line, scope);
+  if (!node) return null;
+  if (line.marginTop != null) node.style.marginTop = `${line.marginTop}px`;
+  if (line.nowrap) node.style.whiteSpace = "nowrap";
+  return node;
 }
 
 function renderLinesLockup(screen, scope) {

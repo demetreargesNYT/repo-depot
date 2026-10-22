@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Year in Games 2026: responsive stage prototype</title>
-  <link rel="stylesheet" href="styles.css?v=20261021d">
+  <link rel="stylesheet" href="styles.css?v=20261022c">
 </head>
 <body>
   <!-- One stage in Figma artboard coordinates. The 375px phone frame sits at --column-x, so the header and
@@ -17,7 +17,10 @@
     <header class="nav">
       <button class="nav-icon" type="button" aria-label="Menu"></button>
       <div class="progress" role="presentation"></div>
-      <img class="wordmark" src="assets/year-in-games.svg" alt="Year in Games">
+      <div class="nav-lockup">
+        <img class="nyt-mark" src="assets/nyt-wordmark.svg" alt="The New York Times">
+        <img class="wordmark" src="assets/year-in-games.svg" alt="Year in Games">
+      </div>
       <button class="nav-close" type="button" aria-label="Close"></button>
     </header>
 
@@ -34,7 +37,7 @@
   <div class="controls">
     <div class="controls-group">
       <button id="prev" type="button" aria-label="Previous screen">&larr;</button>
-      <span id="step-label" aria-live="polite">1 / 45</span>
+      <span id="step-label" aria-live="polite">1 / 55</span>
       <button id="next" type="button" aria-label="Next screen">&rarr;</button>
     </div>
     <div class="controls-group">
@@ -49,8 +52,8 @@
     </div>
   </div>
   <script src="assets/vendor/rive.js"></script>
-  <script src="screens.js?v=20261021d"></script>
-  <script src="stage-render.js?v=20261021d"></script>
-  <script src="controls.js?v=20261021d"></script>
+  <script src="screens.js?v=20261022c"></script>
+  <script src="stage-render.js?v=20261022c"></script>
+  <script src="controls.js?v=20261022c"></script>
 </body>
 </html>

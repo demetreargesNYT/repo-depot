@@ -20,7 +20,7 @@
   --connections-yellow: #f9e16e;
   --connections-green: #a0c35a;
   --connections-blue: #b0c4ed;
-  --connections-purple: #bc70c4;
+  --connections-purple: #ba81c5;
   --wordle-absent: #787c7e;
   --wordle-present: #c9b458;
   --wordle-correct: #6aaa64;
@@ -101,27 +101,33 @@ body {
   left: var(--column-x);
   top: 56px;
   width: var(--phone-w);
-  height: 84px;
+  height: 78px;
   z-index: 2;
 }
 .nav[hidden] { display: none !important; }
 .nav-icon, .nav-close { position: absolute; padding: 0; border: 0; background: none; }
-.nav-icon { left: 13px; top: 10px; width: 24px; height: 24px; }
-.nav-close { left: 92.53%; right: 4.27%; top: 16px; aspect-ratio: 1; }
+.nav-icon { left: 13px; top: 17px; width: 24px; height: 24px; }
+.nav-close { left: 92.53%; right: 4.27%; top: 23px; aspect-ratio: 1; }
 
-.wordmark {
+/* "The New York Times" stacked over the Year in Games wordmark. */
+.nav-lockup {
   position: absolute;
   left: 50%;
-  top: 14px;
-  width: 170.215px;
-  height: 18.549px;
+  top: 0;
+  width: 171px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
   transform: translateX(-50%);
 }
+.nyt-mark { display: block; width: 110.136px; height: 15.114px; }
+.wordmark { display: block; width: 170.215px; height: 18.549px; }
 
 .progress {
   position: absolute;
   left: 50%;
-  bottom: 25px;
+  bottom: 16px;
   width: 341px;
   height: 2px;
   display: flex;
@@ -157,7 +163,11 @@ body {
 .inset img { display: block; width: 100%; height: 100%; max-width: none; }
 .headline { font: 500 26px/1.2 var(--font-serif); color: var(--color-ink); }
 .headline-strong { font: 600 26px/1.2 var(--font-serif); color: var(--color-ink); }
+.headline strong { font-weight: 600; }
+.stage-image { display: block; flex: none; }
 .game-icon { width: 50px; height: 48.837px; border-radius: 8px; display: block; flex: none; }
+.game-icon-mini,
+.game-icon-crossword { height: 50px; }
 .game-icon-lg { width: 75px; height: 75px; }
 .game-icon-missing {
   display: grid;
@@ -168,26 +178,33 @@ body {
 }
 .display { font: 700 40px/1.2 var(--font-serif); color: var(--color-ink); }
 .stat { font: 700 30px/1 var(--font-sans); text-transform: uppercase; color: var(--color-ink); }
-.body { font: 500 20px/1.15 var(--font-sans); color: var(--color-ink); }
+.body { font: 500 20px/1.2 var(--font-sans); color: var(--color-ink); }
 .label, .label-bold { font: 600 12px/1.2 var(--font-sans); letter-spacing: 0.5px; text-transform: uppercase; color: var(--color-ink); }
 .label { font-weight: 600; }           /* Franklin Semibold — bundled woff2 600 */
 .label-bold { font-weight: 700; }      /* Franklin Bold — bundled woff2 700 */
 
+.connections-colors {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
 .connections-color {
-  width: 195px;
-  height: 54px;
-  border: 2px solid var(--color-ink);
-  border-radius: 7px;
+  width: 155px;
+  height: 40px;
+  border: 1.667px solid var(--color-ink);
+  border-radius: 8.75px;
   display: grid;
   place-items: center;
   flex: none;
 }
+.connections-color[data-color="blue"] { width: 150px; }
 .connections-color[data-color="yellow"] { background: var(--connections-yellow); }
 .connections-color[data-color="green"] { background: var(--connections-green); }
 .connections-color[data-color="blue"] { background: var(--connections-blue); }
 .connections-color[data-color="purple"] { background: var(--connections-purple); }
 .connections-label {
-  font: 700 30px/1 var(--font-sans);
+  font: 700 24px/1 var(--font-sans);
   text-transform: uppercase;
   color: var(--color-ink);
 }
@@ -398,7 +415,7 @@ body {
 .bot-bubble {
   position: absolute;
   left: 49px;
-  top: 180px;
+  top: 140px;
   width: 280px;
   padding: 24px;
   background: #fff;
@@ -411,7 +428,7 @@ body {
 .bot-tail {
   position: absolute;
   left: 100px;
-  top: 346px;
+  top: 306px;
   width: 43px;
   height: 24px;
   z-index: 1;
@@ -420,7 +437,7 @@ body {
 .bot-illustration {
   position: absolute;
   left: 126px;
-  top: 370px;
+  top: 330px;
   width: 122px;
   height: 177px;
   z-index: 1;
@@ -520,6 +537,32 @@ body {
 .wordle-tile-absent { background: var(--wordle-absent); }
 .wordle-tile-present { background: var(--wordle-present); border: 1px solid #000; }
 .wordle-tile-correct { background: var(--wordle-correct); border: 1px solid #000; }
+
+/* Five-letter rows on the Chapter 2 Wordle cards: green "correct" or white bordered "empty". */
+.wordle-rows { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.wordle-row { display: flex; gap: 3.062px; justify-content: center; flex: none; }
+.wordle-row-tile {
+  width: 47.55px;
+  height: 47.55px;
+  display: grid;
+  place-items: center;
+  font: 700 31px/1 var(--font-sans);
+  text-transform: uppercase;
+}
+.wordle-row-tile-correct { background: var(--wordle-correct); border: 1.24px solid #000; color: #fff; }
+.wordle-row-tile-empty { background: #fff; border: 1.551px solid #000; color: #000; }
+
+.honeycomb { position: relative; width: 288.263px; height: 80.801px; flex: none; }
+.honeycomb-art { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.honeycomb-word {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font: 700 30px/1.2 var(--font-sans);
+  text-transform: uppercase;
+  color: var(--color-ink);
+}
 
 /* Device overlay. A sibling of .stage with the same position and scale (so frames are in artboard pixels),
    but not clipped: a device wider or taller than the 1495x1067 artboard is drawn at its real size. */
