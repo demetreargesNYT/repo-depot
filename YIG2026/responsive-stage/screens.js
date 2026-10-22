@@ -1,8 +1,9 @@
 "use strict";
 
 // Subscriber / Registered click-through for Year in Games 2026.
-// Steps 1–22 (Chapter 1, the Chapter 2 intro, Wordle, Connections, Spelling Bee) come from the revised
-// Figma file 9kgGqMlvJXa4jUolapkp89. Every later screen keeps its older frame from SPgdDz5gM1VQIg2Z6gLqZf.
+// Revised Chapter 1, the Chapter 2 game cards, and the five community fallbacks come from
+// Figma file 9kgGqMlvJXa4jUolapkp89. Older frames (Chapter 2 intro, ads, Start, badges,
+// later chapters, editor, end card) stay on SPgdDz5gM1VQIg2Z6gLqZf.
 // Copy and X-placeholders match Figma; not sample-data.js.
 //
 // The review click-through shows every card and variant. `rule` notes (and card-rules.csv) record when a
@@ -153,7 +154,7 @@ const SCREENS = [
     figmaFileKey: FIGMA_FILE_KEY_2026,
     figmaNodeId: "10406:79035",
     label: "Average Wordle guesses",
-    rule: "Show the community-average lines only when the player’s average is lower than the community’s.",
+    rule: "Personalized Wordle cards need at least 10 Wordle solves; otherwise show ch2-wordle-fallback. Show the community-average lines only when the player’s average is lower than the community’s.",
     chapterBg: BG.wordle,
     lockup: { top: CONTENT_TOP },
     lines: [
@@ -168,6 +169,7 @@ const SCREENS = [
     figmaFileKey: FIGMA_FILE_KEY_2026,
     figmaNodeId: "10515:106554",
     label: "Your best solves",
+    rule: "Personalized Wordle cards need at least 10 Wordle solves; otherwise show ch2-wordle-fallback.",
     chapterBg: BG.wordle,
     lockup: { top: CONTENT_TOP },
     lines: [
@@ -229,6 +231,7 @@ const SCREENS = [
     figmaFileKey: FIGMA_FILE_KEY_2026,
     figmaNodeId: "10515:106848",
     label: "Top starting words",
+    rule: "Personalized Wordle cards need at least 10 Wordle solves; otherwise show ch2-wordle-fallback.",
     chapterBg: BG.wordle,
     lockup: { top: CONTENT_TOP },
     lines: [
@@ -238,6 +241,20 @@ const SCREENS = [
       { body: "Way to make the first move." },
     ],
   },
+  {
+    id: "ch2-wordle-fallback",
+    figmaFileKey: FIGMA_FILE_KEY_2026,
+    figmaNodeId: "10987:61831",
+    label: "Wordle community fallback",
+    rule: "Community fallback for Wordle. Shown instead of the personalized Wordle cards when the player has fewer than 10 Wordle solves.",
+    chapterBg: BG.wordle,
+    lockup: { top: CONTENT_TOP },
+    lines: [
+      { headline: "In Wordle, the most popular\nstarting word was" },
+      { "wordle-row": "ADIEU", state: "correct" },
+      { body: "Oh là là!" },
+    ],
+  },
 
   // Chapter 2: Connections
   {
@@ -245,6 +262,7 @@ const SCREENS = [
     figmaFileKey: FIGMA_FILE_KEY_2026,
     figmaNodeId: "10515:107062",
     label: "Solve order",
+    rule: "Personalized Connections cards need at least 10 Connections solves; otherwise show ch2-connections-fallback.",
     chapterBg: BG.connections,
     lockup: { top: CONTENT_TOP },
     lines: [
@@ -273,6 +291,7 @@ const SCREENS = [
     figmaFileKey: FIGMA_FILE_KEY_2026,
     figmaNodeId: "10515:107138",
     label: "Connections solve rate",
+    rule: "Personalized Connections cards need at least 10 Connections solves; otherwise show ch2-connections-fallback.",
     chapterBg: BG.connections,
     lockup: { top: CONTENT_TOP },
     lines: [
@@ -286,6 +305,7 @@ const SCREENS = [
     figmaFileKey: FIGMA_FILE_KEY_2026,
     figmaNodeId: "10515:107222",
     label: "Average mistakes",
+    rule: "Personalized Connections cards need at least 10 Connections solves; otherwise show ch2-connections-fallback.",
     chapterBg: BG.connections,
     lockup: { top: CONTENT_TOP },
     lines: [
@@ -310,6 +330,20 @@ const SCREENS = [
       { body: "And they say perfection doesn’t exist." },
     ],
   },
+  {
+    id: "ch2-connections-fallback",
+    figmaFileKey: FIGMA_FILE_KEY_2026,
+    figmaNodeId: "10957:179144",
+    label: "Connections community fallback",
+    rule: "Community fallback for Connections. Shown instead of the personalized Connections cards when the player has fewer than 10 Connections solves.",
+    chapterBg: BG.connections,
+    lockup: { top: CONTENT_TOP },
+    lines: [
+      { headline: "In Connections, a picture-only\npuzzle stumped" },
+      { "headline-strong": "X% of players", nowrap: true },
+      { body: "February 7. What a day." },
+    ],
+  },
 
   // Chapter 2: Spelling Bee
   {
@@ -317,6 +351,7 @@ const SCREENS = [
     figmaFileKey: FIGMA_FILE_KEY_2026,
     figmaNodeId: "10406:79058",
     label: "Spelling Bee words",
+    rule: "Personalized Spelling Bee cards need at least 10 Spelling Bee solves; otherwise show ch2-spelling-bee-fallback.",
     chapterBg: BG.spelling_bee,
     lockup: { top: CONTENT_TOP },
     lines: [
@@ -331,6 +366,7 @@ const SCREENS = [
     figmaFileKey: FIGMA_FILE_KEY_2026,
     figmaNodeId: "10515:107386",
     label: "Longest word",
+    rule: "Personalized Spelling Bee cards need at least 10 Spelling Bee solves; otherwise show ch2-spelling-bee-fallback.",
     chapterBg: BG.spelling_bee,
     lockup: { top: CONTENT_TOP },
     lines: [
@@ -386,6 +422,20 @@ const SCREENS = [
       { body: "Sweet!" },
     ],
   },
+  {
+    id: "ch2-spelling-bee-fallback",
+    figmaFileKey: FIGMA_FILE_KEY_2026,
+    figmaNodeId: "10957:179155",
+    label: "Spelling Bee community fallback",
+    rule: "Community fallback for Spelling Bee. Shown instead of the personalized Spelling Bee cards when the player has fewer than 10 Spelling Bee solves.",
+    chapterBg: BG.spelling_bee,
+    lockup: { top: CONTENT_TOP },
+    lines: [
+      { headline: "The Month XX\nSpelling Bee puzzle gave us" },
+      { "headline-strong": "XX Queen Bees", nowrap: true },
+      { body: "They’ve got the last word. Literally." },
+    ],
+  },
 
   // Older screens, in their previous relative order.
   {
@@ -429,7 +479,7 @@ const SCREENS = [
     figmaFileKey: FIGMA_FILE_KEY_2026,
     figmaNodeId: "10519:107602",
     label: "Mini total",
-    rule: "Personalized Mini cards need at least 10 Mini solves.",
+    rule: "Personalized Mini cards need at least 10 Mini solves; otherwise show ch2-crosswords-fallback.",
     chapterBg: BG.crossword,
     lockup: { top: CONTENT_TOP },
     lines: [
@@ -444,7 +494,7 @@ const SCREENS = [
     figmaFileKey: FIGMA_FILE_KEY_2026,
     figmaNodeId: "10406:79068",
     label: "Fastest Mini",
-    rule: "Personalized Mini cards need at least 10 Mini solves.",
+    rule: "Personalized Mini cards need at least 10 Mini solves; otherwise show ch2-crosswords-fallback.",
     chapterBg: BG.crossword,
     lockup: { top: CONTENT_TOP },
     lines: [
@@ -459,7 +509,7 @@ const SCREENS = [
     figmaFileKey: FIGMA_FILE_KEY_2026,
     figmaNodeId: "10844:161050",
     label: "Average Mini time",
-    rule: "Personalized Mini cards need at least 10 Mini solves.",
+    rule: "Personalized Mini cards need at least 10 Mini solves; otherwise show ch2-crosswords-fallback.",
     chapterBg: BG.crossword,
     lockup: { top: CONTENT_TOP },
     lines: [
@@ -490,7 +540,7 @@ const SCREENS = [
     figmaFileKey: FIGMA_FILE_KEY_2026,
     figmaNodeId: "10406:79247",
     label: "Midi total",
-    rule: "Personalized Midi cards need at least 10 Midi solves.",
+    rule: "Personalized Midi cards need at least 10 Midi solves; otherwise show ch2-crosswords-fallback.",
     chapterBg: BG.midi,
     lockup: { top: CONTENT_TOP },
     lines: [
@@ -519,7 +569,7 @@ const SCREENS = [
     figmaFileKey: FIGMA_FILE_KEY_2026,
     figmaNodeId: "10522:107848",
     label: "Midi times",
-    rule: "Personalized Midi cards need at least 10 Midi solves.",
+    rule: "Personalized Midi cards need at least 10 Midi solves; otherwise show ch2-crosswords-fallback.",
     chapterBg: BG.midi,
     lockup: { top: CONTENT_TOP },
     lines: [
@@ -537,7 +587,7 @@ const SCREENS = [
     figmaFileKey: FIGMA_FILE_KEY_2026,
     figmaNodeId: "10522:107947",
     label: "Most often Mondays",
-    rule: "Personalized Daily Crossword cards need at least 10 Daily Crossword solves.",
+    rule: "Personalized Daily Crossword cards need at least 10 Daily Crossword solves; otherwise show ch2-crosswords-fallback.",
     chapterBg: BG.daily,
     lockup: { top: CONTENT_TOP },
     lines: [
@@ -553,7 +603,7 @@ const SCREENS = [
     figmaFileKey: FIGMA_FILE_KEY_2026,
     figmaNodeId: "10522:108030",
     label: "Average Crossword time",
-    rule: "Personalized Daily Crossword cards need at least 10 Daily Crossword solves.",
+    rule: "Personalized Daily Crossword cards need at least 10 Daily Crossword solves; otherwise show ch2-crosswords-fallback.",
     chapterBg: BG.daily,
     lockup: { top: CONTENT_TOP },
     lines: [
@@ -568,7 +618,7 @@ const SCREENS = [
     figmaFileKey: FIGMA_FILE_KEY_2026,
     figmaNodeId: "10522:108113",
     label: "Fastest Crossword",
-    rule: "Personalized Daily Crossword cards need at least 10 Daily Crossword solves.",
+    rule: "Personalized Daily Crossword cards need at least 10 Daily Crossword solves; otherwise show ch2-crosswords-fallback.",
     chapterBg: BG.daily,
     lockup: { top: CONTENT_TOP },
     lines: [
@@ -594,6 +644,20 @@ const SCREENS = [
       { body: "Who’s off the grid? Not you!" },
     ],
   },
+  {
+    id: "ch2-crosswords-fallback",
+    figmaFileKey: FIGMA_FILE_KEY_2026,
+    figmaNodeId: "10957:179166",
+    label: "Crosswords community fallback",
+    rule: "Shared community fallback for Mini, Midi, and the Daily Crossword. Shown instead of that game’s personalized cards when the player has fewer than 10 solves of that game. The review flow shows it once.",
+    chapterBg: BG.crossword,
+    lockup: { top: CONTENT_TOP },
+    lines: [
+      { headline: "One speedster solved the\nMini crossword in just" },
+      { "headline-strong": "X seconds", nowrap: true },
+      { body: "We can’t believe it either." },
+    ],
+  },
 
   // Chapter 2: Strands
   {
@@ -601,7 +665,7 @@ const SCREENS = [
     figmaFileKey: FIGMA_FILE_KEY_2026,
     figmaNodeId: "10522:108211",
     label: "Strands total",
-    rule: "Personalized Strands cards need at least 10 Strands solves.",
+    rule: "Personalized Strands cards need at least 10 Strands solves; otherwise show ch2-strands-fallback.",
     chapterBg: BG.strands,
     lockup: { top: CONTENT_TOP },
     lines: [
@@ -668,6 +732,21 @@ const SCREENS = [
       { headline: "And found a total of", marginTop: AFTER_ICON },
       { "headline-strong": "X non-theme words" },
       { body: "Here for every twist and turn." },
+    ],
+  },
+  {
+    id: "ch2-strands-fallback",
+    figmaFileKey: FIGMA_FILE_KEY_2026,
+    figmaNodeId: "10957:179177",
+    label: "Strands community fallback",
+    rule: "Community fallback for Strands. Shown instead of the personalized Strands cards when the player has fewer than 10 Strands solves.",
+    chapterBg: BG.strands,
+    lockup: { top: CONTENT_TOP },
+    lines: [
+      { headline: "In Strands," },
+      { "headline-strong": "X million players", nowrap: true },
+      { headline: "solved a puzzle with 0 hints." },
+      { body: "A-maze-ing." },
     ],
   },
   {
