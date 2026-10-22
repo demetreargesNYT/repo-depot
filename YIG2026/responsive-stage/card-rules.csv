@@ -21,3 +21,19 @@ ch2-spelling-bee-02,Subscriber/Registered,spelling_bee,Personalized Spelling Bee
 ch2-spelling-bee-03,Subscriber/Registered,spelling_bee,Personalized Spelling Bee cards need at least 10 Spelling Bee solves.,None,"Fewer than 10 Spelling Bee solves, or no pangrams"
 ch2-spelling-bee-04a,Subscriber/Registered,spelling_bee,"Top-rank slot (one of 04a, 04b). Show 04a when Genius or Queen Bee was reached at least once.",ch2-spelling-bee-04b,"Fewer than 10 Spelling Bee solves, or top rank below Solid"
 ch2-spelling-bee-04b,Subscriber/Registered,spelling_bee,"Top-rank slot (one of 04a, 04b). Show 04b when the top rank is Solid or higher but neither Genius nor Queen Bee was reached.",ch2-spelling-bee-04a,"Fewer than 10 Spelling Bee solves, or top rank below Solid"
+ch2-mini-01,Subscriber/Registered,mini,Personalized Mini cards need at least 10 Mini solves.,Community fallback (not designed yet),Fewer than 10 Mini solves
+ch2-mini-02,Subscriber/Registered,mini,Personalized Mini cards need at least 10 Mini solves.,Community fallback (not designed yet),Fewer than 10 Mini solves
+ch2-mini-03,Subscriber/Registered,mini,Personalized Mini cards need at least 10 Mini solves.,Community fallback (not designed yet),Fewer than 10 Mini solves
+ch2-mini-04,Subscriber/Registered,mini,"Show only when the player’s longest Mini streak meets the configured threshold; threshold value TBD.",None,"Fewer than 10 Mini solves, or longest streak below the configured threshold"
+ch2-midi-01,Subscriber/Registered,midi,Personalized Midi cards need at least 10 Midi solves.,Community fallback (not designed yet),Fewer than 10 Midi solves
+ch2-midi-02,Subscriber/Registered,midi,"Show only when the player’s longest Midi streak meets the configured threshold; threshold value TBD.",None,"Fewer than 10 Midi solves, or longest streak below the configured threshold"
+ch2-midi-03,Subscriber/Registered,midi,Personalized Midi cards need at least 10 Midi solves.,Community fallback (not designed yet),Fewer than 10 Midi solves
+ch2-daily-01,Subscriber/Registered,daily_crossword,Personalized Daily Crossword cards need at least 10 Daily Crossword solves.,Community fallback (not designed yet),Fewer than 10 Daily Crossword solves
+ch2-daily-02,Subscriber/Registered,daily_crossword,Personalized Daily Crossword cards need at least 10 Daily Crossword solves.,Community fallback (not designed yet),Fewer than 10 Daily Crossword solves
+ch2-daily-03,Subscriber/Registered,daily_crossword,Personalized Daily Crossword cards need at least 10 Daily Crossword solves.,Community fallback (not designed yet),Fewer than 10 Daily Crossword solves
+ch2-daily-04,Subscriber/Registered,daily_crossword,"Show only when the player’s longest Daily Crossword streak meets the configured threshold; threshold value TBD.",None,"Fewer than 10 Daily Crossword solves, or longest streak below the configured threshold"
+ch2-strands-01,Subscriber/Registered,strands,Personalized Strands cards need at least 10 Strands solves.,Community fallback (not designed yet),Fewer than 10 Strands solves
+ch2-strands-02,Subscriber/Registered,strands,Show only when the player found the spangram first at least once.,None,"Fewer than 10 Strands solves, or never found the spangram first"
+ch2-strands-03,Subscriber/Registered,strands,Show only when the player solved without hints at least once.,None,"Fewer than 10 Strands solves, or no solves without hints"
+ch2-strands-04,Subscriber/Registered,strands,Show only when the player used at least one hint.,None,"Fewer than 10 Strands solves, or no hints used"
+ch2-strands-05,Subscriber/Registered,strands,Show only when the player found at least one non-theme word.,None,"Fewer than 10 Strands solves, or no non-theme words found"

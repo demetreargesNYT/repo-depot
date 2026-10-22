@@ -125,7 +125,10 @@ function renderStageIcon(value, scope, size) {
     return missing;
   }
   const large = size === 75;
-  const img = stageEl("img", large ? "game-icon game-icon-lg" : "game-icon");
+  const img = stageEl(
+    "img",
+    large ? `game-icon game-icon-${id} game-icon-lg` : `game-icon game-icon-${id}`
+  );
   img.src = (large && game.iconLarge) || game.icon;
   img.alt = "";
   return img;
@@ -169,14 +172,12 @@ function renderWeekdayChart(path, scope) {
   const rows = stageGet(scope, path);
   const list = stageEl("ol", "weekday-chart");
   if (!Array.isArray(rows)) return list;
-  const maxBar = Math.max(...rows.map((r) => Number(r.bar) || 0), 1);
   const trackW = 137;
   for (const row of rows) {
     const item = stageEl("li", "weekday-chart-row");
-    const barW = Math.max(20, Math.round(((Number(row.bar) || trackW) / maxBar) * trackW));
-    // Equal-value charts (all 12): force equal bars per design note.
-    const equal = rows.every((r) => Number(r.value) === Number(rows[0].value));
-    const width = equal ? trackW : barW;
+    // `bar` is the Figma-authored width in pixels. Values may intentionally be
+    // identical while bar lengths vary (the Daily average/fastest placeholders).
+    const width = Math.max(20, Math.min(trackW, Math.round(Number(row.bar) || 0)));
     const track = stageEl("span", "weekday-chart-track");
     const bar = stageEl("span", "weekday-chart-bar");
     bar.style.width = `${width}px`;
