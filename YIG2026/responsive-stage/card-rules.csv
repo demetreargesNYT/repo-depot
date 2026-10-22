@@ -1,0 +1,23 @@
+screen,audience,game,rule,alternate,skip
+ch1-01-intro,Subscriber/Registered,,Always shown.,,
+ch1-02-total,Subscriber/Registered,,Always shown.,,
+ch1-03-first,Subscriber/Registered,,Always shown.,,
+ch1-04-streak,Subscriber/Registered,,Always shown.,,
+ch1-05-bot,Subscriber/Registered,,Always shown.,,
+ch2-01-intro,Subscriber/Registered,,Always shown.,,
+ch2-wordle-01,Subscriber/Registered,wordle,"Personalized Wordle cards need at least 10 Wordle solves. Show the community-average lines only when the player's average is lower than the community's.",Community fallback (not designed yet),Fewer than 10 Wordle solves
+ch2-wordle-02,Subscriber/Registered,wordle,Personalized Wordle cards need at least 10 Wordle solves.,Community fallback (not designed yet),Fewer than 10 Wordle solves
+ch2-wordle-03a,Subscriber/Registered,wordle,"Hardest-word slot (one of 03a, 03b, 03c). Show 03a when the player played PSHAW and missed it.","ch2-wordle-03b, ch2-wordle-03c",Fewer than 10 Wordle solves
+ch2-wordle-03b,Subscriber/Registered,wordle,"Hardest-word slot (one of 03a, 03b, 03c). Show 03b when the player played PSHAW and solved it.","ch2-wordle-03a, ch2-wordle-03c",Fewer than 10 Wordle solves
+ch2-wordle-03c,Subscriber/Registered,wordle,"Hardest-word slot (one of 03a, 03b, 03c). Show 03c when the player did not play PSHAW.","ch2-wordle-03a, ch2-wordle-03b",Fewer than 10 Wordle solves
+ch2-wordle-04,Subscriber/Registered,wordle,Personalized Wordle cards need at least 10 Wordle solves.,Community fallback (not designed yet),Fewer than 10 Wordle solves
+ch2-connections-01,Subscriber/Registered,connections,Personalized Connections cards need at least 10 Connections solves.,Community fallback (not designed yet),Fewer than 10 Connections solves
+ch2-connections-02,Subscriber/Registered,connections,Personalized Connections cards need at least 10 Connections solves.,None,"Fewer than 10 Connections solves, or the player never got the purple category first"
+ch2-connections-03,Subscriber/Registered,connections,Personalized Connections cards need at least 10 Connections solves.,Community fallback (not designed yet),Fewer than 10 Connections solves
+ch2-connections-04,Subscriber/Registered,connections,Personalized Connections cards need at least 10 Connections solves.,Community fallback (not designed yet),Fewer than 10 Connections solves
+ch2-connections-05,Subscriber/Registered,connections,Personalized Connections cards need at least 10 Connections solves.,None,"Fewer than 10 Connections solves, or no mistake-free solves"
+ch2-spelling-bee-01,Subscriber/Registered,spelling_bee,Personalized Spelling Bee cards need at least 10 Spelling Bee solves.,Community fallback (not designed yet),Fewer than 10 Spelling Bee solves
+ch2-spelling-bee-02,Subscriber/Registered,spelling_bee,Personalized Spelling Bee cards need at least 10 Spelling Bee solves.,Community fallback (not designed yet),Fewer than 10 Spelling Bee solves
+ch2-spelling-bee-03,Subscriber/Registered,spelling_bee,Personalized Spelling Bee cards need at least 10 Spelling Bee solves.,None,"Fewer than 10 Spelling Bee solves, or no pangrams"
+ch2-spelling-bee-04a,Subscriber/Registered,spelling_bee,"Top-rank slot (one of 04a, 04b). Show 04a when Genius or Queen Bee was reached at least once.",ch2-spelling-bee-04b,"Fewer than 10 Spelling Bee solves, or top rank below Solid"
+ch2-spelling-bee-04b,Subscriber/Registered,spelling_bee,"Top-rank slot (one of 04a, 04b). Show 04b when the top rank is Solid or higher but neither Genius nor Queen Bee was reached.",ch2-spelling-bee-04a,"Fewer than 10 Spelling Bee solves, or top rank below Solid"

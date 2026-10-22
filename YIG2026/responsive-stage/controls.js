@@ -17,7 +17,7 @@ const minNote = document.getElementById("min-scale-note");
 const STEPS = SCREENS.length;
 const PROGRESS_SEGMENTS = 26;
 
-// Figma carousel widths (26 segments). Fill proportionally across the 45-screen flow.
+// Figma carousel widths (26 segments). Fill proportionally across the whole flow.
 const DEFAULT_SEG_WIDTHS = [
   11, 12, 12, 13, 12, 13, 12, 12, 11, 12, 11, 11, 11, 11, 12, 12, 13, 13, 12, 11, 11, 11, 12, 11, 13, 13,
 ];

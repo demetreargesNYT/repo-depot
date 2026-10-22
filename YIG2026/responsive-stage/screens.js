@@ -1,22 +1,15 @@
 "use strict";
 
 // Subscriber / Registered click-through for Year in Games 2026.
-// Screen order matches the latest Figma Subscriber/Registered link list (file SPgdDz5gM1VQIg2Z6gLqZf).
+// Steps 1–22 (Chapter 1, the Chapter 2 intro, Wordle, Connections, Spelling Bee) come from the revised
+// Figma file 9kgGqMlvJXa4jUolapkp89. Every later screen keeps its older frame from SPgdDz5gM1VQIg2Z6gLqZf.
 // Copy and X-placeholders match Figma; not sample-data.js.
+//
+// The review click-through shows every card and variant. `rule` notes (and card-rules.csv) record when a
+// card is skipped or swapped for an alternate; they are not applied here.
 
 const FIGMA_FILE_KEY = "SPgdDz5gM1VQIg2Z6gLqZf";
-
-const FLOW_NODE_IDS = [
-  "103:52456", "103:52488", "103:52362", "103:52339", "103:52385",
-  "103:52396", "103:52436", "103:52439", "103:52445", "103:52470",
-  "103:52478", "103:52418", "103:52502", "103:52974", "103:52997",
-  "103:53051", "103:52521", "103:52685", "103:52565", "103:52602",
-  "103:52620", "103:52634", "103:52584", "103:52650", "103:52548",
-  "103:52670", "103:52737", "103:52908", "103:52950", "103:52700",
-  "103:52713", "103:52928", "103:52874", "103:52857", "103:52762",
-  "103:52833", "103:52891", "103:52305", "103:53029", "103:52279",
-  "103:52328", "103:52283", "103:52293", "103:53013", "103:53019",
-];
+const FIGMA_FILE_KEY_2026 = "9kgGqMlvJXa4jUolapkp89";
 
 // Scope passed to stage-render. Screen copy keeps exact Figma placeholders inline
 // ("X guesses", "X%", "TKTKTKTKTK", "Month XX", "XXX players", etc.).
@@ -56,69 +49,43 @@ const PROTOTYPE_PAYLOAD = {
 };
 
 const BG = {
+  ch1: "#f1ecc0",
   wordle: "#c3e2c0",
-  ch1: "#e7f1e1",
+  connections: "#e1dbf5",
+  spelling_bee: "#fffdef",
   crossword: "#c0d8f8",
   badges: "#f3eec2",
   default: "#e7f1e1",
 };
 
+// Revised frames place content 32px below the 134px Global Nav.
+const CONTENT_TOP = 166;
+// 24px between a game icon and the copy under it (lockup gap 16 + 8).
+const AFTER_ICON = 8;
+
+const WORDLE_HARDEST_HEADLINE = { headline: "The hardest word\nof the year was" };
+const WORDLE_HARDEST_TILES = { "wordle-row": "PSHAW", state: "correct" };
+
 const SCREENS = [
+  // Chapter 1
   {
-    id: "ch2-wordle-15",
-    figmaNodeId: "103:52456",
-    label: "Your best solves",
-    chapterBg: BG.wordle,
-    lockup: { top: 140 },
-    lines: [
-      { "game-icon": "wordle" },
-      { headline: "Your best solves took" },
-      { "headline-strong": "X guesses" },
-      { headline: "which you did" },
-      { "headline-strong": "X times" },
-      { body: "Luck. Skill. What a thrill." },
-    ],
-  },
-  {
-    id: "ch2-wordle-18",
-    figmaNodeId: "103:52488",
-    label: "Top starting words",
-    chapterBg: BG.wordle,
-    lockup: { top: 140 },
-    lines: [
-      { "game-icon": "wordle" },
-      { headline: "And your top" },
-      { headline: "starting words were" },
-      { "headline-strong": "ADIEU x24" },
-      { "headline-strong": "BREAD x15" },
-      { "headline-strong": "MOUSE x10" },
-      { body: "Look at you, making the first move." },
-    ],
-  },
-  {
-    id: "ad-2",
-    figmaNodeId: "103:52362",
-    label: "Ad 2 – Countdown",
+    id: "ch1-01-intro",
+    figmaFileKey: FIGMA_FILE_KEY_2026,
+    figmaNodeId: "10406:79012",
+    label: "Downtime into playtime",
     chapterBg: BG.ch1,
-    hideNav: true,
-    kind: "ad",
-    ad: { creative: "assets/ad-creative.png", skipLabel: "Continue in", skipCount: "5" },
-  },
-  {
-    id: "ad-1",
-    figmaNodeId: "103:52339",
-    label: "Ad 1 – Countdown",
-    chapterBg: BG.ch1,
-    hideNav: true,
-    kind: "ad",
-    ad: { creative: "assets/ad-creative.png", skipLabel: "Continue in", skipCount: "5" },
+    lockup: { top: CONTENT_TOP },
+    lines: [
+      { headline: "This year, you turned\ndowntime into playtime." },
+    ],
   },
   {
     id: "ch1-02-total",
-    figmaNodeId: "103:52385",
+    figmaFileKey: FIGMA_FILE_KEY_2026,
+    figmaNodeId: "10406:78734",
     label: "You played a total of",
     chapterBg: BG.ch1,
-    lockup: { top: 226 },
+    lockup: { top: CONTENT_TOP },
     lines: [
       { headline: "You played a total of" },
       { "headline-strong": "X puzzles" },
@@ -126,27 +93,46 @@ const SCREENS = [
   },
   {
     id: "ch1-03-first",
-    figmaNodeId: "103:52396",
+    figmaFileKey: FIGMA_FILE_KEY_2026,
+    figmaNodeId: "10406:84497",
     label: "Your first puzzle was",
     chapterBg: BG.ch1,
-    lockup: { top: 187 },
+    lockup: { top: CONTENT_TOP },
     lines: [
       { headline: "Your first puzzle was" },
-      { "game-icon": "strands" },
-      { "headline-strong": "Strands" },
+      { image: "assets/first-puzzle-strands.svg", alt: "Strands", width: 175, height: 127.703 },
       { body: "January 4, 1:23 p.m." },
     ],
   },
   {
-    id: "ch1-01-intro",
-    figmaNodeId: "103:52436",
-    label: "Downtime into playtime",
+    id: "ch1-04-streak",
+    figmaFileKey: FIGMA_FILE_KEY_2026,
+    figmaNodeId: "10406:78883",
+    label: "Longest streak",
     chapterBg: BG.ch1,
-    lockup: { top: 331, height: 149, justifyContent: "center" },
+    lockup: { top: CONTENT_TOP },
     lines: [
-      { headline: "This year, you turned\ndowntime into playtime." },
+      { headline: "And your longest streak was\nin **Connections** at" },
+      { "game-icon": "connections", size: 75 },
+      { "headline-strong": "X days", marginTop: -4 },
+      { body: "Keep the wins coming." },
     ],
   },
+  {
+    id: "ch1-05-bot",
+    figmaFileKey: FIGMA_FILE_KEY_2026,
+    figmaNodeId: "10702:73032",
+    label: "Bot fact",
+    chapterBg: BG.ch1,
+    kind: "bot",
+    bot: {
+      image: "assets/bot-illustration.png",
+      lead: "Did you know: ",
+      text: "Over XXX players achieved 100-day Wordle streaks this year. That’s a lot, even for this clever bot!",
+    },
+  },
+
+  // Chapter 2
   {
     id: "ch2-01-intro",
     figmaNodeId: "103:52439",
@@ -157,80 +143,271 @@ const SCREENS = [
       { headline: "Let’s take a closer look\nat your puzzle powers." },
     ],
   },
+
+  // Chapter 2: Wordle
   {
-    id: "ch2-wordle-13",
-    figmaNodeId: "103:52445",
+    id: "ch2-wordle-01",
+    figmaFileKey: FIGMA_FILE_KEY_2026,
+    figmaNodeId: "10406:79035",
     label: "Average Wordle guesses",
+    rule: "Show the community-average lines only when the player’s average is lower than the community’s.",
     chapterBg: BG.wordle,
-    lockup: { top: 140 },
+    lockup: { top: CONTENT_TOP },
     lines: [
       { "game-icon": "wordle" },
-      { headline: "On average, you solved" },
-      { headline: "Wordle puzzles in" },
+      { headline: "On average, you solved\nWordle puzzles in", marginTop: AFTER_ICON },
       { "headline-strong": "X guesses" },
-      { body: "The average across all solvers was" },
-      { body: "X guesses. Well played!" },
+      { body: "The average across all solvers was\nX guesses. Well played!" },
     ],
   },
   {
-    id: "ch2-wordle-16",
-    figmaNodeId: "103:52470",
-    label: "Wordle solve rate",
+    id: "ch2-wordle-02",
+    figmaFileKey: FIGMA_FILE_KEY_2026,
+    figmaNodeId: "10515:106554",
+    label: "Your best solves",
     chapterBg: BG.wordle,
-    lockup: { top: 140 },
+    lockup: { top: CONTENT_TOP },
     lines: [
       { "game-icon": "wordle" },
-      { headline: "Of puzzles you attempted," },
-      { headline: "you had a" },
-      { "headline-strong": "X% solve rate" },
+      { headline: "Your best solves took", marginTop: AFTER_ICON },
+      { "headline-strong": "X guesses" },
+      { headline: "which you did" },
+      { "headline-strong": "X times" },
+      { body: "Luck. Skill. What a thrill." },
     ],
   },
   {
-    id: "ch2-wordle-17",
-    figmaNodeId: "103:52478",
-    label: "Hardest Wordle",
+    id: "ch2-wordle-03a",
+    figmaFileKey: FIGMA_FILE_KEY_2026,
+    figmaNodeId: "10515:106753",
+    label: "Hardest Wordle: missed",
+    rule: "Hardest-word slot, one of 03a/03b/03c. Show 03a when the player played PSHAW and missed it.",
     chapterBg: BG.wordle,
-    lockup: { top: 140 },
+    lockup: { top: CONTENT_TOP },
     lines: [
       { "game-icon": "wordle" },
-      { headline: "You also solved the year's" },
-      { headline: "hardest puzzle on" },
-      { "headline-strong": "Month XX" },
-      { body: "Over X% of players weren't as lucky." },
+      { ...WORDLE_HARDEST_HEADLINE, marginTop: AFTER_ICON },
+      WORDLE_HARDEST_TILES,
+      { body: "Over X% of players were stumped on\nJuly 15, including you!" },
     ],
   },
   {
-    id: "ch1-04-streak",
-    figmaNodeId: "103:52418",
-    label: "Longest streak",
-    chapterBg: BG.ch1,
-    lockup: { top: 210 },
+    id: "ch2-wordle-03b",
+    figmaFileKey: FIGMA_FILE_KEY_2026,
+    figmaNodeId: "10515:106945",
+    label: "Hardest Wordle: solved",
+    rule: "Hardest-word slot, one of 03a/03b/03c. Show 03b when the player played PSHAW and solved it.",
+    chapterBg: BG.wordle,
+    lockup: { top: CONTENT_TOP },
     lines: [
-      { headline: "And your longest streak was" },
-      { headline: "in Connections, at" },
-      { "game-icon": "connections", size: 75 },
-      { "headline-strong": "X days" },
+      { "game-icon": "wordle" },
+      { ...WORDLE_HARDEST_HEADLINE, marginTop: AFTER_ICON },
+      WORDLE_HARDEST_TILES,
+      { body: "But you guessed it! Over X% of\nplayers weren’t as lucky on July 15." },
     ],
   },
   {
-    id: "ch2-connections-9",
-    figmaNodeId: "103:52502",
-    label: "Purple first",
-    chapterBg: BG.default,
-    lockup: { top: 140 },
+    id: "ch2-wordle-03c",
+    figmaFileKey: FIGMA_FILE_KEY_2026,
+    figmaNodeId: "10927:178917",
+    label: "Hardest Wordle: not played",
+    rule: "Hardest-word slot, one of 03a/03b/03c. Show 03c when the player did not play PSHAW.",
+    chapterBg: BG.wordle,
+    lockup: { top: CONTENT_TOP },
+    lines: [
+      { "game-icon": "wordle" },
+      { ...WORDLE_HARDEST_HEADLINE, marginTop: AFTER_ICON },
+      WORDLE_HARDEST_TILES,
+      { body: "It stumped over X%\nof players on July 15." },
+    ],
+  },
+  {
+    id: "ch2-wordle-04",
+    figmaFileKey: FIGMA_FILE_KEY_2026,
+    figmaNodeId: "10515:106848",
+    label: "Top starting words",
+    chapterBg: BG.wordle,
+    lockup: { top: CONTENT_TOP },
+    lines: [
+      { "game-icon": "wordle" },
+      { headline: "And your top\nstarting words were", marginTop: AFTER_ICON },
+      { "wordle-row": ["ADIEU", "BREAD", "MOUSE"], state: "empty" },
+      { body: "Way to make the first move." },
+    ],
+  },
+
+  // Chapter 2: Connections
+  {
+    id: "ch2-connections-01",
+    figmaFileKey: FIGMA_FILE_KEY_2026,
+    figmaNodeId: "10515:107062",
+    label: "Solve order",
+    chapterBg: BG.connections,
+    lockup: { top: CONTENT_TOP },
     lines: [
       { "game-icon": "connections" },
-      { headline: "In Connections, you got" },
-      { headline: "the purple category first" },
+      { headline: "In Connections, your most\ncommon solving order was", marginTop: AFTER_ICON },
+      { "connections-color": ["blue", "green", "yellow", "purple"] },
+    ],
+  },
+  {
+    id: "ch2-connections-02",
+    figmaFileKey: FIGMA_FILE_KEY_2026,
+    figmaNodeId: "10406:79048",
+    label: "Purple first",
+    rule: "Skip when the player never got the purple category first. No alternate.",
+    chapterBg: BG.connections,
+    lockup: { top: CONTENT_TOP },
+    lines: [
+      { "game-icon": "connections" },
+      { headline: "You got the purple category first", marginTop: AFTER_ICON, nowrap: true },
       { "headline-strong": "X times" },
       { body: "We see you, overachiever." },
     ],
   },
   {
+    id: "ch2-connections-03",
+    figmaFileKey: FIGMA_FILE_KEY_2026,
+    figmaNodeId: "10515:107138",
+    label: "Connections solve rate",
+    chapterBg: BG.connections,
+    lockup: { top: CONTENT_TOP },
+    lines: [
+      { "game-icon": "connections" },
+      { headline: "And of puzzles you\nattempted, you had a", marginTop: AFTER_ICON },
+      { "headline-strong": "X% solve rate" },
+    ],
+  },
+  {
+    id: "ch2-connections-04",
+    figmaFileKey: FIGMA_FILE_KEY_2026,
+    figmaNodeId: "10515:107222",
+    label: "Average mistakes",
+    chapterBg: BG.connections,
+    lockup: { top: CONTENT_TOP },
+    lines: [
+      { "game-icon": "connections" },
+      { headline: "On average, you solved\npuzzles while making", marginTop: AFTER_ICON },
+      { "headline-strong": "X mistakes" },
+      { body: "Blame it on the red herrings." },
+    ],
+  },
+  {
+    id: "ch2-connections-05",
+    figmaFileKey: FIGMA_FILE_KEY_2026,
+    figmaNodeId: "10515:107296",
+    label: "Perfect Connections",
+    rule: "Skip when the player had no mistake-free solves. No alternate.",
+    chapterBg: BG.connections,
+    lockup: { top: CONTENT_TOP },
+    lines: [
+      { "game-icon": "connections" },
+      { headline: "You also solved\nwithout any mistakes", marginTop: AFTER_ICON },
+      { "headline-strong": "X times" },
+      { body: "And they say perfection doesn’t exist." },
+    ],
+  },
+
+  // Chapter 2: Spelling Bee
+  {
+    id: "ch2-spelling-bee-01",
+    figmaFileKey: FIGMA_FILE_KEY_2026,
+    figmaNodeId: "10406:79058",
+    label: "Spelling Bee words",
+    chapterBg: BG.spelling_bee,
+    lockup: { top: CONTENT_TOP },
+    lines: [
+      { "game-icon": "spelling_bee" },
+      { headline: "In Spelling Bee, you found a\ntotal of", marginTop: AFTER_ICON },
+      { "headline-strong": "X words" },
+      { body: "Honey, what an accomplishment." },
+    ],
+  },
+  {
+    id: "ch2-spelling-bee-02",
+    figmaFileKey: FIGMA_FILE_KEY_2026,
+    figmaNodeId: "10515:107386",
+    label: "Longest word",
+    chapterBg: BG.spelling_bee,
+    lockup: { top: CONTENT_TOP },
+    lines: [
+      { "game-icon": "spelling_bee" },
+      { headline: "Your longest word was", marginTop: AFTER_ICON },
+      { honeycomb: "TKTKTKTKTK" },
+    ],
+  },
+  {
+    id: "ch2-spelling-bee-03",
+    figmaFileKey: FIGMA_FILE_KEY_2026,
+    figmaNodeId: "10515:107453",
+    label: "Pangrams",
+    rule: "Skip when the player found no pangrams.",
+    chapterBg: BG.spelling_bee,
+    lockup: { top: CONTENT_TOP },
+    lines: [
+      { "game-icon": "spelling_bee" },
+      { headline: "You also found", marginTop: AFTER_ICON },
+      { "headline-strong": "X pangrams" },
+      { body: "Hive fives, all around." },
+    ],
+  },
+  {
+    id: "ch2-spelling-bee-04a",
+    figmaFileKey: FIGMA_FILE_KEY_2026,
+    figmaNodeId: "10515:107520",
+    label: "Genius and Queen Bee",
+    rule: "Top-rank slot, one of 04a/04b. Show 04a when Genius or Queen Bee was reached at least once. Skip the slot when the top rank is below Solid.",
+    chapterBg: BG.spelling_bee,
+    lockup: { top: CONTENT_TOP },
+    lines: [
+      { "game-icon": "spelling_bee" },
+      { headline: "And you reached Genius", marginTop: AFTER_ICON },
+      { "headline-strong": "X times" },
+      { headline: "and Queen Bee" },
+      { "headline-strong": "X times" },
+      { body: "Sweet, sweet victory." },
+    ],
+  },
+  {
+    id: "ch2-spelling-bee-04b",
+    figmaFileKey: FIGMA_FILE_KEY_2026,
+    figmaNodeId: "10844:160970",
+    label: "Top rank",
+    rule: "Top-rank slot, one of 04a/04b. Show 04b when the top rank is Solid or higher but neither Genius nor Queen Bee was reached. Skip the slot when the top rank is below Solid.",
+    chapterBg: BG.spelling_bee,
+    lockup: { top: 150 },
+    lines: [
+      { "game-icon": "spelling_bee", size: 75 },
+      { headline: "And you reached [Rank]" },
+      { "headline-strong": "X times" },
+      { body: "Sweet!" },
+    ],
+  },
+
+  // Older screens, in their previous relative order.
+  {
+    id: "ad-2",
+    figmaNodeId: "103:52362",
+    label: "Ad 2 – Countdown",
+    chapterBg: BG.default,
+    hideNav: true,
+    kind: "ad",
+    ad: { creative: "assets/ad-creative.png", skipLabel: "Continue in", skipCount: "5" },
+  },
+  {
+    id: "ad-1",
+    figmaNodeId: "103:52339",
+    label: "Ad 1 – Countdown",
+    chapterBg: BG.default,
+    hideNav: true,
+    kind: "ad",
+    ad: { creative: "assets/ad-creative.png", skipLabel: "Continue in", skipCount: "5" },
+  },
+  {
     id: "ad-2-b",
     figmaNodeId: "103:52974",
     label: "Ad 2 – Countdown (repeat)",
-    chapterBg: BG.ch1,
+    chapterBg: BG.default,
     hideNav: true,
     kind: "ad",
     ad: { creative: "assets/ad-creative.png", skipLabel: "Continue in", skipCount: "5" },
@@ -239,37 +416,9 @@ const SCREENS = [
     id: "start",
     figmaNodeId: "103:52997",
     label: "Start",
-    chapterBg: BG.ch1,
+    chapterBg: BG.default,
     hideNav: true,
     kind: "start",
-  },
-  {
-    id: "ch1-05-bot",
-    figmaNodeId: "103:53051",
-    label: "Bot fact",
-    chapterBg: BG.ch1,
-    kind: "bot",
-    bot: {
-      image: "assets/bot-illustration.png",
-      lead: "Did you know: ",
-      text: "Over XXX players achieved 100-day Wordle streaks this year. That’s a lot, even for this clever bot!",
-    },
-  },
-  {
-    id: "ch2-connections-11",
-    figmaNodeId: "103:52521",
-    label: "Solve order",
-    chapterBg: BG.default,
-    lockup: { top: 140 },
-    lines: [
-      { "game-icon": "connections" },
-      { headline: "Most often, you solved" },
-      { headline: "in the order of" },
-      { "connections-color": "blue" },
-      { "connections-color": "green" },
-      { "connections-color": "yellow" },
-      { "connections-color": "purple" },
-    ],
   },
   {
     id: "ch2-mini-9",
@@ -282,101 +431,6 @@ const SCREENS = [
       { headline: "You solved a total of" },
       { "headline-strong": "X puzzles" },
       { body: "Small grid, big win." },
-    ],
-  },
-  {
-    id: "ch2-connections-13",
-    figmaNodeId: "103:52565",
-    label: "Average mistakes",
-    chapterBg: BG.default,
-    lockup: { top: 140 },
-    lines: [
-      { "game-icon": "connections" },
-      { headline: "On average, you solved" },
-      { headline: "puzzles while making" },
-      { "headline-strong": "X mistakes" },
-      { body: "Blame it on the red herrings." },
-    ],
-  },
-  {
-    id: "ch2-spelling-bee-9",
-    figmaNodeId: "103:52602",
-    label: "Spelling Bee words",
-    chapterBg: BG.default,
-    lockup: { top: 140 },
-    lines: [
-      { "game-icon": "spelling_bee" },
-      { headline: "In Spelling Bee, you" },
-      { headline: "found a total of" },
-      { "headline-strong": "X words" },
-      { body: "Honey, what an accomplishment." },
-    ],
-  },
-  {
-    id: "ch2-spelling-bee-11",
-    figmaNodeId: "103:52620",
-    label: "Longest word",
-    chapterBg: BG.default,
-    lockup: { top: 140 },
-    lines: [
-      { "game-icon": "spelling_bee" },
-      { headline: "And your longest word was" },
-      { "headline-strong": "TKTKTKTKTK" },
-    ],
-  },
-  {
-    id: "ch2-spelling-bee-12",
-    figmaNodeId: "103:52634",
-    label: "Pangrams",
-    chapterBg: BG.default,
-    lockup: { top: 140 },
-    lines: [
-      { "game-icon": "spelling_bee" },
-      { headline: "You also found" },
-      { "headline-strong": "X pangrams" },
-      { body: "Hive fives, all around." },
-    ],
-  },
-  {
-    id: "ch2-connections-14",
-    figmaNodeId: "103:52584",
-    label: "Perfect Connections",
-    chapterBg: BG.default,
-    lockup: { top: 140 },
-    lines: [
-      { "game-icon": "connections" },
-      { headline: "You also solved" },
-      { headline: "without any mistakes" },
-      { "headline-strong": "X times" },
-      { body: "And they say perfection doesn’t exist." },
-    ],
-  },
-  {
-    id: "ch2-spelling-bee-13",
-    figmaNodeId: "103:52650",
-    label: "Genius and Queen Bee",
-    chapterBg: BG.default,
-    lockup: { top: 140 },
-    lines: [
-      { "game-icon": "spelling_bee" },
-      { headline: "And reached Genius" },
-      { "headline-strong": "X times" },
-      { headline: "and Queen Bee" },
-      { "headline-strong": "X times" },
-      { body: "Sweet, sweet victory." },
-    ],
-  },
-  {
-    id: "ch2-connections-12",
-    figmaNodeId: "103:52548",
-    label: "Connections solve rate",
-    chapterBg: BG.default,
-    lockup: { top: 140 },
-    lines: [
-      { "game-icon": "connections" },
-      { headline: "And of puzzles you" },
-      { headline: "attempted, you had a" },
-      { "headline-strong": "X% solve rate" },
     ],
   },
   {
@@ -476,7 +530,7 @@ const SCREENS = [
     id: "ch1-strands-9",
     figmaNodeId: "103:52874",
     label: "Strands total",
-    chapterBg: BG.ch1,
+    chapterBg: BG.default,
     lockup: { top: 140 },
     lines: [
       { "game-icon": "strands" },
@@ -490,7 +544,7 @@ const SCREENS = [
     id: "ch1-strands-7",
     figmaNodeId: "103:52857",
     label: "Spangram first",
-    chapterBg: BG.ch1,
+    chapterBg: BG.default,
     lockup: { top: 140 },
     lines: [
       { "game-icon": "strands" },
@@ -529,7 +583,7 @@ const SCREENS = [
     id: "ch1-strands-10",
     figmaNodeId: "103:52891",
     label: "Strands without hints",
-    chapterBg: BG.ch1,
+    chapterBg: BG.default,
     lockup: { top: 140 },
     lines: [
       { "game-icon": "strands" },
@@ -573,7 +627,7 @@ const SCREENS = [
     id: "chapter-13",
     figmaNodeId: "103:52283",
     label: "You play favorites",
-    chapterBg: BG.ch1,
+    chapterBg: BG.default,
     lockup: { top: 280, justifyContent: "center" },
     lines: [
       { headline: "But through it all, it's clear" },
@@ -603,12 +657,16 @@ const SCREENS = [
     id: "end-card",
     figmaNodeId: "103:53019",
     label: "End card",
-    chapterBg: BG.ch1,
+    chapterBg: BG.default,
     kind: "end-card",
   },
 ];
 
-function figmaUrl(nodeId) {
-  const hyphen = String(nodeId).replace(":", "-");
-  return `https://www.figma.com/design/${FIGMA_FILE_KEY}/YIG---Prototype?node-id=${hyphen}&m=dev`;
+const FLOW_NODE_IDS = SCREENS.map((screen) => screen.figmaNodeId);
+
+function figmaUrl(screenOrNodeId) {
+  const screen = typeof screenOrNodeId === "object" ? screenOrNodeId : { figmaNodeId: screenOrNodeId };
+  const fileKey = screen.figmaFileKey || FIGMA_FILE_KEY;
+  const hyphen = String(screen.figmaNodeId).replace(":", "-");
+  return `https://www.figma.com/design/${fileKey}/?node-id=${hyphen}&m=dev`;
 }
