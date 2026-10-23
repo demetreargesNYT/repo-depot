@@ -6,7 +6,7 @@ import { Rive } from "@rive-app/canvas"; // pin the version you ship
 const yig = new Rive({
   src: "/yig/chapter-2.riv",
   canvas: document.getElementById("yig-stage"),
-  stateMachines: "Chapter 2",
+  stateMachine: "Chapter 2",
   autoplay: true,
   autoBind: true, // binds the "Chapter 2" view model that drives the state machine
   onLoad: () => {
@@ -18,6 +18,14 @@ const yig = new Rive({
 
 function setProp(name, value) {
   yig.viewModelInstance.number(name).value = value;
+}
+
+// Interim: this file still drives the one-jump version of the Rive file (game + frame).
+// The scene restructure replaces it with a single "scene" number.
+function setScene(n) {
+  if (n === 0) { setProp("frame", 1); return; }
+  setProp("game", n);
+  setProp("frame", 2);
 }
 
 // Call from the tap handler that already advances the stats
@@ -41,3 +49,6 @@ function showCopy(n) {
     next.classList.add("yig-in");
   }
 }
+
+// Exports let the review harness drive this file as-is. A page that inlines the code can drop this line.
+export { onTap, setScene, yig };

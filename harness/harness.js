@@ -1,9 +1,12 @@
 // Review harness: plays the chapter's real built .riv, driven by engineering's own integration file.
-// Nothing here stands in for Rive or for engineering's code. The only addition to the integration source is
-// one appended `export` line, so this page can call its onTap().
+// Nothing here stands in for Rive or for engineering's code: the file is imported untouched and must export
+// onTap, setScene and yig.
 
 const $ = (id) => document.getElementById(id);
 const rive = window.rive;
+// The readout below listens for state changes to show the playing state's name. The runtime flags that as
+// deprecated; this page is a review tool, not engineering's code, so it is silenced here only.
+rive.Rive.suppressDeprecationWarnings = ["state-change-events"];
 rive.RuntimeLoader.setWasmUrl("/vendor/rive/rive.wasm"); // the pinned local runtime, never a CDN
 
 const LABEL = { opener: "Opener", wordle: "Wordle", connections: "Connections" };
@@ -53,7 +56,7 @@ async function boot() {
   });
   $("overlay").querySelectorAll(".yig-text:not([data-copy-frame]):not([data-copy-scene='opener'])").forEach((el) => el.remove());
 
-  const url = URL.createObjectURL(new Blob([source + "\nexport { onTap, yig };\n"], { type: "text/javascript" }));
+  const url = URL.createObjectURL(new Blob([source], { type: "text/javascript" })); // the file as engineering wrote it
   try {
     state.mod = await import(url);
   } catch (e) {
