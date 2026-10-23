@@ -15,23 +15,23 @@ Use this chat and the Claude project only for thinking, writing and reviews, if 
 ## Steps
 
 1. **Create the repo.** Unzip `yig-rive.zip` to `~/Desktop/rive-tests/yig-rive/`, open that folder in VS Code, and start Claude Code there.
-2. **Paste this into Claude Code to move everything in:**
+2. **Move everything in.** ✅ Done. The Chapter 2 project was *copied* (not moved) into `chapters/ch2`, checked against revision 48903415, and the old folder was renamed `~/Desktop/rive-tests/yig-ch2-archive` so nothing pushes to file 2677803 from two places. Chapter 1 was copied into `chapters/ch1` (linked to file 2666044, verified only), and `yig-test` became `~/Desktop/rive-tests/yig-test-archive`. The prompt used:
 
 ```
 Read CLAUDE.md and SETUP.md. Then set this repo up:
 1. git init, with a .gitignore that ignores build/ folders and .DS_Store.
-2. Move the Chapter 2 Rive project from ~/Desktop/rive-tests/yig-ch2 into chapters/ch2, keeping its
+2. Move the Chapter 2 Rive project from ~/Desktop/rive-tests/yig-ch2 (now yig-ch2-archive) into chapters/ch2, keeping its
    rive.yaml link to "YIG Chapter 2" (file 2677803). Run rive pull chapters/ch2 to confirm the link
    still works and the project matches revision 48903415.
-3. Copy ~/Desktop/rive-tests/yig-test/engineering/chapter-2-integration.js into engineering/. It has
+3. Copy ~/Desktop/rive-tests/yig-test/engineering/chapter-2-integration.js (now under yig-test-archive) into engineering/. It has
    the view model changes you made. The art and spec are already in this repo.
 4. If there's a Chapter 1 Rive project, link it as chapters/ch1 the same way. Don't change it.
 5. Commit: "Bring Chapter 1 and 2 Rive work into one repo".
 Tell me what you moved and anything that didn't match.
 ```
 
-3. **Connect the Rive MCP**, once. In a terminal: `claude mcp add --transport http rive http://127.0.0.1:9791/mcp`. It only works while the Rive desktop Editor is open.
-4. **Build the harness:**
+3. **Connect the Rive MCP**, once. ✅ Done (added for this folder; shows Connected). In a terminal: `claude mcp add --transport http rive http://127.0.0.1:9791/mcp`. It only works while the Rive desktop Editor is open.
+4. **Build the harness:** ✅ Done. Run it with `cd harness && npm install && npm start`, then open http://127.0.0.1:8765/ (see `harness/README.md`). The prompt used:
 
 ```
 Build harness/index.html: a local page that loads chapters/chN/build/*.riv with the Rive web runtime,
@@ -41,7 +41,7 @@ as-is, plus the HTML text layer with engineering/yig-text-motion.css. Serve it w
 server. It has to show the real file, with no stand-ins.
 ```
 
-5. **Restructure Chapter 2 for multiple games** by following `docs/scene-restructure.md`:
+5. **Restructure Chapter 2 for multiple games** (next) by following `docs/scene-restructure.md`:
 
 ```
 Do docs/scene-restructure.md on chapters/ch2, in stages: backdrops and wall lag wrappers, then intros
