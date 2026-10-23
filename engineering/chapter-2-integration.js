@@ -1,5 +1,9 @@
-// Game numbers agreed with design
-const GAME = { wordle: 1, connections: 2, strands: 3, spellingBee: 4, mini: 5, midi: 6, crossword: 7 };
+// Scene numbers agreed with design. 0 is the chapter's opening frame.
+const SCENE = { opener: 0, wordle: 1, connections: 2, strands: 3, spellingBee: 4, mini: 5, midi: 6, crossword: 7 };
+
+// The chapter's frames in order, built from the player's stats. Each frame names the scene it shows.
+// Example: [{ scene: "opener" }, { scene: "wordle" }, { scene: "wordle" }, { scene: "connections" }]
+const frames = player.chapterFrames;
 
 import { Rive } from "@rive-app/canvas"; // pin the version you ship
 
@@ -11,33 +15,26 @@ const yig = new Rive({
   autoBind: true, // binds the "Chapter 2" view model that drives the state machine
   onLoad: () => {
     yig.resizeDrawingSurfaceToCanvas();
-    setProp("game", GAME[player.topGame]); // once, from the player's stats
-    setProp("frame", 1);
+    setScene(SCENE.opener);
   },
 });
 
-function setProp(name, value) {
-  yig.viewModelInstance.number(name).value = value;
-}
-
-// Interim: this file still drives the one-jump version of the Rive file (game + frame).
-// The scene restructure replaces it with a single "scene" number.
 function setScene(n) {
-  if (n === 0) { setProp("frame", 1); return; }
-  setProp("game", n);
-  setProp("frame", 2);
+  yig.viewModelInstance.number("scene").value = n;
 }
 
 // Call from the tap handler that already advances the stats
-let frame = 1;
+let frame = 0;
 function onTap() {
+  if (frame >= frames.length - 1) return;
+  const sameScene = frames[frame + 1].scene === frames[frame].scene;
   frame += 1;
-  setProp("frame", frame);
-  showCopy(frame);
+  setScene(SCENE[frames[frame].scene]); // setting the same scene again does nothing, so Rive keeps looping
+  showCopy(frame, sameScene);
 }
 
-// Copy for the new frame rises in on its own after the CSS delay
-function showCopy(n) {
+// Copy for the new frame rises in on its own: after the 3.2 s transition, or right away on the same scene
+function showCopy(n, sameScene) {
   const current = document.querySelector(".yig-text:not([hidden])");
   const next = document.querySelector(`[data-copy-frame="${n}"]`);
   if (current) {
@@ -46,6 +43,7 @@ function showCopy(n) {
   }
   if (next) {
     next.hidden = false;
+    next.classList.toggle("yig-quick", sameScene);
     next.classList.add("yig-in");
   }
 }

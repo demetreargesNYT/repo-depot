@@ -3571,58 +3571,164 @@
         </Fill>
         <LayoutComponentStyle id="1:5"/>
         <StateMachine name="Chapter 2" id="1:7">
-            <StateMachineLayer name="Layer 1" id="1:8">
-                <AnyState x="160" y="260" id="1:9"/>
-                <ExitState x="440" y="260" id="1:10"/>
-                <EntryState id="1:11">
-                    <StateTransition stateToId="1:12" id="1:13"/>
+            <StateMachineLayer name="Shelf" id="1:2719">
+                <AnyState x="160" y="200" id="1:2715"/>
+                <ExitState x="720" y="200" id="1:2716"/>
+                <EntryState x="0" y="0" id="1:2717">
+                    <StateTransition stateToId="1:2714" id="1:2718"/>
                 </EntryState>
-                <AnimationState animationId="1:6" x="160" id="1:12">
-                    <StateTransition stateToId="1:2627" id="1:2631">
-                        <TransitionViewModelCondition id="0:3455">
-                            <TransitionPropertyViewModelComparator id="0:3456">
-                                <BindablePropertyNumber id="0:3457">
-                                    <DataBindContext sourcePathIds="1:14-1:2626" propertyKey="636" id="0:3458"/>
+                <AnimationState animationId="1:6" x="160" y="0" id="1:2714"/>
+            </StateMachineLayer>
+            <StateMachineLayer name="Shelf Exit" id="1:2741">
+                <AnyState x="160" y="200" id="1:2737"/>
+                <ExitState x="720" y="200" id="1:2738"/>
+                <EntryState x="0" y="0" id="1:2739">
+                    <StateTransition stateToId="1:2721" id="1:2740"/>
+                </EntryState>
+                <AnimationState animationId="1:2705" x="160" y="0" id="1:2720">
+                    <StateTransition stateToId="1:2721" duration="0" id="1:2724">
+                        <TransitionViewModelCondition opValue="equal" id="1:2725">
+                            <TransitionPropertyViewModelComparator id="1:2726">
+                                <BindablePropertyNumber id="1:2727">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="636" id="1:2728"/>
                                 </BindablePropertyNumber>
                             </TransitionPropertyViewModelComparator>
-                            <TransitionValueNumberComparator value="2" id="0:3459"/>
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition id="0:3460">
-                            <TransitionPropertyViewModelComparator id="0:3461">
-                                <BindablePropertyNumber id="0:3462">
-                                    <DataBindContext sourcePathIds="1:14-1:2625" propertyKey="636" id="0:3463"/>
-                                </BindablePropertyNumber>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueNumberComparator value="1" id="0:3464"/>
-                        </TransitionViewModelCondition>
-                    </StateTransition>
-                    <StateTransition stateToId="1:2629" id="1:2632">
-                        <TransitionViewModelCondition id="0:3465">
-                            <TransitionPropertyViewModelComparator id="0:3466">
-                                <BindablePropertyNumber id="0:3467">
-                                    <DataBindContext sourcePathIds="1:14-1:2626" propertyKey="636" id="0:3468"/>
-                                </BindablePropertyNumber>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueNumberComparator value="2" id="0:3469"/>
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition id="0:3470">
-                            <TransitionPropertyViewModelComparator id="0:3471">
-                                <BindablePropertyNumber id="0:3472">
-                                    <DataBindContext sourcePathIds="1:14-1:2625" propertyKey="636" id="0:3473"/>
-                                </BindablePropertyNumber>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueNumberComparator value="2" id="0:3474"/>
+                            <TransitionValueNumberComparator value="0" id="1:2729"/>
                         </TransitionViewModelCondition>
                     </StateTransition>
                 </AnimationState>
-                <AnimationState animationId="1:2621" x="440" y="-80" id="1:2627">
-                    <StateTransition stateToId="1:2628" enableExitTime="true" exitTimeIsPercetange="true" exitTime="100" id="1:2633"/>
+                <AnimationState animationId="1:2705" x="400" y="0" id="1:2721">
+                    <StateTransition stateToId="1:2722" duration="0" id="1:2730">
+                        <TransitionViewModelCondition opValue="notEqual" id="1:2731">
+                            <TransitionPropertyViewModelComparator id="1:2732">
+                                <BindablePropertyNumber id="1:2733">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="636" id="1:2734"/>
+                                </BindablePropertyNumber>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueNumberComparator value="0" id="1:2735"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
                 </AnimationState>
-                <AnimationState animationId="1:2622" x="720" y="-80" id="1:2628"/>
-                <AnimationState animationId="1:2623" x="440" y="80" id="1:2629">
-                    <StateTransition stateToId="1:2630" enableExitTime="true" exitTimeIsPercetange="true" exitTime="100" id="1:2634"/>
+                <AnimationState animationId="1:2704" x="640" y="0" id="1:2722">
+                    <StateTransition stateToId="1:2723" duration="0" enableExitTime="true" exitTimeIsPercetange="true" exitTime="100" id="1:2736"/>
                 </AnimationState>
-                <AnimationState animationId="1:2624" x="720" y="80" id="1:2630"/>
+                <AnimationState animationId="1:2706" x="880" y="0" id="1:2723"/>
+            </StateMachineLayer>
+            <StateMachineLayer name="Wordle" id="1:2756">
+                <AnyState x="160" y="200" id="1:2752"/>
+                <ExitState x="720" y="200" id="1:2753"/>
+                <EntryState x="0" y="0" id="1:2754">
+                    <StateTransition stateToId="1:2742" id="1:2755"/>
+                </EntryState>
+                <AnimationState animationId="1:2702" x="160" y="0" id="1:2742">
+                    <StateTransition stateToId="1:2743" duration="0" id="1:2745">
+                        <TransitionViewModelCondition opValue="equal" id="1:2746">
+                            <TransitionPropertyViewModelComparator id="1:2747">
+                                <BindablePropertyNumber id="1:2748">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="636" id="1:2749"/>
+                                </BindablePropertyNumber>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueNumberComparator value="1" id="1:2750"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
+                </AnimationState>
+                <AnimationState animationId="1:2621" x="400" y="0" id="1:2743">
+                    <StateTransition stateToId="1:2744" duration="0" enableExitTime="true" exitTimeIsPercetange="true" exitTime="100" id="1:2751"/>
+                </AnimationState>
+                <AnimationState animationId="1:2622" x="640" y="0" id="1:2744"/>
+            </StateMachineLayer>
+            <StateMachineLayer name="Wordle Exit" id="1:2778">
+                <AnyState x="160" y="200" id="1:2774"/>
+                <ExitState x="720" y="200" id="1:2775"/>
+                <EntryState x="0" y="0" id="1:2776">
+                    <StateTransition stateToId="1:2757" id="1:2777"/>
+                </EntryState>
+                <AnimationState animationId="1:2708" x="160" y="0" id="1:2757">
+                    <StateTransition stateToId="1:2758" duration="0" id="1:2761">
+                        <TransitionViewModelCondition opValue="equal" id="1:2762">
+                            <TransitionPropertyViewModelComparator id="1:2763">
+                                <BindablePropertyNumber id="1:2764">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="636" id="1:2765"/>
+                                </BindablePropertyNumber>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueNumberComparator value="1" id="1:2766"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
+                </AnimationState>
+                <AnimationState animationId="1:2708" x="400" y="0" id="1:2758">
+                    <StateTransition stateToId="1:2759" duration="0" id="1:2767">
+                        <TransitionViewModelCondition opValue="notEqual" id="1:2768">
+                            <TransitionPropertyViewModelComparator id="1:2769">
+                                <BindablePropertyNumber id="1:2770">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="636" id="1:2771"/>
+                                </BindablePropertyNumber>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueNumberComparator value="1" id="1:2772"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
+                </AnimationState>
+                <AnimationState animationId="1:2707" x="640" y="0" id="1:2759">
+                    <StateTransition stateToId="1:2760" duration="0" enableExitTime="true" exitTimeIsPercetange="true" exitTime="100" id="1:2773"/>
+                </AnimationState>
+                <AnimationState animationId="1:2709" x="880" y="0" id="1:2760"/>
+            </StateMachineLayer>
+            <StateMachineLayer name="Connections" id="1:2793">
+                <AnyState x="160" y="200" id="1:2789"/>
+                <ExitState x="720" y="200" id="1:2790"/>
+                <EntryState x="0" y="0" id="1:2791">
+                    <StateTransition stateToId="1:2779" id="1:2792"/>
+                </EntryState>
+                <AnimationState animationId="1:2703" x="160" y="0" id="1:2779">
+                    <StateTransition stateToId="1:2780" duration="0" id="1:2782">
+                        <TransitionViewModelCondition opValue="equal" id="1:2783">
+                            <TransitionPropertyViewModelComparator id="1:2784">
+                                <BindablePropertyNumber id="1:2785">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="636" id="1:2786"/>
+                                </BindablePropertyNumber>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueNumberComparator value="2" id="1:2787"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
+                </AnimationState>
+                <AnimationState animationId="1:2623" x="400" y="0" id="1:2780">
+                    <StateTransition stateToId="1:2781" duration="0" enableExitTime="true" exitTimeIsPercetange="true" exitTime="100" id="1:2788"/>
+                </AnimationState>
+                <AnimationState animationId="1:2624" x="640" y="0" id="1:2781"/>
+            </StateMachineLayer>
+            <StateMachineLayer name="Connections Exit" id="1:2815">
+                <AnyState x="160" y="200" id="1:2811"/>
+                <ExitState x="720" y="200" id="1:2812"/>
+                <EntryState x="0" y="0" id="1:2813">
+                    <StateTransition stateToId="1:2794" id="1:2814"/>
+                </EntryState>
+                <AnimationState animationId="1:2711" x="160" y="0" id="1:2794">
+                    <StateTransition stateToId="1:2795" duration="0" id="1:2798">
+                        <TransitionViewModelCondition opValue="equal" id="1:2799">
+                            <TransitionPropertyViewModelComparator id="1:2800">
+                                <BindablePropertyNumber id="1:2801">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="636" id="1:2802"/>
+                                </BindablePropertyNumber>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueNumberComparator value="2" id="1:2803"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
+                </AnimationState>
+                <AnimationState animationId="1:2711" x="400" y="0" id="1:2795">
+                    <StateTransition stateToId="1:2796" duration="0" id="1:2804">
+                        <TransitionViewModelCondition opValue="notEqual" id="1:2805">
+                            <TransitionPropertyViewModelComparator id="1:2806">
+                                <BindablePropertyNumber id="1:2807">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="636" id="1:2808"/>
+                                </BindablePropertyNumber>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueNumberComparator value="2" id="1:2809"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
+                </AnimationState>
+                <AnimationState animationId="1:2710" x="640" y="0" id="1:2796">
+                    <StateTransition stateToId="1:2797" duration="0" enableExitTime="true" exitTimeIsPercetange="true" exitTime="100" id="1:2810"/>
+                </AnimationState>
+                <AnimationState animationId="1:2712" x="880" y="0" id="1:2797"/>
             </StateMachineLayer>
         </StateMachine>
         <LinearAnimation duration="108" loopValue="loop" name="Shelf Loop" id="1:6">
@@ -4907,34 +5013,34 @@
             </KeyedObject>
             <KeyedObject objectId="1:849">
                 <KeyedProperty property="scaleX">
-                    <KeyFrameDouble value="1" frame="0"/>
+                    <KeyFrameDouble value="0" frame="0"/>
                 </KeyedProperty>
                 <KeyedProperty property="scaleY">
-                    <KeyFrameDouble value="1" frame="0"/>
+                    <KeyFrameDouble value="0" frame="0"/>
                 </KeyedProperty>
             </KeyedObject>
             <KeyedObject objectId="1:972">
                 <KeyedProperty property="scaleX">
-                    <KeyFrameDouble value="1" frame="0"/>
+                    <KeyFrameDouble value="0" frame="0"/>
                 </KeyedProperty>
                 <KeyedProperty property="scaleY">
-                    <KeyFrameDouble value="1" frame="0"/>
+                    <KeyFrameDouble value="0" frame="0"/>
                 </KeyedProperty>
             </KeyedObject>
             <KeyedObject objectId="1:1056">
                 <KeyedProperty property="scaleX">
-                    <KeyFrameDouble value="1" frame="0"/>
+                    <KeyFrameDouble value="0" frame="0"/>
                 </KeyedProperty>
                 <KeyedProperty property="scaleY">
-                    <KeyFrameDouble value="1" frame="0"/>
+                    <KeyFrameDouble value="0" frame="0"/>
                 </KeyedProperty>
             </KeyedObject>
             <KeyedObject objectId="1:935">
                 <KeyedProperty property="scaleX">
-                    <KeyFrameDouble value="1" frame="0"/>
+                    <KeyFrameDouble value="0" frame="0"/>
                 </KeyedProperty>
                 <KeyedProperty property="scaleY">
-                    <KeyFrameDouble value="1" frame="0"/>
+                    <KeyFrameDouble value="0" frame="0"/>
                 </KeyedProperty>
             </KeyedObject>
             <KeyedObject objectId="1:1073">
@@ -4963,7 +5069,7 @@
             </KeyedObject>
             <KeyedObject objectId="1:344">
                 <KeyedProperty property="opacity">
-                    <KeyFrameDouble value="1" frame="0"/>
+                    <KeyFrameDouble value="0" frame="0"/>
                 </KeyedProperty>
                 <KeyedProperty property="scaleX">
                     <KeyFrameDouble value="0.96" frame="0"/>
@@ -4977,7 +5083,7 @@
             </KeyedObject>
             <KeyedObject objectId="1:346">
                 <KeyedProperty property="opacity">
-                    <KeyFrameDouble value="1" frame="0"/>
+                    <KeyFrameDouble value="0" frame="0"/>
                 </KeyedProperty>
                 <KeyedProperty property="y">
                     <KeyFrameDouble value="54.353149" frame="0"/>
@@ -5016,7 +5122,7 @@
             </KeyedObject>
             <KeyedObject objectId="1:20">
                 <KeyedProperty property="opacity">
-                    <KeyFrameDouble value="1" frame="0"/>
+                    <KeyFrameDouble value="0" frame="0"/>
                 </KeyedProperty>
                 <KeyedProperty property="scaleX">
                     <KeyFrameDouble value="0.96" frame="0"/>
@@ -5030,7 +5136,7 @@
             </KeyedObject>
             <KeyedObject objectId="1:22">
                 <KeyedProperty property="opacity">
-                    <KeyFrameDouble value="1" frame="0"/>
+                    <KeyFrameDouble value="0" frame="0"/>
                 </KeyedProperty>
                 <KeyedProperty property="y">
                     <KeyFrameDouble value="54.1875" frame="0"/>
@@ -5314,11 +5420,9 @@
     </Artboard>
     <SVGAsset file="chapter-2-rive-import.svg" height="1067" width="1495" assetId="7187791" name="chapter-2-rive-import" id="1:16"/>
     <ViewModel defaultInstanceId="1:15" name="Chapter 2" id="1:14">
-        <ViewModelPropertyNumber name="game" id="1:2625"/>
-        <ViewModelPropertyNumber name="frame" id="1:2626"/>
+        <ViewModelPropertyNumber name="scene" id="1:2713"/>
         <ViewModelInstance exports="true" name="Default" id="1:15">
-            <ViewModelInstanceNumber viewModelPropertyId="1:2625" id="0:3475"/>
-            <ViewModelInstanceNumber viewModelPropertyId="1:2626" id="0:3476"/>
+            <ViewModelInstanceNumber propertyValue="0" viewModelPropertyId="1:2713" id="1:2816"/>
         </ViewModelInstance>
     </ViewModel>
 </Rive>
