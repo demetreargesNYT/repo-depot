@@ -14,7 +14,7 @@ const ORDERS = { wc: ["wordle", "connections"], cw: ["connections", "wordle"] };
 const SCENE_NUM = { opener: 0, wordle: 1, connections: 2 };
 
 let copyTemplate = "";
-let state = { mod: null, frames: [], at: 0, scenePropStyle: null, source: "", timer: null };
+let state = { mod: null, frames: [], at: 0, source: "", timer: null };
 
 async function boot() {
   clearInterval(state.timer);
@@ -33,28 +33,23 @@ async function boot() {
 
   const source = await (await fetch("/engineering/chapter-2-integration.js", { cache: "no-store" })).text();
   state.source = source;
-  // The scene-reference style sets a "Scene" value from a frame list; the live style sets game and frame.
-  const usesFrameList = /chapterFrames/.test(source);
-  state.scenePropStyle = usesFrameList ? "scene" : "game-frame";
-  $("ro-int").textContent = usesFrameList ? "chapter-2-integration.js (frame list, scene)" : "chapter-2-integration.js (game + frame)";
+  $("ro-int").textContent = "chapter-2-integration.js (frame list, scene)";
 
   const [first, second] = ORDERS[$("order").value];
-  const frames = usesFrameList
-    ? [{ scene: "opener" }, { scene: first, step: 1 }, { scene: first, step: 2 }, { scene: second, step: 1 }]
-    : [{ scene: "opener" }, { scene: first, step: 1 }];
+  // The opener, then each game once, in the player's order. Each game's loop runs until the next tap.
+  const frames = [{ scene: "opener" }, { scene: first }, { scene: second }];
   state.frames = frames;
   state.at = 0;
 
   // the integration code reads these globals, the way engineering's page will provide them
-  window.player = { topGame: first, chapterFrames: frames };
+  window.player = { chapterFrames: frames };
 
-  // number the copy blocks the way the integration file expects: the live style counts frames from 1
-  const base = usesFrameList ? 0 : 1;
+  // each frame's copy block is found by its scene and numbered with the frame it belongs to
   frames.forEach((f, i) => {
-    const el = $("overlay").querySelector(`[data-copy-scene="${f.scene}"][data-copy-step="${f.step || 1}"]`);
-    if (el) el.dataset.copyFrame = String(i + base);
+    const el = $("overlay").querySelector(`[data-copy-scene="${f.scene}"]`);
+    if (el) el.dataset.copyFrame = String(i);
   });
-  $("overlay").querySelectorAll(".yig-text:not([data-copy-frame]):not([data-copy-scene='opener'])").forEach((el) => el.remove());
+  $("overlay").querySelectorAll(".yig-text:not([data-copy-frame])").forEach((el) => el.remove());
 
   const url = URL.createObjectURL(new Blob([source], { type: "text/javascript" })); // the file as engineering wrote it
   try {
@@ -75,8 +70,7 @@ async function boot() {
 function readVm() {
   const vm = state.mod?.yig?.viewModelInstance;
   if (!vm) { $("ro-vm").textContent = "not bound yet"; return; }
-  const parts = ["scene", "game", "frame"].map((n) => [n, vm.number(n)]).filter(([, p]) => p).map(([n, p]) => `${n} ${p.value}`);
-  $("ro-vm").textContent = parts.join(" · ") || "no number properties found";
+  $("ro-vm").textContent = `scene ${vm.number("scene").value}`;
   syncSceneButtons(vm);
 }
 
@@ -90,11 +84,9 @@ function tap() {
 
 function renderFrames() {
   $("framelist").innerHTML = state.frames
-    .map((f, i) => `<li class="${i === state.at ? "now" : ""}"><b>${i + 1}</b>${LABEL[f.scene]}${i > 0 && f.scene === state.frames[i - 1].scene ? " · same scene" : ""}</li>`)
+    .map((f, i) => `<li class="${i === state.at ? "now" : ""}"><b>${i + 1}</b>${LABEL[f.scene]}</li>`)
     .join("");
-  $("framenote").textContent = state.scenePropStyle === "scene"
-    ? "Frames come from the player's data: opener, the first game twice, then the second game."
-    : "This integration file handles one jump: opener to the player's top game (game + frame). Longer chains arrive with the scene restructure.";
+  $("framenote").textContent = "One frame per game, from the player's data: the opener, then each game once. After an intro, that game's loop runs until the next tap.";
   $("framenote").className = "note";
 }
 
@@ -107,17 +99,12 @@ function buildSceneButtons() {
     const b = e.target.closest("button"); if (!b || b.disabled) return;
     const n = Number(b.dataset.scene), vm = state.mod?.yig?.viewModelInstance;
     if (!vm) return;
-    if (vm.number("scene")) { vm.number("scene").value = n; return; }
-    if (n > 0) { vm.number("game").value = n; vm.number("frame").value = 2; }
+    vm.number("scene").value = n;
   });
 }
 function syncSceneButtons(vm) {
-  const hasScene = !!vm.number("scene");
   $("scenes").querySelectorAll("button").forEach((b) => {
-    const n = Number(b.dataset.scene);
-    b.disabled = !hasScene && n === 0;
-    b.title = hasScene ? `Set scene to ${n}` : n === 0 ? "This file has no scene value yet; use Restart to see the opener" : `Sets game ${n} and frame 2 (this file has game + frame)`;
-    b.setAttribute("aria-pressed", String(hasScene && vm.number("scene").value === n));
+    b.setAttribute("aria-pressed", String(vm.number("scene").value === Number(b.dataset.scene)));
   });
 }
 
