@@ -49,7 +49,11 @@ function showCopy(n) {
     }
   }
   if (next) {
+    // Take both classes off, force a reflow, then add yig-in, so the CSS animation restarts every time this
+    // copy shows. Without the reflow the browser sees yig-in already there and plays nothing.
+    next.classList.remove("yig-in", "yig-out");
     next.hidden = false;
+    void next.offsetWidth;
     next.classList.add("yig-in");
   }
 }
