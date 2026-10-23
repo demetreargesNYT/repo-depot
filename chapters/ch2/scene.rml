@@ -1146,8 +1146,8 @@
                     </Shape>
                     <Shape name="Wall Corner" id="1:2688">
                         <PointsPath id="1:2689">
-                            <StraightVertex x="0" y="-200" id="1:2690"/>
-                            <StraightVertex x="0" y="712" id="1:2691"/>
+                            <StraightVertex x="-1" y="-200" id="1:2690"/>
+                            <StraightVertex x="-1" y="712" id="1:2691"/>
                         </PointsPath>
                         <Stroke thickness="2" id="1:2692">
                             <SolidColor colorValue="FF1F1F1F" id="1:2693"/>
@@ -1620,8 +1620,8 @@
                     </Shape>
                     <Shape name="Wall Corner" id="1:2666">
                         <PointsPath id="1:2667">
-                            <StraightVertex x="0" y="-200" id="1:2668"/>
-                            <StraightVertex x="0" y="712" id="1:2669"/>
+                            <StraightVertex x="-1" y="-200" id="1:2668"/>
+                            <StraightVertex x="-1" y="712" id="1:2669"/>
                         </PointsPath>
                         <Stroke thickness="2" id="1:2670">
                             <SolidColor colorValue="FF1F1F1F" id="1:2671"/>
@@ -3511,8 +3511,8 @@
                     </Shape>
                     <Shape name="Wall Corner" id="1:2643">
                         <PointsPath id="1:2644">
-                            <StraightVertex x="0" y="-200" id="1:2645"/>
-                            <StraightVertex x="0" y="712" id="1:2646"/>
+                            <StraightVertex x="-1" y="-200" id="1:2645"/>
+                            <StraightVertex x="-1" y="712" id="1:2646"/>
                         </PointsPath>
                         <Stroke thickness="2" id="1:2647">
                             <SolidColor colorValue="FF1F1F1F" id="1:2648"/>
@@ -3625,7 +3625,7 @@
                 <AnimationState animationId="1:2624" x="720" y="80" id="1:2630"/>
             </StateMachineLayer>
         </StateMachine>
-        <LinearAnimation duration="108" loopValue="loop" name="Frame 1 Loop" id="1:6">
+        <LinearAnimation duration="108" loopValue="loop" name="Shelf Loop" id="1:6">
             <KeyedObject objectId="1:1245" id="0:2625">
                 <KeyedProperty property="x" id="0:2626">
                     <KeyFrameDouble value="-29.38999" interpolationType="cubic" id="0:2627">
@@ -3864,30 +3864,6 @@
                     <KeyFrameDouble value="1" frame="133" id="0:2777"/>
                 </KeyedProperty>
             </KeyedObject>
-            <KeyedObject objectId="1:1093" id="0:2778">
-                <KeyedProperty property="x" id="0:2779">
-                    <KeyFrameDouble value="756.71997" interpolationType="cubic" frame="3" id="0:2780">
-                        <CubicEaseInterpolator x1="0.64999998" x2="0.34999999" id="0:2781"/>
-                    </KeyFrameDouble>
-                    <KeyFrameDouble value="-843.28003" frame="93" id="0:2782"/>
-                </KeyedProperty>
-            </KeyedObject>
-            <KeyedObject objectId="1:1468" id="0:2783">
-                <KeyedProperty property="x" id="0:2784">
-                    <KeyFrameDouble value="711.375" interpolationType="cubic" frame="3" id="0:2785">
-                        <CubicEaseInterpolator x1="0.64999998" x2="0.34999999" id="0:2786"/>
-                    </KeyFrameDouble>
-                    <KeyFrameDouble value="-568.625" frame="93" id="0:2787"/>
-                </KeyedProperty>
-            </KeyedObject>
-            <KeyedObject objectId="1:2304" id="0:2788">
-                <KeyedProperty property="colorValue" id="0:2789">
-                    <KeyFrameColor value="FFE7F1E1" interpolationType="cubic" frame="6" id="0:2790">
-                        <CubicEaseInterpolator x1="0.44999999" x2="0.55000001" id="0:2791"/>
-                    </KeyFrameColor>
-                    <KeyFrameColor value="FFC3E2C0" frame="87" id="0:2792"/>
-                </KeyedProperty>
-            </KeyedObject>
             <KeyedObject objectId="1:1073" id="0:2793">
                 <KeyedProperty property="scaleX" id="0:2794">
                     <KeyFrameDouble value="1" interpolationType="cubic" frame="127" id="0:2795">
@@ -4035,6 +4011,14 @@
                         <CubicEaseInterpolator x1="0.16" y1="1" x2="0.30000001" id="0:2893"/>
                     </KeyFrameDouble>
                     <KeyFrameDouble value="44.353149" frame="153" id="0:2894"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:2659">
+                <KeyedProperty property="x">
+                    <KeyFrameDouble value="1600" frame="3" interpolationType="cubic">
+                        <CubicEaseInterpolator x1="0.65" y1="0" x2="0.35" y2="1"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="0" frame="93"/>
                 </KeyedProperty>
             </KeyedObject>
         </LinearAnimation>
@@ -4706,28 +4690,12 @@
                     <KeyFrameDouble value="51.75" frame="123" id="0:3341"/>
                 </KeyedProperty>
             </KeyedObject>
-            <KeyedObject objectId="1:1093" id="0:3342">
-                <KeyedProperty property="x" id="0:3343">
-                    <KeyFrameDouble value="756.71997" interpolationType="cubic" frame="3" id="0:3344">
-                        <CubicEaseInterpolator x1="0.64999998" x2="0.34999999" id="0:3345"/>
+            <KeyedObject objectId="1:2681">
+                <KeyedProperty property="x">
+                    <KeyFrameDouble value="1600" frame="3" interpolationType="cubic">
+                        <CubicEaseInterpolator x1="0.65" y1="0" x2="0.35" y2="1"/>
                     </KeyFrameDouble>
-                    <KeyFrameDouble value="-843.28003" frame="93" id="0:3346"/>
-                </KeyedProperty>
-            </KeyedObject>
-            <KeyedObject objectId="1:1468" id="0:3347">
-                <KeyedProperty property="x" id="0:3348">
-                    <KeyFrameDouble value="711.375" interpolationType="cubic" frame="3" id="0:3349">
-                        <CubicEaseInterpolator x1="0.64999998" x2="0.34999999" id="0:3350"/>
-                    </KeyFrameDouble>
-                    <KeyFrameDouble value="-568.625" frame="93" id="0:3351"/>
-                </KeyedProperty>
-            </KeyedObject>
-            <KeyedObject objectId="1:2304" id="0:3352">
-                <KeyedProperty property="colorValue" id="0:3353">
-                    <KeyFrameColor value="FFE7F1E1" interpolationType="cubic" frame="6" id="0:3354">
-                        <CubicEaseInterpolator x1="0.44999999" x2="0.55000001" id="0:3355"/>
-                    </KeyFrameColor>
-                    <KeyFrameColor value="FFE1DBF5" frame="87" id="0:3356"/>
+                    <KeyFrameDouble value="0" frame="93"/>
                 </KeyedProperty>
             </KeyedObject>
         </LinearAnimation>
@@ -4872,6 +4840,474 @@
                         <CubicEaseInterpolator x1="0.34" y1="1.5599999" x2="0.63999999" id="0:3453"/>
                     </KeyFrameDouble>
                     <KeyFrameDouble value="1" frame="275" id="0:3454"/>
+                </KeyedProperty>
+            </KeyedObject>
+        </LinearAnimation>
+        <LinearAnimation fps="60" duration="1" name="Wordle Waiting" id="1:2702">
+            <KeyedObject objectId="1:833">
+                <KeyedProperty property="rotation">
+                    <KeyFrameDouble value="1.5707963" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleX">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:1017">
+                <KeyedProperty property="rotation">
+                    <KeyFrameDouble value="1.5707963" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleX">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:969">
+                <KeyedProperty property="rotation">
+                    <KeyFrameDouble value="1.5707963" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleX">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:883">
+                <KeyedProperty property="rotation">
+                    <KeyFrameDouble value="1.0821041" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleX">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="y">
+                    <KeyFrameDouble value="-800" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:918">
+                <KeyedProperty property="rotation">
+                    <KeyFrameDouble value="-1.0821041" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleX">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="y">
+                    <KeyFrameDouble value="-800" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:849">
+                <KeyedProperty property="scaleX">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:972">
+                <KeyedProperty property="scaleX">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:1056">
+                <KeyedProperty property="scaleX">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:935">
+                <KeyedProperty property="scaleX">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:1073">
+                <KeyedProperty property="scaleX">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="x">
+                    <KeyFrameDouble value="-80" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="y">
+                    <KeyFrameDouble value="712" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:1074">
+                <KeyedProperty property="rotation">
+                    <KeyFrameDouble value="-18.849556" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:832">
+                <KeyedProperty property="x">
+                    <KeyFrameDouble value="2348.2151" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:344">
+                <KeyedProperty property="opacity">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleX">
+                    <KeyFrameDouble value="0.96" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY">
+                    <KeyFrameDouble value="0.96" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="y">
+                    <KeyFrameDouble value="381" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:346">
+                <KeyedProperty property="opacity">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="y">
+                    <KeyFrameDouble value="54.353149" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:2659">
+                <KeyedProperty property="x">
+                    <KeyFrameDouble value="1600" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+        </LinearAnimation>
+        <LinearAnimation fps="60" duration="1" name="Connections Waiting" id="1:2703">
+            <KeyedObject objectId="1:559">
+                <KeyedProperty property="scaleX">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="x">
+                    <KeyFrameDouble value="-80" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="y">
+                    <KeyFrameDouble value="712" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:560">
+                <KeyedProperty property="rotation">
+                    <KeyFrameDouble value="-18.849556" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:578">
+                <KeyedProperty property="x">
+                    <KeyFrameDouble value="2347.5" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:20">
+                <KeyedProperty property="opacity">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleX">
+                    <KeyFrameDouble value="0.96" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY">
+                    <KeyFrameDouble value="0.96" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="y">
+                    <KeyFrameDouble value="381" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:22">
+                <KeyedProperty property="opacity">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="y">
+                    <KeyFrameDouble value="54.1875" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:720">
+                <KeyedProperty property="x">
+                    <KeyFrameDouble value="2068.7451" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:678">
+                <KeyedProperty property="rotation">
+                    <KeyFrameDouble value="0.1570796" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleX">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="y">
+                    <KeyFrameDouble value="-748.25" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:650">
+                <KeyedProperty property="rotation">
+                    <KeyFrameDouble value="-0.122173" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleX">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="y">
+                    <KeyFrameDouble value="-748.25" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:706">
+                <KeyedProperty property="rotation">
+                    <KeyFrameDouble value="0.1047198" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleX">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="y">
+                    <KeyFrameDouble value="-767.25" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:692">
+                <KeyedProperty property="rotation">
+                    <KeyFrameDouble value="-0.1745329" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleX">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="y">
+                    <KeyFrameDouble value="-767.25" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:635">
+                <KeyedProperty property="rotation">
+                    <KeyFrameDouble value="0.2094395" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleX">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="y">
+                    <KeyFrameDouble value="-804.75" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:664">
+                <KeyedProperty property="rotation">
+                    <KeyFrameDouble value="-0.1047198" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleX">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="y">
+                    <KeyFrameDouble value="-785.75" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:621">
+                <KeyedProperty property="rotation">
+                    <KeyFrameDouble value="0.1919862" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleX">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="y">
+                    <KeyFrameDouble value="-748.25" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:607">
+                <KeyedProperty property="rotation">
+                    <KeyFrameDouble value="-0.1570796" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleX">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="y">
+                    <KeyFrameDouble value="-748.25" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:593">
+                <KeyedProperty property="rotation">
+                    <KeyFrameDouble value="0.1396263" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleX">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="y">
+                    <KeyFrameDouble value="-767.25" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:579">
+                <KeyedProperty property="rotation">
+                    <KeyFrameDouble value="-0.1396263" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleX">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY">
+                    <KeyFrameDouble value="1" frame="0"/>
+                </KeyedProperty>
+                <KeyedProperty property="y">
+                    <KeyFrameDouble value="-748.25" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:2681">
+                <KeyedProperty property="x">
+                    <KeyFrameDouble value="1600" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+        </LinearAnimation>
+        <LinearAnimation loopValue="oneShot" fps="60" duration="96" name="Shelf Outro" id="1:2704">
+            <KeyedObject objectId="1:1092">
+                <KeyedProperty property="x">
+                    <KeyFrameDouble value="0" frame="3" interpolationType="cubic">
+                        <CubicEaseInterpolator x1="0.65" y1="0" x2="0.35" y2="1"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="-1600" frame="93"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:2635">
+                <KeyedProperty property="x">
+                    <KeyFrameDouble value="0" frame="3" interpolationType="cubic">
+                        <CubicEaseInterpolator x1="0.65" y1="0" x2="0.35" y2="1"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="320" frame="93"/>
+                </KeyedProperty>
+            </KeyedObject>
+        </LinearAnimation>
+        <LinearAnimation fps="60" duration="1" name="Shelf Home" id="1:2705">
+            <KeyedObject objectId="1:1092">
+                <KeyedProperty property="x">
+                    <KeyFrameDouble value="0" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:2635">
+                <KeyedProperty property="x">
+                    <KeyFrameDouble value="0" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+        </LinearAnimation>
+        <LinearAnimation fps="60" duration="1" name="Shelf Gone" id="1:2706">
+            <KeyedObject objectId="1:1092">
+                <KeyedProperty property="x">
+                    <KeyFrameDouble value="-1600" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:2635">
+                <KeyedProperty property="x">
+                    <KeyFrameDouble value="320" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+        </LinearAnimation>
+        <LinearAnimation loopValue="oneShot" fps="60" duration="96" name="Wordle Outro" id="1:2707">
+            <KeyedObject objectId="1:831">
+                <KeyedProperty property="x">
+                    <KeyFrameDouble value="0" frame="3" interpolationType="cubic">
+                        <CubicEaseInterpolator x1="0.65" y1="0" x2="0.35" y2="1"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="-1600" frame="93"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:2657">
+                <KeyedProperty property="x">
+                    <KeyFrameDouble value="0" frame="3" interpolationType="linear"/>
+                    <KeyFrameDouble value="0" frame="93"/>
+                </KeyedProperty>
+            </KeyedObject>
+        </LinearAnimation>
+        <LinearAnimation fps="60" duration="1" name="Wordle Home" id="1:2708">
+            <KeyedObject objectId="1:831">
+                <KeyedProperty property="x">
+                    <KeyFrameDouble value="0" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:2657">
+                <KeyedProperty property="x">
+                    <KeyFrameDouble value="0" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+        </LinearAnimation>
+        <LinearAnimation fps="60" duration="1" name="Wordle Gone" id="1:2709">
+            <KeyedObject objectId="1:831">
+                <KeyedProperty property="x">
+                    <KeyFrameDouble value="-1600" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:2657">
+                <KeyedProperty property="x">
+                    <KeyFrameDouble value="0" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+        </LinearAnimation>
+        <LinearAnimation loopValue="oneShot" fps="60" duration="96" name="Connections Outro" id="1:2710">
+            <KeyedObject objectId="1:558">
+                <KeyedProperty property="x">
+                    <KeyFrameDouble value="0" frame="3" interpolationType="cubic">
+                        <CubicEaseInterpolator x1="0.65" y1="0" x2="0.35" y2="1"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="-1600" frame="93"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:2680">
+                <KeyedProperty property="x">
+                    <KeyFrameDouble value="0" frame="3" interpolationType="cubic">
+                        <CubicEaseInterpolator x1="0.65" y1="0" x2="0.35" y2="1"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="320" frame="93"/>
+                </KeyedProperty>
+            </KeyedObject>
+        </LinearAnimation>
+        <LinearAnimation fps="60" duration="1" name="Connections Home" id="1:2711">
+            <KeyedObject objectId="1:558">
+                <KeyedProperty property="x">
+                    <KeyFrameDouble value="0" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:2680">
+                <KeyedProperty property="x">
+                    <KeyFrameDouble value="0" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+        </LinearAnimation>
+        <LinearAnimation fps="60" duration="1" name="Connections Gone" id="1:2712">
+            <KeyedObject objectId="1:558">
+                <KeyedProperty property="x">
+                    <KeyFrameDouble value="-1600" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:2680">
+                <KeyedProperty property="x">
+                    <KeyFrameDouble value="320" frame="0"/>
                 </KeyedProperty>
             </KeyedObject>
         </LinearAnimation>
