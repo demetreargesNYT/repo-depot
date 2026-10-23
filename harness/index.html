@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>YIG Rive harness</title>
+<!-- engineering's code imports "@rive-app/canvas"; here that name resolves to the pinned local runtime -->
+<script type="importmap">{ "imports": { "@rive-app/canvas": "/vendor/rive-esm.js" } }</script>
+<link rel="stylesheet" href="/engineering/yig-text-motion.css">
+<link rel="stylesheet" href="/text-layer.css">
+<style>
+@font-face { font-family: "NYT Franklin"; font-weight: 500; src: url(/fonts/nyt-franklin-500.woff2) format("woff2"); font-display: swap; }
+@font-face { font-family: "NYT Franklin"; font-weight: 700; src: url(/fonts/nyt-franklin-700.woff2) format("woff2"); font-display: swap; }
+@font-face { font-family: "NYT Karnak"; font-weight: 500; src: url(/fonts/nyt-karnak-500.woff2) format("woff2"); font-display: swap; }
+@font-face { font-family: "NYT Karnak"; font-weight: 700; src: url(/fonts/nyt-karnak-700.woff2) format("woff2"); font-display: swap; }
+
+:root {
+  --paper: #F1F3EE; --surface: #FFFFFF; --ink: #1F1F1F; --muted: #5C6759; --line: #D3DACF; --live: #3C6EFF;
+  --ui: "NYT Franklin", "Helvetica Neue", Arial, sans-serif;
+  --display: "NYT Karnak", Georgia, serif;
+  --mono: ui-monospace, "SF Mono", Menlo, monospace;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; } /* .blk sets display:grid, which would otherwise beat the hidden attribute */
+body { margin: 0; background: var(--paper); color: var(--ink); font: 500 14px/1.4 var(--ui); }
+.wrap { max-width: 1180px; margin: 0 auto; padding: 20px 24px 48px; }
+h1 { font: 700 20px/1.2 var(--display); margin: 0 0 2px; }
+.sub { color: var(--muted); font-size: 13px; margin: 0 0 16px; }
+.sub code, .readout code { font-family: var(--mono); font-size: 12px; }
+
+.bar { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; }
+.group { display: flex; align-items: center; gap: 8px; }
+.group > label, .group > .lbl { color: var(--muted); font-size: 12px; }
+button, select { font: 500 13px var(--ui); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+button:hover:not(:disabled) { border-color: var(--ink); }
+button:disabled { opacity: .4; cursor: default; }
+button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+button.primary { background: var(--live); border-color: var(--live); color: #fff; font-weight: 700; }
+.seg { display: inline-flex; }
+.seg button { border-radius: 0; margin-left: -1px; }
+.seg button:first-child { border-radius: 8px 0 0 8px; margin-left: 0; }
+.seg button:last-child { border-radius: 0 8px 8px 0; }
+
+.stagewrap { display: grid; justify-items: center; gap: 12px; }
+.stage { position: relative; container-type: inline-size; overflow: hidden; background: #E7F1E1; border: 1px solid var(--line); }
+.stage.full { width: min(100%, 1100px); aspect-ratio: 1495 / 1067; border-radius: 12px; }
+.stage.phone { width: 300px; aspect-ratio: 375 / 812; border-radius: 38px; }
+.art { position: absolute; }
+.stage.full .art { left: 0; top: 0; width: 100cqw; height: calc(100cqw * 1067 / 1495); }
+.stage.phone .art { left: calc(-100cqw * 560 / 375); top: 0; width: calc(100cqw * 1495 / 375); height: calc(100cqw * 1067 / 375); }
+.art canvas { width: 100%; height: 100%; display: block; }
+.phonebox { position: absolute; container-type: inline-size; pointer-events: none; }
+.stage.full .phonebox { left: calc(100cqw * 560 / 1495); top: 0; width: calc(100cqw * 375 / 1495); height: calc(100cqw * 812 / 1495); outline: 1px dashed rgba(31, 31, 31, .5); }
+.stage.phone .phonebox { inset: 0; }
+.phonebox .overlay { overflow: hidden; }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; width: min(100%, 1100px); }
+.framelist { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.framelist li { font-size: 12px; padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); }
+.framelist li b { font-family: var(--mono); font-weight: 700; margin-right: 4px; }
+.framelist li.now { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.note { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
+.note.warn { color: #9A5B00; }
+.readout { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 6px 18px; font-size: 12px; }
+.readout b { display: block; color: var(--muted); font-weight: 500; }
+.readout code { font-size: 12px; }
+.err { color: #B3261E; white-space: pre-wrap; font: 12px var(--mono); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>YIG Rive harness</h1>
+  <p class="sub">Plays the real built <code id="filelabel">…</code> with Rive's web runtime <code id="rtlabel"></code>, driven by <code>engineering/chapter-2-integration.js</code> and <code>yig-text-motion.css</code> exactly as engineering will use them. The copy is placeholder text.</p>
+
+  <div class="bar">
+    <div class="group"><button id="tap" class="primary" disabled>Tap</button><button id="restart">Restart</button></div>
+    <div class="group"><label for="order">Game order</label>
+      <select id="order"><option value="wc">Wordle, then Connections</option><option value="cw">Connections, then Wordle</option></select></div>
+    <div class="group"><span class="lbl">View</span>
+      <span class="seg"><button id="v-full" aria-pressed="true">Full artboard</button><button id="v-phone" aria-pressed="false">Phone crop</button></span></div>
+    <div class="group"><span class="lbl">Scene value</span><span class="seg" id="scenes"></span></div>
+  </div>
+
+  <div class="stagewrap">
+    <div class="stage full" id="stage">
+      <div class="art" id="art"><canvas id="yig-stage" width="1495" height="1067"></canvas></div>
+      <div class="phonebox"><div class="overlay" id="overlay" aria-hidden="true"></div></div>
+    </div>
+
+    <div class="panel">
+      <ol class="framelist" id="framelist" aria-label="Frames in this chapter"></ol>
+      <p class="note" id="framenote"></p>
+    </div>
+
+    <div class="panel">
+      <div class="readout">
+        <div><b>View model</b><code id="ro-vm">…</code></div>
+        <div><b>State machine</b><code id="ro-state">…</code></div>
+        <div><b>File</b><code id="ro-file">…</code></div>
+        <div><b>Integration file</b><code id="ro-int">…</code></div>
+      </div>
+      <p class="err" id="err" hidden></p>
+    </div>
+  </div>
+</div>
+
+<script src="/vendor/rive/rive.js"></script>
+<script type="module" src="/harness.js"></script>
+</body>
+</html>
