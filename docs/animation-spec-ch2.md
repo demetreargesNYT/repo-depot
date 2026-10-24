@@ -1,258 +1,409 @@
 # Chapter 2 animation spec
 
-The single source of truth for the Chapter 2 Rive file. The prompts in PROMPTS.md point Claude Code at one section at a time.
+This documents the Chapter 2 Rive file as it is now. **The file is the source of truth; this spec describes it.**
+It matches the file's revision named in `chapters/ch2` (see the git tag `ch2-scene-structure` and later commits).
+The key listings below are generated from `chapters/ch2/scene.rml`, so they cannot drift:
+
+```bash
+npm run keys ch2                                   # print every timeline and the state machine
+python3 tools/dump_keys.py ch2 --write docs/animation-spec-ch2.md   # refresh the listings in this file
+python3 tools/dump_keys.py ch2 --check docs/animation-spec-ch2.md   # fail if any listing differs from the file
+npm run check ch2                                  # the fast check: build, rules, structure
+```
 
 ## Conventions
 
-- **Artboard:** "Chapter 2", 1495 × 1067, clipping on. Coordinates are artboard units, origin top left, y down.
-- **Time** is written in seconds. RML keys by frame at the animation's fps, so at 60 fps multiply by 60 (3.2 s = frame 192).
-- **Rotation** is written in degrees, positive clockwise. RML stores rotation in radians, so multiply by π/180.
-- **Colors** are written as #RRGGBB. RML colors are ARGB hex without the #, so #C3E2C0 becomes FFC3E2C0.
-- **Eases** are written as GSAP names. Use the cubic bezier from the table at the end, and look up how RML expresses cubic interpolation with `rive docs --search interpolation` and `rive schema --search cubic`. Each ease applies to the segment that ends at that key.
-- **Hold** means the value doesn't change between the two keys.
-- **Balls** are three nested groups: `Ball` (positioned at the base of the ball; squash and stretch are scale keys here, so the ball stays on its surface), `Ball Spin` (rotation around the ball's centre) and `Ball Art`. In this spec, "Ball x / y" always means the base of the ball.
-- **Pivots:** every group that rotates or squashes was exported with its own position on the pivot point and an inner "Art" group offset back, so the artwork stays put. Keep that structure.
-- **Never key the Shelf Ball or Shelf Ball Spin in an intro.** The toy ball has to hold whatever pose it had when the player tapped, and leave with its room.
+- **Artboard** "Chapter 2": 1495 × 1067, clipping on, `includeInExport` true. Coordinates are artboard units, origin top left, y down. The phone shows the centre 375 wide.
+- **Time** is seconds in this spec; the file keys frames at 60 fps (3.2 s = frame 192). Transition durations in the state machine are milliseconds.
+- **Rotation** is degrees here, positive clockwise; the file stores radians.
+- **Colours** are #RRGGBB here; the file stores ARGB hex.
+- **Eases** are GSAP names. In a listing, `a (ease) b` means the ease shapes the segment that ends at `b`; `hold` means the value does not change. The beziers are in the table at the end.
+- **Balls** are three nested groups: `Ball` (positioned at the base of the ball, so squash and stretch keep it on its surface), `Ball Spin` (rotates about the ball's centre) and `Ball Art`. "Ball x / y" means the base of the ball.
+- **Pivots:** a group that rotates or squashes has its own position on the pivot, with an inner `… Art` group offset back so the artwork stays put.
+- **Draw order:** Rive draws a group's first child on top, so children draw in reverse of the order written.
+- **Names** are Title Case with spaces ("Pair WR", "Wordle Ball Spin"), and are what the timelines and the checker use.
 
-## Section 1 · Organize the import and set the design pose
+## Scene values
 
-The imported SVG holds the whole chapter. Organize it and set the design pose. No animations yet.
+One number drives the whole file. Engineering sets it; nothing else is exposed.
 
-1. Artboard
-   - Rename the artboard to "Chapter 2" and make sure it is 1495 × 1067 with clipping on.
+| `scene` | Shows | Rooms it brings in |
+|---|---|---|
+| 0 | the chapter opener | Shelf Room (on stage at load) |
+| 1 | Wordle | Wordle Room |
+| 2 | Connections | Connections Room |
+| 3–7 | Strands, Spelling Bee, The Mini, The Midi, The Crossword | not built yet; see "Adding a game" |
 
-2. Rename every imported group from hyphenated to Title Case with spaces, keeping the hierarchy:
-   "Shelf-Wall-Plane" becomes "Shelf Wall Plane", "Pair-WR" becomes "Pair WR", "Wordle-Ball-Spin"
-   becomes "Wordle Ball Spin", and so on. Groups ending in "-Art" become "... Art".
-   Inner pieces like "cat-tail" become "Cat Tail".
+- The view model is named "Chapter 2" with one number property, `scene`, default 0. The state machine is "Chapter 2", the artboard's default, so it plays on load.
+- Setting the same value again does nothing, so it is always safe to set.
+- A game appears in one unbroken run of cards in a chapter, so a room never comes back once it has left. Going back to a scene that already left is not supported.
+- Setting a value no room waits for (3 to 7 today) makes the current room leave and nothing arrive: the Background shows, empty, in the opener's colours (checked at scene 3 and 7, 3.5 s in).
 
-3. Check the pivots. Each group below was imported with its position on a pivot point, and its
-   "Art" child offset back so the artwork stays in place. Check each one with rive inspect and confirm its x and y
-   match this list. If the import flattened a group so its origin isn't on the point, wrap its
-   artwork in a new group placed at that point so the artwork doesn't move on screen. Report every
-   group you had to fix.
-   - Pair LE 712.14, 711.6 · Pair BD 792.43, 711.6 · Pair KE 862.68, 711.6
-   - Pair WR 668.36, 654.85 · Pair OM 829.98, 654.85
-   - Shadow E 712.14, 654.85 · Shadow B 712.14, 654.85 · Shadow K 792.43, 655.33 · Shadow R 740.69, 654.85
-   - Left Bottom Black 562, 712.5 · Left Bottom Green 610, 712.5 · Left Middle Black 582, 693.5
-   - Left Middle Blue 628.75, 693.5 · Left Top Lime 597, 675 · Left Slab Lilac 592.25, 656
-   - Right Bottom Black 933, 712.5 · Right Bottom Lilac 900.5, 712.5 · Right Middle Blue 917, 693.5
-   - Right Slab Lime 794.75, 712.5
-   - Shelf Ball 778.88, 656.72 · Wordle Ball 707.11, 604.11 · Connections Ball 616.07, 624.36
-     (these sit at the base of each ball; each "Ball Spin" child sits at the ball's center, 29.68 above
-     for the Shelf Ball and 17.68 above for the other two)
-   - Wordle Lockup 748, 363 · Connections Lockup 748, 363
+## Structure
 
-4. Design pose. This is what frame 1 looks like, and what every intro animates away from. Set these
-   values directly on the objects, not as keys:
-   - Wall fill #E7F1E1. Floor fill #FEA0C9.
-   - Wordle Floor Plane x +1600 from where it is now.
-   - Pair LE, Pair BD, Pair KE rotation 90.
-   - Pair WR y −800 and rotation −62. Pair OM y −800 and rotation 62.
-   - Shadow E, Shadow B, Shadow K, Shadow R scale 0.
-   - Wordle Ball x −80 and y 712 (just off the left edge, resting on the floor). Wordle Ball Spin rotation −1080.
-   - Connections Wall Plane x +1280. Connections Floor Plane x +1600.
-   - Every Connections tile y −800, with rotation:
-     Left Bottom Black 9, Left Bottom Green −7, Right Bottom Black 11, Right Bottom Lilac −9,
-     Left Middle Black 6, Left Middle Blue −10, Right Middle Blue 8, Left Top Lime −6,
-     Left Slab Lilac 12, Right Slab Lime −8.
-   - Connections Ball x −80 and y 712. Connections Ball Spin rotation −1080.
-   - The two incoming balls are siblings of their room's floor plane, not children, so the pan
-     doesn't carry them. Wordle Ball sits behind the Wordle Floor Plane (it rests behind the
-     blocks' top edge) and Connections Ball sits in front of the Connections Floor Plane.
-   - Wordle Lockup and Connections Lockup opacity 0.
+`Chapter 2 Rive Import` holds the rooms, in draw order from top to bottom:
 
-5. Report what you changed. Confirm that with this pose the artboard shows only the shelf room on
-   #E7F1E1, and that nothing from the Wordle or Connections rooms is inside the 1495 × 1067 bounds.
+```text
+Lockups               an empty group left from the import; nothing is in it any more
+Connections Room      (scene 2)
+Wordle Room           (scene 1)
+Shelf Room            (scene 0, the opener)
+Background            the global wall #E7F1E1, floor and floor line; never animated. Every room's backdrop covers it, so it only shows when no room is on stage
+```
 
-## Section 2 · Frame 1 Loop
+Every room has the same structure, and every room sits at x 0:
 
-Create a looping linear animation on the "Chapter 2" artboard named "Frame 1 Loop", 1.8 seconds,
-loop on. It keys only the shelf room's toy ball, which rocks in place in the toy stand.
+```text
+<Room>                                  the whole room; Outro moves it left
+  <Room> Draw Rules                     two targets: <Room> Normal, <Room> Bottom
+  <Room> Lockup                         (Wordle and Connections) icon + word, drawn on top of the room's art
+  <Room> Ball                           (Wordle and Connections) the incoming ball, a sibling of the floor plane
+  <Room> Floor Plane                    the room's pieces; the pan moves it 1600
+  <Room> Wall Lag                       a wrapper, always at x 0, so the outro can lag the wall plane
+    <Room> Wall Plane                   the room's wall art; the pan moves it 1280
+  <Room> Backdrop                       the room's wall, floor, floor line and wall corner; the LAST child, so it is at the bottom
+```
 
-Keys, ease sine.inOut on every key (bezier 0.37, 0, 0.63, 1):
-- Shelf Ball x: 0.00 rest · 0.45 rest +5 · 1.35 rest −5 · 1.80 rest
-- Shelf Ball Spin rotation: 0.00 0 · 0.45 16 · 1.35 −16 · 1.80 0
+(Wordle and Connections have the ball and floor plane in a different order, and Shelf has no lockup or ball. `npm run check` verifies the rules that matter: the backdrop is the last child, the lockup is inside its room, a Wall Lag wrapper exists.)
 
-Nothing else is keyed, so the rest of the room stays exactly in the design pose.
+### Backdrops
 
-## Section 3 · Wordle Intro
+Each room brings its own colours, so the colour change arrives as the next room's wall corner during the pan.
 
-Create a one-shot linear animation named "Wordle Intro", 3.2 seconds, loop off, on the "Chapter 2"
-artboard. Key exactly what's listed and nothing else. In particular, never key the Shelf Ball or
-Shelf Ball Spin, so the toy ball holds whatever pose it had when the player tapped and rides out
-with its room. The first key on each property is its design pose value.
+| Room | Wall |
+|---|---|
+| Shelf | #E7F1E1 |
+| Wordle | #C3E2C0 |
+| Connections | #E1DBF5 |
 
-Ease beziers: power2.inOut 0.65,0,0.35,1 · power2.in 0.32,0,0.67,0 · power2.out 0.33,1,0.68,1 ·
-power1.out 0.5,1,0.89,1 · power1.inOut 0.45,0,0.55,1 · expo.out 0.16,1,0.3,1 · power3.in 0.5,0,0.75,0 ·
-back.out 0.34,1.56,0.64,1. Each ease applies to the segment ending at that key.
+Every backdrop is the same shape: a wall rectangle from (0, −200), 1600 × 912; a floor rectangle from (0, 712), 1600 × 600, #FEA0C9; a 2-unit #1F1F1F floor line along y 712 from x 0 to 1600; and a 2-unit #1F1F1F wall corner line **at x −1** from y −200 to 712. The corner sits at −1, not 0, so its stroke stays off the artboard edge at rest. Backdrops are 1600 wide so neighbouring rooms meet exactly at the wall corner during the pan. Wordle and Connections backdrops wait at x 1600; Shelf's is at 0.
 
-Camera pan (the camera moves right, so everything moves left)
-- Shelf Wall Plane x: 0.05 0 · 1.55 −1280 (power2.inOut)
-- Shelf Floor Plane x: 0.05 0 · 1.55 −1600 (power2.inOut)
-- Wordle Floor Plane x: 0.05 design (+1600) · 1.55 0 (power2.inOut)
-- Wall fill: 0.10 #E7F1E1 · 1.45 #C3E2C0 (power1.inOut)
+### Wall Lag wrappers
 
-Bottom row tips over, left to right. Rotation 90 → 0 with power2.in, then a squash:
-scaleY 1 → 0.93 over 0.06s (power2.out) and back to 1 over 0.26s (back.out), with scaleX
-1 → 1.028 → 1 on the same keys.
-- Pair LE: rotation 1.15 90 · 1.45 0 · squash 1.45–1.77
-- Pair BD: rotation 1.27 90 · 1.57 0 · squash 1.57–1.89
-- Pair KE: rotation 1.39 90 · 1.69 0 · squash 1.69–2.01
+Each room's wall plane sits inside a `<Room> Wall Lag` group at x 0. The intro moves the wall plane itself (pulling it in 1280); the outro moves the Wall Lag (pushing it +320), so the wall plane nets −1280 when the room leaves. Because the two never key the same object they never fight. Wordle has no wall art, so its Wall Plane is empty and its lag holds at 0; it exists so every room has the same structure.
 
-Top pairs tumble in from above, land on a corner, and rock flat
-- Pair WR: y 1.33 −800 · 1.75 0 (power2.in); rotation 1.33 −62 · 1.75 −14 (power2.in) · 1.89 0 (power2.in);
-  squash scaleY 1.89 1 · 1.95 0.94 · 2.21 1 and scaleX 1 · 1.024 · 1
-- Pair OM: y 1.45 −800 · 1.87 0 (power2.in); rotation 1.45 62 · 1.87 14 · 2.01 0 (power2.in); squash 2.01–2.33 as above
+### Draw rules
 
-Shadows grow from each contact as the pair above settles (scale 0 → 1, power2.out)
-- Shadow E and Shadow B: 1.89 0 · 2.09 1
-- Shadow K and Shadow R: 2.01 0 · 2.21 1
+A leaving room must draw below the arriving room, whichever game order is played, without reordering rooms. Each room has a `DrawRules` named "<Room> Draw Rules" with two targets:
 
-New ball rolls in behind the camera and climbs. Wordle Ball sits at the base of the ball:
-y 712 = on the floor, 654.85 = on the L block, 604.11 = resting on W.
-- Wordle Ball x: 1.15 −80 · 1.75 556 (power1.out) · 2.11 651 (linear) · 2.17 651 (hold) · 2.53 707.11 (linear)
-- Wordle Ball y: 1.15 712 · 1.75 712 (hold) · 1.912 609.85 (power2.out) · 2.11 654.85 (power2.in)
-  · 2.17 654.85 (hold) · 2.332 559.11 (power2.out) · 2.53 604.11 (power2.in)
-  · 2.61 604.11 (hold) · 2.73 592.11 (power2.out) · 2.85 604.11 (power2.in)
-- Wordle Ball Spin rotation: 1.15 −1080 · 2.53 0 (power1.out)
-- Wordle Ball squash, keys on scaleX / scaleY:
-  2.11 1/1 · 2.19 1.16/0.84 (power2.out) · 2.43 1/1 (back.out)
-  2.53 1/1 · 2.61 1.22/0.78 (power2.out) · 2.85 1/1 (back.out)
-  2.85 1/1 · 2.93 1.08/0.92 (power2.out) · 3.17 1/1 (back.out)
-- From 2.97 the ball is exactly on its loop start pose: x 707.11, y 604.11, rotation 0, scale 1.
+- **<Room> Normal**: just above the top-most shape of the room under it in the tree (Shelf, the lowest room, uses the Background's floor line). The rule starts here.
+- **<Room> Bottom**: just above the Background's floor line, under every other room.
 
-Wordle lockup: rises in after the blocks land, gone exactly at 3.2 when the page text arrives
-- Wordle Lockup y: 1.92 381 · 2.48 363 (expo.out) · 2.94 363 (hold) · 3.20 333 (power3.in)
-- Wordle Lockup scale: 1.92 0.96 · 2.48 1 (expo.out) · 2.94 1 · 3.20 0.97 (power3.in)
-- Wordle Lockup opacity: 1.92 0 · 2.14 1 (linear) · 2.94 1 · 3.20 0 (power2.in)
-- Wordle Lockup Word: opacity 1.99 0 · 2.55 1 (expo.out); y 1.99 +10 · 2.55 0 (expo.out)
+`<Room> Outro` and `<Room> Gone` key the rule to Bottom; `<Room> Home` keys it back to Normal. A draw target has to name a Shape, not a group, so each target is the top-most shape of its room.
 
-## Section 4 · Wordle Loop
+## Poses
 
-Create a looping linear animation named "Wordle Loop", 7.2 seconds, loop on. Its first and last
-frames must equal the end of "Wordle Intro": Wordle Ball x 707.11, y 604.11, Wordle Ball Spin 0,
-ball scale 1. Only the Wordle Ball, Pair KE and Pair OM are keyed.
-Y values are the base of the ball: 604.11 = on the top row, 654.85 = on the E block.
-Eases as in Prompt 3, plus sine.inOut 0.37,0,0.63,1.
+Each room's timelines are listed under its own heading below. These one-frame timelines set a pose; the state machine plays them in the layer states.
 
-- 0.00–0.60 rest
-- Roll right to the edge of M: x 0.60 707.11 · 1.70 812 (sine.inOut); Spin 0 → 340 (sine.inOut)
-- Teeter at the edge: x 1.90 814 · 2.20 811 · 2.40 812; Spin 1.90 350 · 2.20 332 · 2.40 340 (sine.inOut)
-- Hop down onto E: x 2.40 812 · 2.82 841 (linear); y 2.40 604.11 · 2.589 578.11 (power2.out) · 2.82 654.85 (power2.in)
-- Bounce: y 2.88 654.85 (hold) · 3.06 630.85 (power2.out) · 3.24 654.85 (power2.in)
-  · 3.29 654.85 (hold) · 3.42 642.85 (power2.out) · 3.55 654.85 (power2.in)
-- Hop back up onto M: x 3.67 841 · 4.17 790 (linear); y 3.67 654.85 · 3.895 552.11 (power2.out) · 4.17 604.11 (power2.in);
-  Spin 3.67 340 · 4.17 269 (power1.inOut)
-- Roll home: x 4.27 790 · 5.17 707.11 (sine.inOut); Spin 4.27 269 · 5.17 0 (sine.inOut)
-- 5.17–7.20 rest
-- Ball squash (scaleX / scaleY, power2.out down over 0.08s, back.out up over 0.24s):
-  1.20/0.80 at 2.82 · 1.14/0.86 at 3.24 · 1.08/0.92 at 3.55 · 1.22/0.78 at 4.17 · 1.06/0.94 at 5.17
-- Pair KE thumps when the ball lands on E: scaleY 0.94 and scaleX 1.024 over 0.06s at 2.82,
-  back over 0.26s (back.out); a softer 0.96 / 1.016 at 3.24
-- Pair OM thumps at 4.17: scaleY 0.94, scaleX 1.024, same timing
+- **Waiting** (Wordle, Connections): the room's design pose, everything its intro animates away from, off stage to the right. **A Waiting pose is, by rule, its intro's first keys**, one for one; `npm run check` verifies it for every room. If an intro changes, rebuild its Waiting pose from the intro, never by hand. Because it has no listing of its own, the intro's first key of each property is the Waiting value: backdrop x 1600, floor plane x +1600, pairs and tiles tilted and raised, shadows at scale 0, the incoming ball at x −80, y 712 spun −1080°, the lockup at opacity 0, y 381, scale 0.96.
+- **Home**: `<Room> x 0`, `<Room> Wall Lag x 0`, and the draw rule on Normal.
+- **Gone**: `<Room> x −1600`, `<Room> Wall Lag x` at its outro end value (320, or 0 for Wordle), and the draw rule on Bottom. Nothing of the room is on the artboard.
 
-Check that the loop point is seamless.
+## Timelines
 
-## Section 5 · Connections Intro
+All timelines are on the "Chapter 2" artboard. Every intro is **exactly 3.2 s**, because the page text is timed to that. The first key on an intro property is its design-pose value.
 
-Create a one-shot linear animation named "Connections Intro", 3.2 seconds, loop off. Same rules as
-"Wordle Intro": key only what's listed, and never key the Shelf Ball or Shelf Ball Spin.
-Eases as in Prompt 3.
+### Shelf (the opener)
 
-Camera pan
-- Shelf Wall Plane x: 0.05 0 · 1.55 −1280 (power2.inOut)
-- Shelf Floor Plane x: 0.05 0 · 1.55 −1600 (power2.inOut)
-- Connections Wall Plane x: 0.05 design (+1280) · 1.55 0 (power2.inOut)
-- Connections Floor Plane x: 0.05 design (+1600) · 1.55 0 (power2.inOut)
-- Wall fill: 0.10 #E7F1E1 · 1.45 #E1DBF5 (power1.inOut)
+The opener has no intro. Its toy ball rocks in place; **no other timeline ever keys the Shelf Ball or Shelf Ball Spin**, so the toy ball holds whatever pose it had when the player tapped and leaves with its room.
 
-Tiles drop in from above, bottom row first, 0.07s apart. Each one keys y −800 → 0 and rotation
-from its design tilt → 0 over 0.42s with power2.in. On landing it squashes: scaleY 0.92 and scaleX
-1.032 over 0.06s (power2.out), back to 1 over 0.26s (back.out).
-Start times: Left Bottom Black 1.00 · Left Bottom Green 1.07 · Right Bottom Black 1.14 ·
-Right Bottom Lilac 1.21 · Left Middle Black 1.28 · Left Middle Blue 1.35 · Right Middle Blue 1.42 ·
-Left Top Lime 1.49 · Left Slab Lilac 1.56 · Right Slab Lime 1.63
+<!-- keys: Shelf Loop -->
+```text
+Shelf Loop · 108 frames · 1.8 s · loops
+Shelf Ball x: 0 -29.39 · 0.45 -24.39 (sine.inOut) · 1.35 -34.39 (sine.inOut) · 1.8 -29.39 (sine.inOut)
+Shelf Ball Spin rotation: 0 0° · 0.45 16° (sine.inOut) · 1.35 -16° (sine.inOut) · 1.8 0° (sine.inOut)
+```
+<!-- /keys -->
 
-New ball rolls in and takes one big hop onto the lilac slab.
-Connections Ball y is the base of the ball: 712 = floor, 624.36 = resting on the slab.
-- Connections Ball x: 1.15 −80 · 1.75 470 (power1.out) · 2.25 616.07 (linear)
-- Connections Ball y: 1.15 712 · 1.75 712 (hold) · 1.975 564.36 (power2.out) · 2.25 624.36 (power2.in)
-  · 2.33 624.36 (hold) · 2.45 612.36 (power2.out) · 2.57 624.36 (power2.in)
-- Connections Ball Spin rotation: 1.15 −1080 · 2.25 0 (power1.out)
-- Squash: 1.22/0.78 at 2.25 · 1.08/0.92 at 2.57 (power2.out down over 0.08s, back.out up over 0.24s)
-- From 2.69 the ball is on its loop start pose: x 616.07, y 624.36, rotation 0, scale 1.
+The outro moves the whole room left with the camera, its wall plane lagging, and keys only the room, its Wall Lag and its draw rule, so the room's loop keeps playing as it leaves.
 
-Connections lockup, same curves as Wordle's, later because the tiles finish later
-- Connections Lockup y: 2.10 381 · 2.66 363 (expo.out) · 2.94 363 · 3.20 333 (power3.in)
-- Connections Lockup scale: 2.10 0.96 · 2.66 1 · 2.94 1 · 3.20 0.97
-- Connections Lockup opacity: 2.10 0 · 2.32 1 (linear) · 2.94 1 · 3.20 0 (power2.in)
-- Connections Lockup Word: opacity 2.17 0 · 2.73 1; y 2.17 +10 · 2.73 0 (expo.out)
+<!-- keys: Shelf Outro -->
+```text
+Shelf Outro · 96 frames · 1.6 s · plays once
+Shelf Room x: 0.05 0 · 1.55 -1600 (power2.inOut)
+Shelf Wall Lag x: 0.05 0 · 1.55 320 (power2.inOut)
+Shelf Draw Rules drawTargetId: 0 Shelf Bottom
+```
+<!-- /keys -->
 
-## Section 6 · Connections Loop
+<!-- keys: Shelf Home -->
+```text
+Shelf Home · 1 frame · plays once
+Shelf Room x: 0 0
+Shelf Wall Lag x: 0 0
+Shelf Draw Rules drawTargetId: 0 Shelf Normal
+```
+<!-- /keys -->
 
-Create a looping linear animation named "Connections Loop", 6.2 seconds, loop on. First and last
-frames equal the end of "Connections Intro": Connections Ball x 616.07, y 624.36, Spin 0, scale 1.
-Only the Connections Ball and Left Slab Lilac are keyed.
+<!-- keys: Shelf Gone -->
+```text
+Shelf Gone · 1 frame · plays once
+Shelf Room x: 0 -1600
+Shelf Wall Lag x: 0 320
+Shelf Draw Rules drawTargetId: 0 Shelf Bottom
+```
+<!-- /keys -->
 
-- 0.00–0.60 rest
-- Roll left to the slab's edge: x 0.60 616.07 · 1.60 552 (sine.inOut); Spin 0 → −207 (sine.inOut)
-- Teeter: x 1.80 550 · 2.10 553 · 2.30 552; Spin 1.80 −217 · 2.10 −199 · 2.30 −207 (sine.inOut)
-- Roll back: x 2.30 552 · 3.30 616.07; Spin −207 → 0 (sine.inOut)
-- Two hops in place: y 3.30 624.36 · 3.38 624.36 (hold) · 3.58 598.36 (power2.out) · 3.78 624.36 (power2.in)
-  · 3.86 624.36 (hold) · 4.06 610.36 (power2.out) · 4.26 624.36 (power2.in)
-- Ball squash: 1.12/0.88 at 3.30 and 3.78 · 1.06/0.94 at 4.26
-- Left Slab Lilac thumps as the ball lands: scaleY 0.95, scaleX 1.02 over 0.06s at 3.78 and at 4.26,
-  back over 0.26s (back.out)
-- 4.26–6.20 rest
+### Wordle
 
-Check that the loop point is seamless.
+The intro pans the camera right (everything moves left), tips the bottom row over, tumbles the top pairs in, grows the shadows, rolls the new ball in and up onto the blocks, and runs the lockup.
 
-## Section 7 · State machine
+<!-- keys: Wordle Intro -->
+```text
+Wordle Intro · 192 frames · 3.2 s · plays once
+Pair BD rotation: 1.267 90° · 1.567 0° (power2.in)
+Pair BD scaleX: 1.567 1 · 1.633 1.028 (power2.out) · 1.883 1 (back.out)
+Pair BD scaleY: 1.567 1 · 1.633 0.93 (power2.out) · 1.883 1 (back.out)
+Pair KE rotation: 1.383 90° · 1.683 0° (power2.in)
+Pair KE scaleX: 1.683 1 · 1.75 1.028 (power2.out) · 2.017 1 (back.out)
+Pair KE scaleY: 1.683 1 · 1.75 0.93 (power2.out) · 2.017 1 (back.out)
+Pair LE rotation: 1.15 90° · 1.45 0° (power2.in)
+Pair LE scaleX: 1.45 1 · 1.517 1.028 (power2.out) · 1.767 1 (back.out)
+Pair LE scaleY: 1.45 1 · 1.517 0.93 (power2.out) · 1.767 1 (back.out)
+Pair OM rotation: 1.45 62° · 1.867 14° (power2.in) · 2.017 0° (power2.in)
+Pair OM scaleX: 2.017 1 · 2.067 1.024 (power2.out) · 2.333 1 (back.out)
+Pair OM scaleY: 2.017 1 · 2.067 0.94 (power2.out) · 2.333 1 (back.out)
+Pair OM y: 1.45 -800 · 1.867 0 (power2.in)
+Pair WR rotation: 1.333 -62° · 1.75 -14° (power2.in) · 1.883 0° (power2.in)
+Pair WR scaleX: 1.883 1 · 1.95 1.024 (power2.out) · 2.217 1 (back.out)
+Pair WR scaleY: 1.883 1 · 1.95 0.94 (power2.out) · 2.217 1 (back.out)
+Pair WR y: 1.333 -800 · 1.75 0 (power2.in)
+Shadow B scaleX: 1.883 0 · 2.083 1 (power2.out)
+Shadow B scaleY: 1.883 0 · 2.083 1 (power2.out)
+Shadow E scaleX: 1.883 0 · 2.083 1 (power2.out)
+Shadow E scaleY: 1.883 0 · 2.083 1 (power2.out)
+Shadow K scaleX: 2.017 0 · 2.217 1 (power2.out)
+Shadow K scaleY: 2.017 0 · 2.217 1 (power2.out)
+Shadow R scaleX: 2.017 0 · 2.217 1 (power2.out)
+Shadow R scaleY: 2.017 0 · 2.217 1 (power2.out)
+Wordle Ball scaleX: 2.117 1 · 2.183 1.16 (power2.out) · 2.433 1 (back.out) · 2.533 1 (hold) · 2.617 1.22 (power2.out) · 2.85 1 (back.out) · 2.933 1.08 (power2.out) · 3.167 1 (back.out)
+Wordle Ball scaleY: 2.117 1 · 2.183 0.84 (power2.out) · 2.433 1 (back.out) · 2.533 1 (hold) · 2.617 0.78 (power2.out) · 2.85 1 (back.out) · 2.933 0.92 (power2.out) · 3.167 1 (back.out)
+Wordle Ball x: 1.15 -80 · 1.75 556 (power1.out) · 2.117 651 (linear) · 2.167 651 (hold) · 2.533 707.11 (linear)
+Wordle Ball y: 1.15 712 · 1.75 712 (hold) · 1.917 609.85 (power2.out) · 2.117 654.85 (power2.in) · 2.167 654.85 (hold) · 2.333 559.11 (power2.out) · 2.533 604.11 (power2.in) · 2.617 604.11 (hold) · 2.733 592.11 (power2.out) · 2.85 604.11 (power2.in)
+Wordle Ball Spin rotation: 1.15 -1080° · 2.533 0° (power1.out)
+Wordle Floor Plane x: 0.05 2348.215 · 1.55 748.215 (power2.inOut)
+Wordle Lockup opacity: 1.917 0 · 2.133 1 (linear) · 2.933 1 (hold) · 3.2 0 (power2.in)
+Wordle Lockup scaleX: 1.917 0.96 · 2.483 1 (expo.out) · 2.933 1 (hold) · 3.2 0.97 (power3.in)
+Wordle Lockup scaleY: 1.917 0.96 · 2.483 1 (expo.out) · 2.933 1 (hold) · 3.2 0.97 (power3.in)
+Wordle Lockup y: 1.917 381 · 2.483 363 (expo.out) · 2.933 363 (hold) · 3.2 333 (power3.in)
+Wordle Lockup Word opacity: 1.983 0 · 2.55 1 (expo.out)
+Wordle Lockup Word y: 1.983 54.353 · 2.55 44.353 (expo.out)
+Wordle Backdrop x: 0.05 1600 · 1.55 0 (power2.inOut)
+```
+<!-- /keys -->
 
-Create a state machine named "Chapter 2" on the "Chapter 2" artboard, one layer.
+The loop starts and ends on the intro's last frame (ball x 707.11, y 604.11, spin 0, scale 1) and only keys the ball, Pair KE and Pair OM: the ball rolls to the edge of M, teeters, hops down onto E with two bounces, hops back up and rolls home.
 
-Inputs: two Number inputs, "Game" and "Frame", both default 0.
-(If this version of Rive wants data binding rather than state machine inputs, create a view model
-named "Chapter 2" with two number properties, "game" and "frame", use them in the conditions below
-instead, and tell me so I can update the engineering code.)
+<!-- keys: Wordle Loop -->
+```text
+Wordle Loop · 432 frames · 7.2 s · loops
+Pair KE scaleX: 2.817 1 · 2.883 1.024 (power2.out) · 3.133 1 (back.out) · 3.233 1 (hold) · 3.3 1.016 (power2.out) · 3.567 1 (back.out)
+Pair KE scaleY: 2.817 1 · 2.883 0.94 (power2.out) · 3.133 1 (back.out) · 3.233 1 (hold) · 3.3 0.96 (power2.out) · 3.567 1 (back.out)
+Pair OM scaleX: 4.167 1 · 4.233 1.024 (power2.out) · 4.483 1 (back.out)
+Pair OM scaleY: 4.167 1 · 4.233 0.94 (power2.out) · 4.483 1 (back.out)
+Wordle Ball scaleX: 2.817 1 · 2.9 1.2 (power2.out) · 3.133 1 (back.out) · 3.233 1 (hold) · 3.317 1.14 (power2.out) · 3.55 1 (back.out) · 3.633 1.08 (power2.out) · 3.867 1 (back.out) · 4.167 1 (hold) · 4.25 1.22 (power2.out) · 4.483 1 (back.out) · 5.167 1 (hold) · 5.25 1.06 (power2.out) · 5.483 1 (back.out)
+Wordle Ball scaleY: 2.817 1 · 2.9 0.8 (power2.out) · 3.133 1 (back.out) · 3.233 1 (hold) · 3.317 0.86 (power2.out) · 3.55 1 (back.out) · 3.633 0.92 (power2.out) · 3.867 1 (back.out) · 4.167 1 (hold) · 4.25 0.78 (power2.out) · 4.483 1 (back.out) · 5.167 1 (hold) · 5.25 0.94 (power2.out) · 5.483 1 (back.out)
+Wordle Ball x: 0 707.11 · 0.6 707.11 (hold) · 1.7 812 (sine.inOut) · 1.9 814 (sine.inOut) · 2.2 811 (sine.inOut) · 2.4 812 (sine.inOut) · 2.817 841 (linear) · 3.667 841 (hold) · 4.167 790 (linear) · 4.267 790 (hold) · 5.167 707.11 (sine.inOut) · 7.2 707.11 (hold)
+Wordle Ball y: 0 604.11 · 2.4 604.11 (hold) · 2.583 578.11 (power2.out) · 2.817 654.85 (power2.in) · 2.883 654.85 (hold) · 3.067 630.85 (power2.out) · 3.233 654.85 (power2.in) · 3.283 654.85 (hold) · 3.417 642.85 (power2.out) · 3.55 654.85 (power2.in) · 3.667 654.85 (hold) · 3.9 552.11 (power2.out) · 4.167 604.11 (power2.in) · 7.2 604.11 (hold)
+Wordle Ball Spin rotation: 0 0° · 0.6 0° (hold) · 1.7 340° (sine.inOut) · 1.9 350° (sine.inOut) · 2.2 332° (sine.inOut) · 2.4 340° (sine.inOut) · 3.667 340° (hold) · 4.167 269° (power1.inOut) · 4.267 269° (hold) · 5.167 0° (sine.inOut) · 7.2 0° (hold)
+```
+<!-- /keys -->
 
-States and transitions:
-- Entry → "Frame 1 Loop" (plays Frame 1 Loop)
-- "Frame 1 Loop" → "Wordle Intro" when Frame == 2 AND Game == 1. Exit time off, duration 0.
-- "Frame 1 Loop" → "Connections Intro" when Frame == 2 AND Game == 2. Exit time off, duration 0.
-- "Wordle Intro" → "Wordle Loop" at exit time 100%, no conditions, duration 0.
-- "Connections Intro" → "Connections Loop" at exit time 100%, no conditions, duration 0.
+<!-- keys: Wordle Outro -->
+```text
+Wordle Outro · 96 frames · 1.6 s · plays once
+Wordle Room x: 0.05 0 · 1.55 -1600 (power2.inOut)
+Wordle Wall Lag x: 0.05 0 · 1.55 0 (hold)
+Wordle Draw Rules drawTargetId: 0 Wordle Bottom
+```
+<!-- /keys -->
 
-Leave room to add Strands (3), Spelling Bee (4), The Mini (5), The Midi (6) and The Crossword (7) later
-the same way. Frames 3 to 5 need no states: the game loop keeps running while only the page text changes.
+<!-- keys: Wordle Home -->
+```text
+Wordle Home · 1 frame · plays once
+Wordle Room x: 0 0
+Wordle Wall Lag x: 0 0
+Wordle Draw Rules drawTargetId: 0 Wordle Normal
+```
+<!-- /keys -->
 
-Then test it: set Game to 1, then Frame to 1, then 2 (for example with the preview's --data flag or the state machine test tools in rive docs). Confirm the Wordle Intro plays
-and hands off to the Wordle Loop with no jump. Do the same with Game 2. Also tap through while the
-shelf ball is mid-rock and confirm it holds its pose and leaves with the room.
+<!-- keys: Wordle Gone -->
+```text
+Wordle Gone · 1 frame · plays once
+Wordle Room x: 0 -1600
+Wordle Wall Lag x: 0 0
+Wordle Draw Rules drawTargetId: 0 Wordle Bottom
+```
+<!-- /keys -->
 
-## Section 8 · Final check
+### Connections
 
-Do a final pass on the "Chapter 2" artboard and report back as a checklist:
-- Every object that leaves the stage clears all four edges of the 1495 × 1067 artboard by its
-  last key, and everything that enters starts fully outside it. List any that don't.
-- Both intros are exactly 3.2s. The page text is timed to that.
-- Each loop's first and last frame match its intro's last frame.
-- No intro keys the Shelf Ball or Shelf Ball Spin.
-- Names of the state machine and its inputs, exactly as engineering will type them.
-- Exported .riv file size.
+The intro pans, drops the ten tiles in from above (bottom row first, 0.07 s apart, each squashing on landing), rolls the new ball in and onto the lilac slab in one big hop, and runs the lockup.
+
+<!-- keys: Connections Intro -->
+```text
+Connections Intro · 192 frames · 3.2 s · plays once
+Connections Ball scaleX: 2.25 1 · 2.333 1.22 (power2.out) · 2.567 1 (back.out) · 2.65 1.08 (power2.out) · 2.883 1 (back.out)
+Connections Ball scaleY: 2.25 1 · 2.333 0.78 (power2.out) · 2.567 1 (back.out) · 2.65 0.92 (power2.out) · 2.883 1 (back.out)
+Connections Ball x: 1.15 -80 · 1.75 470 (power1.out) · 2.25 616.07 (linear)
+Connections Ball y: 1.15 712 · 1.75 712 (hold) · 1.983 564.36 (power2.out) · 2.25 624.36 (power2.in) · 2.333 624.36 (hold) · 2.45 612.36 (power2.out) · 2.567 624.36 (power2.in)
+Connections Ball Spin rotation: 1.15 -1080° · 2.25 0° (power1.out)
+Connections Floor Plane x: 0.05 2347.5 · 1.55 747.5 (power2.inOut)
+Connections Lockup opacity: 2.1 0 · 2.317 1 (linear) · 2.933 1 (hold) · 3.2 0 (power2.in)
+Connections Lockup scaleX: 2.1 0.96 · 2.667 1 (expo.out) · 2.933 1 (hold) · 3.2 0.97 (power3.in)
+Connections Lockup scaleY: 2.1 0.96 · 2.667 1 (expo.out) · 2.933 1 (hold) · 3.2 0.97 (power3.in)
+Connections Lockup y: 2.1 381 · 2.667 363 (expo.out) · 2.933 363 (hold) · 3.2 333 (power3.in)
+Connections Lockup Word opacity: 2.167 0 · 2.733 1 (expo.out)
+Connections Lockup Word y: 2.167 54.188 · 2.733 44.188 (expo.out)
+Connections Wall Plane x: 0.05 2068.745 · 1.55 788.745 (power2.inOut)
+Left Bottom Black rotation: 1 9° · 1.417 0° (power2.in)
+Left Bottom Black scaleX: 1.417 1 · 1.483 1.032 (power2.out) · 1.733 1 (back.out)
+Left Bottom Black scaleY: 1.417 1 · 1.483 0.92 (power2.out) · 1.733 1 (back.out)
+Left Bottom Black y: 1 -748.25 · 1.417 51.75 (power2.in)
+Left Bottom Green rotation: 1.067 -7° · 1.483 0° (power2.in)
+Left Bottom Green scaleX: 1.483 1 · 1.55 1.032 (power2.out) · 1.817 1 (back.out)
+Left Bottom Green scaleY: 1.483 1 · 1.55 0.92 (power2.out) · 1.817 1 (back.out)
+Left Bottom Green y: 1.067 -748.25 · 1.483 51.75 (power2.in)
+Left Middle Black rotation: 1.283 6° · 1.7 0° (power2.in)
+Left Middle Black scaleX: 1.7 1 · 1.767 1.032 (power2.out) · 2.017 1 (back.out)
+Left Middle Black scaleY: 1.7 1 · 1.767 0.92 (power2.out) · 2.017 1 (back.out)
+Left Middle Black y: 1.283 -767.25 · 1.7 32.75 (power2.in)
+Left Middle Blue rotation: 1.35 -10° · 1.767 0° (power2.in)
+Left Middle Blue scaleX: 1.767 1 · 1.833 1.032 (power2.out) · 2.083 1 (back.out)
+Left Middle Blue scaleY: 1.767 1 · 1.833 0.92 (power2.out) · 2.083 1 (back.out)
+Left Middle Blue y: 1.35 -767.25 · 1.767 32.75 (power2.in)
+Left Slab Lilac rotation: 1.567 12° · 1.983 0° (power2.in)
+Left Slab Lilac scaleX: 1.983 1 · 2.033 1.032 (power2.out) · 2.3 1 (back.out)
+Left Slab Lilac scaleY: 1.983 1 · 2.033 0.92 (power2.out) · 2.3 1 (back.out)
+Left Slab Lilac y: 1.567 -804.75 · 1.983 -4.75 (power2.in)
+Left Top Lime rotation: 1.483 -6° · 1.917 0° (power2.in)
+Left Top Lime scaleX: 1.917 1 · 1.967 1.032 (power2.out) · 2.233 1 (back.out)
+Left Top Lime scaleY: 1.917 1 · 1.967 0.92 (power2.out) · 2.233 1 (back.out)
+Left Top Lime y: 1.483 -785.75 · 1.917 14.25 (power2.in)
+Right Bottom Black rotation: 1.133 11° · 1.567 0° (power2.in)
+Right Bottom Black scaleX: 1.567 1 · 1.617 1.032 (power2.out) · 1.883 1 (back.out)
+Right Bottom Black scaleY: 1.567 1 · 1.617 0.92 (power2.out) · 1.883 1 (back.out)
+Right Bottom Black y: 1.133 -748.25 · 1.567 51.75 (power2.in)
+Right Bottom Lilac rotation: 1.217 -9° · 1.633 0° (power2.in)
+Right Bottom Lilac scaleX: 1.633 1 · 1.683 1.032 (power2.out) · 1.95 1 (back.out)
+Right Bottom Lilac scaleY: 1.633 1 · 1.683 0.92 (power2.out) · 1.95 1 (back.out)
+Right Bottom Lilac y: 1.217 -748.25 · 1.633 51.75 (power2.in)
+Right Middle Blue rotation: 1.417 8° · 1.833 0° (power2.in)
+Right Middle Blue scaleX: 1.833 1 · 1.9 1.032 (power2.out) · 2.167 1 (back.out)
+Right Middle Blue scaleY: 1.833 1 · 1.9 0.92 (power2.out) · 2.167 1 (back.out)
+Right Middle Blue y: 1.417 -767.25 · 1.833 32.75 (power2.in)
+Right Slab Lime rotation: 1.633 -8° · 2.05 0° (power2.in)
+Right Slab Lime scaleX: 2.05 1 · 2.117 1.032 (power2.out) · 2.367 1 (back.out)
+Right Slab Lime scaleY: 2.05 1 · 2.117 0.92 (power2.out) · 2.367 1 (back.out)
+Right Slab Lime y: 1.633 -748.25 · 2.05 51.75 (power2.in)
+Connections Backdrop x: 0.05 1600 · 1.55 0 (power2.inOut)
+```
+<!-- /keys -->
+
+The loop starts and ends on the intro's last frame (ball x 616.07, y 624.36, spin 0, scale 1) and only keys the ball and the Left Slab Lilac: the ball rolls left to the slab's edge, teeters, rolls back and does two hops in place, the slab thumping as it lands.
+
+<!-- keys: Connections Loop -->
+```text
+Connections Loop · 372 frames · 6.2 s · loops
+Connections Ball scaleX: 3.3 1 · 3.383 1.12 (power2.out) · 3.617 1 (back.out) · 3.783 1 (hold) · 3.867 1.12 (power2.out) · 4.1 1 (back.out) · 4.267 1 (hold) · 4.333 1.06 (power2.out) · 4.583 1 (back.out)
+Connections Ball scaleY: 3.3 1 · 3.383 0.88 (power2.out) · 3.617 1 (back.out) · 3.783 1 (hold) · 3.867 0.88 (power2.out) · 4.1 1 (back.out) · 4.267 1 (hold) · 4.333 0.94 (power2.out) · 4.583 1 (back.out)
+Connections Ball x: 0 616.07 · 0.6 616.07 (hold) · 1.6 552 (sine.inOut) · 1.8 550 (sine.inOut) · 2.1 553 (sine.inOut) · 2.3 552 (sine.inOut) · 3.3 616.07 (sine.inOut) · 6.2 616.07 (hold)
+Connections Ball y: 0 624.36 · 3.383 624.36 (hold) · 3.583 598.36 (power2.out) · 3.783 624.36 (power2.in) · 3.867 624.36 (hold) · 4.067 610.36 (power2.out) · 4.267 624.36 (power2.in) · 6.2 624.36 (hold)
+Connections Ball Spin rotation: 0 0° · 0.6 0° (hold) · 1.6 -207° (sine.inOut) · 1.8 -217° (sine.inOut) · 2.1 -199° (sine.inOut) · 2.3 -207° (sine.inOut) · 3.3 0° (sine.inOut) · 6.2 0° (hold)
+Left Slab Lilac scaleX: 3.783 1 · 3.833 1.02 (power2.out) · 4.1 1 (back.out) · 4.267 1 (hold) · 4.317 1.02 (power2.out) · 4.583 1 (back.out)
+Left Slab Lilac scaleY: 3.783 1 · 3.833 0.95 (power2.out) · 4.1 1 (back.out) · 4.267 1 (hold) · 4.317 0.95 (power2.out) · 4.583 1 (back.out)
+```
+<!-- /keys -->
+
+<!-- keys: Connections Outro -->
+```text
+Connections Outro · 96 frames · 1.6 s · plays once
+Connections Room x: 0.05 0 · 1.55 -1600 (power2.inOut)
+Connections Wall Lag x: 0.05 0 · 1.55 320 (power2.inOut)
+Connections Draw Rules drawTargetId: 0 Connections Bottom
+```
+<!-- /keys -->
+
+<!-- keys: Connections Home -->
+```text
+Connections Home · 1 frame · plays once
+Connections Room x: 0 0
+Connections Wall Lag x: 0 0
+Connections Draw Rules drawTargetId: 0 Connections Normal
+```
+<!-- /keys -->
+
+<!-- keys: Connections Gone -->
+```text
+Connections Gone · 1 frame · plays once
+Connections Room x: 0 -1600
+Connections Wall Lag x: 0 320
+Connections Draw Rules drawTargetId: 0 Connections Bottom
+```
+<!-- /keys -->
+
+## State machine
+
+Two layers per room, so layers never key the same property. A game appears in one unbroken run of cards, so a room never comes back once it has left.
+
+- **`<Room>`**: Waiting → Intro when `scene` == n (no exit time, duration 0) → Loop at exit time 100% (duration 0). The Shelf layer has no intro: it starts in Shelf Loop.
+- **`<Room> Exit`**: Home → Shown when `scene` == n → Outro when `scene` != n (no exit time, duration 0) → Gone at exit time 100%. "Shown" plays the Home pose again, so the room holds at x 0 while it is the current scene. Shelf Exit starts in Shown, because the opener is on screen at load.
+
+<!-- keys: State machine -->
+```text
+State machine "Chapter 2" · view model "Chapter 2": scene · default state machine: Chapter 2
+layer "Shelf": starts in Shelf Loop
+layer "Shelf Exit": starts in Shelf Home (2)
+  Shelf Home -> Shelf Home (2) when scene == 0, 0 ms
+  Shelf Home (2) -> Shelf Outro when scene != 0, 0 ms
+  Shelf Outro -> Shelf Gone at the end (exit time 100%), 0 ms
+layer "Wordle": starts in Wordle Waiting
+  Wordle Waiting -> Wordle Intro when scene == 1, 0 ms
+  Wordle Intro -> Wordle Loop at the end (exit time 100%), 0 ms
+layer "Wordle Exit": starts in Wordle Home
+  Wordle Home -> Wordle Home (2) when scene == 1, 0 ms
+  Wordle Home (2) -> Wordle Outro when scene != 1, 0 ms
+  Wordle Outro -> Wordle Gone at the end (exit time 100%), 0 ms
+layer "Connections": starts in Connections Waiting
+  Connections Waiting -> Connections Intro when scene == 2, 0 ms
+  Connections Intro -> Connections Loop at the end (exit time 100%), 0 ms
+layer "Connections Exit": starts in Connections Home
+  Connections Home -> Connections Home (2) when scene == 2, 0 ms
+  Connections Home (2) -> Connections Outro when scene != 2, 0 ms
+  Connections Outro -> Connections Gone at the end (exit time 100%), 0 ms
+```
+<!-- /keys -->
+
+What engineering relies on: the artboard "Chapter 2", the state machine "Chapter 2", the view model "Chapter 2" with the number `scene`, and the file loaded with autoplay and the view model bound (`autoBind`). Nothing else is needed. Each intro takes exactly 3.2 s from the moment `scene` changes, and its loop starts on the same frame.
+
+## HTML text and icon (not in the Rive file; for reference)
+
+The page's text motion is `engineering/yig-text-motion.css`, timed to the 3.2 s intro. A game has several cards, one frame each; a tap inside a game swaps only the text, and the tap after the game's last card starts the next game. The game's small icon is its own block, one per game: it pops in with the first card (3.2 s after the tap that starts the game), stays while later cards change, and lifts out with the last card's text. The Rive lockup (icon plus word) plays during the intro and is gone at 3.2 s. A same-game tap during the intro waits until the intro ends.
+
+## Adding a game
+
+Built from adding Wordle and Connections. A new game, say Strands (scene 3), is a new room plus two layers. In stages, running `npm run check ch2` after each one:
+
+1. **Import the art** into the Rive Editor first (the CLI has no SVG import), then `rive pull chapters/ch2`. Name groups in Title Case with spaces. Give every group that rotates or squashes its pivot, with an inner "Art" group offset back (wrap it if the import flattened it).
+2. **Make the room.** A `Strands Room` at x 0, in the tree above the room below it: Floor Plane (pieces), Wall Lag wrapping a Wall Plane (even if empty), the incoming Ball (Ball > Ball Spin > Ball Art), the Lockup as the room's first child, and the Backdrop as the **last** child (wall colour, floor, 2-unit floor line, 2-unit wall corner at x −1, all 1600 wide). Add `Strands Draw Rules` with two targets (see Draw rules).
+3. **Waiting, then Intro.** Build the Intro (3.2 s exactly): the backdrop 1600 → 0, the floor plane (and wall plane) pan with `power2.inOut` 0.05 → 1.55, the pieces' entrance, the ball rolling in to the room's loop start pose, and the lockup (rise in after the pieces land, gone exactly at 3.2 s). **Never key anything outside the room.** Then build `Strands Waiting` from the Intro's first keys.
+4. **Loop.** It starts and ends on the Intro's last frame, so the seam is invisible.
+5. **Outro, Home, Gone.** Outro keys only the room's x, its Wall Lag x and its draw rule (Bottom): `0.05 0 → 1.55 −1600`, lag `0 → 320`. Home keys x 0, lag 0 and the draw rule Normal. Gone holds x −1600, the lag at its end value and the draw rule Bottom.
+6. **The two layers.** `Strands`: Waiting → Intro (`scene` == 3) → Loop. `Strands Exit`: Home → Shown (`scene` == 3) → Outro (`scene` != 3) → Gone.
+7. **Draw order.** Add the new room's Normal target for the room above it, and re-point the room above's Normal target at the new room's top shape.
+8. **Check.** `npm run check ch2`; then the slower passes before handoff: `npm run tap` (interrupted taps, both orders, now with the new pair), `npm run text`, and look at it in the harness.
+9. **Add its cards** to `harness/copy.html`, and its scene number to the integration file's table.
 
 ## Ease reference
 
 | GSAP name | Rive cubic bezier | Used for |
 |---|---|---|
-| power2.inOut | 0.65, 0, 0.35, 1 | camera pan |
+| power2.inOut | 0.65, 0, 0.35, 1 | camera pan, outro, backdrop |
 | power2.in | 0.32, 0, 0.67, 0 | falls, tips, hop descents |
 | power2.out | 0.33, 1, 0.68, 1 | hop ascents, squash down, shadows |
 | power1.out | 0.5, 1, 0.89, 1 | ball rolling in |
-| power1.inOut | 0.45, 0, 0.55, 1 | wall color, ball spin on hops |
+| power1.inOut | 0.45, 0, 0.55, 1 | ball spin on hops |
 | sine.inOut | 0.37, 0, 0.63, 1 | loops: rocking, rolling, teetering |
 | expo.out | 0.16, 1, 0.3, 1 | lockup rising in (matches the text's Rise in) |
 | power3.in | 0.5, 0, 0.75, 0 | lockup lifting out (close to the text's Lift out) |
 | back.out | 0.34, 1.56, 0.64, 1 | squash recovering, with a small overshoot |
-
