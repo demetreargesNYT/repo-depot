@@ -26,16 +26,20 @@ function setScene(n) {
 
 // Call from the tap handler that already advances the stats
 let frame = 0;
+let introEndsAt = 0; // when the game's 3.2 s intro finishes, in performance.now() time
+const INTRO_MS = 3200; // every intro is exactly this long
 function onTap() {
   if (frame >= frames.length - 1) return;
   const sameScene = frames[frame + 1].scene === frames[frame].scene;
   frame += 1;
+  if (!sameScene) introEndsAt = performance.now() + INTRO_MS;
   setScene(SCENE[frames[frame].scene]); // the same scene again does nothing, so Rive keeps looping
   showCopy(frame, sameScene);
 }
 
-// The old copy goes at once. The new copy rises on its own: 3.2 s after the tap when the scene changes, or
-// right after the old copy leaves (yig-quick) when only the text changes.
+// The old copy goes at once. The new copy rises on its own: 3.2 s after a tap that changes the scene. A tap
+// that only moves to the game's next card waits just 300 ms (yig-quick), unless the game's intro is still
+// running: then the copy waits until the intro ends, so it never overlaps the lockup.
 function showCopy(n, sameScene) {
   const current = document.querySelector(".yig-text:not([hidden])");
   const next = document.querySelector(`[data-copy-frame="${n}"]`);
@@ -54,7 +58,14 @@ function showCopy(n, sameScene) {
     // Take both classes off, force a reflow, then add yig-in, so the CSS animation restarts every time this
     // copy shows. Without the reflow the browser sees yig-in already there and plays nothing.
     next.classList.remove("yig-in", "yig-out");
-    next.classList.toggle("yig-quick", sameScene);
+    const waitForIntro = Math.max(0, introEndsAt - performance.now());
+    if (sameScene && waitForIntro > 0) {
+      next.style.setProperty("--yig-delay", `${waitForIntro}ms`); // the rest of the intro
+      next.classList.remove("yig-quick");
+    } else {
+      next.style.removeProperty("--yig-delay");
+      next.classList.toggle("yig-quick", sameScene);
+    }
     next.hidden = false;
     void next.offsetWidth;
     next.classList.add("yig-in");
