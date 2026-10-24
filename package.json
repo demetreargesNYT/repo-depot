@@ -7,6 +7,7 @@
     "check": "python3 tools/check.py",
     "rules": "python3 tools/check_chapter.py",
     "tap": "python3 tools/tap_test.py",
-    "text": "node harness/text-test.mjs"
+    "text": "node harness/text-test.mjs",
+    "deliver": "python3 tools/deliver.py"
   }
 }
