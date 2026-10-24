@@ -68,6 +68,8 @@ class Scene:
                 for k in sorted(kp, key=lambda k: int(k.get("frame", 0))):
                     v = k.get("value", "0")
                     # colours are hex strings and draw-target keys are object ids; only doubles are numbers
+                    if k.tag == "KeyFrameId":
+                        v = self.names.get(v, v)            # draw targets read as their names, not ids
                     ks.append((int(k.get("frame", 0)), float(v) if k.tag == "KeyFrameDouble" else v))
                 out[(self.label(ko.get("objectId")), kp.get("property"))] = ks
         return out
