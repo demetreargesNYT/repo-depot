@@ -48,4 +48,10 @@ Rive animation for NYT Games' Year in Games 2026 recap ("Well Played"). Design l
 - Keep `includeInExport` true on every artboard that ships.
 - Never edit in the Editor and locally at the same time. Pull before local edits, verify and screenshot before pushing, and push with a `--name` label. Commit to git at every named push.
 - When changing timing, keep each intro at 3.2 s, and keep each loop's first and last frames identical.
-- Compare renders against `art/chN/reference-frames/` and the reference prototype before calling something done.
+- After every change: run `--verify` and the automatic rule checks, as one script that takes about a second: `npm run check ch2`. It checks that Waiting poses equal their intro's first keys, every intro is exactly 3.2 s, every loop's first and last frames match (and start on the intro's last frame), and everything clears the artboard. Don't re-render, pixel-diff or time anything the change didn't touch. Full render, pixel and timing passes (`npm run tap`, `npm run text`, frame-by-frame renders against `art/chN/reference-frames/` and the reference prototype) are only for a handoff to engineering, or when asked. Motion and feel are reviewed by Demetre in the harness, so when a change affects what's on screen, say exactly what to look at.
+- Rive draws a group's first child on top, so children are drawn in reverse of the order they are written. Anything that must sit behind a room's art, such as its backdrop, is the room's last child.
+- Wall corner lines sit at x −1, not 0, so the 2-unit line stays off the artboard edge at rest.
+- RML omits `value="0"` on keys, so read keys with a real XML parser and treat a missing value as 0. A regular expression reads them as missing, and that once put shadows and lockups at full size in a Waiting pose.
+- Each Waiting pose must equal its intro's first keys. `npm run check` tests this for every room; after editing an intro, rebuild its Waiting pose from the intro, never by hand.
+- A leaving room draws below the arriving room through draw rules, not by reordering rooms: each room's Outro and Gone key its rule to Bottom and its Home keys it back to Normal. A draw target has to name a Shape, not a group.
+- Each lockup lives inside its own room so it leaves with the room.
