@@ -4,6 +4,10 @@
             <Node name="Lockups" id="1:19">
             </Node>
             <Node name="Connections Room" id="1:558">
+                <DrawRules drawTargetId="1:2818" name="Connections Draw Rules" id="1:2817">
+                    <DrawTarget drawableId="1:347" placementValue="before" name="Connections Normal" id="1:2818"/>
+                    <DrawTarget drawableId="1:2286" placementValue="before" name="Connections Bottom" id="1:2819"/>
+                </DrawRules>
                 <Node x="748" y="363" opacity="0" name="Connections Lockup" id="1:20">
                     <Node x="-0.0059500001" y="19.499149" name="Connections Lockup Art" id="1:21">
                         <Node y="44.1875" name="Connections Lockup Word" id="1:22">
@@ -898,6 +902,10 @@
                 </Node>
             </Node>
             <Node name="Wordle Room" id="1:831">
+                <DrawRules drawTargetId="1:2821" name="Wordle Draw Rules" id="1:2820">
+                    <DrawTarget drawableId="1:1096" placementValue="before" name="Wordle Normal" id="1:2821"/>
+                    <DrawTarget drawableId="1:2286" placementValue="before" name="Wordle Bottom" id="1:2822"/>
+                </DrawRules>
                 <Node x="748" y="363" opacity="0" name="Wordle Lockup" id="1:344">
                     <Node x="0.00034" y="19.475349" name="Wordle Lockup Art" id="1:345">
                         <Node y="44.353149" name="Wordle Lockup Word" id="1:346">
@@ -1642,6 +1650,10 @@
                 </Node>
             </Node>
             <Node name="Shelf Room" id="1:1092">
+                <DrawRules drawTargetId="1:2824" name="Shelf Draw Rules" id="1:2823">
+                    <DrawTarget drawableId="1:2286" placementValue="before" name="Shelf Normal" id="1:2824"/>
+                    <DrawTarget drawableId="1:2286" placementValue="before" name="Shelf Bottom" id="1:2825"/>
+                </DrawRules>
                 <Node x="756.71997" y="650.09998" name="Shelf Floor Plane" id="1:1093">
                     <Node x="-214.22501" y="34.244499" name="Plant" id="1:1094">
                         <Node x="-1.745" y="-19.845501" name="Plant Flower" id="1:1095">
@@ -5310,6 +5322,11 @@
                     <KeyFrameDouble value="320" frame="93" id="0:3690"/>
                 </KeyedProperty>
             </KeyedObject>
+            <KeyedObject objectId="1:2823">
+                <KeyedProperty property="drawTargetId">
+                    <KeyFrameId value="1:2825" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
         </LinearAnimation>
         <LinearAnimation fps="60" duration="1" name="Shelf Home" id="1:2705">
             <KeyedObject objectId="1:1092" id="0:3691">
@@ -5322,6 +5339,11 @@
                     <KeyFrameDouble value="0" frame="0" id="0:3696"/>
                 </KeyedProperty>
             </KeyedObject>
+            <KeyedObject objectId="1:2823">
+                <KeyedProperty property="drawTargetId">
+                    <KeyFrameId value="1:2824" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
         </LinearAnimation>
         <LinearAnimation fps="60" duration="1" name="Shelf Gone" id="1:2706">
             <KeyedObject objectId="1:1092" id="0:3697">
@@ -5332,6 +5354,11 @@
             <KeyedObject objectId="1:2635" id="0:3700">
                 <KeyedProperty property="x" id="0:3701">
                     <KeyFrameDouble value="320" frame="0" id="0:3702"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:2823">
+                <KeyedProperty property="drawTargetId">
+                    <KeyFrameId value="1:2825" frame="0"/>
                 </KeyedProperty>
             </KeyedObject>
         </LinearAnimation>
@@ -5350,6 +5377,11 @@
                     <KeyFrameDouble value="0" frame="93" id="0:3711"/>
                 </KeyedProperty>
             </KeyedObject>
+            <KeyedObject objectId="1:2820">
+                <KeyedProperty property="drawTargetId">
+                    <KeyFrameId value="1:2822" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
         </LinearAnimation>
         <LinearAnimation fps="60" duration="1" name="Wordle Home" id="1:2708">
             <KeyedObject objectId="1:831" id="0:3712">
@@ -5362,6 +5394,11 @@
                     <KeyFrameDouble value="0" frame="0" id="0:3717"/>
                 </KeyedProperty>
             </KeyedObject>
+            <KeyedObject objectId="1:2820">
+                <KeyedProperty property="drawTargetId">
+                    <KeyFrameId value="1:2821" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
         </LinearAnimation>
         <LinearAnimation fps="60" duration="1" name="Wordle Gone" id="1:2709">
             <KeyedObject objectId="1:831" id="0:3718">
@@ -5372,6 +5409,11 @@
             <KeyedObject objectId="1:2657" id="0:3721">
                 <KeyedProperty property="x" id="0:3722">
                     <KeyFrameDouble value="0" frame="0" id="0:3723"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:2820">
+                <KeyedProperty property="drawTargetId">
+                    <KeyFrameId value="1:2822" frame="0"/>
                 </KeyedProperty>
             </KeyedObject>
         </LinearAnimation>
@@ -5392,6 +5434,11 @@
                     <KeyFrameDouble value="320" frame="93" id="0:3733"/>
                 </KeyedProperty>
             </KeyedObject>
+            <KeyedObject objectId="1:2817">
+                <KeyedProperty property="drawTargetId">
+                    <KeyFrameId value="1:2819" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
         </LinearAnimation>
         <LinearAnimation fps="60" duration="1" name="Connections Home" id="1:2711">
             <KeyedObject objectId="1:558" id="0:3734">
@@ -5404,6 +5451,11 @@
                     <KeyFrameDouble value="0" frame="0" id="0:3739"/>
                 </KeyedProperty>
             </KeyedObject>
+            <KeyedObject objectId="1:2817">
+                <KeyedProperty property="drawTargetId">
+                    <KeyFrameId value="1:2818" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
         </LinearAnimation>
         <LinearAnimation fps="60" duration="1" name="Connections Gone" id="1:2712">
             <KeyedObject objectId="1:558" id="0:3740">
@@ -5414,6 +5466,11 @@
             <KeyedObject objectId="1:2680" id="0:3743">
                 <KeyedProperty property="x" id="0:3744">
                     <KeyFrameDouble value="320" frame="0" id="0:3745"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:2817">
+                <KeyedProperty property="drawTargetId">
+                    <KeyFrameId value="1:2819" frame="0"/>
                 </KeyedProperty>
             </KeyedObject>
         </LinearAnimation>

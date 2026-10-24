@@ -75,7 +75,16 @@ def run(chapter):
         # outro keys only the room and its wall lag
         outro = A[f"{room} Outro"]
         touched = {k for k in s.keys(outro)}
-        check(touched == {(f"{room} Room", "x"), (f"{room} Wall Lag", "x")}, f"{room} Outro keys only {room} Room x and {room} Wall Lag x")
+        rules = f"{room} Draw Rules"
+        check(touched == {(f"{room} Room", "x"), (f"{room} Wall Lag", "x"), (rules, "drawTargetId")},
+              f"{room} Outro keys only {room} Room x, {room} Wall Lag x and its draw rule")
+
+        # the leaving room draws below the arriving room: Outro and Gone key the Bottom target, Home keys Normal
+        by_name = {e.get("name"): e.get("id") for e in s.by_id.values() if e.get("name")}
+        want = {"Outro": f"{room} Bottom", "Gone": f"{room} Bottom", "Home": f"{room} Normal"}
+        for pose, target in want.items():
+            ks = s.keys(A[f"{room} {pose}"]).get((rules, "drawTargetId"), [])
+            check(len(ks) == 1 and ks[0][1] == by_name.get(target), f"{room} {pose} puts the room's draw rule on {target.split()[-1]}")
         check(s.duration(outro) == OUTRO_FRAMES, f"{room} Outro is {OUTRO_FRAMES} frames (1.6 s)")
         for pose in ("Home", "Gone"):
             check(s.duration(A[f"{room} {pose}"]) == 1, f"{room} {pose} is a one-frame pose")
