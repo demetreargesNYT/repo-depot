@@ -319,7 +319,11 @@
       const hex = normalizeHex(raw);
       tileHexInput.classList.toggle('invalid', hex === null);
       if (hex === null) return;
-      document.documentElement.style.setProperty('--tile-bg', hex);
+      // Set on body, not documentElement: [data-theme="dark"] assigns
+      // --tile-bg directly on body, and a rule matching body always wins
+      // over an inherited value from html for that same custom property —
+      // an override on html would be silently ignored in dark mode.
+      document.body.style.setProperty('--tile-bg', hex);
     }
 
     function applyShimmerHex(raw) {
@@ -327,7 +331,7 @@
       shimmerHexInput.classList.toggle('invalid', hex === null);
       if (hex === null) return;
       const { r, g, b } = hexToRgb(hex);
-      document.documentElement.style.setProperty('--shimmer-color', `rgba(${r}, ${g}, ${b}, ${SHIMMER_ALPHA})`);
+      document.body.style.setProperty('--shimmer-color', `rgba(${r}, ${g}, ${b}, ${SHIMMER_ALPHA})`);
     }
 
     tileHexInput.addEventListener('input', () => applyTileHex(tileHexInput.value));
@@ -353,8 +357,8 @@
 
       // Reset the hex fields (and the live override they set) back to this
       // theme's preset, so toggling doesn't leave a stale manual override applied.
-      document.documentElement.style.removeProperty('--tile-bg');
-      document.documentElement.style.removeProperty('--shimmer-color');
+      document.body.style.removeProperty('--tile-bg');
+      document.body.style.removeProperty('--shimmer-color');
       tileHexInput.value = THEME_PRESETS[next].tile;
       shimmerHexInput.value = THEME_PRESETS[next].shimmer;
       applyTileHex(tileHexInput.value);
