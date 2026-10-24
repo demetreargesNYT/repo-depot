@@ -2,6 +2,8 @@
     <Artboard defaultStateMachineId="1:7" viewModelId="1:14" viewModelInstanceId="1:15" clip="true" width="1495" height="1067" styleId="1:5" name="Chapter 2" id="1:2">
         <Node name="Chapter 2 Rive Import" id="1:17">
             <Node name="Lockups" id="1:19">
+            </Node>
+            <Node name="Connections Room" id="1:558">
                 <Node x="748" y="363" opacity="0" name="Connections Lockup" id="1:20">
                     <Node x="-0.0059500001" y="19.499149" name="Connections Lockup Art" id="1:21">
                         <Node y="44.1875" name="Connections Lockup Word" id="1:22">
@@ -412,278 +414,6 @@
                         </Node>
                     </Node>
                 </Node>
-                <Node x="748" y="363" opacity="0" name="Wordle Lockup" id="1:344">
-                    <Node x="0.00034" y="19.475349" name="Wordle Lockup Art" id="1:345">
-                        <Node y="44.353149" name="Wordle Lockup Word" id="1:346">
-                            <Shape x="35.0947" y="3.1094999" id="1:347">
-                                <PointsPath isClosed="true" id="1:348">
-                                    <CubicDetachedVertex outRotation="1.5707964" outDistance="0.354" x="6.1370001" y="0.094999999" id="1:349"/>
-                                    <CubicDetachedVertex inRotation="-1.4725224" inDistance="0.35672119" x="6.0780001" y="1.277" id="1:350"/>
-                                    <CubicDetachedVertex outRotation="1.5707964" outDistance="2.247" x="-1.313" y="1.277" id="1:351"/>
-                                    <CubicDetachedVertex inRotation="3.1415927" inDistance="1.183" outDistance="0.85100001" x="0.34299999" y="4.257" id="1:352"/>
-                                    <CubicDetachedVertex inRotation="1.8078873" inDistance="1.106967" x="2.0220001" y="2.684" id="1:353"/>
-                                    <CubicDetachedVertex outRotation="1.8055061" outDistance="3.3066626" x="6.0419998" y="2.684" id="1:354"/>
-                                    <CubicDetachedVertex inDistance="3.039" outRotation="3.1415927" outDistance="3.902" x="0.30700001" y="7.414" id="1:355"/>
-                                    <CubicDetachedVertex inRotation="1.5707964" inDistance="5.7820001" outRotation="-1.5707964" outDistance="5.4629998" x="-6.1370001" id="1:356"/>
-                                    <CubicDetachedVertex inRotation="3.1415927" inDistance="3.346" outDistance="3.346" x="0.13" y="-7.414" id="1:357"/>
-                                    <CubicDetachedVertex inRotation="-1.5707964" inDistance="5.4990001" x="6.125" y="0.094999999" id="1:358"/>
-                                </PointsPath>
-                                <PointsPath isClosed="true" isClockwise="false" id="1:359">
-                                    <StraightVertex x="1.584" y="-0.88700002" id="1:360"/>
-                                    <CubicDetachedVertex outRotation="-1.5707964" outDistance="1.679" x="1.584" y="-1.265" id="1:361"/>
-                                    <CubicDetachedVertex inDistance="1.2410001" outRotation="3.1415927" outDistance="1.443" x="0.142" y="-4.1620002" id="1:362"/>
-                                    <CubicDetachedVertex inRotation="-1.550661" inDistance="1.7383524" x="-1.336" y="-0.88700002" id="1:363"/>
-                                </PointsPath>
-                                <Fill id="1:2322">
-                                    <SolidColor colorValue="FF000000" id="1:364"/>
-                                </Fill>
-                            </Shape>
-                            <Shape x="24.8312" y="-0.1655" id="1:365">
-                                <PointsPath isClosed="true" id="1:366">
-                                    <StraightVertex x="3.6654999" y="10.346" id="1:367"/>
-                                    <StraightVertex x="-3.5474999" y="10.346" id="1:368"/>
-                                    <StraightVertex x="-3.5474999" y="7.0710001" id="1:369"/>
-                                    <StraightVertex x="-2.3415" y="7.0710001" id="1:370"/>
-                                    <StraightVertex x="-2.3415" y="-7.0830002" id="1:371"/>
-                                    <StraightVertex x="-3.6654999" y="-7.0830002" id="1:372"/>
-                                    <StraightVertex x="-3.6654999" y="-10.358" id="1:373"/>
-                                    <StraightVertex x="2.4245" y="-10.358" id="1:374"/>
-                                    <StraightVertex x="2.4245" y="7.0830002" id="1:375"/>
-                                    <StraightVertex x="3.6654999" y="7.0830002" id="1:376"/>
-                                    <StraightVertex x="3.6654999" y="10.358" id="1:377"/>
-                                </PointsPath>
-                                <Fill id="1:2323">
-                                    <SolidColor colorValue="FF000000" id="1:378"/>
-                                </Fill>
-                            </Shape>
-                            <Shape x="13.4857" y="-0.023499999" id="1:379">
-                                <PointsPath isClosed="true" id="1:380">
-                                    <StraightVertex x="6.7340002" y="10.204" id="1:381"/>
-                                    <StraightVertex x="0.76300001" y="10.204" id="1:382"/>
-                                    <CubicDetachedVertex outRotation="1.9418317" outDistance="1.0783812" x="0.76300001" y="8.6079998" id="1:383"/>
-                                    <CubicDetachedVertex inDistance="1.4665" outRotation="3.1415927" outDistance="2.4830999" x="-2.3945" y="10.5" id="1:384"/>
-                                    <CubicDetachedVertex inRotation="1.5707964" inDistance="6.1719999" outRotation="-1.5707964" outDistance="5.8540001" x="-6.7340002" y="2.9089999" id="1:385"/>
-                                    <CubicDetachedVertex inRotation="3.1415927" inDistance="2.3058" outDistance="1.2415" x="-2.3945" y="-4.21" id="1:386"/>
-                                    <CubicDetachedVertex inRotation="-2.0481608" inDistance="1.5975972" x="0.76300001" y="-2.2939999" id="1:387"/>
-                                    <StraightVertex x="0.76300001" y="-7.2249999" id="1:388"/>
-                                    <StraightVertex x="-0.65600002" y="-7.2249999" id="1:389"/>
-                                    <StraightVertex x="-0.65600002" y="-10.5" id="1:390"/>
-                                    <StraightVertex x="5.5159998" y="-10.5" id="1:391"/>
-                                    <StraightVertex x="5.5159998" y="6.941" id="1:392"/>
-                                    <StraightVertex x="6.7220001" y="6.941" id="1:393"/>
-                                    <StraightVertex x="6.7220001" y="10.216" id="1:394"/>
-                                </PointsPath>
-                                <PointsPath isClosed="true" isClockwise="false" id="1:395">
-                                    <CubicDetachedVertex inRotation="1.5707964" inDistance="2.4590001" outRotation="-1.5707964" outDistance="2.8150001" x="0.91600001" y="3.1689999" id="1:396"/>
-                                    <CubicDetachedVertex inDistance="1.123" outRotation="3.1415927" outDistance="1.1235" x="-0.46700001" y="-0.61500001" id="1:397"/>
-                                    <CubicDetachedVertex inRotation="-1.5707964" inDistance="2.8150001" outRotation="1.5707964" outDistance="2.447" x="-1.8861001" y="3.1689999" id="1:398"/>
-                                    <CubicDetachedVertex inRotation="3.1415927" inDistance="1.3476" outDistance="1.348" x="-0.50300002" y="6.9520001" id="1:399"/>
-                                </PointsPath>
-                                <Fill id="1:2324">
-                                    <SolidColor colorValue="FF000000" id="1:400"/>
-                                </Fill>
-                            </Shape>
-                            <Shape x="1.10475" y="3.003" id="1:401">
-                                <PointsPath isClosed="true" id="1:402">
-                                    <CubicDetachedVertex outRotation="-3.1024776" outDistance="3.017508" x="4.9839501" y="-2.9324999" id="1:403"/>
-                                    <CubicDetachedVertex inRotation="-1.5707964" inDistance="3.1329999" x="0.98734999" y="0.96950001" id="1:404"/>
-                                    <StraightVertex x="0.98734999" y="3.8905001" id="1:405"/>
-                                    <StraightVertex x="2.5481501" y="3.8905001" id="1:406"/>
-                                    <StraightVertex x="2.5481501" y="7.1655002" id="1:407"/>
-                                    <StraightVertex x="-4.9839501" y="7.1655002" id="1:408"/>
-                                    <StraightVertex x="-4.9839501" y="3.8905001" id="1:409"/>
-                                    <StraightVertex x="-3.74245" y="3.8905001" id="1:410"/>
-                                    <StraightVertex x="-3.74245" y="-3.6775" id="1:411"/>
-                                    <StraightVertex x="-4.9839501" y="-3.6775" id="1:412"/>
-                                    <StraightVertex x="-4.9839501" y="-6.9524999" id="1:413"/>
-                                    <StraightVertex x="0.71534997" y="-6.9524999" id="1:414"/>
-                                    <CubicDetachedVertex outRotation="-1.0725358" outDistance="1.6825757" x="0.67984998" y="-4.6824999" id="1:415"/>
-                                    <CubicDetachedVertex inRotation="3.1415927" inDistance="1.7381999" x="4.6410499" y="-7.1655002" id="1:416"/>
-                                    <StraightVertex x="4.9721498" y="-7.1655002" id="1:417"/>
-                                    <StraightVertex x="4.9721498" y="-2.9435" id="1:418"/>
-                                </PointsPath>
-                                <Fill id="1:2325">
-                                    <SolidColor colorValue="FF000000" id="1:419"/>
-                                </Fill>
-                            </Shape>
-                            <Shape x="-11.0908" y="3.1155" id="1:420">
-                                <PointsPath isClosed="true" id="1:421">
-                                    <CubicDetachedVertex inRotation="-1.5707964" inDistance="5.085" outRotation="1.5707964" outDistance="5.2849998" x="6.2669001" y="0.029999999" id="1:422"/>
-                                    <CubicDetachedVertex inDistance="3.8784001" outRotation="3.1415927" outDistance="3.8784001" y="7.4200001" id="1:423"/>
-                                    <CubicDetachedVertex inRotation="1.5707964" inDistance="5.2610002" outRotation="-1.5707964" outDistance="5.2620001" x="-6.2669001" y="0.029999999" id="1:424"/>
-                                    <CubicDetachedVertex inRotation="3.1415927" inDistance="3.9375" outDistance="3.9375" y="-7.4200001" id="1:425"/>
-                                </PointsPath>
-                                <PointsPath isClosed="true" isClockwise="false" id="1:426">
-                                    <CubicDetachedVertex inRotation="1.5707964" inDistance="2.5190001" outRotation="-1.5707964" outDistance="2.8610001" x="1.4189" y="-0.029999999" id="1:427"/>
-                                    <CubicDetachedVertex inDistance="1.1469001" outRotation="3.1415927" outDistance="1.147" y="-3.9319999" id="1:428"/>
-                                    <CubicDetachedVertex inRotation="-1.5707964" inDistance="2.8610001" outRotation="1.5707964" outDistance="2.507" x="-1.4426" y="-0.029999999" id="1:429"/>
-                                    <CubicDetachedVertex inRotation="3.1415927" inDistance="1.3243999" outDistance="1.3243001" y="3.9319999" id="1:430"/>
-                                </PointsPath>
-                                <Fill id="1:2326">
-                                    <SolidColor colorValue="FF000000" id="1:431"/>
-                                </Fill>
-                            </Shape>
-                            <Shape x="-28.627001" y="-0.17749999" id="1:432">
-                                <PointsPath isClosed="true" id="1:433">
-                                    <StraightVertex x="12.6047" y="-6.6929998" id="1:434"/>
-                                    <StraightVertex x="11.4223" y="-6.6929998" id="1:435"/>
-                                    <StraightVertex x="8.0523005" y="10.358" id="1:436"/>
-                                    <StraightVertex x="2.4949" y="10.358" id="1:437"/>
-                                    <StraightVertex x="-0.0473" y="-0.662" id="1:438"/>
-                                    <StraightVertex x="-2.7077999" y="10.358" id="1:439"/>
-                                    <StraightVertex x="-8.2889004" y="10.358" id="1:440"/>
-                                    <StraightVertex x="-11.4223" y="-6.6929998" id="1:441"/>
-                                    <StraightVertex x="-12.6047" y="-6.6929998" id="1:442"/>
-                                    <StraightVertex x="-12.6047" y="-10.358" id="1:443"/>
-                                    <StraightVertex x="-4.1504002" y="-10.358" id="1:444"/>
-                                    <StraightVertex x="-4.1504002" y="-6.6929998" id="1:445"/>
-                                    <StraightVertex x="-5.652" y="-6.6929998" id="1:446"/>
-                                    <StraightVertex x="-4.0794001" y="3.8900001" id="1:447"/>
-                                    <StraightVertex x="-0.74489999" y="-10.358" id="1:448"/>
-                                    <StraightVertex x="3.0034001" y="-10.358" id="1:449"/>
-                                    <StraightVertex x="6.0422001" y="3.8900001" id="1:450"/>
-                                    <StraightVertex x="7.8986001" y="-6.6929998" id="1:451"/>
-                                    <StraightVertex x="6.3023" y="-6.6929998" id="1:452"/>
-                                    <StraightVertex x="6.3023" y="-10.358" id="1:453"/>
-                                    <StraightVertex x="12.5929" y="-10.358" id="1:454"/>
-                                    <StraightVertex x="12.5929" y="-6.6929998" id="1:455"/>
-                                </PointsPath>
-                                <Fill id="1:2327">
-                                    <SolidColor colorValue="FF000000" id="1:456"/>
-                                </Fill>
-                            </Shape>
-                        </Node>
-                        <Node x="0.0062500001" y="-19.51025" name="Wordle Lockup Icon" id="1:457">
-                            <Shape id="1:458">
-                                <PointsPath isClosed="true" isClockwise="false" id="1:459">
-                                    <CubicDetachedVertex inDistance="4.9419999" x="26.42145" y="-35.378399" id="1:460"/>
-                                    <CubicDetachedVertex outRotation="3.1415927" outDistance="4.9425998" x="-26.42165" y="-35.378399" id="1:461"/>
-                                    <CubicDetachedVertex inRotation="-1.5707964" inDistance="4.9425998" x="-35.384449" y="-26.415501" id="1:462"/>
-                                    <CubicDetachedVertex outRotation="1.5707964" outDistance="4.9425001" x="-35.384449" y="26.427401" id="1:463"/>
-                                    <CubicDetachedVertex inRotation="3.1415927" inDistance="4.9425998" x="-26.42165" y="35.378399" id="1:464"/>
-                                    <CubicDetachedVertex outDistance="4.9419999" x="26.42145" y="35.378399" id="1:465"/>
-                                    <CubicDetachedVertex inRotation="1.5707964" inDistance="4.9306998" x="35.384449" y="26.427401" id="1:466"/>
-                                    <CubicDetachedVertex outRotation="-1.5707964" outDistance="4.9425998" x="35.384449" y="-26.415501" id="1:467"/>
-                                </PointsPath>
-                                <PointsPath isClosed="true" id="1:468">
-                                    <StraightVertex x="31.78945" y="-26.415501" id="1:469"/>
-                                    <StraightVertex x="31.78945" y="-12.9831" id="1:470"/>
-                                    <StraightVertex x="13.00045" y="-12.9831" id="1:471"/>
-                                    <StraightVertex x="13.00045" y="-31.795601" id="1:472"/>
-                                    <CubicDetachedVertex outDistance="2.9679999" x="26.409451" y="-31.795601" id="1:473"/>
-                                    <CubicDetachedVertex inRotation="-1.5707964" inDistance="2.9679" x="31.777451" y="-26.415501" id="1:474"/>
-                                </PointsPath>
-                                <PointsPath isClosed="true" id="1:475">
-                                    <StraightVertex x="-13.00105" y="9.4122" id="1:476"/>
-                                    <StraightVertex x="-31.813551" y="9.4122" id="1:477"/>
-                                    <StraightVertex x="-31.813551" y="-9.4003" id="1:478"/>
-                                    <StraightVertex x="-13.00105" y="-9.4003" id="1:479"/>
-                                </PointsPath>
-                                <PointsPath isClosed="true" id="1:480">
-                                    <StraightVertex x="-9.4182501" y="-9.4003" id="1:481"/>
-                                    <StraightVertex x="9.4178495" y="-9.4003" id="1:482"/>
-                                    <StraightVertex x="9.4178495" y="9.4122" id="1:483"/>
-                                    <StraightVertex x="-9.4182501" y="9.4122" id="1:484"/>
-                                </PointsPath>
-                                <PointsPath isClosed="true" id="1:485">
-                                    <StraightVertex x="9.4178495" y="12.9949" id="1:486"/>
-                                    <StraightVertex x="9.4178495" y="31.8074" id="1:487"/>
-                                    <StraightVertex x="-9.4182501" y="31.8074" id="1:488"/>
-                                    <StraightVertex x="-9.4182501" y="12.9949" id="1:489"/>
-                                </PointsPath>
-                                <PointsPath isClosed="true" id="1:490">
-                                    <StraightVertex x="-9.4182501" y="-12.9831" id="1:491"/>
-                                    <StraightVertex x="-9.4182501" y="-31.795601" id="1:492"/>
-                                    <StraightVertex x="9.4178495" y="-31.795601" id="1:493"/>
-                                    <StraightVertex x="9.4178495" y="-12.9831" id="1:494"/>
-                                </PointsPath>
-                                <PointsPath isClosed="true" id="1:495">
-                                    <StraightVertex x="13.00045" y="-9.4003" id="1:496"/>
-                                    <StraightVertex x="31.78945" y="-9.4003" id="1:497"/>
-                                    <StraightVertex x="31.78945" y="9.4122" id="1:498"/>
-                                    <StraightVertex x="13.00045" y="9.4122" id="1:499"/>
-                                </PointsPath>
-                                <PointsPath isClosed="true" id="1:500">
-                                    <StraightVertex x="-26.433451" y="-31.795601" id="1:501"/>
-                                    <StraightVertex x="-13.00105" y="-31.795601" id="1:502"/>
-                                    <StraightVertex x="-13.00105" y="-12.9831" id="1:503"/>
-                                    <StraightVertex x="-31.813551" y="-12.9831" id="1:504"/>
-                                    <CubicDetachedVertex outRotation="-1.5707964" outDistance="2.9679" x="-31.813551" y="-26.415501" id="1:505"/>
-                                    <CubicDetachedVertex inRotation="3.1415927" inDistance="2.9561" x="-26.44525" y="-31.795601" id="1:506"/>
-                                </PointsPath>
-                                <PointsPath isClosed="true" id="1:507">
-                                    <StraightVertex x="-31.80175" y="26.427401" id="1:508"/>
-                                    <StraightVertex x="-31.80175" y="12.9949" id="1:509"/>
-                                    <StraightVertex x="-12.98925" y="12.9949" id="1:510"/>
-                                    <StraightVertex x="-12.98925" y="31.8074" id="1:511"/>
-                                    <CubicDetachedVertex outRotation="3.1415927" outDistance="2.9679" x="-26.42165" y="31.8074" id="1:512"/>
-                                    <CubicDetachedVertex inRotation="1.5707964" inDistance="2.9561" x="-31.78985" y="26.439199" id="1:513"/>
-                                </PointsPath>
-                                <PointsPath isClosed="true" id="1:514">
-                                    <StraightVertex x="26.42145" y="31.795601" id="1:515"/>
-                                    <StraightVertex x="13.01245" y="31.795601" id="1:516"/>
-                                    <StraightVertex x="13.01245" y="12.9831" id="1:517"/>
-                                    <StraightVertex x="31.801451" y="12.9831" id="1:518"/>
-                                    <CubicDetachedVertex outRotation="1.5707964" outDistance="2.9679" x="31.801451" y="26.415501" id="1:519"/>
-                                    <CubicDetachedVertex inDistance="2.9560001" x="26.433451" y="31.7838" id="1:520"/>
-                                </PointsPath>
-                                <Fill id="1:2328">
-                                    <SolidColor colorValue="FF000000" id="1:521"/>
-                                </Fill>
-                            </Shape>
-                            <Shape x="0.02265" y="11.24525" id="1:522">
-                                <PointsPath isClosed="true" isClockwise="false" id="1:523">
-                                    <StraightVertex x="33.657799" y="0.02365" id="1:524"/>
-                                    <StraightVertex x="33.657799" y="-22.43075" id="1:525"/>
-                                    <StraightVertex x="11.2744" y="-22.43075" id="1:526"/>
-                                    <StraightVertex x="11.2744" y="-0.02365" id="1:527"/>
-                                    <StraightVertex x="-33.6698" y="-0.02365" id="1:528"/>
-                                    <CubicDetachedVertex outRotation="1.5707964" outDistance="3.973" x="-33.6698" y="15.24155" id="1:529"/>
-                                    <CubicDetachedVertex inRotation="3.1415927" inDistance="3.973" x="-26.4806" y="22.43075" id="1:530"/>
-                                    <StraightVertex x="-9.1344004" y="22.43075" id="1:531"/>
-                                    <StraightVertex x="-9.1344004" y="22.359751" id="1:532"/>
-                                    <StraightVertex x="11.239" y="22.359751" id="1:533"/>
-                                    <StraightVertex x="11.239" y="22.38345" id="1:534"/>
-                                    <CubicDetachedVertex outDistance="3.973" x="26.480801" y="22.38345" id="1:535"/>
-                                    <CubicDetachedVertex inRotation="1.5707964" inDistance="3.973" x="33.6698" y="15.19425" id="1:536"/>
-                                    <StraightVertex x="33.6698" y="0.03545" id="1:537"/>
-                                    <StraightVertex x="33.645802" y="0.03545" id="1:538"/>
-                                </PointsPath>
-                                <Fill id="1:2329">
-                                    <SolidColor colorValue="FF6AAA64" id="1:539"/>
-                                </Fill>
-                            </Shape>
-                            <Shape x="0.01155" y="-0.0057999999" id="1:540">
-                                <PointsPath isClosed="true" isClockwise="false" id="1:541">
-                                    <StraightVertex x="11.2154" y="-11.2154" id="1:542"/>
-                                    <StraightVertex x="-11.2154" y="-11.2154" id="1:543"/>
-                                    <StraightVertex x="-11.2154" y="11.2154" id="1:544"/>
-                                    <StraightVertex x="11.2154" y="11.2154" id="1:545"/>
-                                </PointsPath>
-                                <Fill id="1:2330">
-                                    <SolidColor colorValue="FFD1B036" id="1:546"/>
-                                </Fill>
-                            </Shape>
-                            <Shape x="-0.0066999998" y="0.00019999999" id="1:547">
-                                <PointsPath isClosed="true" isClockwise="false" id="1:548">
-                                    <CubicDetachedVertex inDistance="3.9579999" x="26.486151" y="-33.652" id="1:549"/>
-                                    <CubicDetachedVertex outRotation="3.1415927" outDistance="3.9574001" x="-26.48665" y="-33.652" id="1:550"/>
-                                    <CubicDetachedVertex inRotation="-1.5707964" inDistance="3.9574001" x="-33.652149" y="-26.4865" id="1:551"/>
-                                    <CubicDetachedVertex outRotation="1.5707964" outDistance="3.9574001" x="-33.652149" y="26.4865" id="1:552"/>
-                                    <CubicDetachedVertex inRotation="3.1415927" inDistance="3.9574001" x="-26.48665" y="33.652" id="1:553"/>
-                                    <CubicDetachedVertex outDistance="3.9579999" x="26.486151" y="33.652" id="1:554"/>
-                                    <CubicDetachedVertex inRotation="1.5707964" inDistance="3.9574001" x="33.652149" y="26.4865" id="1:555"/>
-                                    <CubicDetachedVertex outRotation="-1.5707964" outDistance="3.9574001" x="33.652149" y="-26.4865" id="1:556"/>
-                                </PointsPath>
-                                <Fill id="1:2331">
-                                    <SolidColor colorValue="FFFFFFFF" id="1:557"/>
-                                </Fill>
-                            </Shape>
-                        </Node>
-                    </Node>
-                </Node>
-            </Node>
-            <Node name="Connections Room" id="1:558">
                 <Node x="-80" y="712" name="Connections Ball" id="1:559">
                     <Node x="9.9999997e-06" y="-17.68001" rotation="-18.849556" name="Connections Ball Spin" id="1:560">
                         <Node name="Connections Ball Art" id="1:561">
@@ -1168,6 +898,276 @@
                 </Node>
             </Node>
             <Node name="Wordle Room" id="1:831">
+                <Node x="748" y="363" opacity="0" name="Wordle Lockup" id="1:344">
+                    <Node x="0.00034" y="19.475349" name="Wordle Lockup Art" id="1:345">
+                        <Node y="44.353149" name="Wordle Lockup Word" id="1:346">
+                            <Shape x="35.0947" y="3.1094999" id="1:347">
+                                <PointsPath isClosed="true" id="1:348">
+                                    <CubicDetachedVertex outRotation="1.5707964" outDistance="0.354" x="6.1370001" y="0.094999999" id="1:349"/>
+                                    <CubicDetachedVertex inRotation="-1.4725224" inDistance="0.35672119" x="6.0780001" y="1.277" id="1:350"/>
+                                    <CubicDetachedVertex outRotation="1.5707964" outDistance="2.247" x="-1.313" y="1.277" id="1:351"/>
+                                    <CubicDetachedVertex inRotation="3.1415927" inDistance="1.183" outDistance="0.85100001" x="0.34299999" y="4.257" id="1:352"/>
+                                    <CubicDetachedVertex inRotation="1.8078873" inDistance="1.106967" x="2.0220001" y="2.684" id="1:353"/>
+                                    <CubicDetachedVertex outRotation="1.8055061" outDistance="3.3066626" x="6.0419998" y="2.684" id="1:354"/>
+                                    <CubicDetachedVertex inDistance="3.039" outRotation="3.1415927" outDistance="3.902" x="0.30700001" y="7.414" id="1:355"/>
+                                    <CubicDetachedVertex inRotation="1.5707964" inDistance="5.7820001" outRotation="-1.5707964" outDistance="5.4629998" x="-6.1370001" id="1:356"/>
+                                    <CubicDetachedVertex inRotation="3.1415927" inDistance="3.346" outDistance="3.346" x="0.13" y="-7.414" id="1:357"/>
+                                    <CubicDetachedVertex inRotation="-1.5707964" inDistance="5.4990001" x="6.125" y="0.094999999" id="1:358"/>
+                                </PointsPath>
+                                <PointsPath isClosed="true" isClockwise="false" id="1:359">
+                                    <StraightVertex x="1.584" y="-0.88700002" id="1:360"/>
+                                    <CubicDetachedVertex outRotation="-1.5707964" outDistance="1.679" x="1.584" y="-1.265" id="1:361"/>
+                                    <CubicDetachedVertex inDistance="1.2410001" outRotation="3.1415927" outDistance="1.443" x="0.142" y="-4.1620002" id="1:362"/>
+                                    <CubicDetachedVertex inRotation="-1.550661" inDistance="1.7383524" x="-1.336" y="-0.88700002" id="1:363"/>
+                                </PointsPath>
+                                <Fill id="1:2322">
+                                    <SolidColor colorValue="FF000000" id="1:364"/>
+                                </Fill>
+                            </Shape>
+                            <Shape x="24.8312" y="-0.1655" id="1:365">
+                                <PointsPath isClosed="true" id="1:366">
+                                    <StraightVertex x="3.6654999" y="10.346" id="1:367"/>
+                                    <StraightVertex x="-3.5474999" y="10.346" id="1:368"/>
+                                    <StraightVertex x="-3.5474999" y="7.0710001" id="1:369"/>
+                                    <StraightVertex x="-2.3415" y="7.0710001" id="1:370"/>
+                                    <StraightVertex x="-2.3415" y="-7.0830002" id="1:371"/>
+                                    <StraightVertex x="-3.6654999" y="-7.0830002" id="1:372"/>
+                                    <StraightVertex x="-3.6654999" y="-10.358" id="1:373"/>
+                                    <StraightVertex x="2.4245" y="-10.358" id="1:374"/>
+                                    <StraightVertex x="2.4245" y="7.0830002" id="1:375"/>
+                                    <StraightVertex x="3.6654999" y="7.0830002" id="1:376"/>
+                                    <StraightVertex x="3.6654999" y="10.358" id="1:377"/>
+                                </PointsPath>
+                                <Fill id="1:2323">
+                                    <SolidColor colorValue="FF000000" id="1:378"/>
+                                </Fill>
+                            </Shape>
+                            <Shape x="13.4857" y="-0.023499999" id="1:379">
+                                <PointsPath isClosed="true" id="1:380">
+                                    <StraightVertex x="6.7340002" y="10.204" id="1:381"/>
+                                    <StraightVertex x="0.76300001" y="10.204" id="1:382"/>
+                                    <CubicDetachedVertex outRotation="1.9418317" outDistance="1.0783812" x="0.76300001" y="8.6079998" id="1:383"/>
+                                    <CubicDetachedVertex inDistance="1.4665" outRotation="3.1415927" outDistance="2.4830999" x="-2.3945" y="10.5" id="1:384"/>
+                                    <CubicDetachedVertex inRotation="1.5707964" inDistance="6.1719999" outRotation="-1.5707964" outDistance="5.8540001" x="-6.7340002" y="2.9089999" id="1:385"/>
+                                    <CubicDetachedVertex inRotation="3.1415927" inDistance="2.3058" outDistance="1.2415" x="-2.3945" y="-4.21" id="1:386"/>
+                                    <CubicDetachedVertex inRotation="-2.0481608" inDistance="1.5975972" x="0.76300001" y="-2.2939999" id="1:387"/>
+                                    <StraightVertex x="0.76300001" y="-7.2249999" id="1:388"/>
+                                    <StraightVertex x="-0.65600002" y="-7.2249999" id="1:389"/>
+                                    <StraightVertex x="-0.65600002" y="-10.5" id="1:390"/>
+                                    <StraightVertex x="5.5159998" y="-10.5" id="1:391"/>
+                                    <StraightVertex x="5.5159998" y="6.941" id="1:392"/>
+                                    <StraightVertex x="6.7220001" y="6.941" id="1:393"/>
+                                    <StraightVertex x="6.7220001" y="10.216" id="1:394"/>
+                                </PointsPath>
+                                <PointsPath isClosed="true" isClockwise="false" id="1:395">
+                                    <CubicDetachedVertex inRotation="1.5707964" inDistance="2.4590001" outRotation="-1.5707964" outDistance="2.8150001" x="0.91600001" y="3.1689999" id="1:396"/>
+                                    <CubicDetachedVertex inDistance="1.123" outRotation="3.1415927" outDistance="1.1235" x="-0.46700001" y="-0.61500001" id="1:397"/>
+                                    <CubicDetachedVertex inRotation="-1.5707964" inDistance="2.8150001" outRotation="1.5707964" outDistance="2.447" x="-1.8861001" y="3.1689999" id="1:398"/>
+                                    <CubicDetachedVertex inRotation="3.1415927" inDistance="1.3476" outDistance="1.348" x="-0.50300002" y="6.9520001" id="1:399"/>
+                                </PointsPath>
+                                <Fill id="1:2324">
+                                    <SolidColor colorValue="FF000000" id="1:400"/>
+                                </Fill>
+                            </Shape>
+                            <Shape x="1.10475" y="3.003" id="1:401">
+                                <PointsPath isClosed="true" id="1:402">
+                                    <CubicDetachedVertex outRotation="-3.1024776" outDistance="3.017508" x="4.9839501" y="-2.9324999" id="1:403"/>
+                                    <CubicDetachedVertex inRotation="-1.5707964" inDistance="3.1329999" x="0.98734999" y="0.96950001" id="1:404"/>
+                                    <StraightVertex x="0.98734999" y="3.8905001" id="1:405"/>
+                                    <StraightVertex x="2.5481501" y="3.8905001" id="1:406"/>
+                                    <StraightVertex x="2.5481501" y="7.1655002" id="1:407"/>
+                                    <StraightVertex x="-4.9839501" y="7.1655002" id="1:408"/>
+                                    <StraightVertex x="-4.9839501" y="3.8905001" id="1:409"/>
+                                    <StraightVertex x="-3.74245" y="3.8905001" id="1:410"/>
+                                    <StraightVertex x="-3.74245" y="-3.6775" id="1:411"/>
+                                    <StraightVertex x="-4.9839501" y="-3.6775" id="1:412"/>
+                                    <StraightVertex x="-4.9839501" y="-6.9524999" id="1:413"/>
+                                    <StraightVertex x="0.71534997" y="-6.9524999" id="1:414"/>
+                                    <CubicDetachedVertex outRotation="-1.0725358" outDistance="1.6825757" x="0.67984998" y="-4.6824999" id="1:415"/>
+                                    <CubicDetachedVertex inRotation="3.1415927" inDistance="1.7381999" x="4.6410499" y="-7.1655002" id="1:416"/>
+                                    <StraightVertex x="4.9721498" y="-7.1655002" id="1:417"/>
+                                    <StraightVertex x="4.9721498" y="-2.9435" id="1:418"/>
+                                </PointsPath>
+                                <Fill id="1:2325">
+                                    <SolidColor colorValue="FF000000" id="1:419"/>
+                                </Fill>
+                            </Shape>
+                            <Shape x="-11.0908" y="3.1155" id="1:420">
+                                <PointsPath isClosed="true" id="1:421">
+                                    <CubicDetachedVertex inRotation="-1.5707964" inDistance="5.085" outRotation="1.5707964" outDistance="5.2849998" x="6.2669001" y="0.029999999" id="1:422"/>
+                                    <CubicDetachedVertex inDistance="3.8784001" outRotation="3.1415927" outDistance="3.8784001" y="7.4200001" id="1:423"/>
+                                    <CubicDetachedVertex inRotation="1.5707964" inDistance="5.2610002" outRotation="-1.5707964" outDistance="5.2620001" x="-6.2669001" y="0.029999999" id="1:424"/>
+                                    <CubicDetachedVertex inRotation="3.1415927" inDistance="3.9375" outDistance="3.9375" y="-7.4200001" id="1:425"/>
+                                </PointsPath>
+                                <PointsPath isClosed="true" isClockwise="false" id="1:426">
+                                    <CubicDetachedVertex inRotation="1.5707964" inDistance="2.5190001" outRotation="-1.5707964" outDistance="2.8610001" x="1.4189" y="-0.029999999" id="1:427"/>
+                                    <CubicDetachedVertex inDistance="1.1469001" outRotation="3.1415927" outDistance="1.147" y="-3.9319999" id="1:428"/>
+                                    <CubicDetachedVertex inRotation="-1.5707964" inDistance="2.8610001" outRotation="1.5707964" outDistance="2.507" x="-1.4426" y="-0.029999999" id="1:429"/>
+                                    <CubicDetachedVertex inRotation="3.1415927" inDistance="1.3243999" outDistance="1.3243001" y="3.9319999" id="1:430"/>
+                                </PointsPath>
+                                <Fill id="1:2326">
+                                    <SolidColor colorValue="FF000000" id="1:431"/>
+                                </Fill>
+                            </Shape>
+                            <Shape x="-28.627001" y="-0.17749999" id="1:432">
+                                <PointsPath isClosed="true" id="1:433">
+                                    <StraightVertex x="12.6047" y="-6.6929998" id="1:434"/>
+                                    <StraightVertex x="11.4223" y="-6.6929998" id="1:435"/>
+                                    <StraightVertex x="8.0523005" y="10.358" id="1:436"/>
+                                    <StraightVertex x="2.4949" y="10.358" id="1:437"/>
+                                    <StraightVertex x="-0.0473" y="-0.662" id="1:438"/>
+                                    <StraightVertex x="-2.7077999" y="10.358" id="1:439"/>
+                                    <StraightVertex x="-8.2889004" y="10.358" id="1:440"/>
+                                    <StraightVertex x="-11.4223" y="-6.6929998" id="1:441"/>
+                                    <StraightVertex x="-12.6047" y="-6.6929998" id="1:442"/>
+                                    <StraightVertex x="-12.6047" y="-10.358" id="1:443"/>
+                                    <StraightVertex x="-4.1504002" y="-10.358" id="1:444"/>
+                                    <StraightVertex x="-4.1504002" y="-6.6929998" id="1:445"/>
+                                    <StraightVertex x="-5.652" y="-6.6929998" id="1:446"/>
+                                    <StraightVertex x="-4.0794001" y="3.8900001" id="1:447"/>
+                                    <StraightVertex x="-0.74489999" y="-10.358" id="1:448"/>
+                                    <StraightVertex x="3.0034001" y="-10.358" id="1:449"/>
+                                    <StraightVertex x="6.0422001" y="3.8900001" id="1:450"/>
+                                    <StraightVertex x="7.8986001" y="-6.6929998" id="1:451"/>
+                                    <StraightVertex x="6.3023" y="-6.6929998" id="1:452"/>
+                                    <StraightVertex x="6.3023" y="-10.358" id="1:453"/>
+                                    <StraightVertex x="12.5929" y="-10.358" id="1:454"/>
+                                    <StraightVertex x="12.5929" y="-6.6929998" id="1:455"/>
+                                </PointsPath>
+                                <Fill id="1:2327">
+                                    <SolidColor colorValue="FF000000" id="1:456"/>
+                                </Fill>
+                            </Shape>
+                        </Node>
+                        <Node x="0.0062500001" y="-19.51025" name="Wordle Lockup Icon" id="1:457">
+                            <Shape id="1:458">
+                                <PointsPath isClosed="true" isClockwise="false" id="1:459">
+                                    <CubicDetachedVertex inDistance="4.9419999" x="26.42145" y="-35.378399" id="1:460"/>
+                                    <CubicDetachedVertex outRotation="3.1415927" outDistance="4.9425998" x="-26.42165" y="-35.378399" id="1:461"/>
+                                    <CubicDetachedVertex inRotation="-1.5707964" inDistance="4.9425998" x="-35.384449" y="-26.415501" id="1:462"/>
+                                    <CubicDetachedVertex outRotation="1.5707964" outDistance="4.9425001" x="-35.384449" y="26.427401" id="1:463"/>
+                                    <CubicDetachedVertex inRotation="3.1415927" inDistance="4.9425998" x="-26.42165" y="35.378399" id="1:464"/>
+                                    <CubicDetachedVertex outDistance="4.9419999" x="26.42145" y="35.378399" id="1:465"/>
+                                    <CubicDetachedVertex inRotation="1.5707964" inDistance="4.9306998" x="35.384449" y="26.427401" id="1:466"/>
+                                    <CubicDetachedVertex outRotation="-1.5707964" outDistance="4.9425998" x="35.384449" y="-26.415501" id="1:467"/>
+                                </PointsPath>
+                                <PointsPath isClosed="true" id="1:468">
+                                    <StraightVertex x="31.78945" y="-26.415501" id="1:469"/>
+                                    <StraightVertex x="31.78945" y="-12.9831" id="1:470"/>
+                                    <StraightVertex x="13.00045" y="-12.9831" id="1:471"/>
+                                    <StraightVertex x="13.00045" y="-31.795601" id="1:472"/>
+                                    <CubicDetachedVertex outDistance="2.9679999" x="26.409451" y="-31.795601" id="1:473"/>
+                                    <CubicDetachedVertex inRotation="-1.5707964" inDistance="2.9679" x="31.777451" y="-26.415501" id="1:474"/>
+                                </PointsPath>
+                                <PointsPath isClosed="true" id="1:475">
+                                    <StraightVertex x="-13.00105" y="9.4122" id="1:476"/>
+                                    <StraightVertex x="-31.813551" y="9.4122" id="1:477"/>
+                                    <StraightVertex x="-31.813551" y="-9.4003" id="1:478"/>
+                                    <StraightVertex x="-13.00105" y="-9.4003" id="1:479"/>
+                                </PointsPath>
+                                <PointsPath isClosed="true" id="1:480">
+                                    <StraightVertex x="-9.4182501" y="-9.4003" id="1:481"/>
+                                    <StraightVertex x="9.4178495" y="-9.4003" id="1:482"/>
+                                    <StraightVertex x="9.4178495" y="9.4122" id="1:483"/>
+                                    <StraightVertex x="-9.4182501" y="9.4122" id="1:484"/>
+                                </PointsPath>
+                                <PointsPath isClosed="true" id="1:485">
+                                    <StraightVertex x="9.4178495" y="12.9949" id="1:486"/>
+                                    <StraightVertex x="9.4178495" y="31.8074" id="1:487"/>
+                                    <StraightVertex x="-9.4182501" y="31.8074" id="1:488"/>
+                                    <StraightVertex x="-9.4182501" y="12.9949" id="1:489"/>
+                                </PointsPath>
+                                <PointsPath isClosed="true" id="1:490">
+                                    <StraightVertex x="-9.4182501" y="-12.9831" id="1:491"/>
+                                    <StraightVertex x="-9.4182501" y="-31.795601" id="1:492"/>
+                                    <StraightVertex x="9.4178495" y="-31.795601" id="1:493"/>
+                                    <StraightVertex x="9.4178495" y="-12.9831" id="1:494"/>
+                                </PointsPath>
+                                <PointsPath isClosed="true" id="1:495">
+                                    <StraightVertex x="13.00045" y="-9.4003" id="1:496"/>
+                                    <StraightVertex x="31.78945" y="-9.4003" id="1:497"/>
+                                    <StraightVertex x="31.78945" y="9.4122" id="1:498"/>
+                                    <StraightVertex x="13.00045" y="9.4122" id="1:499"/>
+                                </PointsPath>
+                                <PointsPath isClosed="true" id="1:500">
+                                    <StraightVertex x="-26.433451" y="-31.795601" id="1:501"/>
+                                    <StraightVertex x="-13.00105" y="-31.795601" id="1:502"/>
+                                    <StraightVertex x="-13.00105" y="-12.9831" id="1:503"/>
+                                    <StraightVertex x="-31.813551" y="-12.9831" id="1:504"/>
+                                    <CubicDetachedVertex outRotation="-1.5707964" outDistance="2.9679" x="-31.813551" y="-26.415501" id="1:505"/>
+                                    <CubicDetachedVertex inRotation="3.1415927" inDistance="2.9561" x="-26.44525" y="-31.795601" id="1:506"/>
+                                </PointsPath>
+                                <PointsPath isClosed="true" id="1:507">
+                                    <StraightVertex x="-31.80175" y="26.427401" id="1:508"/>
+                                    <StraightVertex x="-31.80175" y="12.9949" id="1:509"/>
+                                    <StraightVertex x="-12.98925" y="12.9949" id="1:510"/>
+                                    <StraightVertex x="-12.98925" y="31.8074" id="1:511"/>
+                                    <CubicDetachedVertex outRotation="3.1415927" outDistance="2.9679" x="-26.42165" y="31.8074" id="1:512"/>
+                                    <CubicDetachedVertex inRotation="1.5707964" inDistance="2.9561" x="-31.78985" y="26.439199" id="1:513"/>
+                                </PointsPath>
+                                <PointsPath isClosed="true" id="1:514">
+                                    <StraightVertex x="26.42145" y="31.795601" id="1:515"/>
+                                    <StraightVertex x="13.01245" y="31.795601" id="1:516"/>
+                                    <StraightVertex x="13.01245" y="12.9831" id="1:517"/>
+                                    <StraightVertex x="31.801451" y="12.9831" id="1:518"/>
+                                    <CubicDetachedVertex outRotation="1.5707964" outDistance="2.9679" x="31.801451" y="26.415501" id="1:519"/>
+                                    <CubicDetachedVertex inDistance="2.9560001" x="26.433451" y="31.7838" id="1:520"/>
+                                </PointsPath>
+                                <Fill id="1:2328">
+                                    <SolidColor colorValue="FF000000" id="1:521"/>
+                                </Fill>
+                            </Shape>
+                            <Shape x="0.02265" y="11.24525" id="1:522">
+                                <PointsPath isClosed="true" isClockwise="false" id="1:523">
+                                    <StraightVertex x="33.657799" y="0.02365" id="1:524"/>
+                                    <StraightVertex x="33.657799" y="-22.43075" id="1:525"/>
+                                    <StraightVertex x="11.2744" y="-22.43075" id="1:526"/>
+                                    <StraightVertex x="11.2744" y="-0.02365" id="1:527"/>
+                                    <StraightVertex x="-33.6698" y="-0.02365" id="1:528"/>
+                                    <CubicDetachedVertex outRotation="1.5707964" outDistance="3.973" x="-33.6698" y="15.24155" id="1:529"/>
+                                    <CubicDetachedVertex inRotation="3.1415927" inDistance="3.973" x="-26.4806" y="22.43075" id="1:530"/>
+                                    <StraightVertex x="-9.1344004" y="22.43075" id="1:531"/>
+                                    <StraightVertex x="-9.1344004" y="22.359751" id="1:532"/>
+                                    <StraightVertex x="11.239" y="22.359751" id="1:533"/>
+                                    <StraightVertex x="11.239" y="22.38345" id="1:534"/>
+                                    <CubicDetachedVertex outDistance="3.973" x="26.480801" y="22.38345" id="1:535"/>
+                                    <CubicDetachedVertex inRotation="1.5707964" inDistance="3.973" x="33.6698" y="15.19425" id="1:536"/>
+                                    <StraightVertex x="33.6698" y="0.03545" id="1:537"/>
+                                    <StraightVertex x="33.645802" y="0.03545" id="1:538"/>
+                                </PointsPath>
+                                <Fill id="1:2329">
+                                    <SolidColor colorValue="FF6AAA64" id="1:539"/>
+                                </Fill>
+                            </Shape>
+                            <Shape x="0.01155" y="-0.0057999999" id="1:540">
+                                <PointsPath isClosed="true" isClockwise="false" id="1:541">
+                                    <StraightVertex x="11.2154" y="-11.2154" id="1:542"/>
+                                    <StraightVertex x="-11.2154" y="-11.2154" id="1:543"/>
+                                    <StraightVertex x="-11.2154" y="11.2154" id="1:544"/>
+                                    <StraightVertex x="11.2154" y="11.2154" id="1:545"/>
+                                </PointsPath>
+                                <Fill id="1:2330">
+                                    <SolidColor colorValue="FFD1B036" id="1:546"/>
+                                </Fill>
+                            </Shape>
+                            <Shape x="-0.0066999998" y="0.00019999999" id="1:547">
+                                <PointsPath isClosed="true" isClockwise="false" id="1:548">
+                                    <CubicDetachedVertex inDistance="3.9579999" x="26.486151" y="-33.652" id="1:549"/>
+                                    <CubicDetachedVertex outRotation="3.1415927" outDistance="3.9574001" x="-26.48665" y="-33.652" id="1:550"/>
+                                    <CubicDetachedVertex inRotation="-1.5707964" inDistance="3.9574001" x="-33.652149" y="-26.4865" id="1:551"/>
+                                    <CubicDetachedVertex outRotation="1.5707964" outDistance="3.9574001" x="-33.652149" y="26.4865" id="1:552"/>
+                                    <CubicDetachedVertex inRotation="3.1415927" inDistance="3.9574001" x="-26.48665" y="33.652" id="1:553"/>
+                                    <CubicDetachedVertex outDistance="3.9579999" x="26.486151" y="33.652" id="1:554"/>
+                                    <CubicDetachedVertex inRotation="1.5707964" inDistance="3.9574001" x="33.652149" y="26.4865" id="1:555"/>
+                                    <CubicDetachedVertex outRotation="-1.5707964" outDistance="3.9574001" x="33.652149" y="-26.4865" id="1:556"/>
+                                </PointsPath>
+                                <Fill id="1:2331">
+                                    <SolidColor colorValue="FFFFFFFF" id="1:557"/>
+                                </Fill>
+                            </Shape>
+                        </Node>
+                    </Node>
+                </Node>
                 <Node x="2348.2151" y="654.84998" name="Wordle Floor Plane" id="1:832">
                     <Node x="44.215031" y="56.75" rotation="1.5707963" name="Pair BD" id="1:833">
                         <Node x="-40.14502" y="-28.375059" name="Pair BD Art" id="1:834">
