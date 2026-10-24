@@ -14,7 +14,7 @@ Rive animation for NYT Games' Year in Games 2026 recap ("Well Played"). Design l
 ## How engineering uses a chapter (keep it this small)
 
 - They load the chapter's `.riv` with autoplay and set **one number, `scene`**, on every tap: 0 for the chapter opener, then the game the frame shows (Wordle 1, Connections 2, Strands 3, Spelling Bee 4, The Mini 5, The Midi 6, The Crossword 7). Setting the same value again does nothing.
-- Each game is one frame: the opener, then every game once, in the player's order. After an intro, that game's loop runs until the next tap. They reveal the next copy with class `yig-in`; the old copy is hidden at once. They write no animation timing in JavaScript and handle no Rive events.
+- A game has several cards (Wordle 4, Connections 5 so far), one frame each: the opener, then each game's cards in the player's order. A tap inside a game swaps only the HTML text and the scene number stays, so Rive keeps looping. The tap after a game's last card starts the next game. They reveal the next copy with class `yig-in`, plus `yig-quick` when the scene didn't change; the old copy is hidden at once. They write no animation timing in JavaScript and handle no Rive events.
 - Engineering's priority is stats and calculations. Every extra integration step is a real cost, so solve problems inside the Rive file rather than in their code.
 
 ## Motion rules

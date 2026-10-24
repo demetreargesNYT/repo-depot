@@ -36,17 +36,24 @@ async function boot() {
   $("ro-int").textContent = "chapter-2-integration.js (frame list, scene)";
 
   const [first, second] = ORDERS[$("order").value];
-  // The opener, then each game once, in the player's order. Each game's loop runs until the next tap.
-  const frames = [{ scene: "opener" }, { scene: first }, { scene: second }];
+  // The opener, then each game's cards in the player's order. A tap inside a game swaps only the text; the
+  // tap after a game's last card starts the next game.
+  const frames = [{ scene: "opener" }];
+  for (const game of [first, second]) {
+    const n = $("overlay").querySelectorAll(`[data-copy-scene="${game}"]`).length;
+    for (let card = 1; card <= n; card++) frames.push({ scene: game, card });
+  }
   state.frames = frames;
   state.at = 0;
 
   // the integration code reads these globals, the way engineering's page will provide them
   window.player = { chapterFrames: frames };
 
-  // each frame's copy block is found by its scene and numbered with the frame it belongs to
+  // each frame's copy block is found by its scene and card, and numbered with the frame it belongs to
   frames.forEach((f, i) => {
-    const el = $("overlay").querySelector(`[data-copy-scene="${f.scene}"]`);
+    const el = f.scene === "opener"
+      ? $("overlay").querySelector('[data-copy-scene="opener"]')
+      : $("overlay").querySelector(`[data-copy-scene="${f.scene}"][data-copy-card="${f.card}"]`);
     if (el) el.dataset.copyFrame = String(i);
   });
   $("overlay").querySelectorAll(".yig-text:not([data-copy-frame])").forEach((el) => el.remove());
@@ -84,9 +91,9 @@ function tap() {
 
 function renderFrames() {
   $("framelist").innerHTML = state.frames
-    .map((f, i) => `<li class="${i === state.at ? "now" : ""}"><b>${i + 1}</b>${LABEL[f.scene]}</li>`)
+    .map((f, i) => `<li class="${i === state.at ? "now" : ""}"><b>${i + 1}</b>${LABEL[f.scene]}${f.card ? ` card ${f.card}` : ""}${f.card > 1 ? " · text only" : ""}</li>`)
     .join("");
-  $("framenote").textContent = "One frame per game, from the player's data: the opener, then each game once. After an intro, that game's loop runs until the next tap.";
+  $("framenote").textContent = "A tap inside a game swaps only the text (the scene stays, so Rive keeps looping). The tap after a game's last card starts the next game: the room changes and the new text rises 3.2 s later.";
   $("framenote").className = "note";
 }
 

@@ -9,7 +9,9 @@
   How to use it:
     1. When the player taps, render the next frame's copy with class "yig-in".
        It waits --yig-delay (the length of the Rive transition), then rises in on its own.
-    2. Optional: give the old copy class "yig-out" and remove it 300ms later. Only do this for copy that has
+    2. If the tap stays inside the same game (no Rive transition), also add class "yig-quick": the copy then
+       rises in right after the old copy leaves instead of waiting for the scene.
+    3. Optional: give the old copy class "yig-out" and remove it 300ms later. Only do this for copy that has
        finished rising; copy that is still rising (or waiting to) should simply be hidden, because switching
        it to yig-out makes it flash visible first. If you simply swap the copy instead, the old text cuts out
        while the scene moves, which is fine.
@@ -23,6 +25,8 @@
   No time to split lines? Put the text straight into <div class="yig-text yig-in"> and the
   whole block rises as one piece.
 */
+.yig-text.yig-quick { --yig-delay: 300ms; } /* same scene: no Rive transition to wait for */
+
 :root {
   --yig-delay: 3.2s;        /* Rive transition length. Shelf to Wordle: 3.2s */
   --yig-rise: 560ms;
