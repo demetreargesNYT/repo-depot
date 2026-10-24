@@ -16,6 +16,10 @@
        it to yig-out makes it flash visible first. If you simply swap the copy instead, the old text cuts out
        while the scene moves, which is fine.
 
+  The game icon is its own block, one per game, outside the cards: <div class="yig-icon"><span class="yig-pop">...</span></div>.
+  It pops in with the game's first card and stays while the game's later cards change; it lifts out with the last
+  card's text when the next game starts.
+
   Markup, one .yig-mask per designed line:
     <div class="yig-text yig-in">
       <img class="yig-pop" src="wordle.svg" alt="Wordle">
@@ -56,6 +60,8 @@
   animation: yig-pop var(--yig-pop) var(--yig-ease-pop) both;
   animation-delay: calc(var(--yig-delay) + var(--yig-n, 0) * var(--yig-step));
 }
+/* first card of a game: the game's icon (its own .yig-icon block) pops at the delay, the lines follow one step later */
+.yig-in.yig-after-icon .yig-line { animation-delay: calc(var(--yig-delay) + (var(--yig-n, 0) + 1) * var(--yig-step)); }
 .yig-in:not(:has(.yig-mask, .yig-pop)) {
   animation: yig-rise-block var(--yig-rise) var(--yig-ease-rise) both;
   animation-delay: var(--yig-delay);

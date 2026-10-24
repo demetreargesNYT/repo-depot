@@ -37,39 +37,50 @@ function onTap() {
   showCopy(frame, sameScene);
 }
 
-// The old copy goes at once. The new copy rises on its own: 3.2 s after a tap that changes the scene. A tap
-// that only moves to the game's next card waits just 300 ms (yig-quick), unless the game's intro is still
-// running: then the copy waits until the intro ends, so it never overlaps the lockup.
+// What changes on a tap:
+//  - the scene changes (a new game): the old game's icon and text leave, the new game's icon pops and its first
+//    card rises 3.2 s later, when the Rive intro (and its lockup) is over.
+//  - the scene stays (the game's next card): only the text changes. The icon stays put. The new card rises right
+//    after the old one leaves (yig-quick), or, if the game's intro is still running, when the intro ends, so it
+//    never overlaps the lockup.
 function showCopy(n, sameScene) {
-  const current = document.querySelector(".yig-text:not([hidden])");
+  const scene = frames[n].scene;
+  const visible = [...document.querySelectorAll(".yig-text:not([hidden]), .yig-icon:not([hidden])")];
+  visible.filter((el) => !(sameScene && el.classList.contains("yig-icon"))).forEach(leave);
+
   const next = document.querySelector(`[data-copy-frame="${n}"]`);
-  if (current) {
-    // Copy that is still rising, or still waiting to rise, just goes. Switching it to yig-out would flash it
-    // visible for a moment before it lifted.
-    const settled = current.getAnimations({ subtree: true }).every((a) => a.playState === "finished");
-    if (settled) {
-      current.classList.add("yig-out");
-      setTimeout(() => { current.hidden = true; }, 300);
-    } else {
-      current.hidden = true;
-    }
-  }
+  const icon = document.querySelector(`[data-icon-scene="${scene}"]`);
+  if (icon && !sameScene) enter(icon, { delay: null });
   if (next) {
-    // Take both classes off, force a reflow, then add yig-in, so the CSS animation restarts every time this
-    // copy shows. Without the reflow the browser sees yig-in already there and plays nothing.
-    next.classList.remove("yig-in", "yig-out");
     const waitForIntro = Math.max(0, introEndsAt - performance.now());
-    if (sameScene && waitForIntro > 0) {
-      next.style.setProperty("--yig-delay", `${waitForIntro}ms`); // the rest of the intro
-      next.classList.remove("yig-quick");
-    } else {
-      next.style.removeProperty("--yig-delay");
-      next.classList.toggle("yig-quick", sameScene);
-    }
-    next.hidden = false;
-    void next.offsetWidth;
-    next.classList.add("yig-in");
+    if (sameScene) enter(next, waitForIntro > 0 ? { delay: waitForIntro } : { quick: true });
+    else enter(next, { delay: null, afterIcon: !!icon });
   }
+}
+
+// Copy that has finished rising lifts out; copy that is still rising, or still waiting to rise, just goes.
+// Switching it to yig-out would flash it visible for a moment before it lifted.
+function leave(el) {
+  const settled = el.getAnimations({ subtree: true }).every((a) => a.playState === "finished");
+  if (settled) {
+    el.classList.add("yig-out");
+    setTimeout(() => { el.hidden = true; }, 300);
+  } else {
+    el.hidden = true;
+  }
+}
+
+// Take yig-in and yig-out off, force a reflow, then add yig-in, so the CSS animation restarts every time this
+// copy shows. Without the reflow the browser sees yig-in already there and plays nothing.
+function enter(el, { quick = false, delay = null, afterIcon = false } = {}) {
+  el.classList.remove("yig-in", "yig-out");
+  el.classList.toggle("yig-quick", quick);
+  el.classList.toggle("yig-after-icon", afterIcon); // first card of a game: its lines start one step after the icon
+  if (delay === null) el.style.removeProperty("--yig-delay");
+  else el.style.setProperty("--yig-delay", `${delay}ms`);
+  el.hidden = false;
+  void el.offsetWidth;
+  el.classList.add("yig-in");
 }
 
 // Exports let the review harness drive this file as-is. A page that inlines the code can drop this line.
