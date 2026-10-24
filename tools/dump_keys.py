@@ -1,16 +1,33 @@
-"""Print a chapter's timelines and state machine in spec notation.
+"""Print a chapter's timelines and state machine in spec notation, or keep a spec's listings in step with the file.
 
-    python3 tools/dump_keys.py ch2
+    python3 tools/dump_keys.py ch2                      print everything
+    python3 tools/dump_keys.py ch2 --write SPEC.md      rewrite the listings in SPEC.md
+    python3 tools/dump_keys.py ch2 --check SPEC.md      exit 1 if any listing in SPEC.md differs from the file
 
 Times are seconds, rotation degrees, colours #RRGGBB. In "a (ease) b", the ease
 shapes the segment that ends at b; "hold" means the value does not change.
+
+A listing sits in the spec between markers, and is replaced as a whole:
+
+    <!-- keys: Wordle Intro -->
+    ```text
+    ...
+    ```
+    <!-- /keys -->
+
+The Waiting timelines have no listing: each one is, by rule, its intro's first
+keys, and check_chapter.py verifies that.
 """
+import re
 import sys
+from pathlib import Path
 from rml_read import Scene, chapter_dir, degrees
 
 ORDER = ["Shelf Loop", "Shelf Outro", "Shelf Home", "Shelf Gone",
          "Wordle Waiting", "Wordle Intro", "Wordle Loop", "Wordle Outro", "Wordle Home", "Wordle Gone",
          "Connections Waiting", "Connections Intro", "Connections Loop", "Connections Outro", "Connections Home", "Connections Gone"]
+STATE_MACHINE = "State machine"
+MARKER = re.compile(r"(<!-- keys: (?P<name>.+?) -->\n```text\n)(?P<body>.*?)(\n```\n<!-- /keys -->)", re.S)
 
 
 def fmt_t(frame, fps):
@@ -18,6 +35,8 @@ def fmt_t(frame, fps):
 
 
 def fmt_v(prop, v):
+    if isinstance(v, str) and prop == "drawTargetId":
+        return v
     if isinstance(v, str):
         return "#" + ("%08X" % int(v, 16))[2:]
     if prop == "rotation":
@@ -26,32 +45,38 @@ def fmt_v(prop, v):
     return (f"{v:.3f}".rstrip("0").rstrip(".")) or "0"
 
 
-def timeline(s, a):
+def timeline_lines(s, a):
     fps, dur = s.fps(a), s.duration(a)
-    span = f"{dur} frame" + ("" if dur == 1 else f"s, {fmt_t(dur, fps)} s")
-    print(f'\n## {a.get("name")}  ({span}, {a.get("loopValue", "oneShot")})')
+    span = f"{dur} frame" + ("" if dur == 1 else f"s · {fmt_t(dur, fps)} s")
+    head = f'{a.get("name")} · {span} · ' + ("loops" if a.get("loopValue", "oneShot") == "loop" else "plays once")
+    out = [head]
     eases = s.eases(a)
     for (obj, prop), ks in s.keys(a).items():
         parts = []
         for i, (f, v) in enumerate(ks):
             txt = f"{fmt_t(f, fps)} {fmt_v(prop, v)}"
             if i:
-                e = eases[(obj, prop)][i - 1]
-                txt += " (hold)" if ks[i - 1][1] == v else f" ({e})"
+                txt += " (hold)" if ks[i - 1][1] == v else f" ({eases[(obj, prop)][i - 1]})"
             parts.append(txt)
-        print(f"- {obj} {prop}: " + " · ".join(parts))
+        out.append(f"{obj} {prop}: " + " · ".join(parts))
+    return out
 
 
-def state_machine(s):
+def state_machine_lines(s):
     ab, sm = s.artboard, s.artboard.find("StateMachine")
     anim = {a.get("id"): a.get("name") for a in ab.iter("LinearAnimation")}
     props = {p.get("id"): p.get("name") for p in s.view_model if p.tag.startswith("ViewModelProperty")}
-    print(f'\n## State machine "{sm.get("name")}"  (view model "{s.view_model.get("name")}": {", ".join(props.values())})')
-    print("default state machine:", s.names.get(ab.get("defaultStateMachineId")))
+    out = [f'State machine "{sm.get("name")}" · view model "{s.view_model.get("name")}": {", ".join(props.values())} · '
+           f'default state machine: {s.names.get(ab.get("defaultStateMachineId"))}']
     for layer in sm.findall("StateMachineLayer"):
-        names = {st.get("id"): anim[st.get("animationId")] for st in layer.findall("AnimationState")}
+        # two states can play the same timeline (Home and Shown both play the Home pose); the second is numbered
+        names, seen = {}, {}
+        for st in layer.findall("AnimationState"):
+            n = anim[st.get("animationId")]
+            seen[n] = seen.get(n, 0) + 1
+            names[st.get("id")] = n if seen[n] == 1 else f"{n} ({seen[n]})"
         entry = layer.find("EntryState").find("StateTransition").get("stateToId")
-        print(f'- layer "{layer.get("name")}": starts in {names[entry]}')
+        out.append(f'layer "{layer.get("name")}": starts in {names[entry]}')
         for st in layer.findall("AnimationState"):
             for tr in st.findall("StateTransition"):
                 conds = []
@@ -60,20 +85,67 @@ def state_machine(s):
                     op = "==" if c.get("opValue", "equal") == "equal" else "!="
                     conds.append(f'{props[ctx]} {op} {c.find("TransitionValueNumberComparator").get("value", "0")}')
                 gate = "at the end (exit time 100%)" if tr.get("enableExitTime") == "true" else "when " + " and ".join(conds)
-                print(f'    {names[st.get("id")]} -> {names[tr.get("stateToId")]} {gate}, duration {tr.get("duration", "0")} ms')
+                out.append(f'  {names[st.get("id")]} -> {names[tr.get("stateToId")]} {gate}, {tr.get("duration", "0")} ms')
+    return out
 
 
-def main(chapter):
-    s = Scene(chapter_dir(chapter) / "scene.rml")
+def listings(s):
+    """{listing name: text} for everything a spec embeds."""
+    out = {n: "\n".join(timeline_lines(s, s.animations[n])) for n in ORDER if n in s.animations and not n.endswith("Waiting")}
+    for n in sorted(set(s.animations) - set(ORDER)):
+        out[n] = "\n".join(timeline_lines(s, s.animations[n]))
+    out[STATE_MACHINE] = "\n".join(state_machine_lines(s))
+    return out
+
+
+def print_all(s):
     ab = s.artboard
     print(f'Artboard "{ab.get("name")}" {ab.get("width")} x {ab.get("height")}, clip {ab.get("clip")}, '
-          f'includeInExport {ab.get("includeInExport", "true")}')
-    extra = set(s.animations) - set(ORDER)
-    for n in ORDER + sorted(extra):
+          f'includeInExport {ab.get("includeInExport", "true")}\n')
+    for n in ORDER + sorted(set(s.animations) - set(ORDER)):
         if n in s.animations:
-            timeline(s, s.animations[n])
-    state_machine(s)
+            print("\n".join(timeline_lines(s, s.animations[n])) + "\n")
+    print("\n".join(state_machine_lines(s)))
+
+
+def write_spec(s, spec, check):
+    want, text = listings(s), spec.read_text()
+    problems, found = [], set()
+
+    def swap(m):
+        name = m.group("name")
+        found.add(name)
+        if name not in want:
+            problems.append(f"the spec has a listing for {name!r}, which is not in the file")
+            return m.group(0)
+        if m.group("body") != want[name]:
+            problems.append(f"listing {name!r} no longer matches the file")
+        return m.group(1) + want[name] + m.group(4)
+
+    new = MARKER.sub(swap, text)
+    missing = [f"the spec has no listing for {n!r}" for n in want if n not in found]
+    if check:
+        for p in problems + missing:
+            print("FAIL  " + p)
+        bad = problems + missing
+        print(f"{len(found)} listings checked, {len(bad)} problem(s)" if bad else f"all {len(found)} listings match the file")
+        return 1 if bad else 0
+    spec.write_text(new)
+    for p in missing:
+        print("note: " + p)
+    print(f"rewrote {len(found)} listings in {spec}")
+    return 0
+
+
+def main(argv):
+    chapter = argv[0] if argv and not argv[0].startswith("--") else "ch2"
+    s = Scene(chapter_dir(chapter) / "scene.rml")
+    for mode in ("--write", "--check"):
+        if mode in argv:
+            return write_spec(s, Path(argv[argv.index(mode) + 1]), check=(mode == "--check"))
+    print_all(s)
+    return 0
 
 
 if __name__ == "__main__":
-    main(sys.argv[1] if len(sys.argv) > 1 else "ch2")
+    sys.exit(main(sys.argv[1:]))

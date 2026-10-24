@@ -39,6 +39,7 @@ def last_values(s, anim):
 
 
 def run(chapter):
+    results.clear()          # run() may be called more than once in a process
     s = Scene(chapter_dir(chapter) / "scene.rml")
     ab, A = s.artboard, s.animations
     rooms = rooms_of(s)
@@ -88,6 +89,14 @@ def run(chapter):
         check(s.duration(outro) == OUTRO_FRAMES, f"{room} Outro is {OUTRO_FRAMES} frames (1.6 s)")
         for pose in ("Home", "Gone"):
             check(s.duration(A[f"{room} {pose}"]) == 1, f"{room} {pose} is a one-frame pose")
+        # the outro must end exactly where the Gone pose holds the room, and that must be off the artboard (the
+        # room's art reaches at most 1600 right of its origin), or the hand-over from Outro to Gone would jump
+        o_end = s.keys(outro)[(f"{room} Room", "x")][-1][1]
+        g_end = s.keys(A[f"{room} Gone"])[(f"{room} Room", "x")][0][1]
+        check(same(o_end, g_end) and g_end <= -1600, f"{room} Outro ends at {room} Room x {o_end:g}, where {room} Gone holds it ({g_end:g}); that clears the artboard")
+        o_lag = s.keys(outro)[(f"{room} Wall Lag", "x")][-1][1]
+        g_lag = s.keys(A[f"{room} Gone"])[(f"{room} Wall Lag", "x")][0][1]
+        check(same(o_lag, g_lag), f"{room} Outro ends at {room} Wall Lag x {o_lag:g}, where {room} Gone holds it ({g_lag:g})")
 
     # rooms with an intro
     for room in [r for r in rooms if f"{r} Intro" in A]:
