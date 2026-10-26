@@ -1,0 +1,8 @@
+name: yig-ch2
+logs:
+  file: build/rive.log
+  problems: build/problems.log
+main: "Chapter 2"
+push:
+  projectId: 1559255
+  fileId: 2677803

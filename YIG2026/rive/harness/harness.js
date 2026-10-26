@@ -1,0 +1,187 @@
+// Review harness: plays the chapter's real built .riv, driven by engineering's own integration file.
+// Nothing here stands in for Rive or for engineering's code: the file is imported untouched and must export
+// onTap, onBack, setScene and yig.
+
+const $ = (id) => document.getElementById(id);
+const rive = window.rive;
+// The readout below listens for state changes to show the playing state's name. The runtime flags that as
+// deprecated; this page is a review tool, not engineering's code, so it is silenced here only.
+rive.Rive.suppressDeprecationWarnings = ["state-change-events"];
+rive.RuntimeLoader.setWasmUrl("/vendor/rive/rive.wasm"); // the pinned local runtime, never a CDN
+
+const LABEL = { opener: "Opener", wordle: "Wordle", connections: "Connections" };
+const ORDERS = { wc: ["wordle", "connections"], cw: ["connections", "wordle"] };
+const SCENE_NUM = { opener: 0, wordle: 1, connections: 2 };
+
+let copyTemplate = "";
+let state = { mod: null, frames: [], at: 0, source: "", timer: null };
+
+async function boot() {
+  clearInterval(state.timer);
+  $("err").hidden = true;
+  state.mod?.yig?.cleanup?.();
+
+  // fresh canvas and fresh copy every run, so nothing carries over from the last one
+  const old = $("yig-stage");
+  const canvas = old.cloneNode(false);
+  old.replaceWith(canvas);
+  $("overlay").innerHTML = copyTemplate;
+
+  const info = await (await fetch("/api/riv")).json();
+  $("ro-file").textContent = `${info.file} · ${info.bytes.toLocaleString()} bytes`;
+  $("filelabel").textContent = info.file.split("/").pop();
+
+  const source = await (await fetch("/engineering/chapter-2-integration.js", { cache: "no-store" })).text();
+  state.source = source;
+  $("ro-int").textContent = "chapter-2-integration.js (frame list, scene)";
+
+  const [first, second] = ORDERS[$("order").value];
+  // A stand-in for the player's stats, so every case can be tried: which games they get their own cards for, and
+  // how many starting words they repeated. Engineering decides both from the real stats.
+  const stats = {
+    community: { wordle: $("p-wordle").value === "community", connections: $("p-connections").value === "community" },
+    startingWords: ["ADIEU", "BREAD", "MOUSE"].slice(0, Number($("words").value)),
+  };
+  fillStartingWords(stats.startingWords);
+  // The opener, then each game's cards in the player's order: one community card for a game the player has solved
+  // fewer than 10 of, otherwise their own cards (the starting-words card only if a word repeated). A tap inside a
+  // game swaps only the text; the tap after a game's last card starts the next game.
+  const frames = [{ scene: "opener" }];
+  for (const game of [first, second]) {
+    if (stats.community[game]) { frames.push({ scene: game, community: true }); continue; }
+    const cards = [...$("overlay").querySelectorAll(`[data-copy-scene="${game}"][data-copy-card]`)];
+    for (const el of cards) {
+      if (el.hasAttribute("data-starting-words") && !stats.startingWords.length) continue;
+      frames.push({ scene: game, card: Number(el.dataset.copyCard) });
+    }
+  }
+  state.frames = frames;
+  state.at = 0;
+
+  // the integration code reads these globals, the way engineering's page will provide them
+  window.player = { chapterFrames: frames };
+
+  // each frame's copy block is found by its scene and card, and numbered with the frame it belongs to
+  frames.forEach((f, i) => {
+    const el = f.scene === "opener" ? $("overlay").querySelector('[data-copy-scene="opener"]')
+      : f.community ? $("overlay").querySelector(`[data-copy-scene="${f.scene}"][data-copy-community]`)
+      : $("overlay").querySelector(`[data-copy-scene="${f.scene}"][data-copy-card="${f.card}"]`);
+    if (el) el.dataset.copyFrame = String(i);
+  });
+  $("overlay").querySelectorAll(".yig-text:not([data-copy-frame])").forEach((el) => el.remove());
+
+  const url = URL.createObjectURL(new Blob([source], { type: "text/javascript" })); // the file as engineering wrote it
+  try {
+    state.mod = await import(url);
+  } catch (e) {
+    showError("The integration file failed to run:\n" + (e.stack || e));
+    return;
+  }
+  state.mod.yig.on(rive.EventType.StateChange, (e) => { $("ro-state").textContent = [].concat(e.data).join(", ") || "…"; });
+  state.mod.yig.on(rive.EventType.LoadError, (e) => showError("Rive could not load the file: " + JSON.stringify(e.data)));
+
+  renderFrames();
+  state.timer = setInterval(readVm, 120);
+  syncButtons();
+  window.__harness = { state, next, back, boot, readVm };
+}
+
+// The starting-words card is built from the player's list: one line per word, and a singular label for one word.
+function fillStartingWords(words) {
+  const card = $("overlay").querySelector("[data-starting-words]");
+  if (!card) return;
+  const tpl = card.querySelector("template[data-word]");
+  for (const w of words) {
+    const line = tpl.content.firstElementChild.cloneNode(true);
+    line.querySelector(".tiles").innerHTML = [...w].map((ch) => `<span class="tile tile-green">${ch}</span>`).join("");
+    card.insertBefore(line, tpl);
+  }
+  tpl.remove();
+  const label = card.querySelector("[data-label-one]");
+  label.textContent = words.length === 1 ? label.dataset.labelOne : label.dataset.labelMany;
+}
+
+function readVm() {
+  const vm = state.mod?.yig?.viewModelInstance;
+  if (!vm) { $("ro-vm").textContent = "not bound yet"; return; }
+  $("ro-vm").textContent = `scene ${vm.number("scene").value} · direction ${vm.number("direction").value} · community ${vm.boolean("community").value}`;
+  syncSceneButtons(vm);
+}
+
+// The frame list follows the buttons. A Back that has to wait for a pan still counts here at once, because the
+// integration file will play it when the pan ends.
+function next() {
+  if (state.at >= state.frames.length - 1) return;
+  state.mod.onTap();
+  state.at += 1;
+  renderFrames();
+  syncButtons();
+}
+function back() {
+  if (state.at <= 0) return;
+  state.mod.onBack();
+  state.at -= 1;
+  renderFrames();
+  syncButtons();
+}
+function syncButtons() {
+  $("next").disabled = state.at >= state.frames.length - 1;
+  $("back").disabled = state.at <= 0;
+}
+
+function renderFrames() {
+  $("framelist").innerHTML = state.frames
+    .map((f, i) => `<li class="${i === state.at ? "now" : ""}"><b>${i + 1}</b>${LABEL[f.scene]}${f.community ? " community" : f.card ? ` card ${f.card}` : ""}${f.card > 1 ? " · text only" : ""}</li>`)
+    .join("");
+  $("framenote").textContent = "Next or Back inside a game swaps only the text (the scene stays, so Rive keeps looping). Across games the room changes: a first visit plays its intro and its text rises 3.2 s later; a game you come back to slides in already built and its text arrives when the pan ends. A tap that would reverse a pan waits for it to end. Keys: → Next, ← Back.";
+  $("framenote").className = "note";
+}
+
+// A button per scene value. They set the file's number directly, which is a shortcut for poking one value;
+// Next and Back are the real path, because they run engineering's own code.
+function buildSceneButtons() {
+  $("scenes").innerHTML = Object.entries(SCENE_NUM)
+    .map(([k, n]) => `<button data-scene="${n}" title="${LABEL[k]}">${n} ${LABEL[k]}</button>`).join("");
+  $("scenes").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b || b.disabled) return;
+    const n = Number(b.dataset.scene), vm = state.mod?.yig?.viewModelInstance;
+    if (!vm) return;
+    vm.number("scene").value = n;
+  });
+}
+function syncSceneButtons(vm) {
+  $("scenes").querySelectorAll("button").forEach((b) => {
+    b.setAttribute("aria-pressed", String(vm.number("scene").value === Number(b.dataset.scene)));
+  });
+}
+
+function setView(mode) {
+  $("stage").className = "stage " + mode;
+  $("v-full").setAttribute("aria-pressed", String(mode === "full"));
+  $("v-phone").setAttribute("aria-pressed", String(mode === "phone"));
+  // the canvas changes size, so the drawing surface has to follow
+  requestAnimationFrame(() => state.mod?.yig?.resizeDrawingSurfaceToCanvas?.());
+}
+
+function showError(msg) {
+  $("err").textContent = msg; $("err").hidden = false;
+}
+
+(async function init() {
+  $("rtlabel").textContent = "2.45.0";
+  copyTemplate = await (await fetch("/copy.html")).text();
+  buildSceneButtons();
+  $("next").addEventListener("click", next);
+  $("back").addEventListener("click", back);
+  window.addEventListener("keydown", (e) => {
+    if (e.target.closest?.("select, input, textarea")) return;
+    if (e.key === "ArrowRight") { e.preventDefault(); next(); }
+    if (e.key === "ArrowLeft") { e.preventDefault(); back(); }
+  });
+  $("restart").addEventListener("click", boot);
+  for (const id of ["order", "p-wordle", "p-connections", "words"]) $(id).addEventListener("change", boot);
+  $("v-full").addEventListener("click", () => setView("full"));
+  $("v-phone").addEventListener("click", () => setView("phone"));
+  window.addEventListener("resize", () => state.mod?.yig?.resizeDrawingSurfaceToCanvas?.());
+  await boot();
+})();
