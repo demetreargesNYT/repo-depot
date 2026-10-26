@@ -1,6 +1,8 @@
 # Year in Games 2026 · Rive
 
-Rive animation for NYT Games' Year in Games 2026 recap ("Well Played"). Design lead: Demetre Arges. This repo is the only place the Rive work happens. Engineering receives finished `.riv` files and the files in `engineering/`.
+Rive animation for NYT Games' Year in Games 2026 recap ("Well Played"). Design lead: Demetre Arges. This folder, `repo-depot/YIG2026/rive`, is the only place the Rive work happens. Engineering receives finished `.riv` files and the files in `engineering/`.
+
+It lives inside repo-depot (moved in with its history from `~/Desktop/rive-tests/yig-rive`, now `yig-rive-archive`; don't work there). Git commands run against repo-depot, so commit and push follow repo-depot's rules, and add only files under `YIG2026/rive/`. Rive tags are `rive/ch2-…`.
 
 ## Layout
 
