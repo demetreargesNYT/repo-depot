@@ -147,7 +147,7 @@ function showError(msg) {
   $("next").addEventListener("click", next);
   $("back").addEventListener("click", back);
   window.addEventListener("keydown", (e) => {
-    if (e.target.closest("select, input, textarea")) return;
+    if (e.target.closest?.("select, input, textarea")) return;
     if (e.key === "ArrowRight") { e.preventDefault(); next(); }
     if (e.key === "ArrowLeft") { e.preventDefault(); back(); }
   });
