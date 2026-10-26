@@ -1,0 +1,14 @@
+{
+  "name": "yig-rive",
+  "private": true,
+  "description": "Year in Games 2026 Rive work. Scripts take a chapter folder name, e.g. ch2.",
+  "scripts": {
+    "keys": "python3 tools/dump_keys.py",
+    "check": "python3 tools/check.py",
+    "rules": "python3 tools/check_chapter.py",
+    "tap": "python3 tools/tap_test.py",
+    "text": "node harness/text-test.mjs",
+    "deliver": "python3 tools/deliver.py",
+    "back": "python3 tools/back_test.py"
+  }
+}

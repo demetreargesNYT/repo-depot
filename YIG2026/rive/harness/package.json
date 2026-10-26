@@ -1,0 +1,8 @@
+{
+  "name": "yig-rive-harness",
+  "private": true,
+  "type": "module",
+  "description": "Local review page that plays a chapter's built .riv with Rive's web runtime",
+  "scripts": { "start": "node serve.mjs" },
+  "dependencies": { "@rive-app/canvas": "2.45.0" }
+}
