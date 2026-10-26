@@ -99,10 +99,17 @@ function leave(el, back = false) {
   if (settled) {
     el.classList.toggle("yig-back", back);
     el.classList.add("yig-out");
-    setTimeout(() => { el.hidden = true; }, 300);
+    setTimeout(() => { el.hidden = true; }, clearMs());
   } else {
     el.hidden = true;
   }
+}
+
+// How long old copy takes to dissolve, read from the CSS's --yig-clear so the two can't drift apart.
+function clearMs() {
+  const v = getComputedStyle(document.documentElement).getPropertyValue("--yig-clear").trim();
+  const ms = v.endsWith("ms") ? parseFloat(v) : parseFloat(v) * 1000;
+  return Number.isFinite(ms) ? ms : 340;   // 340 ms, the v3 value, if the stylesheet hasn't loaded
 }
 
 // Take yig-in and yig-out off, force a reflow, then add yig-in, so the CSS animation restarts every time this

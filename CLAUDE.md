@@ -32,7 +32,7 @@ Rive animation for NYT Games' Year in Games 2026 recap ("Well Played"). Design l
 - **Every intro is exactly 3.2 s**, because the text CSS waits that long. A room only plays its intro on its first visit; coming back (Back, or the Next after one) it slides in already built.
 - **A move never reverses part-way.** Rive can't turn a room around mid-move without a snap (about a quarter of the move in one frame), so a Back during any pan, and a Next during a Back pan, wait in the integration file until the pan ends; only the last held tap counts. Next during a Next pan stays immediate.
 - The game lockup (icon plus word) lives in Rive. It rises in after the pieces land and is gone exactly at 3.2 s. The small icon and the stats are HTML. The lockup uses the text's curves: expo.out in, power3.in out.
-- Text motion: Rise in 560 ms, Lift out 260 ms, Pop 440 ms, one mask per designed line. See `engineering/yig-text-motion.css`.
+- Text motion (v3): Rise in 720 ms with a fade, 120 ms between lines; Lift out 240 ms, a short drift and dissolve, 20 ms apart, all clear within 340 ms (`--yig-clear`, which `yig-quick` waits and the integration file reads); Pop 560 ms. One mask per designed line. See `engineering/yig-text-motion.css`.
 - Parked for later: Sink and stack, where the room sinks through the floor line, a color dome rises, and the pieces drop in.
 
 ## State machine pattern (per chapter)

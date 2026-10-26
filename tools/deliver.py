@@ -80,7 +80,7 @@ Back returns through them in reverse.
 |---|---|
 | `{riv_name}` | the Rive file ({riv_bytes:,} bytes): artboard `"{ab.get('name')}"` {ab.get('width')} × {ab.get('height')}, state machine `"{scene.artboard.find('StateMachine').get('name')}"`, view model `"{scene.view_model.get('name')}"` with the numbers `scene` and `direction` |
 | `chapter-2-integration.js` | the integration code: load, Next and Back (`scene`, `direction`), reveal copy |
-| `yig-text-motion.css` | text motion: Rise in 560 ms, Lift out 260 ms, Pop 440 ms, reversed on Back; waits 3.2 s for a new game |
+| `yig-text-motion.css` | text motion v3: Rise in 720 ms, Lift out 240 ms (clear in 340 ms), Pop 560 ms, reversed on Back; waits 3.2 s for a new game |
 
 Built from `chapters/{chapter}` {revision}.
 """

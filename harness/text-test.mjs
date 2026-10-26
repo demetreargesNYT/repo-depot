@@ -7,9 +7,9 @@
 // Needs the harness server (npm start) and Google Chrome. Checks, per case:
 //   A  same-game tap T s into the game's intro: the old card goes at once, and the next card does not start
 //      rising before the intro ends (3.2 s after the game's first tap), so it never overlaps the lockup.
-//      After the intro it rises about 0.3 s after the tap.
+//      After the intro it rises about 0.34 s (--yig-clear) after the tap.
 //   B  tap to the next game: the old card and icon are gone or leaving at once, the new icon pops and the
-//      new first card rises 3.2 s after the tap, with its lines one step (70 ms) after the icon.
+//      new first card rises 3.2 s after the tap, with its lines one step (120 ms) after the icon.
 //   C  the icon stays put on a game's later cards: no restart of its animation on a same-game tap.
 import { spawn } from "node:child_process";
 import fs from "node:fs";
@@ -20,7 +20,7 @@ const args = process.argv.slice(2);
 const flag = (n, d) => (args.includes(n) ? args[args.indexOf(n) + 1] : d);
 const TIMES = flag("--times", "0.5,1.5,2.5,3.0").split(",").map(Number);
 const BASE = flag("--url", "http://127.0.0.1:8765/");
-const INTRO = 3.2, QUICK = 0.3, STEP = 0.07, TOL = 0.12;   // seconds; TOL covers the 40 ms sampling and page scheduling
+const INTRO = 3.2, QUICK = 0.34, STEP = 0.12, TOL = 0.12;   // seconds; TOL covers the 40 ms sampling and page scheduling
 
 const chrome = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const port = 9800 + Math.floor(Math.random() * 150);
@@ -123,7 +123,7 @@ for (const order of ["wc", "cw"]) {
 }
 // Back. One run per game order:
 //   D  Back within a game (from card 2 to card 1): text only, reversed. The old card is gone or dropping at once,
-//      card 1 comes back down 0.3 s after the tap, its lines bottom first, and the icon's animation is not restarted.
+//      card 1 comes back down 0.34 s after the tap, its lines bottom first, and the icon's animation is not restarted.
 //   E  Back across a game boundary (second game card 1 to the first game's last card), from rest: the old card
 //      and icon leave at once, and the first game's icon and last card arrive when the pan ends (1.65 s).
 //   F  Back during that pan's Next: the Back waits for the pan to end, then plays; the text follows it.
