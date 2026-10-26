@@ -200,6 +200,53 @@ for (const order of ["wc", "cw"]) {
   check(!!cardF && Math.abs(cardF.at - tf - wantF) <= TOL + 0.05, `F  ${lF}: waits for the pan, then ${first}'s last card arrives ${fmt(cardF ? cardF.at - tf : null)} after the tap (want ${wantF.toFixed(2)} s)`);
 }
 
+// Community cards and the starting-words list:
+//   H  a community card for the first game: the frame list has one card for it, community is set in the file,
+//      the icon pops 3.2 s after the tap and the card's lines follow one step later, as on a game's first card.
+//   I  the starting-words card: one line per word, singular label for one word, and left out when none repeated.
+const setOpt = (id, v) => ev(`(s=>{s.value='${v}';s.dispatchEvent(new Event('change'))})(document.getElementById('${id}'))`);
+for (const order of ["wc", "cw"]) {
+  const [first, second] = order === "wc" ? ["wordle", "connections"] : ["connections", "wordle"];
+  await send("Page.navigate", { url: BASE });
+  await sleep(2600);
+  await setOpt("order", order); await sleep(400);
+  await setOpt("p-" + first, "community"); await sleep(2200);
+  await ev(INSTALL);
+  const frames = await ev("window.__harness.state.frames.map((f) => f.scene + (f.community ? '*' : ''))");
+  const ownSecond = frames.filter((f) => f === second).length;
+  check(frames.filter((f) => f.startsWith(first)).length === 1 && frames[1] === first + "*" && ownSecond > 1,
+        `H  ${first} community, ${second} own: the frames are ${frames.join(", ")}`);
+  await ev("window.__mark('tap'); document.getElementById('next').click()");
+  await sleep(300);
+  const flag = await ev("window.__harness.state.mod.yig.viewModelInstance.boolean('community').value");
+  await sleep((INTRO + 1.2) * 1000);
+  const log = await ev("window.__log");
+  const t0 = log.find((e) => e.label === "tap").at;
+  const pop = log.find((e) => e.icon === first && e.iconPopping);
+  const rise = log.find((e) => e.card === first + "#-" && e.cardRising);
+  check(flag === true, `H  ${first} community card: the file's community is ${flag} after the tap (want true)`);
+  check(!!pop && Math.abs(pop.at - t0 - INTRO) <= TOL, `H  ${first} community card: the icon pops ${fmt(pop ? pop.at - t0 : null)} after the tap (want ${INTRO} s)`);
+  check(!!rise && Math.abs(rise.at - t0 - INTRO - STEP) <= TOL, `H  ${first} community card: its lines rise ${fmt(rise ? rise.at - t0 : null)} after the tap (want ${(INTRO + STEP).toFixed(2)} s)`);
+  await ev("document.getElementById('next').click()");
+  await sleep(400);
+  const flag2 = await ev("window.__harness.state.mod.yig.viewModelInstance.boolean('community').value");
+  check(flag2 === false, `H  then ${second}'s own cards: community is ${flag2} (want false)`);
+}
+for (const n of [3, 2, 1, 0]) {
+  await send("Page.navigate", { url: BASE });
+  await sleep(2600);
+  await setOpt("words", String(n)); await sleep(2200);
+  const r = await ev(`(() => { const c = document.querySelector('[data-starting-words]');
+    return { inFrames: window.__harness.state.frames.some((f) => f.scene === 'wordle' && f.card === 4),
+             words: c ? c.querySelectorAll(':scope > .yig-word').length : 0,
+             label: c ? c.querySelector('[data-label-one]').textContent : null,
+             template: c ? !!c.querySelector('template') : false,
+             order: c ? [...c.children].map((e) => getComputedStyle(e).getPropertyValue('--yig-n').trim()).join(',') : '' }; })()`);
+  if (n === 0) check(!r.inFrames, `I  no word repeated: the starting-words card is left out of the frames (in frames: ${r.inFrames})`);
+  else check(r.inFrames && r.words === n && !r.template && r.label === (n === 1 ? "starting word was" : "starting words were") && r.order === [...Array(n + 3).keys()].join(","),
+             `I  ${n} starting word(s): ${r.words} word lines, label "${r.label}", stagger ${r.order}`);
+}
+
 proc.kill(); ws.close();
 let failed = 0;
 for (const r of results) { if (!r.ok) failed++; console.log((r.ok ? "PASS  " : "FAIL  ") + r.text); }

@@ -40,7 +40,10 @@ def readme(scene, riv_name, riv_bytes, chapter, revision):
     numbers = scene.scene_numbers()
     # Shelf is the opener; every other layer name is the game it shows
     # (the Shelf layer has no intro, so its scene value is only in the conditions of "Shelf Exit")
-    labels = {n: ("the chapter opener" if name.removesuffix(" Exit") == "Shelf" else name.removesuffix(" Exit")) for name, n in numbers.items()}
+    rooms = {}
+    for name, n in numbers.items():                 # every room has several layers ("Wordle", "Wordle Exit", ...)
+        rooms.setdefault(n, name.split(" ")[0])
+    labels = {n: ("the chapter opener" if room == "Shelf" else room) for n, room in rooms.items()}
     table = "\n".join(f"| {n} | {labels[n]} |" for n in sorted(labels))
     table += "\n| 3 to 7 | Strands, Spelling Bee, The Mini, The Midi, The Crossword (not built yet) |"
     return f"""# Year in Games 2026, Chapter 2: handoff for engineering
@@ -74,11 +77,24 @@ A game has several cards, one frame each. A tap inside a game keeps the same `sc
 looping); the tap after the game's last card sets the next game's `scene`. A game appears in one run of cards;
 Back returns through them in reverse.
 
+## Cards that depend on the stats
+
+You decide both of these from the player's stats; the Rive file and the integration code handle the rest.
+
+- **Community card.** A player who solved fewer than 10 of a game's puzzles gets one community card for that game
+  instead of their own cards. Mark that frame `community: true` (for example `{{ scene: "wordle", community: true }}`).
+  The integration file sets the view model boolean `community` before `scene` on the tap that enters the game, and
+  the game's Rive lockup (icon plus word) is then left out. The pan, the room and the 3.2 s intro are unchanged,
+  and the HTML icon pops in with the card, as on a game's first card.
+- **Wordle starting words.** The "top starting words" card takes a list of 1 to 3 words, one line each (`.yig-mask`
+  per word), with the label "starting word was" for one word and "starting words were" for more. Leave the card
+  out of the frames when no word was used more than once.
+
 ## Files
 
 | File | What it is |
 |---|---|
-| `{riv_name}` | the Rive file ({riv_bytes:,} bytes): artboard `"{ab.get('name')}"` {ab.get('width')} × {ab.get('height')}, state machine `"{scene.artboard.find('StateMachine').get('name')}"`, view model `"{scene.view_model.get('name')}"` with the numbers `scene` and `direction` |
+| `{riv_name}` | the Rive file ({riv_bytes:,} bytes): artboard `"{ab.get('name')}"` {ab.get('width')} × {ab.get('height')}, state machine `"{scene.artboard.find('StateMachine').get('name')}"`, view model `"{scene.view_model.get('name')}"` with the numbers `scene` and `direction` and the boolean `community` |
 | `chapter-2-integration.js` | the integration code: load, Next and Back (`scene`, `direction`), reveal copy |
 | `yig-text-motion.css` | text motion v3: Rise in 720 ms, Lift out 240 ms (clear in 340 ms), Pop 560 ms, reversed on Back; waits 3.2 s for a new game |
 
@@ -93,7 +109,7 @@ def main(argv):
     project = chapter_dir(chapter)
 
     print("1. fast check")
-    results = check.build_checks(project) + check_chapter.run(chapter) + [check.opener_clears(project)]
+    results = check.build_checks(project) + check_chapter.run(chapter) + [check.opener_clears(project), check.community_hides_lockup(project)]
     bad = [t for ok, t in results if not ok]
     if bad:
         for t in bad:
@@ -119,7 +135,7 @@ def main(argv):
     if flag == "false":
         fail('the artboard has includeInExport="false", so the export would leave it out')
     blob = built.read_bytes()
-    missing = [n for n in (ab.get("name"), ab.find("StateMachine").get("name"), scene.view_model.get("name"), "scene", "direction") if n.encode() not in blob]
+    missing = [n for n in (ab.get("name"), ab.find("StateMachine").get("name"), scene.view_model.get("name"), "scene", "direction", "community") if n.encode() not in blob]
     if missing:
         fail(f"the built file does not contain {missing}")
     print(f'   includeInExport {flag}; the built file holds artboard "{ab.get("name")}", state machine '

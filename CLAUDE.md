@@ -32,15 +32,17 @@ Rive animation for NYT Games' Year in Games 2026 recap ("Well Played"). Design l
 - **Every intro is exactly 3.2 s**, because the text CSS waits that long. A room only plays its intro on its first visit; coming back (Back, or the Next after one) it slides in already built.
 - **A move never reverses part-way.** Rive can't turn a room around mid-move without a snap (about a quarter of the move in one frame), so a Back during any pan, and a Next during a Back pan, wait in the integration file until the pan ends; only the last held tap counts. Next during a Next pan stays immediate.
 - The game lockup (icon plus word) lives in Rive. It rises in after the pieces land and is gone exactly at 3.2 s. The small icon and the stats are HTML. The lockup uses the text's curves: expo.out in, power3.in out.
+- **Community cards:** a player who solved fewer than 10 of a game's puzzles gets one community card for it. The boolean `community` hides only that game's Rive lockup (through its Lockup Gate); the intro, pan and backdrop are unchanged. The HTML icon still pops in with the card.
 - Text motion (v3): Rise in 720 ms with a fade, 120 ms between lines; Lift out 240 ms, a short drift and dissolve, 20 ms apart, all clear within 340 ms (`--yig-clear`, which `yig-quick` waits and the integration file reads); Pop 560 ms. One mask per designed line. See `engineering/yig-text-motion.css`.
 - Parked for later: Sink and stack, where the room sinks through the floor line, a color dome rises, and the pieces drop in.
 
 ## State machine pattern (per chapter)
 
-- Two numbers, `scene` and `direction`. Three layers per room, so layers never key the same property:
+- Two numbers, `scene` and `direction`, and a boolean, `community`. Three layers per room, plus a Lockup layer per game, so layers never key the same property:
   - `<Room>`: Waiting → Intro (scene == n) → Loop
   - `<Room> Exit`: Home → Shown (scene == n) → Outro or Back Out (scene != n, by direction) → Gone or Right → Return or Forward In (scene == n) → Shown
   - `<Room> Draw`: Below ↔ On Top on scene == n
+  - `<Room> Lockup` (games): Shown ↔ Hidden on community, read only while scene == n
 - A `Backdrop` layer holds the colors: from AnyState, scene == n goes to `<Room> Colors` (a one-frame pose of the backdrop's wall and floor color) with a 1450 ms power1.inOut blend and early exit on. Rive mixes the two states over the blend, which is the crossfade; no other timeline keys the backdrop.
 - The moves key only `<Room>` x and `<Room> Wall Lag` x; the draw rule is keyed only by the Draw layer's two poses.
 - Details are in `docs/scene-restructure.md`.

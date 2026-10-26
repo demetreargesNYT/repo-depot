@@ -3,7 +3,9 @@ const SCENE = { opener: 0, wordle: 1, connections: 2, strands: 3, spellingBee: 4
 
 // The chapter's frames in order, built from the player's stats: the opener, then each game's cards in the
 // player's order. Each frame names the scene it shows; a game with several cards has several frames in a row.
-// Example: [{ scene: "opener" }, { scene: "wordle" }, { scene: "wordle" }, { scene: "connections" }]
+// A player who solved fewer than 10 of a game's puzzles gets one community card for that game instead of their own
+// cards: mark that frame community: true (the game's Rive lockup is then left out; everything else is the same).
+// Example: [{ scene: "opener" }, { scene: "wordle", community: true }, { scene: "connections" }, { scene: "connections" }]
 const frames = player.chapterFrames;
 
 import { Rive } from "@rive-app/canvas"; // pin the version you ship
@@ -20,9 +22,11 @@ const yig = new Rive({
   },
 });
 
-// The file reads two numbers: scene, and direction (1 forward, -1 back) so a room knows which way to leave.
-function setScene(n, direction = 1) {
+// The file reads scene, direction (1 forward, -1 back) so a room knows which way to leave, and community, which
+// leaves out the lockup of the game being entered. Both are set before scene, so the file sees them on the same frame.
+function setScene(n, direction = 1, community = false) {
   yig.viewModelInstance.number("direction").value = direction;
+  yig.viewModelInstance.boolean("community").value = community;
   yig.viewModelInstance.number("scene").value = n;
 }
 
@@ -62,7 +66,7 @@ function move(step) {
   const firstVisit = roomChange && step > 0 && !(scene in introEndsAt) && scene !== "opener";
   if (roomChange) pan = { dir: step, endsAt: now + PAN_MS };
   if (firstVisit) introEndsAt[scene] = now + INTRO_MS; // a first visit plays the game's intro
-  setScene(SCENE[scene], step); // the same scene again does nothing, so Rive keeps looping
+  setScene(SCENE[scene], step, !!frames[frame].community); // the same scene again does nothing, so Rive keeps looping
   showCopy(frame, roomChange, firstVisit, step);
 }
 

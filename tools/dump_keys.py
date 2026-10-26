@@ -27,6 +27,7 @@ MOVES = ['Outro', 'Home', 'Gone', 'Back Out', 'Right', 'Return', 'Forward In', '
 ORDER = (["Shelf Loop"] + [f"Shelf {m}" for m in MOVES]
          + ["Wordle Waiting", "Wordle Intro", "Wordle Loop"] + [f"Wordle {m}" for m in MOVES]
          + ["Connections Waiting", "Connections Intro", "Connections Loop"] + [f"Connections {m}" for m in MOVES])
+ORDER += [f"{g} Lockup {p}" for g in ("Wordle", "Connections") for p in ("Shown", "Hidden")]
 STATE_MACHINE = "State machine"
 MARKER = re.compile(r"(<!-- keys: (?P<name>.+?) -->\n```text\n)(?P<body>.*?)(\n```\n<!-- /keys -->)", re.S)
 
@@ -85,7 +86,9 @@ def state_machine_lines(s):
                 for c in tr.findall("TransitionViewModelCondition"):
                     ctx = c.find(".//DataBindContext").get("sourcePathIds").split("-")[-1]
                     op = "==" if c.get("opValue", "equal") == "equal" else "!="
-                    conds.append(f'{props[ctx]} {op} {c.find("TransitionValueNumberComparator").get("value", "0")}')
+                    num, flag = c.find("TransitionValueNumberComparator"), c.find("TransitionValueBooleanComparator")
+                    value = num.get("value", "0") if num is not None else flag.get("value", "false")
+                    conds.append(f'{props[ctx]} {op} {value}')
                 gate = "at the end (exit time 100%)" if tr.get("enableExitTime") == "true" else "when " + " and ".join(conds)
                 blend = f'{tr.get("duration", "0")} ms'
                 c = tr.find("CubicEaseInterpolator")

@@ -501,7 +501,7 @@ Connections Draw Rules drawTargetId: 0 Connections Bottom
 
 ## State machine
 
-Three layers per room, so layers never key the same property, plus the Backdrop. A second number, `direction` (1 Next, the default; −1 Back), tells a room which way to leave; our integration file sets it with every `scene`.
+Three layers per room, plus a Lockup layer per game and the Backdrop, so layers never key the same property. A second number, `direction` (1 Next, the default; −1 Back), tells a room which way to leave; our integration file sets it with every `scene`.
 
 - **`<Room>`**: Waiting → Intro when `scene` == n (no exit time, duration 0) → Loop at exit time 100% (duration 0). The Shelf layer has no intro: it starts in Shelf Loop.
 - **`<Room> Exit`**, the room's position. "Shown" plays the Home pose again, so the room holds at x 0 while it is the current scene. Shelf Exit starts in Shown, because the opener is on screen at load.
@@ -511,12 +511,13 @@ Three layers per room, so layers never key the same property, plus the Backdrop.
   - Gone → Return, and Right → Forward In, when `scene` == n; both reach Shown at the end.
   - Forward In → Outro on a Next, blended 1550 ms power2.inOut: a Next during a Forward In carries on left without a snap.
   - **Every other move starts from a held pose.** Reversing a move part-way snaps the room (measured: about a quarter of the move in one frame), so it is never asked to: the integration file holds a room-changing Back during any pan, and a Next during a Back pan, until the pan ends.
+- **`<Room> Lockup`** (games only): see Community cards.
 - **`<Room> Draw`**: Below → On Top when `scene` == n, On Top → Below when `scene` != n, both at once (0 ms). The current room is always on top; a leaving room drops below at the tap, in either direction.
 - **Backdrop**: one layer for the whole stage. It starts in Shelf Colors; from AnyState, `scene` == n goes to `<Room> Colors` with a 1450 ms power1.inOut blend, early exit on (see Backdrop).
 
 <!-- keys: State machine -->
 ```text
-State machine "Chapter 2" · view model "Chapter 2": scene, direction · default state machine: Chapter 2
+State machine "Chapter 2" · view model "Chapter 2": scene, direction, community · default state machine: Chapter 2
 layer "Shelf": starts in Shelf Loop
 layer "Shelf Exit": starts in Shelf Home (2)
   Shelf Home -> Shelf Home (2) when scene == 0, 0 ms
@@ -570,16 +571,67 @@ layer "Wordle Draw": starts in Wordle Below
 layer "Connections Draw": starts in Connections Below
   Connections Below -> Connections On Top when scene == 2, 0 ms
   Connections On Top -> Connections Below when scene != 2, 0 ms
+layer "Wordle Lockup": starts in Wordle Lockup Shown
+  Wordle Lockup Shown -> Wordle Lockup Hidden when community == true and scene == 1, 0 ms
+  Wordle Lockup Hidden -> Wordle Lockup Shown when community == false and scene == 1, 0 ms
+layer "Connections Lockup": starts in Connections Lockup Shown
+  Connections Lockup Shown -> Connections Lockup Hidden when community == true and scene == 2, 0 ms
+  Connections Lockup Hidden -> Connections Lockup Shown when community == false and scene == 2, 0 ms
 ```
 <!-- /keys -->
 
-What engineering relies on: the artboard "Chapter 2", the state machine "Chapter 2", the view model "Chapter 2" with the numbers `scene` and `direction` (both set by our integration file), and the file loaded with autoplay and the view model bound (`autoBind`). Nothing else is needed. Each intro takes exactly 3.2 s from the moment `scene` changes, and its loop starts on the same frame.
+What engineering relies on: the artboard "Chapter 2", the state machine "Chapter 2", the view model "Chapter 2" with the numbers `scene` and `direction` and the boolean `community` (all set by our integration file), and the file loaded with autoplay and the view model bound (`autoBind`). Nothing else is needed. Each intro takes exactly 3.2 s from the moment `scene` changes, and its loop starts on the same frame.
+
+## Community cards
+
+A player who solved fewer than 10 of a game's puzzles sees one community card for that game instead of their own
+cards. The view model boolean `community` (default false) leaves out that game's Rive lockup and changes nothing
+else: the pan, the backdrop, the pieces, the ball and the 3.2 s intro all run as normal.
+
+Each game's lockup sits alone in a `<Room> Lockup Gate` node at 0, 0, so the lockup's own intro keys are untouched.
+A `<Room> Lockup` layer holds the gate's opacity with two one-frame poses: it starts on Shown (1), goes to Hidden (0)
+when `community` is true and `scene` is the game, and back to Shown when `community` is false and `scene` is the
+game, at once. Reading the flag only while the game is the scene means a later game's flag can't hide or show this
+game's lockup while it is still leaving. Our integration file sets `community` before `scene` on the tap that enters
+a game. `npm run check` renders Wordle with `community` on and requires it to equal Wordle with its lockup removed.
+
+Adding a game (3 to 7) is the same small step: wrap its lockup in a gate, add its two poses and its layer.
+
+<!-- keys: Wordle Lockup Shown -->
+```text
+Wordle Lockup Shown · 1 frame · plays once
+Wordle Lockup Gate opacity: 0 1
+```
+<!-- /keys -->
+
+<!-- keys: Wordle Lockup Hidden -->
+```text
+Wordle Lockup Hidden · 1 frame · plays once
+Wordle Lockup Gate opacity: 0 0
+```
+<!-- /keys -->
+
+<!-- keys: Connections Lockup Shown -->
+```text
+Connections Lockup Shown · 1 frame · plays once
+Connections Lockup Gate opacity: 0 1
+```
+<!-- /keys -->
+
+<!-- keys: Connections Lockup Hidden -->
+```text
+Connections Lockup Hidden · 1 frame · plays once
+Connections Lockup Gate opacity: 0 0
+```
+<!-- /keys -->
 
 ## HTML text and icon (not in the Rive file; for reference)
 
 The page's text motion is `engineering/yig-text-motion.css`, timed to the 3.2 s intro. A game has several cards, one frame each; a tap inside a game swaps only the text, and the tap after the game's last card starts the next game. The game's small icon is its own block, one per game: it pops in with the first card (3.2 s after the tap that starts the game), stays while later cards change, and lifts out with the last card's text. The Rive lockup (icon plus word) plays during the intro and is gone at 3.2 s. A same-game tap during the intro waits until the intro ends.
 
 Back mirrors Next. Within a game it is text only: the card drops down and out and the previous card comes down from above (`yig-back`), bottom line first, on the same quick timing; the icon stays. Across a game the old card and icon leave at once and the previous game's last card and icon arrive when the move ends, 1.65 s after the tap (or when that game's interrupted intro ends, if later). A game you come back to with Next also arrives already built, so its text comes after 1.65 s, not 3.2 s. Back on the opener does nothing.
+
+Wordle's starting-words card is built from the player's list of 1 to 3 words, one `.yig-mask` line per word, so each word takes its own place in the stagger in and out; the label is singular for one word, and the card is left out when no word repeated. The stagger rules cover 8 lines; the longest card has 6.
 
 ## Adding a game
 
@@ -591,7 +643,7 @@ Built from adding Wordle and Connections. A new game, say Strands (scene 3), is 
 4. **Waiting, then Intro.** Build the Intro (3.2 s exactly): the floor plane (and wall plane) pan with `power2.inOut` 0.05 → 1.55, the pieces' entrance, the ball rolling in to the room's loop start pose, and the lockup (rise in after the pieces land, gone exactly at 3.2 s). **Never key anything outside the room.** Then build `Strands Waiting` from the Intro's first keys.
 5. **Loop.** It starts and ends on the Intro's last frame, so the seam is invisible.
 6. **The moves.** Outro keys only the room's x and its Wall Lag x: `0.05 0 → 1.55 −1600`, lag `0 → 320`. Home holds x 0, lag 0; Gone holds x −1600 and the lag's end value. Mirror them: Back Out (`0 → +1600`, lag `0 → −320`), Right (held there), Return (`−1600 → 0`), Forward In (`+1600 → 0`), all on the Outro's pan. Then the one-frame On Top and Below poses for its draw rule.
-7. **The three layers.** `Strands`: Waiting → Intro (`scene` == 3) → Loop. `Strands Exit`: the moves exactly as the other rooms have them (`npm run check` lists any difference). `Strands Draw`: Below ↔ On Top on `scene` == 3.
+7. **The layers.** `Strands`: Waiting → Intro (`scene` == 3) → Loop. `Strands Exit`: the moves exactly as the other rooms have them (`npm run check` lists any difference). `Strands Draw`: Below ↔ On Top on `scene` == 3. Wrap its lockup in a `Strands Lockup Gate` and add `Strands Lockup Shown`, `Strands Lockup Hidden` and the `Strands Lockup` layer (see Community cards).
 8. **Draw order.** Nothing else to re-point: every room's Top target is the shared Top Marker.
 9. **Check.** `npm run check ch2`; then the slower passes before handoff: `npm run tap` (interrupted Next taps), `npm run back` (Next and Back at exact frames), `npm run text`, and look at it in the harness.
 10. **Add its cards** to `harness/copy.html`, and its scene number to the integration file's table.

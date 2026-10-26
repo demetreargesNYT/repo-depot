@@ -268,6 +268,47 @@ def run(chapter):
         unknown = sorted(k for k in l_keys if k not in i_last)
         check(not unknown, f"every property {room} Loop keys is also set by {room} Intro" + ("" if not unknown else f": {unknown}"))
 
+    # community cards: a boolean hides each game's lockup through a gate, and nothing else changes
+    flag = next((p for p in s.view_model if p.tag == "ViewModelPropertyBoolean" and p.get("name") == "community"), None)
+    check(flag is not None, 'the view model has a boolean named "community"')
+    if flag is not None:
+        dflt = next((v.get("propertyValue", "false") for v in s.view_model.iter("ViewModelInstanceBoolean") if v.get("viewModelPropertyId") == flag.get("id")), None)
+        check(dflt == "false", f"community defaults to false, so a game shows its lockup unless told otherwise (it is {dflt})")
+    for room in [r for r in rooms if f"{r} Intro" in A]:
+        gate = s.node(f"{room} Lockup Gate") if any(e.get("name") == f"{room} Lockup Gate" for e in ab.iter("Node")) else None
+        kids = [c.get("name") for c in gate if c.tag == "Node"] if gate is not None else []
+        check(gate is not None and kids == [f"{room} Lockup"] and s.parent[gate].get("name") == f"{room} Room"
+              and float(gate.get("x", 0)) == 0 and float(gate.get("y", 0)) == 0,
+              f"{room} Lockup sits alone in a {room} Lockup Gate at 0, 0 inside {room} Room")
+        for pose, v in (("Shown", 1.0), ("Hidden", 0.0)):
+            a = A.get(f"{room} Lockup {pose}")
+            ks = s.keys(a) if a is not None else {}
+            check(a is not None and s.duration(a) == 1 and list(ks) == [(f"{room} Lockup Gate", "opacity")] and ks[(f"{room} Lockup Gate", "opacity")][0][1] == v,
+                  f"{room} Lockup {pose} is a one-frame pose holding the gate's opacity at {v:g}")
+        for name, an in A.items():
+            if not name.startswith(f"{room} Lockup "):
+                check((f"{room} Lockup Gate", "opacity") not in s.keys(an), f"{name} does not key {room} Lockup Gate")
+        gl = next((l for l in sm.findall("StateMachineLayer") if l.get("name") == f"{room} Lockup"), None)
+        got = []
+        if gl is not None:
+            names = state_names(s, gl)
+            for st in gl.findall("AnimationState"):
+                for tr in st.findall("StateTransition"):
+                    conds = []
+                    for c in tr.findall("TransitionViewModelCondition"):
+                        pid = c.find(".//DataBindContext").get("sourcePathIds").split("-")[-1]
+                        b, v = c.find("TransitionValueBooleanComparator"), c.find("TransitionValueNumberComparator")
+                        val = b.get("value", "false") if b is not None else int(float(v.get("value", "0")))
+                        conds.append((pid, c.get("opValue", "equal"), val))
+                    got.append((names[st.get("id")], names[tr.get("stateToId")], tuple(sorted(conds, key=str)), tr.get("duration", "0")))
+        fid = flag.get("id") if flag is not None else None
+        sid = props["scene"].get("id")
+        n = per_room[room]
+        want = [(f"{room} Lockup Shown", f"{room} Lockup Hidden", tuple(sorted([(fid, "equal", "true"), (sid, "equal", n)], key=str)), "0"),
+                (f"{room} Lockup Hidden", f"{room} Lockup Shown", tuple(sorted([(fid, "equal", "false"), (sid, "equal", n)], key=str)), "0")]
+        check(gl is not None and sorted(got) == sorted(want) and start_of(s, gl) == f"{room} Lockup Shown",
+              f'layer "{room} Lockup" starts Shown, and reads community only while scene == {n}: hides when it is true, shows when it is false, at once')
+
     # the opener's toy ball is keyed only by its own loop
     for name, a in A.items():
         if name != "Shelf Loop":

@@ -23,21 +23,34 @@ all animation timing, is inside the Rive file and `yig-text-motion.css`.
 
 | `scene` | Shows |
 |---|---|
-| 0 | Shelf Draw |
-| 1 | Wordle Draw |
-| 2 | Connections Draw |
+| 0 | the chapter opener |
+| 1 | Wordle |
+| 2 | Connections |
 | 3 to 7 | Strands, Spelling Bee, The Mini, The Midi, The Crossword (not built yet) |
 
 A game has several cards, one frame each. A tap inside a game keeps the same `scene` (the text changes, Rive keeps
 looping); the tap after the game's last card sets the next game's `scene`. A game appears in one run of cards;
 Back returns through them in reverse.
 
+## Cards that depend on the stats
+
+You decide both of these from the player's stats; the Rive file and the integration code handle the rest.
+
+- **Community card.** A player who solved fewer than 10 of a game's puzzles gets one community card for that game
+  instead of their own cards. Mark that frame `community: true` (for example `{ scene: "wordle", community: true }`).
+  The integration file sets the view model boolean `community` before `scene` on the tap that enters the game, and
+  the game's Rive lockup (icon plus word) is then left out. The pan, the room and the 3.2 s intro are unchanged,
+  and the HTML icon pops in with the card, as on a game's first card.
+- **Wordle starting words.** The "top starting words" card takes a list of 1 to 3 words, one line each (`.yig-mask`
+  per word), with the label "starting word was" for one word and "starting words were" for more. Leave the card
+  out of the frames when no word was used more than once.
+
 ## Files
 
 | File | What it is |
 |---|---|
-| `chapter-2.riv` | the Rive file (62,957 bytes): artboard `"Chapter 2"` 1495 × 1067, state machine `"Chapter 2"`, view model `"Chapter 2"` with the numbers `scene` and `direction` |
+| `chapter-2.riv` | the Rive file (63,523 bytes): artboard `"Chapter 2"` 1495 × 1067, state machine `"Chapter 2"`, view model `"Chapter 2"` with the numbers `scene` and `direction` and the boolean `community` |
 | `chapter-2-integration.js` | the integration code: load, Next and Back (`scene`, `direction`), reveal copy |
 | `yig-text-motion.css` | text motion v3: Rise in 720 ms, Lift out 240 ms (clear in 340 ms), Pop 560 ms, reversed on Back; waits 3.2 s for a new game |
 
-Built from `chapters/ch2` (source last changed in git 6914320).
+Built from `chapters/ch2` (source last changed in git 033f1c3).

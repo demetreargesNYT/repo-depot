@@ -7,6 +7,7 @@
      no intro keys the shelf ball
   3. the opener clears the artboard: with the first game started, the shelf room draws nothing from 1.7 s on
      (two renders; the other rooms are covered by tap_test.py, which needs a pair of games)
+  4. community hides the lockup: Wordle with community on equals Wordle with its lockup removed (three renders)
 
 It does not re-render, pixel-diff or time anything else. Full passes (tap_test.py, back_test.py, harness/text-test.mjs,
 frame-by-frame renders) are for a handoff to engineering, or when asked.
@@ -49,6 +50,33 @@ def build_checks(project):
     return out
 
 
+def community_hides_lockup(project):
+    """Wordle with community on, at 2.6 s (its lockup is fully shown then): it must look exactly like Wordle with its
+    lockup removed, and differ from Wordle with community off, so the flag hides the lockup and nothing else."""
+    tmp = Path(tempfile.mkdtemp())
+    try:
+        shots = {}
+        for name, data, hide in (("on", ["--data=community=true"], False), ("off", [], False), ("bare", [], True)):
+            dst = tmp / name
+            shutil.copytree(project, dst, ignore=shutil.ignore_patterns("build"))
+            if hide:
+                tree = ET.parse(dst / "scene.rml")
+                for n in tree.getroot().iter("Node"):
+                    if n.get("name") == "Wordle Lockup":
+                        n.set("hidden", "true")
+                tree.write(dst / "scene.rml", encoding="utf-8")
+            out = tmp / f"{name}.png"
+            subprocess.run([RIVE, str(dst), "--data=scene=1", *data, f"--screenshot={out}", "--advance=2.6s"], capture_output=True)
+            if not out.exists():
+                return False, "the community check could not render the scene (the build failed)"
+            shots[name] = Image.open(out).convert("RGB")
+        lit = lambda a, b: ImageChops.difference(a, b).convert("L").point(lambda v: 255 if v > 12 else 0).histogram()[255]
+        left, lockup = lit(shots["on"], shots["bare"]), lit(shots["off"], shots["bare"])
+        return left == 0 and lockup > 0, f"community hides the Wordle lockup and nothing else at 2.6 s: {left} px differ from the scene without its lockup (want 0); the lockup itself is {lockup} px"
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
 def opener_clears(project):
     """Scene 1 from the start: the opener leaves. At 1.58 s, the outro's last frame (the Gone pose takes over at
     1.6 s and would hide a broken outro), it must draw nothing."""
@@ -80,7 +108,7 @@ def main(argv):
     chapter = argv[0] if argv else "ch2"
     t0 = time.time()
     project = chapter_dir(chapter)
-    results = build_checks(project) + check_chapter.run(chapter) + [opener_clears(project)]
+    results = build_checks(project) + check_chapter.run(chapter) + [opener_clears(project), community_hides_lockup(project)]
     failed = [t for ok, t in results if not ok]
     for ok, t in results:
         if not ok:
