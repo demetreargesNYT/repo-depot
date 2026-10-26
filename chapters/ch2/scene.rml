@@ -868,38 +868,6 @@
                         </Node>
                     </Node>
                 </Node>
-                <Node x="1600" name="Connections Backdrop" id="1:2681">
-                    <Shape name="Floor Line" id="1:2682">
-                        <PointsPath id="1:2683">
-                            <StraightVertex x="0" y="712" id="1:2684"/>
-                            <StraightVertex x="1600" y="712" id="1:2685"/>
-                        </PointsPath>
-                        <Stroke thickness="2" id="1:2686">
-                            <SolidColor colorValue="FF1F1F1F" id="1:2687"/>
-                        </Stroke>
-                    </Shape>
-                    <Shape name="Wall Corner" id="1:2688">
-                        <PointsPath id="1:2689">
-                            <StraightVertex x="-1" y="-200" id="1:2690"/>
-                            <StraightVertex x="-1" y="712" id="1:2691"/>
-                        </PointsPath>
-                        <Stroke thickness="2" id="1:2692">
-                            <SolidColor colorValue="FF1F1F1F" id="1:2693"/>
-                        </Stroke>
-                    </Shape>
-                    <Shape x="0" y="712" name="Floor" id="1:2694">
-                        <Rectangle width="1600" height="600" originX="0" originY="0" id="1:2695"/>
-                        <Fill id="1:2696">
-                            <SolidColor colorValue="FFFEA0C9" id="1:2697"/>
-                        </Fill>
-                    </Shape>
-                    <Shape x="0" y="-200" name="Wall" id="1:2698">
-                        <Rectangle width="1600" height="912" originX="0" originY="0" id="1:2699"/>
-                        <Fill id="1:2700">
-                            <SolidColor colorValue="FFE1DBF5" id="1:2701"/>
-                        </Fill>
-                    </Shape>
-                </Node>
             </Node>
             <Node name="Wordle Room" id="1:831">
                 <DrawRules drawTargetId="1:2821" name="Wordle Draw Rules" id="1:2820">
@@ -1615,38 +1583,6 @@
                 </Node>
                 <Node name="Wordle Wall Lag" id="1:2657">
                     <Node name="Wordle Wall Plane" id="1:2658"/>
-                </Node>
-                <Node x="1600" name="Wordle Backdrop" id="1:2659">
-                    <Shape name="Floor Line" id="1:2660">
-                        <PointsPath id="1:2661">
-                            <StraightVertex x="0" y="712" id="1:2662"/>
-                            <StraightVertex x="1600" y="712" id="1:2663"/>
-                        </PointsPath>
-                        <Stroke thickness="2" id="1:2664">
-                            <SolidColor colorValue="FF1F1F1F" id="1:2665"/>
-                        </Stroke>
-                    </Shape>
-                    <Shape name="Wall Corner" id="1:2666">
-                        <PointsPath id="1:2667">
-                            <StraightVertex x="-1" y="-200" id="1:2668"/>
-                            <StraightVertex x="-1" y="712" id="1:2669"/>
-                        </PointsPath>
-                        <Stroke thickness="2" id="1:2670">
-                            <SolidColor colorValue="FF1F1F1F" id="1:2671"/>
-                        </Stroke>
-                    </Shape>
-                    <Shape x="0" y="712" name="Floor" id="1:2672">
-                        <Rectangle width="1600" height="600" originX="0" originY="0" id="1:2673"/>
-                        <Fill id="1:2674">
-                            <SolidColor colorValue="FFFEA0C9" id="1:2675"/>
-                        </Fill>
-                    </Shape>
-                    <Shape x="0" y="-200" name="Wall" id="1:2676">
-                        <Rectangle width="1600" height="912" originX="0" originY="0" id="1:2677"/>
-                        <Fill id="1:2678">
-                            <SolidColor colorValue="FFC3E2C0" id="1:2679"/>
-                        </Fill>
-                    </Shape>
                 </Node>
             </Node>
             <Node name="Shelf Room" id="1:1092">
@@ -3511,38 +3447,6 @@
                         </Node>
                     </Node>
                 </Node>
-                <Node name="Shelf Backdrop" id="1:2636">
-                    <Shape name="Floor Line" id="1:2637">
-                        <PointsPath id="1:2638">
-                            <StraightVertex x="0" y="712" id="1:2639"/>
-                            <StraightVertex x="1600" y="712" id="1:2640"/>
-                        </PointsPath>
-                        <Stroke thickness="2" id="1:2641">
-                            <SolidColor colorValue="FF1F1F1F" id="1:2642"/>
-                        </Stroke>
-                    </Shape>
-                    <Shape name="Wall Corner" id="1:2643">
-                        <PointsPath id="1:2644">
-                            <StraightVertex x="-1" y="-200" id="1:2645"/>
-                            <StraightVertex x="-1" y="712" id="1:2646"/>
-                        </PointsPath>
-                        <Stroke thickness="2" id="1:2647">
-                            <SolidColor colorValue="FF1F1F1F" id="1:2648"/>
-                        </Stroke>
-                    </Shape>
-                    <Shape x="0" y="712" name="Floor" id="1:2649">
-                        <Rectangle width="1600" height="600" originX="0" originY="0" id="1:2650"/>
-                        <Fill id="1:2651">
-                            <SolidColor colorValue="FFFEA0C9" id="1:2652"/>
-                        </Fill>
-                    </Shape>
-                    <Shape x="0" y="-200" name="Wall" id="1:2653">
-                        <Rectangle width="1600" height="912" originX="0" originY="0" id="1:2654"/>
-                        <Fill id="1:2655">
-                            <SolidColor colorValue="FFE7F1E1" id="1:2656"/>
-                        </Fill>
-                    </Shape>
-                </Node>
             </Node>
             <Node x="747.5" y="533.5" name="Background" id="1:2285">
                 <Shape y="178.5" name="Floor-Line" id="1:2286">
@@ -3741,6 +3645,50 @@
                     <StateTransition stateToId="1:2797" duration="0" enableExitTime="true" exitTimeIsPercetange="true" exitTime="100" id="1:2810"/>
                 </AnimationState>
                 <AnimationState animationId="1:2712" x="880" y="0" id="1:2797"/>
+            </StateMachineLayer>
+            <StateMachineLayer name="Backdrop" id="1:2854">
+                <AnyState x="160" y="200" id="1:2832">
+                    <StateTransition stateToId="1:2829" duration="1450" interpolationType="cubic" enableEarlyExit="true" id="1:2835">
+                        <CubicEaseInterpolator x1="0.45" y1="0" x2="0.55" y2="1"/>
+                        <TransitionViewModelCondition opValue="equal" id="1:2836">
+                            <TransitionPropertyViewModelComparator id="1:2837">
+                                <BindablePropertyNumber id="1:2838">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="636" id="1:2839"/>
+                                </BindablePropertyNumber>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueNumberComparator value="0" id="1:2840"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
+                    <StateTransition stateToId="1:2830" duration="1450" interpolationType="cubic" enableEarlyExit="true" id="1:2841">
+                        <CubicEaseInterpolator x1="0.45" y1="0" x2="0.55" y2="1"/>
+                        <TransitionViewModelCondition opValue="equal" id="1:2842">
+                            <TransitionPropertyViewModelComparator id="1:2843">
+                                <BindablePropertyNumber id="1:2844">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="636" id="1:2845"/>
+                                </BindablePropertyNumber>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueNumberComparator value="1" id="1:2846"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
+                    <StateTransition stateToId="1:2831" duration="1450" interpolationType="cubic" enableEarlyExit="true" id="1:2847">
+                        <CubicEaseInterpolator x1="0.45" y1="0" x2="0.55" y2="1"/>
+                        <TransitionViewModelCondition opValue="equal" id="1:2848">
+                            <TransitionPropertyViewModelComparator id="1:2849">
+                                <BindablePropertyNumber id="1:2850">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="636" id="1:2851"/>
+                                </BindablePropertyNumber>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueNumberComparator value="2" id="1:2852"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
+                </AnyState>
+                <ExitState x="720" y="200" id="1:2833"/>
+                <EntryState x="0" y="0" id="1:2834">
+                    <StateTransition stateToId="1:2829" id="1:2853"/>
+                </EntryState>
+                <AnimationState animationId="1:2826" x="160" y="0" id="1:2829"/>
+                <AnimationState animationId="1:2827" x="400" y="0" id="1:2830"/>
+                <AnimationState animationId="1:2828" x="640" y="0" id="1:2831"/>
             </StateMachineLayer>
         </StateMachine>
         <LinearAnimation duration="108" loopValue="loop" name="Shelf Loop" id="1:6">
@@ -4129,14 +4077,6 @@
                         <CubicEaseInterpolator x1="0.16" y1="1" x2="0.30000001" id="0:2893"/>
                     </KeyFrameDouble>
                     <KeyFrameDouble value="44.353149" frame="153" id="0:2894"/>
-                </KeyedProperty>
-            </KeyedObject>
-            <KeyedObject objectId="1:2659" id="0:3455">
-                <KeyedProperty property="x" id="0:3456">
-                    <KeyFrameDouble value="1600" frame="3" interpolationType="cubic" id="0:3457">
-                        <CubicEaseInterpolator x1="0.65" y1="0" x2="0.35" y2="1" id="0:3458"/>
-                    </KeyFrameDouble>
-                    <KeyFrameDouble value="0" frame="93" id="0:3459"/>
                 </KeyedProperty>
             </KeyedObject>
         </LinearAnimation>
@@ -4808,14 +4748,6 @@
                     <KeyFrameDouble value="51.75" frame="123" id="0:3341"/>
                 </KeyedProperty>
             </KeyedObject>
-            <KeyedObject objectId="1:2681" id="0:3460">
-                <KeyedProperty property="x" id="0:3461">
-                    <KeyFrameDouble value="1600" frame="3" interpolationType="cubic" id="0:3462">
-                        <CubicEaseInterpolator x1="0.65" y1="0" x2="0.35" y2="1" id="0:3463"/>
-                    </KeyFrameDouble>
-                    <KeyFrameDouble value="0" frame="93" id="0:3464"/>
-                </KeyedProperty>
-            </KeyedObject>
         </LinearAnimation>
         <LinearAnimation duration="372" loopValue="loop" name="Connections Loop" id="1:2624">
             <KeyedObject objectId="1:559" id="0:3357">
@@ -5101,11 +5033,6 @@
                     <KeyFrameDouble value="54.353149" frame="0" id="0:3552"/>
                 </KeyedProperty>
             </KeyedObject>
-            <KeyedObject objectId="1:2659" id="0:3553">
-                <KeyedProperty property="x" id="0:3554">
-                    <KeyFrameDouble value="1600" frame="0" id="0:3555"/>
-                </KeyedProperty>
-            </KeyedObject>
         </LinearAnimation>
         <LinearAnimation fps="60" duration="1" name="Connections Waiting" id="1:2703">
             <KeyedObject objectId="1:559" id="0:3556">
@@ -5299,11 +5226,6 @@
                     <KeyFrameDouble value="-748.25" frame="0" id="0:3677"/>
                 </KeyedProperty>
             </KeyedObject>
-            <KeyedObject objectId="1:2681" id="0:3678">
-                <KeyedProperty property="x" id="0:3679">
-                    <KeyFrameDouble value="1600" frame="0" id="0:3680"/>
-                </KeyedProperty>
-            </KeyedObject>
         </LinearAnimation>
         <LinearAnimation loopValue="oneShot" fps="60" duration="96" name="Shelf Outro" id="1:2704">
             <KeyedObject objectId="1:1092" id="0:3681">
@@ -5471,6 +5393,42 @@
             <KeyedObject objectId="1:2817" id="0:3770">
                 <KeyedProperty property="drawTargetId" id="0:3771">
                     <KeyFrameId value="1:2819" frame="0" id="0:3772"/>
+                </KeyedProperty>
+            </KeyedObject>
+        </LinearAnimation>
+        <LinearAnimation fps="60" duration="1" name="Shelf Colors" id="1:2826">
+            <KeyedObject objectId="1:2304">
+                <KeyedProperty property="colorValue">
+                    <KeyFrameColor value="FFE7F1E1" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:2297">
+                <KeyedProperty property="colorValue">
+                    <KeyFrameColor value="FFFEA0C9" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+        </LinearAnimation>
+        <LinearAnimation fps="60" duration="1" name="Wordle Colors" id="1:2827">
+            <KeyedObject objectId="1:2304">
+                <KeyedProperty property="colorValue">
+                    <KeyFrameColor value="FFC3E2C0" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:2297">
+                <KeyedProperty property="colorValue">
+                    <KeyFrameColor value="FFFEA0C9" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+        </LinearAnimation>
+        <LinearAnimation fps="60" duration="1" name="Connections Colors" id="1:2828">
+            <KeyedObject objectId="1:2304">
+                <KeyedProperty property="colorValue">
+                    <KeyFrameColor value="FFE1DBF5" frame="0"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:2297">
+                <KeyedProperty property="colorValue">
+                    <KeyFrameColor value="FFFEA0C9" frame="0"/>
                 </KeyedProperty>
             </KeyedObject>
         </LinearAnimation>

@@ -85,17 +85,22 @@ class Scene:
                     if it in ("hold", "linear"):
                         es.append(it)
                         continue
-                    c = k.find("CubicEaseInterpolator")
-                    key = tuple(round(float(c.get(a, d)), 2) for a, d in (("x1", .42), ("y1", 0), ("x2", .58), ("y2", 1)))
-                    es.append(EASES.get(key, f"cubic{key}"))
+                    es.append(self.eases_of(k.find("CubicEaseInterpolator")))
                 out[(self.label(ko.get("objectId")), kp.get("property"))] = es
         return out
+
+    def eases_of(self, c):
+        """The spec's name for a CubicEaseInterpolator (on a key or a state transition)."""
+        key = tuple(round(float(c.get(a, d)), 2) for a, d in (("x1", .42), ("y1", 0), ("x2", .58), ("y2", 1)))
+        return EASES.get(key, f"cubic{key}")
 
     def scene_numbers(self):
         """{state machine layer name: scene value its Intro/Home->Shown transition waits for}, read from the conditions."""
         out = {}
         props = {p.get("id"): p.get("name") for p in self.view_model if p.tag.startswith("ViewModelProperty")}
         for layer in self.artboard.find("StateMachine").findall("StateMachineLayer"):
+            if layer.get("name") == "Backdrop":       # waits for every room's value, not one; it has no room of its own
+                continue
             for tr in layer.iter("StateTransition"):
                 for c in tr.findall("TransitionViewModelCondition"):
                     ctx = c.find(".//DataBindContext").get("sourcePathIds").split("-")[-1]
