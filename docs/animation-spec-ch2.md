@@ -36,7 +36,7 @@ One number drives the whole file. Engineering sets it; nothing else is exposed.
 
 - The view model is named "Chapter 2" with one number property, `scene`, default 0. The state machine is "Chapter 2", the artboard's default, so it plays on load.
 - Setting the same value again does nothing, so it is always safe to set.
-- A game appears in one unbroken run of cards in a chapter, so a room never comes back once it has left. Going back to a scene that already left is not supported.
+- A game appears in one unbroken run of cards in a chapter. A room that has left comes back on Back (from the right side, mirroring how it left) or on the Next that follows a Back, always already built.
 - Setting a value no room waits for (3 to 7 today) makes the current room leave and nothing arrive: the Background shows, empty, in the opener's colours (checked at scene 3 and 7, 3.5 s in).
 
 ## Structure
@@ -44,6 +44,7 @@ One number drives the whole file. Engineering sets it; nothing else is exposed.
 `Chapter 2 Rive Import` holds the rooms, in draw order from top to bottom:
 
 ```text
+Top Marker            an invisible 1 × 1 shape off the artboard; every room's Top draw target sits here
 Lockups               an empty group left from the import; nothing is in it any more
 Connections Room      (scene 2)
 Wordle Room           (scene 1)
@@ -55,7 +56,7 @@ Every room has the same structure, and every room sits at x 0:
 
 ```text
 <Room>                                  the whole room; Outro moves it left
-  <Room> Draw Rules                     two targets: <Room> Normal, <Room> Bottom
+  <Room> Draw Rules                     two targets: <Room> Top, <Room> Bottom
   <Room> Lockup                         (Wordle and Connections) icon + word, drawn on top of the room's art
   <Room> Ball                           (Wordle and Connections) the incoming ball, a sibling of the floor plane
   <Room> Floor Plane                    the room's pieces; the pan moves it 1600
@@ -101,28 +102,32 @@ Floor colour colorValue: 0 #FEA0C9
 ```
 <!-- /keys -->
 
+**A tap mid-fade jumps the colour slightly.** Rive's blend restarts from a mix of the two states, not exactly the colour on screen, so a second tap during a fade moves the wall about 6 units (of 255) toward the earlier room's colour in one frame, then fades on. That's accepted: on these pale walls it isn't visible. Without early exit the jump was 43 units, because the tap waited for the old fade to finish.
+
 All Chapter 2 floors are #FEA0C9, so the floor never visibly changes. A chapter with different floors only needs a different floor colour in its Colors timelines; it fades the same way. The Background's own wall colour is the opener's, so nothing flashes on load, and no other timeline keys the Background.
 
 ### Wall Lag wrappers
 
-Each room's wall plane sits inside a `<Room> Wall Lag` group at x 0. The intro moves the wall plane itself (pulling it in 1280); the outro moves the Wall Lag (pushing it +320), so the wall plane nets −1280 when the room leaves. Because the two never key the same object they never fight. Wordle has no wall art, so its Wall Plane is empty and its lag holds at 0; it exists so every room has the same structure.
+Each room's wall plane sits inside a `<Room> Wall Lag` group at x 0. The intro moves the wall plane itself (pulling it in 1280); the outro moves the Wall Lag (pushing it +320), so the wall plane nets −1280 when the room leaves. Because the two never key the same object they never fight. Back mirrors this: Back Out pushes the lag −320 as the room leaves right, and Return and Forward In bring it back to 0. Wordle has no wall art, so its Wall Plane is empty and its lag holds at 0; it exists so every room has the same structure.
 
 ### Draw rules
 
-A leaving room must draw below the arriving room, whichever game order is played, without reordering rooms. Each room has a `DrawRules` named "<Room> Draw Rules" with two targets:
+A leaving room must draw below the arriving room, whichever game order is played and in either direction, without reordering rooms. Each room has a `DrawRules` named "<Room> Draw Rules" with two targets:
 
-- **<Room> Normal**: just above the top-most shape of the room under it in the tree (Shelf, the lowest room, uses the Background's floor line). The rule starts here.
+- **<Room> Top**: at the `Top Marker`, an invisible 1 × 1 shape that is the first drawable in the tree, so the room draws above every other room whatever they do.
 - **<Room> Bottom**: just above the Background's floor line, under every other room.
 
-`<Room> Outro` and `<Room> Gone` key the rule to Bottom; `<Room> Home` keys it back to Normal. A draw target has to name a Shape, not a group, so each target is the top-most shape of its room.
+A draw target has to name a Shape, not a group. The rule is held by its own layer, `<Room> Draw` (see State machine), with two one-frame poses: `<Room> On Top` and `<Room> Below`. No other timeline keys a draw rule, so the moves can't fight over it.
 
 ## Poses
 
 Each room's timelines are listed under its own heading below. These one-frame timelines set a pose; the state machine plays them in the layer states.
 
 - **Waiting** (Wordle, Connections): the room's design pose, everything its intro animates away from, off stage to the right. **A Waiting pose is, by rule, its intro's first keys**, one for one; `npm run check` verifies it for every room. If an intro changes, rebuild its Waiting pose from the intro, never by hand. Because it has no listing of its own, the intro's first key of each property is the Waiting value: floor plane x +1600, pairs and tiles tilted and raised, shadows at scale 0, the incoming ball at x −80, y 712 spun −1080°, the lockup at opacity 0, y 381, scale 0.96.
-- **Home**: `<Room> x 0`, `<Room> Wall Lag x 0`, and the draw rule on Normal.
-- **Gone**: `<Room> x −1600`, `<Room> Wall Lag x` at its outro end value (320, or 0 for Wordle), and the draw rule on Bottom. Nothing of the room is on the artboard.
+- **Home**: `<Room> x 0`, `<Room> Wall Lag x 0`.
+- **Gone**: `<Room> x −1600`, `<Room> Wall Lag x` at its outro end value (320, or 0 for Wordle): off the artboard to the left.
+- **Right**: `<Room> x +1600`, the lag at the mirror value (−320, or 0): off the artboard to the right, where Back leaves a room.
+- **On Top** and **Below**: the room's draw rule on its Top or Bottom target.
 
 ## Timelines
 
@@ -140,14 +145,13 @@ Shelf Ball Spin rotation: 0 0° · 0.45 16° (sine.inOut) · 1.35 -16° (sine.in
 ```
 <!-- /keys -->
 
-The outro moves the whole room left with the camera, its wall plane lagging, and keys only the room, its Wall Lag and its draw rule, so the room's loop keeps playing as it leaves.
+The outro moves the whole room left with the camera, its wall plane lagging, and keys only the room and its Wall Lag, so the room's loop keeps playing as it leaves. The Back moves mirror it on the same pan (0.05 → 1.55 s, power2.inOut): **Back Out** sends the room right (0 → +1600), **Return** brings a room back from the left (−1600 → 0), **Forward In** brings it back from the right (+1600 → 0). A room that comes back is still in its Loop, so it arrives already built, ball looping, with no intro or lockup.
 
 <!-- keys: Shelf Outro -->
 ```text
 Shelf Outro · 96 frames · 1.6 s · plays once
 Shelf Room x: 0.05 0 · 1.55 -1600 (power2.inOut)
 Shelf Wall Lag x: 0.05 0 · 1.55 320 (power2.inOut)
-Shelf Draw Rules drawTargetId: 0 Shelf Bottom
 ```
 <!-- /keys -->
 
@@ -156,7 +160,6 @@ Shelf Draw Rules drawTargetId: 0 Shelf Bottom
 Shelf Home · 1 frame · plays once
 Shelf Room x: 0 0
 Shelf Wall Lag x: 0 0
-Shelf Draw Rules drawTargetId: 0 Shelf Normal
 ```
 <!-- /keys -->
 
@@ -165,6 +168,51 @@ Shelf Draw Rules drawTargetId: 0 Shelf Normal
 Shelf Gone · 1 frame · plays once
 Shelf Room x: 0 -1600
 Shelf Wall Lag x: 0 320
+```
+<!-- /keys -->
+
+<!-- keys: Shelf Back Out -->
+```text
+Shelf Back Out · 96 frames · 1.6 s · plays once
+Shelf Room x: 0.05 0 · 1.55 1600 (power2.inOut)
+Shelf Wall Lag x: 0.05 0 · 1.55 -320 (power2.inOut)
+```
+<!-- /keys -->
+
+<!-- keys: Shelf Right -->
+```text
+Shelf Right · 1 frame · plays once
+Shelf Room x: 0 1600
+Shelf Wall Lag x: 0 -320
+```
+<!-- /keys -->
+
+<!-- keys: Shelf Return -->
+```text
+Shelf Return · 96 frames · 1.6 s · plays once
+Shelf Room x: 0.05 -1600 · 1.55 0 (power2.inOut)
+Shelf Wall Lag x: 0.05 320 · 1.55 0 (power2.inOut)
+```
+<!-- /keys -->
+
+<!-- keys: Shelf Forward In -->
+```text
+Shelf Forward In · 96 frames · 1.6 s · plays once
+Shelf Room x: 0.05 1600 · 1.55 0 (power2.inOut)
+Shelf Wall Lag x: 0.05 -320 · 1.55 0 (power2.inOut)
+```
+<!-- /keys -->
+
+<!-- keys: Shelf On Top -->
+```text
+Shelf On Top · 1 frame · plays once
+Shelf Draw Rules drawTargetId: 0 Shelf Top
+```
+<!-- /keys -->
+
+<!-- keys: Shelf Below -->
+```text
+Shelf Below · 1 frame · plays once
 Shelf Draw Rules drawTargetId: 0 Shelf Bottom
 ```
 <!-- /keys -->
@@ -238,7 +286,6 @@ Wordle Ball Spin rotation: 0 0° · 0.6 0° (hold) · 1.7 340° (sine.inOut) · 
 Wordle Outro · 96 frames · 1.6 s · plays once
 Wordle Room x: 0.05 0 · 1.55 -1600 (power2.inOut)
 Wordle Wall Lag x: 0.05 0 · 1.55 0 (hold)
-Wordle Draw Rules drawTargetId: 0 Wordle Bottom
 ```
 <!-- /keys -->
 
@@ -247,7 +294,6 @@ Wordle Draw Rules drawTargetId: 0 Wordle Bottom
 Wordle Home · 1 frame · plays once
 Wordle Room x: 0 0
 Wordle Wall Lag x: 0 0
-Wordle Draw Rules drawTargetId: 0 Wordle Normal
 ```
 <!-- /keys -->
 
@@ -256,6 +302,51 @@ Wordle Draw Rules drawTargetId: 0 Wordle Normal
 Wordle Gone · 1 frame · plays once
 Wordle Room x: 0 -1600
 Wordle Wall Lag x: 0 0
+```
+<!-- /keys -->
+
+<!-- keys: Wordle Back Out -->
+```text
+Wordle Back Out · 96 frames · 1.6 s · plays once
+Wordle Room x: 0.05 0 · 1.55 1600 (power2.inOut)
+Wordle Wall Lag x: 0.05 0 · 1.55 0 (hold)
+```
+<!-- /keys -->
+
+<!-- keys: Wordle Right -->
+```text
+Wordle Right · 1 frame · plays once
+Wordle Room x: 0 1600
+Wordle Wall Lag x: 0 0
+```
+<!-- /keys -->
+
+<!-- keys: Wordle Return -->
+```text
+Wordle Return · 96 frames · 1.6 s · plays once
+Wordle Room x: 0.05 -1600 · 1.55 0 (power2.inOut)
+Wordle Wall Lag x: 0.05 0 · 1.55 0 (hold)
+```
+<!-- /keys -->
+
+<!-- keys: Wordle Forward In -->
+```text
+Wordle Forward In · 96 frames · 1.6 s · plays once
+Wordle Room x: 0.05 1600 · 1.55 0 (power2.inOut)
+Wordle Wall Lag x: 0.05 0 · 1.55 0 (hold)
+```
+<!-- /keys -->
+
+<!-- keys: Wordle On Top -->
+```text
+Wordle On Top · 1 frame · plays once
+Wordle Draw Rules drawTargetId: 0 Wordle Top
+```
+<!-- /keys -->
+
+<!-- keys: Wordle Below -->
+```text
+Wordle Below · 1 frame · plays once
 Wordle Draw Rules drawTargetId: 0 Wordle Bottom
 ```
 <!-- /keys -->
@@ -343,7 +434,6 @@ Left Slab Lilac scaleY: 3.783 1 · 3.833 0.95 (power2.out) · 4.1 1 (back.out) �
 Connections Outro · 96 frames · 1.6 s · plays once
 Connections Room x: 0.05 0 · 1.55 -1600 (power2.inOut)
 Connections Wall Lag x: 0.05 0 · 1.55 320 (power2.inOut)
-Connections Draw Rules drawTargetId: 0 Connections Bottom
 ```
 <!-- /keys -->
 
@@ -352,7 +442,6 @@ Connections Draw Rules drawTargetId: 0 Connections Bottom
 Connections Home · 1 frame · plays once
 Connections Room x: 0 0
 Connections Wall Lag x: 0 0
-Connections Draw Rules drawTargetId: 0 Connections Normal
 ```
 <!-- /keys -->
 
@@ -361,73 +450,157 @@ Connections Draw Rules drawTargetId: 0 Connections Normal
 Connections Gone · 1 frame · plays once
 Connections Room x: 0 -1600
 Connections Wall Lag x: 0 320
+```
+<!-- /keys -->
+
+<!-- keys: Connections Back Out -->
+```text
+Connections Back Out · 96 frames · 1.6 s · plays once
+Connections Room x: 0.05 0 · 1.55 1600 (power2.inOut)
+Connections Wall Lag x: 0.05 0 · 1.55 -320 (power2.inOut)
+```
+<!-- /keys -->
+
+<!-- keys: Connections Right -->
+```text
+Connections Right · 1 frame · plays once
+Connections Room x: 0 1600
+Connections Wall Lag x: 0 -320
+```
+<!-- /keys -->
+
+<!-- keys: Connections Return -->
+```text
+Connections Return · 96 frames · 1.6 s · plays once
+Connections Room x: 0.05 -1600 · 1.55 0 (power2.inOut)
+Connections Wall Lag x: 0.05 320 · 1.55 0 (power2.inOut)
+```
+<!-- /keys -->
+
+<!-- keys: Connections Forward In -->
+```text
+Connections Forward In · 96 frames · 1.6 s · plays once
+Connections Room x: 0.05 1600 · 1.55 0 (power2.inOut)
+Connections Wall Lag x: 0.05 -320 · 1.55 0 (power2.inOut)
+```
+<!-- /keys -->
+
+<!-- keys: Connections On Top -->
+```text
+Connections On Top · 1 frame · plays once
+Connections Draw Rules drawTargetId: 0 Connections Top
+```
+<!-- /keys -->
+
+<!-- keys: Connections Below -->
+```text
+Connections Below · 1 frame · plays once
 Connections Draw Rules drawTargetId: 0 Connections Bottom
 ```
 <!-- /keys -->
 
 ## State machine
 
-Two layers per room, so layers never key the same property. A game appears in one unbroken run of cards, so a room never comes back once it has left.
+Three layers per room, so layers never key the same property, plus the Backdrop. A second number, `direction` (1 Next, the default; −1 Back), tells a room which way to leave; our integration file sets it with every `scene`.
 
 - **`<Room>`**: Waiting → Intro when `scene` == n (no exit time, duration 0) → Loop at exit time 100% (duration 0). The Shelf layer has no intro: it starts in Shelf Loop.
-- **`<Room> Exit`**: Home → Shown when `scene` == n → Outro when `scene` != n (no exit time, duration 0) → Gone at exit time 100%. "Shown" plays the Home pose again, so the room holds at x 0 while it is the current scene. Shelf Exit starts in Shown, because the opener is on screen at load.
+- **`<Room> Exit`**, the room's position. "Shown" plays the Home pose again, so the room holds at x 0 while it is the current scene. Shelf Exit starts in Shown, because the opener is on screen at load.
+  - Home → Shown when `scene` == n. A first visit's position comes from the room's intro.
+  - Shown → Outro when `scene` != n and `direction` != −1 (Next), then Gone at the end.
+  - Shown → Back Out when `scene` != n and `direction` == −1 (Back), then Right at the end.
+  - Gone → Return, and Right → Forward In, when `scene` == n; both reach Shown at the end.
+  - Forward In → Outro on a Next, blended 1550 ms power2.inOut: a Next during a Forward In carries on left without a snap.
+  - **Every other move starts from a held pose.** Reversing a move part-way snaps the room (measured: about a quarter of the move in one frame), so it is never asked to: the integration file holds a room-changing Back during any pan, and a Next during a Back pan, until the pan ends.
+- **`<Room> Draw`**: Below → On Top when `scene` == n, On Top → Below when `scene` != n, both at once (0 ms). The current room is always on top; a leaving room drops below at the tap, in either direction.
 - **Backdrop**: one layer for the whole stage. It starts in Shelf Colors; from AnyState, `scene` == n goes to `<Room> Colors` with a 1450 ms power1.inOut blend, early exit on (see Backdrop).
 
 <!-- keys: State machine -->
 ```text
-State machine "Chapter 2" · view model "Chapter 2": scene · default state machine: Chapter 2
+State machine "Chapter 2" · view model "Chapter 2": scene, direction · default state machine: Chapter 2
 layer "Shelf": starts in Shelf Loop
 layer "Shelf Exit": starts in Shelf Home (2)
   Shelf Home -> Shelf Home (2) when scene == 0, 0 ms
-  Shelf Home (2) -> Shelf Outro when scene != 0, 0 ms
+  Shelf Home (2) -> Shelf Outro when scene != 0 and direction != -1, 0 ms
+  Shelf Home (2) -> Shelf Back Out when scene != 0 and direction == -1, 0 ms
   Shelf Outro -> Shelf Gone at the end (exit time 100%), 0 ms
+  Shelf Gone -> Shelf Return when scene == 0, 0 ms
+  Shelf Back Out -> Shelf Right at the end (exit time 100%), 0 ms
+  Shelf Right -> Shelf Forward In when scene == 0, 0 ms
+  Shelf Return -> Shelf Home (2) at the end (exit time 100%), 0 ms
+  Shelf Forward In -> Shelf Outro when scene != 0 and direction != -1, 1550 ms power2.inOut blend
+  Shelf Forward In -> Shelf Home (2) at the end (exit time 100%), 0 ms
 layer "Wordle": starts in Wordle Waiting
   Wordle Waiting -> Wordle Intro when scene == 1, 0 ms
   Wordle Intro -> Wordle Loop at the end (exit time 100%), 0 ms
 layer "Wordle Exit": starts in Wordle Home
   Wordle Home -> Wordle Home (2) when scene == 1, 0 ms
-  Wordle Home (2) -> Wordle Outro when scene != 1, 0 ms
+  Wordle Home (2) -> Wordle Outro when scene != 1 and direction != -1, 0 ms
+  Wordle Home (2) -> Wordle Back Out when scene != 1 and direction == -1, 0 ms
   Wordle Outro -> Wordle Gone at the end (exit time 100%), 0 ms
+  Wordle Gone -> Wordle Return when scene == 1, 0 ms
+  Wordle Back Out -> Wordle Right at the end (exit time 100%), 0 ms
+  Wordle Right -> Wordle Forward In when scene == 1, 0 ms
+  Wordle Return -> Wordle Home (2) at the end (exit time 100%), 0 ms
+  Wordle Forward In -> Wordle Outro when scene != 1 and direction != -1, 1550 ms power2.inOut blend
+  Wordle Forward In -> Wordle Home (2) at the end (exit time 100%), 0 ms
 layer "Connections": starts in Connections Waiting
   Connections Waiting -> Connections Intro when scene == 2, 0 ms
   Connections Intro -> Connections Loop at the end (exit time 100%), 0 ms
 layer "Connections Exit": starts in Connections Home
   Connections Home -> Connections Home (2) when scene == 2, 0 ms
-  Connections Home (2) -> Connections Outro when scene != 2, 0 ms
+  Connections Home (2) -> Connections Outro when scene != 2 and direction != -1, 0 ms
+  Connections Home (2) -> Connections Back Out when scene != 2 and direction == -1, 0 ms
   Connections Outro -> Connections Gone at the end (exit time 100%), 0 ms
+  Connections Gone -> Connections Return when scene == 2, 0 ms
+  Connections Back Out -> Connections Right at the end (exit time 100%), 0 ms
+  Connections Right -> Connections Forward In when scene == 2, 0 ms
+  Connections Return -> Connections Home (2) at the end (exit time 100%), 0 ms
+  Connections Forward In -> Connections Outro when scene != 2 and direction != -1, 1550 ms power2.inOut blend
+  Connections Forward In -> Connections Home (2) at the end (exit time 100%), 0 ms
 layer "Backdrop": starts in Shelf Colors
   any state -> Shelf Colors when scene == 0, 1450 ms power1.inOut blend, early exit
   any state -> Wordle Colors when scene == 1, 1450 ms power1.inOut blend, early exit
   any state -> Connections Colors when scene == 2, 1450 ms power1.inOut blend, early exit
+layer "Shelf Draw": starts in Shelf Below
+  Shelf Below -> Shelf On Top when scene == 0, 0 ms
+  Shelf On Top -> Shelf Below when scene != 0, 0 ms
+layer "Wordle Draw": starts in Wordle Below
+  Wordle Below -> Wordle On Top when scene == 1, 0 ms
+  Wordle On Top -> Wordle Below when scene != 1, 0 ms
+layer "Connections Draw": starts in Connections Below
+  Connections Below -> Connections On Top when scene == 2, 0 ms
+  Connections On Top -> Connections Below when scene != 2, 0 ms
 ```
 <!-- /keys -->
 
-What engineering relies on: the artboard "Chapter 2", the state machine "Chapter 2", the view model "Chapter 2" with the number `scene`, and the file loaded with autoplay and the view model bound (`autoBind`). Nothing else is needed. Each intro takes exactly 3.2 s from the moment `scene` changes, and its loop starts on the same frame.
+What engineering relies on: the artboard "Chapter 2", the state machine "Chapter 2", the view model "Chapter 2" with the numbers `scene` and `direction` (both set by our integration file), and the file loaded with autoplay and the view model bound (`autoBind`). Nothing else is needed. Each intro takes exactly 3.2 s from the moment `scene` changes, and its loop starts on the same frame.
 
 ## HTML text and icon (not in the Rive file; for reference)
 
 The page's text motion is `engineering/yig-text-motion.css`, timed to the 3.2 s intro. A game has several cards, one frame each; a tap inside a game swaps only the text, and the tap after the game's last card starts the next game. The game's small icon is its own block, one per game: it pops in with the first card (3.2 s after the tap that starts the game), stays while later cards change, and lifts out with the last card's text. The Rive lockup (icon plus word) plays during the intro and is gone at 3.2 s. A same-game tap during the intro waits until the intro ends.
 
+Back mirrors Next. Within a game it is text only: the card drops down and out and the previous card comes down from above (`yig-back`), bottom line first, on the same quick timing; the icon stays. Across a game the old card and icon leave at once and the previous game's last card and icon arrive when the move ends, 1.65 s after the tap (or when that game's interrupted intro ends, if later). A game you come back to with Next also arrives already built, so its text comes after 1.65 s, not 3.2 s. Back on the opener does nothing.
+
 ## Adding a game
 
-Built from adding Wordle and Connections. A new game, say Strands (scene 3), is a new room plus two layers. In stages, running `npm run check ch2` after each one:
+Built from adding Wordle and Connections. A new game, say Strands (scene 3), is a new room plus three layers. In stages, running `npm run check ch2` after each one:
 
 1. **Import the art** into the Rive Editor first (the CLI has no SVG import), then `rive pull chapters/ch2`. Name groups in Title Case with spaces. Give every group that rotates or squashes its pivot, with an inner "Art" group offset back (wrap it if the import flattened it).
-2. **Make the room.** A `Strands Room` at x 0, in the tree above the room below it: Floor Plane (pieces), Wall Lag wrapping a Wall Plane (even if empty), the incoming Ball (Ball > Ball Spin > Ball Art) and the Lockup as the room's first child. No wall or floor: the Background is shared. Add `Strands Draw Rules` with two targets (see Draw rules).
+2. **Make the room.** A `Strands Room` at x 0, in the tree above the room below it: Floor Plane (pieces), Wall Lag wrapping a Wall Plane (even if empty), the incoming Ball (Ball > Ball Spin > Ball Art) and the Lockup as the room's first child. No wall or floor: the Background is shared. Add `Strands Draw Rules` with a Top target at the Top Marker and a Bottom target at the Background's floor line (see Draw rules).
 3. **Colours.** Add a one-frame `Strands Colors` holding the Background's wall and floor colour, and a transition in the Backdrop layer's AnyState: `scene` == 3, 1450 ms, power1.inOut, early exit on.
 4. **Waiting, then Intro.** Build the Intro (3.2 s exactly): the floor plane (and wall plane) pan with `power2.inOut` 0.05 → 1.55, the pieces' entrance, the ball rolling in to the room's loop start pose, and the lockup (rise in after the pieces land, gone exactly at 3.2 s). **Never key anything outside the room.** Then build `Strands Waiting` from the Intro's first keys.
 5. **Loop.** It starts and ends on the Intro's last frame, so the seam is invisible.
-6. **Outro, Home, Gone.** Outro keys only the room's x, its Wall Lag x and its draw rule (Bottom): `0.05 0 → 1.55 −1600`, lag `0 → 320`. Home keys x 0, lag 0 and the draw rule Normal. Gone holds x −1600, the lag at its end value and the draw rule Bottom.
-7. **The two layers.** `Strands`: Waiting → Intro (`scene` == 3) → Loop. `Strands Exit`: Home → Shown (`scene` == 3) → Outro (`scene` != 3) → Gone.
-8. **Draw order.** Add the new room's Normal target for the room above it, and re-point the room above's Normal target at the new room's top shape.
-9. **Check.** `npm run check ch2`; then the slower passes before handoff: `npm run tap` (interrupted taps, both orders, now with the new pair), `npm run text`, and look at it in the harness.
+6. **The moves.** Outro keys only the room's x and its Wall Lag x: `0.05 0 → 1.55 −1600`, lag `0 → 320`. Home holds x 0, lag 0; Gone holds x −1600 and the lag's end value. Mirror them: Back Out (`0 → +1600`, lag `0 → −320`), Right (held there), Return (`−1600 → 0`), Forward In (`+1600 → 0`), all on the Outro's pan. Then the one-frame On Top and Below poses for its draw rule.
+7. **The three layers.** `Strands`: Waiting → Intro (`scene` == 3) → Loop. `Strands Exit`: the moves exactly as the other rooms have them (`npm run check` lists any difference). `Strands Draw`: Below ↔ On Top on `scene` == 3.
+8. **Draw order.** Nothing else to re-point: every room's Top target is the shared Top Marker.
+9. **Check.** `npm run check ch2`; then the slower passes before handoff: `npm run tap` (interrupted Next taps), `npm run back` (Next and Back at exact frames), `npm run text`, and look at it in the harness.
 10. **Add its cards** to `harness/copy.html`, and its scene number to the integration file's table.
 
 ## Ease reference
 
 | GSAP name | Rive cubic bezier | Used for |
 |---|---|---|
-| power2.inOut | 0.65, 0, 0.35, 1 | camera pan, outro |
+| power2.inOut | 0.65, 0, 0.35, 1 | camera pan, outro, the Back moves |
 | power2.in | 0.32, 0, 0.67, 0 | falls, tips, hop descents |
 | power2.out | 0.33, 1, 0.68, 1 | hop ascents, squash down, shadows |
 | power1.out | 0.5, 1, 0.89, 1 | ball rolling in |
