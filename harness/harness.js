@@ -1,6 +1,6 @@
 // Review harness: plays the chapter's real built .riv, driven by engineering's own integration file.
 // Nothing here stands in for Rive or for engineering's code: the file is imported untouched and must export
-// onTap, setScene and yig.
+// onTap, onBack, setScene and yig.
 
 const $ = (id) => document.getElementById(id);
 const rive = window.rive;
@@ -70,35 +70,48 @@ async function boot() {
 
   renderFrames();
   state.timer = setInterval(readVm, 120);
-  $("tap").disabled = frames.length < 2;
-  window.__harness = { state, tap, boot, readVm };
+  syncButtons();
+  window.__harness = { state, next, back, boot, readVm };
 }
 
 function readVm() {
   const vm = state.mod?.yig?.viewModelInstance;
   if (!vm) { $("ro-vm").textContent = "not bound yet"; return; }
-  $("ro-vm").textContent = `scene ${vm.number("scene").value}`;
+  $("ro-vm").textContent = `scene ${vm.number("scene").value} · direction ${vm.number("direction").value}`;
   syncSceneButtons(vm);
 }
 
-function tap() {
+// The frame list follows the buttons. A Back that has to wait for a pan still counts here at once, because the
+// integration file will play it when the pan ends.
+function next() {
   if (state.at >= state.frames.length - 1) return;
   state.mod.onTap();
   state.at += 1;
   renderFrames();
-  $("tap").disabled = state.at >= state.frames.length - 1;
+  syncButtons();
+}
+function back() {
+  if (state.at <= 0) return;
+  state.mod.onBack();
+  state.at -= 1;
+  renderFrames();
+  syncButtons();
+}
+function syncButtons() {
+  $("next").disabled = state.at >= state.frames.length - 1;
+  $("back").disabled = state.at <= 0;
 }
 
 function renderFrames() {
   $("framelist").innerHTML = state.frames
     .map((f, i) => `<li class="${i === state.at ? "now" : ""}"><b>${i + 1}</b>${LABEL[f.scene]}${f.card ? ` card ${f.card}` : ""}${f.card > 1 ? " · text only" : ""}</li>`)
     .join("");
-  $("framenote").textContent = "A tap inside a game swaps only the text (the scene stays, so Rive keeps looping). The tap after a game's last card starts the next game: the room changes and the new text rises 3.2 s later.";
+  $("framenote").textContent = "Next or Back inside a game swaps only the text (the scene stays, so Rive keeps looping). Across games the room changes: a first visit plays its intro and its text rises 3.2 s later; a game you come back to slides in already built and its text arrives when the pan ends. A tap that would reverse a pan waits for it to end. Keys: → Next, ← Back.";
   $("framenote").className = "note";
 }
 
 // A button per scene value. They set the file's number directly, which is a shortcut for poking one value;
-// the Tap button is the real path, because it runs engineering's own code.
+// Next and Back are the real path, because they run engineering's own code.
 function buildSceneButtons() {
   $("scenes").innerHTML = Object.entries(SCENE_NUM)
     .map(([k, n]) => `<button data-scene="${n}" title="${LABEL[k]}">${n} ${LABEL[k]}</button>`).join("");
@@ -131,7 +144,13 @@ function showError(msg) {
   $("rtlabel").textContent = "2.45.0";
   copyTemplate = await (await fetch("/copy.html")).text();
   buildSceneButtons();
-  $("tap").addEventListener("click", tap);
+  $("next").addEventListener("click", next);
+  $("back").addEventListener("click", back);
+  window.addEventListener("keydown", (e) => {
+    if (e.target.closest("select, input, textarea")) return;
+    if (e.key === "ArrowRight") { e.preventDefault(); next(); }
+    if (e.key === "ArrowLeft") { e.preventDefault(); back(); }
+  });
   $("restart").addEventListener("click", boot);
   $("order").addEventListener("change", boot);
   $("v-full").addEventListener("click", () => setView("full"));

@@ -43,7 +43,8 @@ const INSTALL = `(() => {
   window.__t0 = performance.now(); window.__log = [];
   const now = () => (performance.now() - window.__t0) / 1000;
   window.__mark = (label) => window.__log.push({ at: now(), label });
-  const moving = (el, sel) => { const n = el && el.querySelector(sel); const a = n && n.getAnimations()[0]; return a ? a.currentTime > a.effect.getComputedTiming().delay + 1 : false; };
+  // any line moving: on Next the first line moves first, on Back the last one does
+  const moving = (el, sel) => !!el && [...el.querySelectorAll(sel)].some((n) => { const a = n.getAnimations()[0]; return a ? a.currentTime > a.effect.getComputedTiming().delay + 1 : false; });
   const shown = (el) => !!el && !el.hidden;
   let last = '';
   setInterval(() => {
@@ -53,7 +54,7 @@ const INSTALL = `(() => {
     const s = {
       at: now(),
       card: card ? card.dataset.copyScene + '#' + (card.dataset.copyCard || '-') : null,
-      cardRising: moving(card, '.yig-line'),
+      cardRising: moving(card, '.yig-line, .yig-text > .yig-pop'),
       cardOut: !!card && card.classList.contains('yig-out'),
       icon: icon ? icon.dataset.iconScene : null,
       iconAnim: popA ? popA.animationName : null,
@@ -78,7 +79,7 @@ for (const order of ["wc", "cw"]) {
     await ev(`(s=>{s.value='${order}';s.dispatchEvent(new Event('change'))})(document.getElementById('order'))`);
     await sleep(2200);
     await ev(INSTALL);
-    const tap = () => ev("window.__mark('tap'); document.getElementById('tap').click()");
+    const tap = () => ev("window.__mark('tap'); document.getElementById('next').click()");
     const wait = (s) => sleep(s * 1000);
     const at = (s) => ev("window.__t0 + " + s * 1000).then(() => s);
     const first = games[0], second = games[1];
@@ -120,6 +121,85 @@ for (const order of ["wc", "cw"]) {
     check(!!iconPop && !!cardRise && cardRise.at >= iconPop.at - 0.03, `B  ${nl}: the card does not rise before the icon pops`);
   }
 }
+// Back. One run per game order:
+//   D  Back within a game (from card 2 to card 1): text only, reversed. The old card is gone or dropping at once,
+//      card 1 comes back down 0.3 s after the tap, its lines bottom first, and the icon's animation is not restarted.
+//   E  Back across a game boundary (second game card 1 to the first game's last card), from rest: the old card
+//      and icon leave at once, and the first game's icon and last card arrive when the pan ends (1.65 s).
+//   F  Back during that pan's Next: the Back waits for the pan to end, then plays; the text follows it.
+//   G  Back on the opener does nothing.
+const PAN = 1.65;
+for (const order of ["wc", "cw"]) {
+  const games = order === "wc" ? ["wordle", "connections"] : ["connections", "wordle"];
+  const cardsIn = { wordle: 4, connections: 5 };
+  const [first, second] = games;
+  await send("Page.navigate", { url: BASE });
+  await sleep(2600);
+  await ev(`(s=>{s.value='${order}';s.dispatchEvent(new Event('change'))})(document.getElementById('order'))`);
+  await sleep(2200);
+  await ev(INSTALL);
+  const press = (id) => ev(`window.__mark('${id}'); document.getElementById('${id}').click()`);
+  const wait = (s) => sleep(s * 1000);
+  const after = (log, label) => log.filter((e) => e.label === label).map((e) => e.at);
+
+  // G: Back on the opener
+  const atOpener = await ev("document.getElementById('back').disabled");
+  await ev("window.__harness.state.mod.onBack()");
+  await wait(0.4);
+  const vmScene = await ev("window.__harness.state.mod.yig.viewModelInstance.number('scene').value");
+  const openerShown = await ev("!document.querySelector('[data-copy-scene=\"opener\"]').hidden");
+  check(atOpener && vmScene === 0 && openerShown, `G  ${first} first: Back on the opener does nothing (button disabled ${atOpener}, scene ${vmScene}, opener copy shown ${openerShown})`);
+
+  // D: into the first game, on to card 2, then Back to card 1
+  await press("next"); await wait(INTRO + 0.6);
+  await press("next"); await wait(1.0);
+  await ev("window.__log.length = 0");
+  await press("back"); await wait(1.4);
+  let log = await ev("window.__log");
+  const tb = after(log, "back")[0];
+  const gone2 = log.find((e) => e.at >= tb && e.card !== first + "#2");
+  const back1 = log.find((e) => e.card === first + "#1" && e.cardRising);
+  const iconStarts = new Set(log.filter((e) => e.icon === first && e.iconStart !== null).map((e) => Math.round(e.iconStart)));
+  const order1 = await ev(`(() => { const el = document.querySelector('[data-copy-scene="${first}"][data-copy-card="1"]');
+    const ls = [...el.querySelectorAll('.yig-line')].map((l) => getComputedStyle(l).animationName + '@' + parseFloat(getComputedStyle(l).animationDelay));
+    return { back: el.classList.contains('yig-back'), lines: ls }; })()`);
+  const delays = order1.lines.map((s) => Number(s.split("@")[1]));
+  const label = `${first}: Back from card 2 to card 1`;
+  check(!!gone2 && gone2.at - tb <= 0.15, `D  ${label}: card 2 is gone or dropping within ${fmt(gone2 ? gone2.at - tb : null)}`);
+  check(!!back1 && Math.abs(back1.at - tb - QUICK) <= TOL, `D  ${label}: card 1 comes back ${fmt(back1 ? back1.at - tb : null)} after the tap (want ${QUICK} s)`);
+  check(order1.back && order1.lines.every((s) => s.startsWith("yig-descend")), `D  ${label}: card 1's lines come down from above (${order1.lines.map((s) => s.split("@")[0]).join(", ")})`);
+  check(delays.every((d, i) => i === 0 || d <= delays[i - 1]), `D  ${label}: bottom line first (delays ${delays.join(", ")} s)`);
+  check(iconStarts.size <= 1, `D  ${label}: the icon's animation was not restarted (${iconStarts.size} start(s))`);
+
+  // E: run to the second game, let it settle, then Back across the boundary from rest
+  for (let i = 2; i <= cardsIn[first]; i++) { await press("next"); await wait(0.4); }
+  await press("next"); await wait(INTRO + 0.8);
+  await ev("window.__log.length = 0");
+  await press("back"); await wait(PAN + 1.0);
+  log = await ev("window.__log");
+  const te = after(log, "back")[0];
+  const goneE = log.find((e) => e.at >= te && e.card !== second + "#1" && e.icon !== second);
+  const iconE = log.find((e) => e.icon === first && e.iconPopping);
+  const cardE = log.find((e) => e.card === first + "#" + cardsIn[first] && e.cardRising);
+  const lE = `${second} card 1 back to ${first} card ${cardsIn[first]}, from rest`;
+  check(!!goneE && goneE.at - te <= 0.15, `E  ${lE}: the old card and icon are gone or leaving within ${fmt(goneE ? goneE.at - te : null)}`);
+  check(!!iconE && Math.abs(iconE.at - te - PAN) <= TOL, `E  ${lE}: ${first}'s icon arrives ${fmt(iconE ? iconE.at - te : null)} after the tap (want ${PAN} s, the end of the pan)`);
+  check(!!cardE && Math.abs(cardE.at - te - PAN - STEP) <= TOL, `E  ${lE}: its last card arrives ${fmt(cardE ? cardE.at - te : null)} after the tap (want ${(PAN + STEP).toFixed(2)} s)`);
+
+  // F: Next back into the second game, then Back 0.5 s into that pan: it waits for the pan, then plays
+  await press("next"); await wait(0.5);
+  await ev("window.__log.length = 0");
+  await press("back"); await wait(PAN + PAN + 0.6);
+  log = await ev("window.__log");
+  const tf = after(log, "back")[0];
+  const vmF = await ev("window.__harness.state.mod.yig.viewModelInstance.number('scene').value");
+  const cardF = log.find((e) => e.card === first + "#" + cardsIn[first] && e.cardRising);
+  const wantF = (PAN - 0.5) + PAN + STEP;
+  const lF = `Back 0.5 s into the Next pan to ${second}`;
+  check(vmF === (first === "wordle" ? 1 : 2), `F  ${lF}: ends on ${first} (scene ${vmF})`);
+  check(!!cardF && Math.abs(cardF.at - tf - wantF) <= TOL + 0.05, `F  ${lF}: waits for the pan, then ${first}'s last card arrives ${fmt(cardF ? cardF.at - tf : null)} after the tap (want ${wantF.toFixed(2)} s)`);
+}
+
 proc.kill(); ws.close();
 let failed = 0;
 for (const r of results) { if (!r.ok) failed++; console.log((r.ok ? "PASS  " : "FAIL  ") + r.text); }
