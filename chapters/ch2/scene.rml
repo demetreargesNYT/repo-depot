@@ -3592,7 +3592,7 @@
                 </AnimationState>
                 <AnimationState animationId="1:2900" x="880" y="400" id="1:3009">
                     <StateTransition stateToId="1:3004" duration="1550" interpolationType="cubic" id="1:3063">
-                        <CubicEaseInterpolator x1="0.65" y1="0" x2="0.35" y2="1"/>
+                        <CubicEaseInterpolator x1="0.65" y1="0" x2="0.35" y2="1" id="0:3794"/>
                         <TransitionViewModelCondition opValue="notEqual" id="1:3053">
                             <TransitionPropertyViewModelComparator id="1:3054">
                                 <BindablePropertyNumber id="1:3055">
@@ -3727,7 +3727,7 @@
                 </AnimationState>
                 <AnimationState animationId="1:2945" x="880" y="400" id="1:3095">
                     <StateTransition stateToId="1:3090" duration="1550" interpolationType="cubic" id="1:3149">
-                        <CubicEaseInterpolator x1="0.65" y1="0" x2="0.35" y2="1"/>
+                        <CubicEaseInterpolator x1="0.65" y1="0" x2="0.35" y2="1" id="0:3795"/>
                         <TransitionViewModelCondition opValue="notEqual" id="1:3139">
                             <TransitionPropertyViewModelComparator id="1:3140">
                                 <BindablePropertyNumber id="1:3141">
@@ -3862,7 +3862,7 @@
                 </AnimationState>
                 <AnimationState animationId="1:2993" x="880" y="400" id="1:3181">
                     <StateTransition stateToId="1:3176" duration="1550" interpolationType="cubic" id="1:3235">
-                        <CubicEaseInterpolator x1="0.65" y1="0" x2="0.35" y2="1"/>
+                        <CubicEaseInterpolator x1="0.65" y1="0" x2="0.35" y2="1" id="0:3796"/>
                         <TransitionViewModelCondition opValue="notEqual" id="1:3225">
                             <TransitionPropertyViewModelComparator id="1:3226">
                                 <BindablePropertyNumber id="1:3227">
