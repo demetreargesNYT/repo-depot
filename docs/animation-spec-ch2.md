@@ -48,7 +48,7 @@ Lockups               an empty group left from the import; nothing is in it any 
 Connections Room      (scene 2)
 Wordle Room           (scene 1)
 Shelf Room            (scene 0, the opener)
-Background            the global wall #E7F1E1, floor and floor line; never animated. Every room's backdrop covers it, so it only shows when no room is on stage
+Background            the one wall, floor and floor line, under every room; only its colours change (see Backdrop)
 ```
 
 Every room has the same structure, and every room sits at x 0:
@@ -61,22 +61,47 @@ Every room has the same structure, and every room sits at x 0:
   <Room> Floor Plane                    the room's pieces; the pan moves it 1600
   <Room> Wall Lag                       a wrapper, always at x 0, so the outro can lag the wall plane
     <Room> Wall Plane                   the room's wall art; the pan moves it 1280
-  <Room> Backdrop                       the room's wall, floor, floor line and wall corner; the LAST child, so it is at the bottom
 ```
 
-(Wordle and Connections have the ball and floor plane in a different order, and Shelf has no lockup or ball. `npm run check` verifies the rules that matter: the backdrop is the last child, the lockup is inside its room, a Wall Lag wrapper exists.)
+Rooms carry art only; none has a wall or floor of its own. (Wordle and Connections have the ball and floor plane in a different order, and Shelf has no lockup or ball. `npm run check` verifies the rules that matter: the Background is the last child, no room has a backdrop, the lockup is inside its room, a Wall Lag wrapper exists.)
 
-### Backdrops
+### Backdrop
 
-Each room brings its own colours, so the colour change arrives as the next room's wall corner during the pan.
+**Colour changes by crossfade, never by a seam.** The stage has one backdrop, the `Background`: a wall from (0, −200), 1600 × 912, a floor from (0, 712), 1600 × 600, and a 2-unit #1F1F1F floor line along y 712. It never moves, and its wall and floor have no stroke, so no edge ever crosses the stage. Only its colours change.
 
-| Room | Wall |
-|---|---|
-| Shelf | #E7F1E1 |
-| Wordle | #C3E2C0 |
-| Connections | #E1DBF5 |
+| Room | Wall | Floor |
+|---|---|---|
+| Shelf | #E7F1E1 | #FEA0C9 |
+| Wordle | #C3E2C0 | #FEA0C9 |
+| Connections | #E1DBF5 | #FEA0C9 |
 
-Every backdrop is the same shape: a wall rectangle from (0, −200), 1600 × 912; a floor rectangle from (0, 712), 1600 × 600, #FEA0C9; a 2-unit #1F1F1F floor line along y 712 from x 0 to 1600; and a 2-unit #1F1F1F wall corner line **at x −1** from y −200 to 712. The corner sits at −1, not 0, so its stroke stays off the artboard edge at rest. Backdrops are 1600 wide so neighbouring rooms meet exactly at the wall corner during the pan. Wordle and Connections backdrops wait at x 1600; Shelf's is at 0.
+Each room has a one-frame timeline, `<Room> Colors`, that holds its wall and floor colour on the Background. The state machine's **Backdrop** layer plays them: from its AnyState, `scene` == n goes to that room's Colors with a **1450 ms, power1.inOut** blend. Rive mixes the old and new states over the blend, so the colour fades from whatever is on screen to the new room's, in any game order. The fade starts with the tap, alongside the pan; with power1.inOut almost nothing changes in the first 0.1 s. The blends have early exit on, so a tap mid-fade turns from the colour on screen without finishing the old fade first.
+
+<!-- keys: Shelf Colors -->
+```text
+Shelf Colors · 1 frame · plays once
+Wall colour colorValue: 0 #E7F1E1
+Floor colour colorValue: 0 #FEA0C9
+```
+<!-- /keys -->
+
+<!-- keys: Wordle Colors -->
+```text
+Wordle Colors · 1 frame · plays once
+Wall colour colorValue: 0 #C3E2C0
+Floor colour colorValue: 0 #FEA0C9
+```
+<!-- /keys -->
+
+<!-- keys: Connections Colors -->
+```text
+Connections Colors · 1 frame · plays once
+Wall colour colorValue: 0 #E1DBF5
+Floor colour colorValue: 0 #FEA0C9
+```
+<!-- /keys -->
+
+All Chapter 2 floors are #FEA0C9, so the floor never visibly changes. A chapter with different floors only needs a different floor colour in its Colors timelines; it fades the same way. The Background's own wall colour is the opener's, so nothing flashes on load, and no other timeline keys the Background.
 
 ### Wall Lag wrappers
 
@@ -95,7 +120,7 @@ A leaving room must draw below the arriving room, whichever game order is played
 
 Each room's timelines are listed under its own heading below. These one-frame timelines set a pose; the state machine plays them in the layer states.
 
-- **Waiting** (Wordle, Connections): the room's design pose, everything its intro animates away from, off stage to the right. **A Waiting pose is, by rule, its intro's first keys**, one for one; `npm run check` verifies it for every room. If an intro changes, rebuild its Waiting pose from the intro, never by hand. Because it has no listing of its own, the intro's first key of each property is the Waiting value: backdrop x 1600, floor plane x +1600, pairs and tiles tilted and raised, shadows at scale 0, the incoming ball at x −80, y 712 spun −1080°, the lockup at opacity 0, y 381, scale 0.96.
+- **Waiting** (Wordle, Connections): the room's design pose, everything its intro animates away from, off stage to the right. **A Waiting pose is, by rule, its intro's first keys**, one for one; `npm run check` verifies it for every room. If an intro changes, rebuild its Waiting pose from the intro, never by hand. Because it has no listing of its own, the intro's first key of each property is the Waiting value: floor plane x +1600, pairs and tiles tilted and raised, shadows at scale 0, the incoming ball at x −80, y 712 spun −1080°, the lockup at opacity 0, y 381, scale 0.96.
 - **Home**: `<Room> x 0`, `<Room> Wall Lag x 0`, and the draw rule on Normal.
 - **Gone**: `<Room> x −1600`, `<Room> Wall Lag x` at its outro end value (320, or 0 for Wordle), and the draw rule on Bottom. Nothing of the room is on the artboard.
 
@@ -188,7 +213,6 @@ Wordle Lockup scaleY: 1.917 0.96 · 2.483 1 (expo.out) · 2.933 1 (hold) · 3.2 
 Wordle Lockup y: 1.917 381 · 2.483 363 (expo.out) · 2.933 363 (hold) · 3.2 333 (power3.in)
 Wordle Lockup Word opacity: 1.983 0 · 2.55 1 (expo.out)
 Wordle Lockup Word y: 1.983 54.353 · 2.55 44.353 (expo.out)
-Wordle Backdrop x: 0.05 1600 · 1.55 0 (power2.inOut)
 ```
 <!-- /keys -->
 
@@ -296,7 +320,6 @@ Right Slab Lime rotation: 1.633 -8° · 2.05 0° (power2.in)
 Right Slab Lime scaleX: 2.05 1 · 2.117 1.032 (power2.out) · 2.367 1 (back.out)
 Right Slab Lime scaleY: 2.05 1 · 2.117 0.92 (power2.out) · 2.367 1 (back.out)
 Right Slab Lime y: 1.633 -748.25 · 2.05 51.75 (power2.in)
-Connections Backdrop x: 0.05 1600 · 1.55 0 (power2.inOut)
 ```
 <!-- /keys -->
 
@@ -348,6 +371,7 @@ Two layers per room, so layers never key the same property. A game appears in on
 
 - **`<Room>`**: Waiting → Intro when `scene` == n (no exit time, duration 0) → Loop at exit time 100% (duration 0). The Shelf layer has no intro: it starts in Shelf Loop.
 - **`<Room> Exit`**: Home → Shown when `scene` == n → Outro when `scene` != n (no exit time, duration 0) → Gone at exit time 100%. "Shown" plays the Home pose again, so the room holds at x 0 while it is the current scene. Shelf Exit starts in Shown, because the opener is on screen at load.
+- **Backdrop**: one layer for the whole stage. It starts in Shelf Colors; from AnyState, `scene` == n goes to `<Room> Colors` with a 1450 ms power1.inOut blend, early exit on (see Backdrop).
 
 <!-- keys: State machine -->
 ```text
@@ -371,6 +395,10 @@ layer "Connections Exit": starts in Connections Home
   Connections Home -> Connections Home (2) when scene == 2, 0 ms
   Connections Home (2) -> Connections Outro when scene != 2, 0 ms
   Connections Outro -> Connections Gone at the end (exit time 100%), 0 ms
+layer "Backdrop": starts in Shelf Colors
+  any state -> Shelf Colors when scene == 0, 1450 ms power1.inOut blend, early exit
+  any state -> Wordle Colors when scene == 1, 1450 ms power1.inOut blend, early exit
+  any state -> Connections Colors when scene == 2, 1450 ms power1.inOut blend, early exit
 ```
 <!-- /keys -->
 
@@ -385,24 +413,25 @@ The page's text motion is `engineering/yig-text-motion.css`, timed to the 3.2 s 
 Built from adding Wordle and Connections. A new game, say Strands (scene 3), is a new room plus two layers. In stages, running `npm run check ch2` after each one:
 
 1. **Import the art** into the Rive Editor first (the CLI has no SVG import), then `rive pull chapters/ch2`. Name groups in Title Case with spaces. Give every group that rotates or squashes its pivot, with an inner "Art" group offset back (wrap it if the import flattened it).
-2. **Make the room.** A `Strands Room` at x 0, in the tree above the room below it: Floor Plane (pieces), Wall Lag wrapping a Wall Plane (even if empty), the incoming Ball (Ball > Ball Spin > Ball Art), the Lockup as the room's first child, and the Backdrop as the **last** child (wall colour, floor, 2-unit floor line, 2-unit wall corner at x −1, all 1600 wide). Add `Strands Draw Rules` with two targets (see Draw rules).
-3. **Waiting, then Intro.** Build the Intro (3.2 s exactly): the backdrop 1600 → 0, the floor plane (and wall plane) pan with `power2.inOut` 0.05 → 1.55, the pieces' entrance, the ball rolling in to the room's loop start pose, and the lockup (rise in after the pieces land, gone exactly at 3.2 s). **Never key anything outside the room.** Then build `Strands Waiting` from the Intro's first keys.
-4. **Loop.** It starts and ends on the Intro's last frame, so the seam is invisible.
-5. **Outro, Home, Gone.** Outro keys only the room's x, its Wall Lag x and its draw rule (Bottom): `0.05 0 → 1.55 −1600`, lag `0 → 320`. Home keys x 0, lag 0 and the draw rule Normal. Gone holds x −1600, the lag at its end value and the draw rule Bottom.
-6. **The two layers.** `Strands`: Waiting → Intro (`scene` == 3) → Loop. `Strands Exit`: Home → Shown (`scene` == 3) → Outro (`scene` != 3) → Gone.
-7. **Draw order.** Add the new room's Normal target for the room above it, and re-point the room above's Normal target at the new room's top shape.
-8. **Check.** `npm run check ch2`; then the slower passes before handoff: `npm run tap` (interrupted taps, both orders, now with the new pair), `npm run text`, and look at it in the harness.
-9. **Add its cards** to `harness/copy.html`, and its scene number to the integration file's table.
+2. **Make the room.** A `Strands Room` at x 0, in the tree above the room below it: Floor Plane (pieces), Wall Lag wrapping a Wall Plane (even if empty), the incoming Ball (Ball > Ball Spin > Ball Art) and the Lockup as the room's first child. No wall or floor: the Background is shared. Add `Strands Draw Rules` with two targets (see Draw rules).
+3. **Colours.** Add a one-frame `Strands Colors` holding the Background's wall and floor colour, and a transition in the Backdrop layer's AnyState: `scene` == 3, 1450 ms, power1.inOut, early exit on.
+4. **Waiting, then Intro.** Build the Intro (3.2 s exactly): the floor plane (and wall plane) pan with `power2.inOut` 0.05 → 1.55, the pieces' entrance, the ball rolling in to the room's loop start pose, and the lockup (rise in after the pieces land, gone exactly at 3.2 s). **Never key anything outside the room.** Then build `Strands Waiting` from the Intro's first keys.
+5. **Loop.** It starts and ends on the Intro's last frame, so the seam is invisible.
+6. **Outro, Home, Gone.** Outro keys only the room's x, its Wall Lag x and its draw rule (Bottom): `0.05 0 → 1.55 −1600`, lag `0 → 320`. Home keys x 0, lag 0 and the draw rule Normal. Gone holds x −1600, the lag at its end value and the draw rule Bottom.
+7. **The two layers.** `Strands`: Waiting → Intro (`scene` == 3) → Loop. `Strands Exit`: Home → Shown (`scene` == 3) → Outro (`scene` != 3) → Gone.
+8. **Draw order.** Add the new room's Normal target for the room above it, and re-point the room above's Normal target at the new room's top shape.
+9. **Check.** `npm run check ch2`; then the slower passes before handoff: `npm run tap` (interrupted taps, both orders, now with the new pair), `npm run text`, and look at it in the harness.
+10. **Add its cards** to `harness/copy.html`, and its scene number to the integration file's table.
 
 ## Ease reference
 
 | GSAP name | Rive cubic bezier | Used for |
 |---|---|---|
-| power2.inOut | 0.65, 0, 0.35, 1 | camera pan, outro, backdrop |
+| power2.inOut | 0.65, 0, 0.35, 1 | camera pan, outro |
 | power2.in | 0.32, 0, 0.67, 0 | falls, tips, hop descents |
 | power2.out | 0.33, 1, 0.68, 1 | hop ascents, squash down, shadows |
 | power1.out | 0.5, 1, 0.89, 1 | ball rolling in |
-| power1.inOut | 0.45, 0, 0.55, 1 | ball spin on hops |
+| power1.inOut | 0.45, 0, 0.55, 1 | ball spin on hops, the backdrop colour crossfade |
 | sine.inOut | 0.37, 0, 0.63, 1 | loops: rocking, rolling, teetering |
 | expo.out | 0.16, 1, 0.3, 1 | lockup rising in (matches the text's Rise in) |
 | power3.in | 0.5, 0, 0.75, 0 | lockup lifting out (close to the text's Lift out) |

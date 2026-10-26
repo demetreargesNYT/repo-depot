@@ -77,7 +77,8 @@ def state_machine_lines(s):
             names[st.get("id")] = n if seen[n] == 1 else f"{n} ({seen[n]})"
         entry = layer.find("EntryState").find("StateTransition").get("stateToId")
         out.append(f'layer "{layer.get("name")}": starts in {names[entry]}')
-        for st in layer.findall("AnimationState"):
+        sources = [(st, names[st.get("id")]) for st in layer.findall("AnimationState")] + [(a, "any state") for a in layer.findall("AnyState")]
+        for st, src in sources:
             for tr in st.findall("StateTransition"):
                 conds = []
                 for c in tr.findall("TransitionViewModelCondition"):
@@ -85,7 +86,13 @@ def state_machine_lines(s):
                     op = "==" if c.get("opValue", "equal") == "equal" else "!="
                     conds.append(f'{props[ctx]} {op} {c.find("TransitionValueNumberComparator").get("value", "0")}')
                 gate = "at the end (exit time 100%)" if tr.get("enableExitTime") == "true" else "when " + " and ".join(conds)
-                out.append(f'  {names[st.get("id")]} -> {names[tr.get("stateToId")]} {gate}, {tr.get("duration", "0")} ms')
+                blend = f'{tr.get("duration", "0")} ms'
+                c = tr.find("CubicEaseInterpolator")
+                if c is not None:
+                    blend += f" {s.eases_of(c)} blend"
+                if tr.get("enableEarlyExit") == "true":
+                    blend += ", early exit"
+                out.append(f'  {src} -> {names[tr.get("stateToId")]} {gate}, {blend}')
     return out
 
 

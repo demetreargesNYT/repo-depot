@@ -22,7 +22,8 @@ Rive animation for NYT Games' Year in Games 2026 recap ("Well Played"). Design l
 - One Rive file per chapter, to keep file sizes down. The artboard is 1495 × 1067 and serves both desktop and mobile. The phone shows the centre 375 wide.
 - The transition between rooms is Roll and pan, and **the camera always moves right**:
   - The outgoing room leaves left. Its wall plane nets 1280 units of travel and its floor plane 1600.
-  - The incoming room arrives on the same pan, carrying its own backdrop (wall and floor color). The color change arrives as the next room's wall corner.
+  - The incoming room arrives on the same pan. Rooms carry art only.
+- **Color changes by crossfade, never by a seam.** One shared backdrop (wall, floor, floor line) stays put under every room, with no strokes on its edges, so no hard edge ever crosses the stage. On a scene change its wall and floor colors fade to the new room's over 1.45 s, power1.inOut, starting with the tap; a tap mid-fade turns from the color on screen.
   - Everything that leaves clears the full artboard, and everything that arrives starts outside it.
 - The red ball is the persistent device:
   - The outgoing room's ball is never keyed by a transition. It keeps its loop and leaves with its room.
@@ -38,6 +39,7 @@ Rive animation for NYT Games' Year in Games 2026 recap ("Well Played"). Design l
 - One number, `scene`. Two layers per room, so layers never key the same property:
   - `<Room>`: Waiting → Intro (scene == n) → Loop
   - `<Room> Exit`: Home → Shown (scene == n) → Outro (scene != n) → Gone
+- A `Backdrop` layer holds the colors: from AnyState, scene == n goes to `<Room> Colors` (a one-frame pose of the backdrop's wall and floor color) with a 1450 ms power1.inOut blend and early exit on. Rive mixes the two states over the blend, which is the crossfade; no other timeline keys the backdrop.
 - The outro keys only `<Room>` x and `<Room> Wall Lag` x. A game appears in one unbroken run of frames, so rooms never come back.
 - Details are in `docs/scene-restructure.md`.
 
@@ -49,8 +51,8 @@ Rive animation for NYT Games' Year in Games 2026 recap ("Well Played"). Design l
 - Never edit in the Editor and locally at the same time. Pull before local edits, verify and screenshot before pushing, and push with a `--name` label. Commit to git at every named push.
 - When changing timing, keep each intro at 3.2 s, and keep each loop's first and last frames identical.
 - After every change: run `--verify` and the automatic rule checks, as one script that takes about a second: `npm run check ch2`. It checks that Waiting poses equal their intro's first keys, every intro is exactly 3.2 s, every loop's first and last frames match (and start on the intro's last frame), and everything clears the artboard. Don't re-render, pixel-diff or time anything the change didn't touch. Full render, pixel and timing passes (`npm run tap`, `npm run text`, frame-by-frame renders against `art/chN/reference-frames/` and the reference prototype) are only for a handoff to engineering, or when asked. Motion and feel are reviewed by Demetre in the harness, so when a change affects what's on screen, say exactly what to look at.
-- Rive draws a group's first child on top, so children are drawn in reverse of the order they are written. Anything that must sit behind a room's art, such as its backdrop, is the room's last child.
-- Wall corner lines sit at x −1, not 0, so the 2-unit line stays off the artboard edge at rest.
+- Rive draws a group's first child on top, so children are drawn in reverse of the order they are written. Anything that must sit behind everything, such as the shared backdrop, is the last child.
+- A color change is a blend between two hold poses, set by the transition's duration and ease; never author the in-between, and never give a room its own backdrop. Turn on early exit, or a tap mid-fade waits for the old fade to finish and the color jumps.
 - RML omits `value="0"` on keys, so read keys with a real XML parser and treat a missing value as 0. A regular expression reads them as missing, and that once put shadows and lockups at full size in a Waiting pose.
 - Each Waiting pose must equal its intro's first keys. `npm run check` tests this for every room; after editing an intro, rebuild its Waiting pose from the intro, never by hand.
 - A leaving room draws below the arriving room through draw rules, not by reordering rooms: each room's Outro and Gone key its rule to Bottom and its Home keys it back to Normal. A draw target has to name a Shape, not a group.
