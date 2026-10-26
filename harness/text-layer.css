@@ -28,11 +28,18 @@
 .blk-stat > .yig-mask:has(.t-small) { margin-top: calc(10 * var(--u)); }
 .blk-stat > .yig-mask:has(.t-small) + .yig-mask:has(.t-small) { margin-top: 0; }
 .blk-stat > .yig-mask + .pill { margin-top: calc(24 * var(--u)); }
-.blk-stat > .yig-mask:has(.tilerows) { margin-top: calc(16 * var(--u)); }
-.blk-stat > .yig-mask:has(.tilerows) + .yig-mask:has(.t-small) { margin-top: calc(14 * var(--u)); }
+/* starting words: one line per word, 4 apart like the Figma tile stack */
+.blk-stat > .yig-word { margin-top: calc(4 * var(--u)); }
+.blk-stat > .yig-mask:not(.yig-word) + .yig-word { margin-top: calc(16 * var(--u)); }
+.blk-stat > .yig-word + .yig-mask:has(.t-small) { margin-top: calc(14 * var(--u)); }
 /* Wordle letter tiles */
 .tilerows { display: grid; gap: calc(4 * var(--u)); }
+.blk-stat > .yig-mask:has(.tilerows) { margin-top: calc(16 * var(--u)); }
+.blk-stat > .yig-mask:has(.tilerows) + .yig-mask:has(.t-small) { margin-top: calc(14 * var(--u)); }
 .tiles { display: flex; gap: calc(4 * var(--u)); justify-content: center; }
 .tile { width: calc(47 * var(--u)); height: calc(47 * var(--u)); display: grid; place-items: center; box-sizing: border-box;
   border: calc(1.5 * var(--u)) solid #1F1F1F; background: #FFFFFF; font: 700 calc(26 * var(--u)) / 1 var(--ui); }
 .tile-green { background: #6AAA64; border-color: #6AAA64; color: #FFFFFF; }
+/* community card: the popular word, larger, in the Figma frame's green tiles with dark borders */
+.tiles-big { gap: calc(4 * var(--u)); }
+.tiles-big .tile { width: calc(47 * var(--u) * 1.06); height: calc(47 * var(--u) * 1.06); font-size: calc(31 * var(--u)); border-color: #1F1F1F; }

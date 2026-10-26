@@ -36,12 +36,24 @@ async function boot() {
   $("ro-int").textContent = "chapter-2-integration.js (frame list, scene)";
 
   const [first, second] = ORDERS[$("order").value];
-  // The opener, then each game's cards in the player's order. A tap inside a game swaps only the text; the
-  // tap after a game's last card starts the next game.
+  // A stand-in for the player's stats, so every case can be tried: which games they get their own cards for, and
+  // how many starting words they repeated. Engineering decides both from the real stats.
+  const stats = {
+    community: { wordle: $("p-wordle").value === "community", connections: $("p-connections").value === "community" },
+    startingWords: ["ADIEU", "BREAD", "MOUSE"].slice(0, Number($("words").value)),
+  };
+  fillStartingWords(stats.startingWords);
+  // The opener, then each game's cards in the player's order: one community card for a game the player has solved
+  // fewer than 10 of, otherwise their own cards (the starting-words card only if a word repeated). A tap inside a
+  // game swaps only the text; the tap after a game's last card starts the next game.
   const frames = [{ scene: "opener" }];
   for (const game of [first, second]) {
-    const n = $("overlay").querySelectorAll(`[data-copy-scene="${game}"]`).length;
-    for (let card = 1; card <= n; card++) frames.push({ scene: game, card });
+    if (stats.community[game]) { frames.push({ scene: game, community: true }); continue; }
+    const cards = [...$("overlay").querySelectorAll(`[data-copy-scene="${game}"][data-copy-card]`)];
+    for (const el of cards) {
+      if (el.hasAttribute("data-starting-words") && !stats.startingWords.length) continue;
+      frames.push({ scene: game, card: Number(el.dataset.copyCard) });
+    }
   }
   state.frames = frames;
   state.at = 0;
@@ -51,8 +63,8 @@ async function boot() {
 
   // each frame's copy block is found by its scene and card, and numbered with the frame it belongs to
   frames.forEach((f, i) => {
-    const el = f.scene === "opener"
-      ? $("overlay").querySelector('[data-copy-scene="opener"]')
+    const el = f.scene === "opener" ? $("overlay").querySelector('[data-copy-scene="opener"]')
+      : f.community ? $("overlay").querySelector(`[data-copy-scene="${f.scene}"][data-copy-community]`)
       : $("overlay").querySelector(`[data-copy-scene="${f.scene}"][data-copy-card="${f.card}"]`);
     if (el) el.dataset.copyFrame = String(i);
   });
@@ -74,10 +86,25 @@ async function boot() {
   window.__harness = { state, next, back, boot, readVm };
 }
 
+// The starting-words card is built from the player's list: one line per word, and a singular label for one word.
+function fillStartingWords(words) {
+  const card = $("overlay").querySelector("[data-starting-words]");
+  if (!card) return;
+  const tpl = card.querySelector("template[data-word]");
+  for (const w of words) {
+    const line = tpl.content.firstElementChild.cloneNode(true);
+    line.querySelector(".tiles").innerHTML = [...w].map((ch) => `<span class="tile tile-green">${ch}</span>`).join("");
+    card.insertBefore(line, tpl);
+  }
+  tpl.remove();
+  const label = card.querySelector("[data-label-one]");
+  label.textContent = words.length === 1 ? label.dataset.labelOne : label.dataset.labelMany;
+}
+
 function readVm() {
   const vm = state.mod?.yig?.viewModelInstance;
   if (!vm) { $("ro-vm").textContent = "not bound yet"; return; }
-  $("ro-vm").textContent = `scene ${vm.number("scene").value} · direction ${vm.number("direction").value}`;
+  $("ro-vm").textContent = `scene ${vm.number("scene").value} · direction ${vm.number("direction").value} · community ${vm.boolean("community").value}`;
   syncSceneButtons(vm);
 }
 
@@ -104,7 +131,7 @@ function syncButtons() {
 
 function renderFrames() {
   $("framelist").innerHTML = state.frames
-    .map((f, i) => `<li class="${i === state.at ? "now" : ""}"><b>${i + 1}</b>${LABEL[f.scene]}${f.card ? ` card ${f.card}` : ""}${f.card > 1 ? " · text only" : ""}</li>`)
+    .map((f, i) => `<li class="${i === state.at ? "now" : ""}"><b>${i + 1}</b>${LABEL[f.scene]}${f.community ? " community" : f.card ? ` card ${f.card}` : ""}${f.card > 1 ? " · text only" : ""}</li>`)
     .join("");
   $("framenote").textContent = "Next or Back inside a game swaps only the text (the scene stays, so Rive keeps looping). Across games the room changes: a first visit plays its intro and its text rises 3.2 s later; a game you come back to slides in already built and its text arrives when the pan ends. A tap that would reverse a pan waits for it to end. Keys: → Next, ← Back.";
   $("framenote").className = "note";
@@ -152,7 +179,7 @@ function showError(msg) {
     if (e.key === "ArrowLeft") { e.preventDefault(); back(); }
   });
   $("restart").addEventListener("click", boot);
-  $("order").addEventListener("change", boot);
+  for (const id of ["order", "p-wordle", "p-connections", "words"]) $(id).addEventListener("change", boot);
   $("v-full").addEventListener("click", () => setView("full"));
   $("v-phone").addEventListener("click", () => setView("phone"));
   window.addEventListener("resize", () => state.mod?.yig?.resizeDrawingSurfaceToCanvas?.());

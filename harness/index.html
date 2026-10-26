@@ -76,6 +76,12 @@ button.primary { background: var(--live); border-color: var(--live); color: #fff
     <div class="group"><button id="back" disabled title="Back (←)">Back</button><button id="next" class="primary" disabled title="Next (→)">Next</button><button id="restart">Restart</button></div>
     <div class="group"><label for="order">Game order</label>
       <select id="order"><option value="wc">Wordle, then Connections</option><option value="cw">Connections, then Wordle</option></select></div>
+    <div class="group"><label for="p-wordle">Wordle</label>
+      <select id="p-wordle"><option value="own">own cards</option><option value="community">community card</option></select>
+      <label for="p-connections">Connections</label>
+      <select id="p-connections"><option value="own">own cards</option><option value="community">community card</option></select></div>
+    <div class="group"><label for="words">Starting words</label>
+      <select id="words"><option value="3">3</option><option value="2">2</option><option value="1">1</option><option value="0">none repeated</option></select></div>
     <div class="group"><span class="lbl">View</span>
       <span class="seg"><button id="v-full" aria-pressed="true">Full artboard</button><button id="v-phone" aria-pressed="false">Phone crop</button></span></div>
     <div class="group"><span class="lbl">Scene value</span><span class="seg" id="scenes"></span></div>
