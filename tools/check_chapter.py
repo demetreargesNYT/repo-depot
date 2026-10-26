@@ -38,6 +38,39 @@ def last_values(s, anim):
     return {k: ks[-1][1] for k, ks in s.keys(anim).items()}
 
 
+def state_names(s, layer):
+    """{state id: name}, numbering a timeline's second state the way the key dump does ("Home (2)")."""
+    names, seen = {}, {}
+    for st in layer.findall("AnimationState"):
+        n = s.names[st.get("animationId")]
+        seen[n] = seen.get(n, 0) + 1
+        names[st.get("id")] = n if seen[n] == 1 else f"{n} ({seen[n]})"
+    return names
+
+
+def start_of(s, layer):
+    return state_names(s, layer).get(layer.find("EntryState/StateTransition").get("stateToId"))
+
+
+def layer_moves(s, layer):
+    """[(from, to, conditions or "end", duration ms, power2.inOut blend with early-exit-free cubic)]"""
+    props = {p.get("id"): p.get("name") for p in s.view_model if p.tag.startswith("ViewModelProperty")}
+    names = state_names(s, layer)
+    out = []
+    for st in layer.findall("AnimationState"):
+        for tr in st.findall("StateTransition"):
+            conds = []
+            for c in tr.findall("TransitionViewModelCondition"):
+                prop = props[c.find(".//DataBindContext").get("sourcePathIds").split("-")[-1]]
+                op = "==" if c.get("opValue", "equal") == "equal" else "!="
+                conds.append((prop, op, int(float(c.find("TransitionValueNumberComparator").get("value", "0")))))
+            gate = "end" if tr.get("enableExitTime") == "true" and not conds else tuple(sorted(conds))
+            c = tr.find("CubicEaseInterpolator")
+            blend = tr.get("interpolationType") == "cubic" and c is not None and s.eases_of(c) == "power2.inOut"
+            out.append((names[st.get("id")], names[tr.get("stateToId")], gate, tr.get("duration", "0"), blend))
+    return out
+
+
 def run(chapter):
     results.clear()          # run() may be called more than once in a process
     s = Scene(chapter_dir(chapter) / "scene.rml")
@@ -54,6 +87,9 @@ def run(chapter):
     check(sm is not None and s.names.get(ab.get("defaultStateMachineId")) == sm.get("name"), "the state machine is the artboard's default, so it plays on load")
     props = {p.get("name"): p for p in s.view_model if p.tag == "ViewModelPropertyNumber"}
     check("scene" in props, 'the view model has a number property named "scene"')
+    check("direction" in props, 'the view model has a number property named "direction" (1 Next, -1 Back)')
+    dflt = next((v.get("propertyValue", "0") for v in s.view_model.iter("ViewModelInstanceNumber") if "direction" in props and v.get("viewModelPropertyId") == props["direction"].get("id")), None)
+    check(dflt == "1", f"direction defaults to 1 (Next), so a file loaded without our integration code behaves as before (it is {dflt})")
     numbers = s.scene_numbers()
     layers = {l.get("name") for l in sm.findall("StateMachineLayer")}
     for room in rooms:
@@ -122,21 +158,80 @@ def run(chapter):
         kids = [c.get("name") for c in s.node(f"{room} Room") if c.tag == "Node"]
         check(f"{room} Wall Lag" in kids, f"{room} Room holds a {room} Wall Lag wrapper")
 
-        # outro keys only the room and its wall lag
+        # the moves key only the room and its wall lag; the draw rule is the Draw layer's alone
         outro = A[f"{room} Outro"]
-        touched = {k for k in s.keys(outro)}
         rules = f"{room} Draw Rules"
-        check(touched == {(f"{room} Room", "x"), (f"{room} Wall Lag", "x"), (rules, "drawTargetId")},
-              f"{room} Outro keys only {room} Room x, {room} Wall Lag x and its draw rule")
+        moves = ("Outro", "Home", "Gone", "Back Out", "Right", "Return", "Forward In")
+        for pose in moves:
+            a = A.get(f"{room} {pose}")
+            check(a is not None and set(s.keys(a)) == {(f"{room} Room", "x"), (f"{room} Wall Lag", "x")},
+                  f"{room} {pose} keys only {room} Room x and {room} Wall Lag x")
+        for name, a in A.items():
+            if name not in (f"{room} On Top", f"{room} Below"):
+                check((rules, "drawTargetId") not in s.keys(a), f"{name} does not key {rules}")
 
-        # the leaving room draws below the arriving room: Outro and Gone key the Bottom target, Home keys Normal
-        want = {"Outro": f"{room} Bottom", "Gone": f"{room} Bottom", "Home": f"{room} Normal"}
-        for pose, target in want.items():
-            ks = s.keys(A[f"{room} {pose}"]).get((rules, "drawTargetId"), [])      # keys read as target names
-            check(len(ks) == 1 and ks[0][1] == target, f"{room} {pose} puts the room's draw rule on {target.split()[-1]}")
+        # the leaving room draws below the arriving room, in either direction: the "<Room> Draw" layer holds the
+        # rule on Top while scene == n and on Bottom otherwise, and Top sits above every room
+        for pose, target in (("On Top", f"{room} Top"), ("Below", f"{room} Bottom")):
+            ks = s.keys(A[f"{room} {pose}"]).get((rules, "drawTargetId"), []) if f"{room} {pose}" in A else []
+            check(len(ks) == 1 and ks[0][1] == target and s.duration(A[f"{room} {pose}"]) == 1,
+                  f"{room} {pose} is a one-frame pose putting the room's draw rule on {target.split()[-1]}")
+        tops = {t.get("name"): s.names.get(t.get("drawableId")) for t in s.node(f"{room} Room").find("DrawRules")}
+        check(tops.get(f"{room} Top") == "Top Marker", f"{room} Top is placed at the Top Marker, above every room (it is at {tops.get(f'{room} Top')})")
+        n = per_room[room]
+        dl = next((l for l in sm.findall("StateMachineLayer") if l.get("name") == f"{room} Draw"), None)
+        got = sorted(layer_moves(s, dl)) if dl is not None else []
+        want = sorted([(f"{room} Below", f"{room} On Top", ((("scene", "==", n),)), "0", False),
+                       (f"{room} On Top", f"{room} Below", ((("scene", "!=", n),)), "0", False)])
+        check(got == want and start_of(s, dl) == f"{room} Below", f'layer "{room} Draw" starts Below and goes On Top exactly while scene == {n}, at once')
+
         check(s.duration(outro) == OUTRO_FRAMES, f"{room} Outro is {OUTRO_FRAMES} frames (1.6 s)")
-        for pose in ("Home", "Gone"):
+        for pose in ("Home", "Gone", "Right"):
             check(s.duration(A[f"{room} {pose}"]) == 1, f"{room} {pose} is a one-frame pose")
+
+        # Back mirrors Next: every move is the Outro's pan (0.05 -> 1.55 s, power2.inOut), and the right-hand side
+        # mirrors the left (room x +1600 for -1600, the lag negated)
+        def track(pose, obj):
+            return s.keys(A[f"{room} {pose}"])[(f"{room} {obj}", "x")]
+        o_keys = {obj: track("Outro", obj) for obj in ("Room", "Wall Lag")}
+        L = o_keys["Wall Lag"][-1][1]
+        mirror = {"Back Out": {"Room": (0, 1600), "Wall Lag": (0, -L)}, "Return": {"Room": (-1600, 0), "Wall Lag": (L, 0)},
+                  "Forward In": {"Room": (1600, 0), "Wall Lag": (-L, 0)}}
+        for pose, objs in mirror.items():
+            a = A[f"{room} {pose}"]
+            for obj, (v0, v1) in objs.items():
+                ks = track(pose, obj)
+                frames_ok = [f for f, _ in ks] == [f for f, _ in o_keys[obj]]
+                eases_ok = s.eases(a)[(f"{room} {obj}", "x")][:1] == (["hold"] if v0 == v1 else ["power2.inOut"])
+                check(s.duration(a) == OUTRO_FRAMES and frames_ok and eases_ok and same(ks[0][1], v0) and same(ks[-1][1], v1),
+                      f"{room} {pose} moves {room} {obj} x {v0:g} -> {v1:g} on the Outro's pan ({[(f, v) for f, v in ks]})")
+        check(same(track("Right", "Room")[0][1], 1600) and same(track("Right", "Wall Lag")[0][1], -L),
+              f"{room} Right holds the room at x 1600, the lag at {-L:g}, where Back Out ends")
+
+        # the exit layer: every move starts from a held pose, except a Next during a Forward In, which blends on
+        # from the plain timeline (continuous); a Back during any pan, or a Next during a Back pan, waits in the
+        # integration file
+        el = next(l for l in sm.findall("StateMachineLayer") if l.get("name") == f"{room} Exit")
+        S, N, B = ("scene", "==", n), ("scene", "!=", n), ("direction", "==", -1)
+        F = ("direction", "!=", -1)
+        R = lambda p: f"{room} {p}"
+        want = sorted([
+            (R("Home"), R("Home (2)"), (S,), "0", False),
+            (R("Home (2)"), R("Outro"), (N, F), "0", False),
+            (R("Home (2)"), R("Back Out"), (N, B), "0", False),
+            (R("Outro"), R("Gone"), "end", "0", False),
+            (R("Gone"), R("Return"), (S,), "0", False),
+            (R("Back Out"), R("Right"), "end", "0", False),
+            (R("Right"), R("Forward In"), (S,), "0", False),
+            (R("Return"), R("Home (2)"), "end", "0", False),
+            (R("Forward In"), R("Outro"), (N, F), "1550", True),
+            (R("Forward In"), R("Home (2)"), "end", "0", False),
+        ])
+        want = sorted((a, b, g if g == "end" else tuple(sorted(g)), d, bl) for a, b, g, d, bl in want)
+        got = sorted(layer_moves(s, el))
+        check(got == want, f'layer "{room} Exit" has exactly the Next and Back moves' + ("" if got == want else f"; extra {sorted(set(got) - set(want))}, missing {sorted(set(want) - set(got))}"))
+        start = start_of(s, el)
+        check(start == (R("Home (2)") if room == "Shelf" else R("Home")), f'layer "{room} Exit" starts in {start}')
         # the outro must end exactly where the Gone pose holds the room, and that must be off the artboard (the
         # room's art reaches at most 1600 right of its origin), or the hand-over from Outro to Gone would jump
         o_end = s.keys(outro)[(f"{room} Room", "x")][-1][1]

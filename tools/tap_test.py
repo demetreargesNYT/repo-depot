@@ -70,7 +70,32 @@ def prepare(src, first, second, T, hide):
     hold.set("duration", frames)
     ab.append(hold)
     shown.set("animationId", hold.get("id"))
+    # Shown has a Next exit (to Outro) and a Back exit (to Back Out); tap 2 is a Next, so keep only the Outro one
+    outro_state = next(st.get("id") for st in layers[f"{first} Exit"].findall("AnimationState") if st.get("animationId") == anims[f"{first} Outro"].get("id"))
+    for tr in list(shown.findall("StateTransition")):
+        if tr.get("stateToId") != outro_state:
+            shown.remove(tr)
     at_exit_time(shown.find("StateTransition"))
+
+    # scene never really changes in this copy, so the first game would read as current again: once gone, it stays
+    gone = next(st for st in layers[f"{first} Exit"].findall("AnimationState") if st.get("animationId") == anims[f"{first} Gone"].get("id"))
+    for tr in list(gone.findall("StateTransition")):
+        gone.remove(tr)
+
+    # draw layers: at T the first game goes Below and the second On Top, as the scene change would make them
+    def hold_then(layer, pose):
+        st = next(s for s in layers[layer].findall("AnimationState") if s.get("animationId") == anims[pose].get("id"))
+        held = copy.deepcopy(anims[pose])
+        for e in held.iter():
+            if e.get("id"):
+                e.set("id", new_id())
+        held.set("name", pose + " Held")
+        held.set("duration", frames)
+        ab.append(held)
+        st.set("animationId", held.get("id"))
+        at_exit_time(st.find("StateTransition"))
+    hold_then(f"{first} Draw", f"{first} On Top")
+    hold_then(f"{second} Draw", f"{second} Below")
 
     # second game's layer: Waiting -> Intro fires after T seconds, not on "scene == n"
     waiting = next(st for st in layers[second].findall("AnimationState") if st.find("StateTransition") is not None)

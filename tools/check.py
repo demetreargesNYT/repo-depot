@@ -3,11 +3,12 @@
   1. rive --verify and rive inspect: the file builds and reports no problems
   2. the rule checks in check_chapter.py: Waiting poses equal their intro's first keys, every intro is exactly
      3.2 s, every loop's first and last frames match (and start on the intro's last frame), the shared
-     backdrop and its colour crossfade, outros and draw rules are as the spec says, no intro keys the shelf ball
+     backdrop and its colour crossfade, the Next and Back moves and the draw layers are as the spec says,
+     no intro keys the shelf ball
   3. the opener clears the artboard: with the first game started, the shelf room draws nothing from 1.7 s on
      (two renders; the other rooms are covered by tap_test.py, which needs a pair of games)
 
-It does not re-render, pixel-diff or time anything else. Full passes (tap_test.py, harness/text-test.mjs,
+It does not re-render, pixel-diff or time anything else. Full passes (tap_test.py, back_test.py, harness/text-test.mjs,
 frame-by-frame renders) are for a handoff to engineering, or when asked.
 """
 import json

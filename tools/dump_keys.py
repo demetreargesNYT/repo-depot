@@ -23,9 +23,10 @@ import sys
 from pathlib import Path
 from rml_read import Scene, chapter_dir, degrees
 
-ORDER = ["Shelf Loop", "Shelf Outro", "Shelf Home", "Shelf Gone",
-         "Wordle Waiting", "Wordle Intro", "Wordle Loop", "Wordle Outro", "Wordle Home", "Wordle Gone",
-         "Connections Waiting", "Connections Intro", "Connections Loop", "Connections Outro", "Connections Home", "Connections Gone"]
+MOVES = ['Outro', 'Home', 'Gone', 'Back Out', 'Right', 'Return', 'Forward In', 'On Top', 'Below']
+ORDER = (["Shelf Loop"] + [f"Shelf {m}" for m in MOVES]
+         + ["Wordle Waiting", "Wordle Intro", "Wordle Loop"] + [f"Wordle {m}" for m in MOVES]
+         + ["Connections Waiting", "Connections Intro", "Connections Loop"] + [f"Connections {m}" for m in MOVES])
 STATE_MACHINE = "State machine"
 MARKER = re.compile(r"(<!-- keys: (?P<name>.+?) -->\n```text\n)(?P<body>.*?)(\n```\n<!-- /keys -->)", re.S)
 
