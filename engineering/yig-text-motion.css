@@ -16,6 +16,8 @@
        it to yig-out makes it flash visible first. If you simply swap the copy instead, the old text cuts out
        while the scene moves, which is fine.
 
+  On Back, the integration file also adds class "yig-back": the copy moves down instead of up (see below).
+
   The game icon is its own block, one per game, outside the cards: <div class="yig-icon"><span class="yig-pop">...</span></div>.
   It pops in with the game's first card and stays while the game's later cards change; it lifts out with the last
   card's text when the next game starts.
@@ -74,15 +76,32 @@
   animation: yig-lift-block var(--yig-lift) var(--yig-ease-lift) both;
 }
 
+/* Back: the mirror of the above. The current copy drops down and out, the previous copy comes down into place
+   from above, with the same durations and eases, bottom line first, so it reads as Next played backwards. */
+.yig-back.yig-text > :nth-last-child(1) { --yig-n: 0; } .yig-back.yig-text > :nth-last-child(2) { --yig-n: 1; }
+.yig-back.yig-text > :nth-last-child(3) { --yig-n: 2; } .yig-back.yig-text > :nth-last-child(4) { --yig-n: 3; }
+.yig-back.yig-text > :nth-last-child(5) { --yig-n: 4; } .yig-back.yig-text > :nth-last-child(6) { --yig-n: 5; }
+.yig-back.yig-text > :nth-last-child(7) { --yig-n: 6; } .yig-back.yig-text > :nth-last-child(8) { --yig-n: 7; }
+.yig-back.yig-in .yig-line { animation-name: yig-descend; }
+.yig-back.yig-in:not(:has(.yig-mask, .yig-pop)) { animation-name: yig-descend-block; }
+.yig-back.yig-out .yig-line { animation-name: yig-drop; }
+.yig-back.yig-out .yig-pop, .yig-back.yig-out:not(:has(.yig-mask, .yig-pop)) { animation-name: yig-drop-block; }
+
 @keyframes yig-rise { from { transform: translateY(120%); } to { transform: none; } }
+@keyframes yig-descend { from { transform: translateY(-120%); } to { transform: none; } }
+@keyframes yig-drop { to { transform: translateY(120%); } }
+@keyframes yig-descend-block { from { transform: translateY(-0.6em); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes yig-drop-block { to { transform: translateY(0.5em); opacity: 0; } }
 @keyframes yig-lift { to { transform: translateY(-120%); } }
 @keyframes yig-pop { from { transform: scale(0.85); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes yig-rise-block { from { transform: translateY(0.6em); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes yig-lift-block { to { transform: translateY(-0.5em); opacity: 0; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .yig-in .yig-line, .yig-in .yig-pop, .yig-in:not(:has(.yig-mask, .yig-pop)) { animation-name: yig-fade-in; animation-duration: 200ms; }
-  .yig-out .yig-line, .yig-out .yig-pop, .yig-out:not(:has(.yig-mask, .yig-pop)) { animation-name: yig-fade-out; animation-duration: 200ms; }
+  .yig-in .yig-line, .yig-in .yig-pop, .yig-in:not(:has(.yig-mask, .yig-pop)),
+  .yig-back.yig-in .yig-line, .yig-back.yig-in:not(:has(.yig-mask, .yig-pop)) { animation-name: yig-fade-in; animation-duration: 200ms; }
+  .yig-out .yig-line, .yig-out .yig-pop, .yig-out:not(:has(.yig-mask, .yig-pop)),
+  .yig-back.yig-out .yig-line, .yig-back.yig-out .yig-pop, .yig-back.yig-out:not(:has(.yig-mask, .yig-pop)) { animation-name: yig-fade-out; animation-duration: 200ms; }
 }
 @keyframes yig-fade-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes yig-fade-out { to { opacity: 0; } }
