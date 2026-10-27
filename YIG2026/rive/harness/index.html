@@ -142,6 +142,9 @@ h1 { font: 700 18px/1.2 var(--display); margin: 0; margin-right: auto; }
 </div>
 
 <script type="module">
+// The integration. Its Rive instance starts loading as soon as it's imported; nothing moves until start() and a tap.
+import { start, onTap, onBack, setScene, yig } from "./chapter-2-integration.js";
+
 // ---------------------------------------------------------------------------------------------------------------
 // EXAMPLE DATA. This stands in for the Games API. None of these numbers are real.
 // To try other cases, edit EXAMPLE_PLAYER and press Restart:
@@ -150,7 +153,8 @@ h1 { font: 700 18px/1.2 var(--display); margin: 0; margin-right: auto; }
 //   - set wordle.topStartingWords to one word (singular label) or [] (the card is left out)
 //   - set wordle.hardestWordResult to "solved", "missed" or "not played"
 // ---------------------------------------------------------------------------------------------------------------
-const EXAMPLE_PLAYER = {
+// The text test (harness/text-test.mjs) swaps in other players here, through window.__yigTestPlayer.
+const EXAMPLE_PLAYER = window.__yigTestPlayer ?? {
   gameOrder: ["wordle", "connections"],
   wordle: {
     solves: 212,
@@ -186,33 +190,29 @@ const EXAMPLE_COMMUNITY = {
   },
 };
 
-// The text test (harness/text-test.mjs) swaps in other players here.
-const player = window.__yigTestPlayer ?? EXAMPLE_PLAYER;
-const community = EXAMPLE_COMMUNITY;
-
 // An example of the logic you'll write: the chapter's cards in order, from the player's stats. The opener comes
 // first, then each game in the player's order. With 10 or more solves a game gets the player's own cards, in design
 // order, leaving out a card that has no stat to show; with fewer it gets one community card.
-// Each card's scene and community are what chapter-2-integration.js reads; card and variant are only for this page's copy.
+// Each card's game and community are what chapter-2-integration.js reads; card and variant are only for this page's copy.
 // Strands, Spelling Bee, The Mini, The Midi and The Crossword aren't here yet: they'll be added as their rooms ship.
 function buildCards(p) {
-  const cards = [{ scene: "opener" }];
+  const cards = [{ game: "opener" }];
   for (const game of p.gameOrder) {
     const s = p[game];
     if (!s) continue;
-    if (s.solves < 10) { cards.push({ scene: game, community: true }); continue; }
+    if (s.solves < 10) { cards.push({ game, community: true }); continue; }
     if (game === "wordle") {
-      cards.push({ scene: game, card: "average-guesses" });
-      cards.push({ scene: game, card: "best-solves" });
-      cards.push({ scene: game, card: "hardest-word", variant: s.hardestWordResult });
-      if (s.topStartingWords.length) cards.push({ scene: game, card: "starting-words" });
+      cards.push({ game, card: "average-guesses" });
+      cards.push({ game, card: "best-solves" });
+      cards.push({ game, card: "hardest-word", variant: s.hardestWordResult });
+      if (s.topStartingWords.length) cards.push({ game, card: "starting-words" });
     }
     if (game === "connections") {
-      cards.push({ scene: game, card: "solving-order" });
-      if (s.purpleFirstCount > 0) cards.push({ scene: game, card: "purple-first" });
-      cards.push({ scene: game, card: "solve-rate" });
-      cards.push({ scene: game, card: "average-mistakes" });
-      if (s.perfectPuzzles > 0) cards.push({ scene: game, card: "perfect-puzzles" });
+      cards.push({ game, card: "solving-order" });
+      if (s.purpleFirstCount > 0) cards.push({ game, card: "purple-first" });
+      cards.push({ game, card: "solve-rate" });
+      cards.push({ game, card: "average-mistakes" });
+      if (s.perfectPuzzles > 0) cards.push({ game, card: "perfect-puzzles" });
     }
   }
   return cards;
@@ -348,32 +348,32 @@ const opener = [
 ];
 
 // Every card's copy is rendered up front, hidden. The integration file finds a card's copy by data-copy-frame (its
-// index in the cards) and a game's icon by data-icon-scene. data-copy-scene and data-copy-card are for the text test.
-const cards = buildCards(player);
-const overlay = document.getElementById("overlay");
-let html = "";
-const games = [...new Set(cards.map((c) => c.scene).filter((s) => s !== "opener"))];
-for (const game of games) {
-  html += `<div class="yig-icon blk blk-icon" data-icon-scene="${esc(game)}" hidden><span class="yig-pop t-icon">${ICON[game]}</span></div>`;
-}
-const position = {}; // 1-based position of each own card within its game
-cards.forEach((card, i) => {
-  if (card.scene === "opener") {
-    html += `<div class="yig-text blk blk-copy1" data-copy-frame="${i}" data-copy-scene="opener">${opener.join("")}</div>`;
-    return;
+// index in the cards) and a game's icon by data-icon-game. data-copy-game and data-copy-card are for the text test.
+// buildCards gives the same list for the same player, so the indexes here match the cards passed to start().
+function renderCopy(player, community) {
+  const cards = buildCards(player);
+  let html = "";
+  const games = [...new Set(cards.map((c) => c.game).filter((g) => g !== "opener"))];
+  for (const game of games) {
+    html += `<div class="yig-icon blk blk-icon" data-icon-game="${esc(game)}" hidden><span class="yig-pop t-icon">${ICON[game]}</span></div>`;
   }
-  const render = COPY[card.scene][card.community ? "community" : card.card];
-  const lines = render(player[card.scene], community[card.scene], card).join("");
-  const n = card.community ? "" : ` data-copy-card="${(position[card.scene] = (position[card.scene] ?? 0) + 1)}"`;
-  html += `<div class="yig-text blk blk-stat" data-copy-frame="${i}" data-copy-scene="${esc(card.scene)}"${n} hidden>${lines}</div>`;
-});
-overlay.insertAdjacentHTML("beforeend", html);
+  const position = {}; // 1-based position of each own card within its game
+  cards.forEach((card, i) => {
+    if (card.game === "opener") {
+      html += `<div class="yig-text blk blk-copy1" data-copy-frame="${i}" data-copy-game="opener">${opener.join("")}</div>`;
+      return;
+    }
+    const render = COPY[card.game][card.community ? "community" : card.card];
+    const lines = render(player[card.game], community[card.game], card).join("");
+    const n = card.community ? "" : ` data-copy-card="${(position[card.game] = (position[card.game] ?? 0) + 1)}"`;
+    html += `<div class="yig-text blk blk-stat" data-copy-frame="${i}" data-copy-game="${esc(card.game)}"${n} hidden>${lines}</div>`;
+  });
+  document.getElementById("overlay").insertAdjacentHTML("beforeend", html);
+}
 
-// The integration file reads the global player.chapterFrames as soon as it loads. A static import would run first
-// (imports are hoisted), so set the global, then load it with a dynamic import.
-window.player = { chapterFrames: cards };
-const integration = await import("./chapter-2-integration.js");
-const { onTap, onBack, yig } = integration;
+// The whole integration: render the copy, hand the cards to start(), then send it taps.
+renderCopy(EXAMPLE_PLAYER, EXAMPLE_COMMUNITY);
+const cards = buildCards(EXAMPLE_PLAYER); start(cards);
 
 document.getElementById("tap-next").addEventListener("click", () => onTap());
 document.getElementById("tap-back").addEventListener("click", () => onBack());
@@ -395,7 +395,7 @@ document.getElementById("v-phone").addEventListener("click", () => setSize("phon
 window.addEventListener("resize", () => yig.resizeDrawingSurfaceToCanvas());
 
 // for the console and the text test
-window.yigExample = { cards, ...integration };
+window.yigExample = { cards, start, onTap, onBack, setScene, yig };
 </script>
 </body>
 </html>

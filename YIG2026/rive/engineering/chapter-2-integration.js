@@ -1,17 +1,9 @@
-// Frames name their game; this table turns the name into the Rive file's scene number. 0 is the chapter's opening frame.
+// Cards name their game; this table turns the name into the Rive file's scene number. 0 is the chapter's opening frame.
 const SCENE = { opener: 0, wordle: 1, connections: 2, strands: 3, "spelling-bee": 4, mini: 5, midi: 6, daily: 7 };
 
 // The rooms chapter-2.riv has so far. Add a game here when its room ships in the .riv. A card for a game that isn't
 // built yet still shows its copy, but Rive stays on the room already on screen, so the page never pans to nothing.
 const BUILT = new Set(["opener", "wordle", "connections"]);
-
-// The chapter's frames in order, built from the player's stats: the opener, then each game's cards in the
-// player's order. Each frame names the scene it shows; a game with several cards has several frames in a row.
-// A player who solved fewer than 10 of a game's puzzles gets one community card for that game instead of their own
-// cards: mark that frame community: true (the game's Rive lockup is then left out; everything else is the same).
-// Names: "opener", "wordle", "connections", "strands", "spelling-bee", "mini", "midi", "daily".
-// Example: [{ scene: "opener" }, { scene: "wordle", community: true }, { scene: "connections" }, { scene: "connections" }]
-const frames = player.chapterFrames;
 
 import { Rive } from "@rive-app/canvas"; // pin the version you ship
 
@@ -38,13 +30,32 @@ function setScene(n, direction = 1, community = false) {
 const INTRO_MS = 3200; // every intro is exactly this long
 const PAN_MS = 1650;   // a room change: the rooms' moves run 1.6 s (the pan itself is 0.05 to 1.55 s), plus a few frames
                        // so a held tap never lands on the frame a move hands over to its resting pose
+let cards = [];        // set by start()
 let frame = 0;
 let room = "opener";   // the room Rive is showing; a card for a game that isn't built yet leaves it where it is
 let introEndsAt = {};  // per game: when its first-visit intro (and its lockup) finishes, in performance.now() time
 let pan = { dir: 0, endsAt: 0 }; // the room change on screen: which way the camera is moving, and when it stops
 let heldTimer = 0;     // a tap waiting for a pan to end
 
-// Next: call from the tap handler that already advances the stats.
+// Call once with the chapter's cards in order, before any tap. Build them from the player's stats: the opener, then
+// each game's cards in the player's order; a game with several cards has several in a row. Each card names its game.
+// A player who solved fewer than 10 of a game's puzzles gets one community card for that game instead of their own
+// cards: mark that card community: true (the game's Rive lockup is then left out; everything else is the same).
+// Games: "opener", "wordle", "connections", "strands", "spelling-bee", "mini", "midi", "daily". Other fields on a
+// card (your own card id, say) are ignored here. The copy for card i is the element with data-copy-frame="i".
+// Example: start([{ game: "opener" }, { game: "wordle", community: true }, { game: "connections" }, { game: "connections" }])
+// The list is copied, so change it by calling start() again; a second call starts the chapter over from the opener.
+function start(list) {
+  clearTimeout(heldTimer);
+  cards = [...list];
+  frame = 0;
+  room = "opener";
+  introEndsAt = {};
+  pan = { dir: 0, endsAt: 0 };
+  if (yig.viewModelInstance) setScene(SCENE.opener); // before Rive has loaded, onLoad does this
+}
+
+// Next: call from the tap handler that already advances the stats. Before start() it does nothing.
 function onTap() {
   move(+1);
 }
@@ -60,28 +71,28 @@ function onBack() {
 function move(step) {
   clearTimeout(heldTimer);
   const target = frame + step;
-  if (target < 0 || target > frames.length - 1) return;
-  const scene = frames[target].scene;
-  if (!(scene in SCENE)) throw new Error(`Unknown game "${scene}" in chapterFrames`);
-  const built = BUILT.has(scene);
+  if (target < 0 || target > cards.length - 1) return;
+  const game = cards[target].game;
+  if (!(game in SCENE)) throw new Error(`Unknown game "${game}" in cards`);
+  const built = BUILT.has(game);
   // Only a built game in a different room moves Rive. The text can change game without the room changing, when
   // the card is for a game that isn't built yet, or comes back from one to the room still on screen.
-  const roomChange = built && scene !== room;
-  const gameChange = scene !== frames[frame].scene;
+  const roomChange = built && game !== room;
+  const gameChange = game !== cards[frame].game;
   const now = performance.now();
   if (roomChange && pan.endsAt > now && (step < 0 || pan.dir < 0)) {
     heldTimer = setTimeout(() => move(step), pan.endsAt - now);
     return;
   }
   frame = target;
-  const firstVisit = roomChange && step > 0 && !(scene in introEndsAt) && scene !== "opener";
+  const firstVisit = roomChange && step > 0 && !(game in introEndsAt) && game !== "opener";
   if (roomChange) pan = { dir: step, endsAt: now + PAN_MS };
-  if (firstVisit) introEndsAt[scene] = now + INTRO_MS; // a first visit plays the game's intro
+  if (firstVisit) introEndsAt[game] = now + INTRO_MS; // a first visit plays the game's intro
   if (built) {
-    setScene(SCENE[scene], step, !!frames[frame].community); // the same scene again does nothing, so Rive keeps looping
-    room = scene;
+    setScene(SCENE[game], step, !!cards[frame].community); // the same scene again does nothing, so Rive keeps looping
+    room = game;
   } else {
-    console.warn(`chapter-2: "${scene}" isn't built in chapter-2.riv yet; staying on the ${room} room and changing only the copy`);
+    console.warn(`chapter-2: "${game}" isn't built in chapter-2.riv yet; staying on the ${room} room and changing only the copy`);
   }
   showCopy(frame, gameChange, roomChange, firstVisit, step);
 }
@@ -97,13 +108,13 @@ function move(step) {
 //    card arrives right after the old one leaves (yig-quick), or, if the game's intro is still running, when the
 //    intro ends, so it never overlaps the lockup. Back moves the text down instead of up (yig-back).
 function showCopy(n, gameChange, roomChange, firstVisit, step) {
-  const scene = frames[n].scene;
+  const game = cards[n].game;
   const back = step < 0;
   const visible = [...document.querySelectorAll(".yig-text:not([hidden]), .yig-icon:not([hidden])")];
   visible.filter((el) => gameChange || !el.classList.contains("yig-icon")).forEach((el) => leave(el, back));
 
   const next = document.querySelector(`[data-copy-frame="${n}"]`);
-  const icon = document.querySelector(`[data-icon-scene="${scene}"]`);
+  const icon = document.querySelector(`[data-icon-game="${game}"]`);
   const now = performance.now();
   const introLeft = Math.max(0, (introEndsAt[room] ?? 0) - now); // the intro of the room on screen, not the card's game
   if (gameChange) {
@@ -150,5 +161,5 @@ function enter(el, { quick = false, delay = null, afterIcon = false, back = fals
   el.classList.add("yig-in");
 }
 
-// Exports let the review harness drive this file as-is. A page that inlines the code can drop this line.
-export { onTap, onBack, setScene, yig };
+// start, onTap and onBack are the whole integration; setScene and yig (the Rive instance) are there for debugging.
+export { start, onTap, onBack, setScene, yig };

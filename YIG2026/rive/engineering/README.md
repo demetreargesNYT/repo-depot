@@ -13,6 +13,9 @@ Open http://localhost:8000/. Tap the right half of the stage (or →) for Next, 
 **Restart** reloads; **Desktop / Phone** switches between the full 1495 × 1067 artboard and the
 centre 375-wide phone crop. The page loads the Rive runtime from jsDelivr, so it needs the network.
 
+The NYT fonts aren't included, so the example copy shows in a fallback font. On your site, its fonts (NYT Franklin
+and NYT Karnak) apply as normal.
+
 ## Files
 
 | File | What it is |
@@ -20,19 +23,27 @@ centre 375-wide phone crop. The page loads the Rive runtime from jsDelivr, so it
 | `chapter-2.riv` | the Rive file (63,523 bytes): artboard `"Chapter 2"`, state machine `"Chapter 2"`, view model `"Chapter 2"` (numbers `scene`, `direction`; boolean `community`) |
 | `chapter-2-integration.js` | our integration code. Use it as written: it loads the file, handles Next and Back, and reveals the copy |
 | `yig-text-motion.css` | the text motion; all text timing lives here |
-| `index.html` | the example page: example player data, `buildCards`, the copy, and the tap wiring |
+| `index.html` | the example page: example player data, `buildCards`, the copy, `start(cards)` and the tap wiring |
 
 ## Cards and game names
 
-The chapter is an ordered list of cards, one per tap. Give it to the integration as `player.chapterFrames`
-(a global it reads when imported). Each card names its game:
+The chapter is an ordered list of cards, one per tap. Build it from the player's stats and pass it to the
+integration's `start(cards)` once, before any tap:
 
 ```js
-[{ scene: "opener" }, { scene: "wordle" }, { scene: "wordle" }, { scene: "connections", community: true }]
+import { start, onTap, onBack } from "./chapter-2-integration.js";
+
+const cards = buildCards(EXAMPLE_PLAYER); start(cards);
 ```
 
-- `scene` is one of `"opener"`, `"wordle"`, `"connections"`, `"strands"`, `"spelling-bee"`, `"mini"`, `"midi"`, `"daily"`.
-  The integration turns the name into the Rive number; you never set Rive values yourself.
+Each card names its game:
+
+```js
+[{ game: "opener" }, { game: "wordle" }, { game: "wordle" }, { game: "connections", community: true }]
+```
+
+- `game` is one of `"opener"`, `"wordle"`, `"connections"`, `"strands"`, `"spelling-bee"`, `"mini"`, `"midi"`, `"daily"`.
+  The integration turns the name into the Rive file's `scene` number; you never set Rive values yourself.
 - `community: true` marks a game's community card (the player solved fewer than 10 of its puzzles). Rive then
   leaves out that game's lockup; everything else plays the same.
 - Any other fields (the example uses `card` and `variant`) are yours, for choosing the copy.
@@ -52,21 +63,25 @@ it into the card list. It's an example of the logic you'll write against the rea
 - fewer than 10 solves: the game's one community card;
 - games not built yet are left out for now.
 
+The Connections solving-order pills follow the order in the player's stats (`solvingOrder` in the example), not a
+fixed order.
+
 The example player is a mixed case: Wordle with its own cards and two starting words, then Connections as a
 community card. The comment above `EXAMPLE_PLAYER` shows how to try other cases.
 
 Each card's copy is a block of HTML, rendered up front and hidden, marked `data-copy-frame="<card index>"`; each game's
-icon is a block marked `data-icon-scene="<game name>"`. The integration shows and hides them.
+icon is a block marked `data-icon-game="<game name>"`. The integration shows and hides them.
 
-## onTap and onBack
+## start, onTap and onBack
 
-Call `onTap()` on Next and `onBack()` on Back. That's the whole integration:
+Call `start(cards)` once with the card list, then `onTap()` on Next and `onBack()` on Back. That's the whole
+integration:
 
 - They move to the next or previous card, and set Rive's `scene`, `direction` and `community` for it. A card in the
   same game changes only the copy; Rive keeps looping.
 - They reveal the card's copy and the game's icon, timed to Rive (3.2 s after the tap for a game's first visit, when
   the pan ends for a game you come back to, about 0.34 s for a card in the same game).
-- Back on the opener, or Next on the last card, does nothing. A tap that would reverse a pan waits for it to end.
+- Back on the opener, Next on the last card, or a tap before `start`, does nothing. A tap that would reverse a pan waits for it to end.
   You don't time anything in JavaScript and you don't handle Rive events.
 
 The module also exports `setScene` and `yig` (the Rive instance, for cleanup: `yig.cleanup()`).
