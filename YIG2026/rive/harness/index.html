@@ -3,45 +3,41 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>YIG Rive harness</title>
-<!-- engineering's code imports "@rive-app/canvas"; here that name resolves to the pinned local runtime -->
-<script type="importmap">{ "imports": { "@rive-app/canvas": "/vendor/rive-esm.js" } }</script>
-<link rel="stylesheet" href="/engineering/yig-text-motion.css">
-<link rel="stylesheet" href="/text-layer.css">
+<title>Year in Games 2026 · Chapter 2 example</title>
+<link rel="icon" href="data:,"> <!-- no favicon request, so a plain static server logs no 404 -->
+<!--
+  The integration file does `import { Rive } from "@rive-app/canvas"`. In your app, `npm install @rive-app/canvas@2.45.0`
+  and your bundler resolves that import; the next two tags are only so this page runs as-is, with no build step.
+  rive.js is the runtime's UMD build: it sets window.rive and fetches its own .wasm (same version) from unpkg.
+  The import map then hands that name a one-line module that re-exports window.rive.
+-->
+<script src="https://cdn.jsdelivr.net/npm/@rive-app/canvas@2.45.0/rive.js"></script>
+<script type="importmap">
+{ "imports": { "@rive-app/canvas": "data:text/javascript,const r = window.rive; export const { Rive, EventType, Layout, Fit, Alignment, RuntimeLoader } = r; export default r;" } }
+</script>
+<link rel="stylesheet" href="yig-text-motion.css">
 <style>
-@font-face { font-family: "NYT Franklin"; font-weight: 500; src: url(/fonts/nyt-franklin-500.woff2) format("woff2"); font-display: swap; }
-@font-face { font-family: "NYT Franklin"; font-weight: 700; src: url(/fonts/nyt-franklin-700.woff2) format("woff2"); font-display: swap; }
-@font-face { font-family: "NYT Karnak"; font-weight: 500; src: url(/fonts/nyt-karnak-500.woff2) format("woff2"); font-display: swap; }
-@font-face { font-family: "NYT Karnak"; font-weight: 700; src: url(/fonts/nyt-karnak-700.woff2) format("woff2"); font-display: swap; }
-
+/* Page chrome. Your site already loads NYT Franklin and NYT Karnak; these fall back to system fonts without them. */
 :root {
-  --paper: #F1F3EE; --surface: #FFFFFF; --ink: #1F1F1F; --muted: #5C6759; --line: #D3DACF; --live: #3C6EFF;
+  --paper: #F1F3EE; --surface: #FFFFFF; --ink: #1F1F1F; --muted: #5C6759; --line: #D3DACF;
   --ui: "NYT Franklin", "Helvetica Neue", Arial, sans-serif;
   --display: "NYT Karnak", Georgia, serif;
-  --mono: ui-monospace, "SF Mono", Menlo, monospace;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; } /* .blk sets display:grid, which would otherwise beat the hidden attribute */
 body { margin: 0; background: var(--paper); color: var(--ink); font: 500 14px/1.4 var(--ui); }
-.wrap { max-width: 1180px; margin: 0 auto; padding: 20px 24px 48px; }
-h1 { font: 700 20px/1.2 var(--display); margin: 0 0 2px; }
-.sub { color: var(--muted); font-size: 13px; margin: 0 0 16px; }
-.sub code, .readout code { font-family: var(--mono); font-size: 12px; }
-
-.bar { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; }
-.group { display: flex; align-items: center; gap: 8px; }
-.group > label, .group > .lbl { color: var(--muted); font-size: 12px; }
-button, select { font: 500 13px var(--ui); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
-button:hover:not(:disabled) { border-color: var(--ink); }
-button:disabled { opacity: .4; cursor: default; }
-button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
-button.primary { background: var(--live); border-color: var(--live); color: #fff; font-weight: 700; }
+.wrap { max-width: 1180px; margin: 0 auto; padding: 16px 24px 48px; display: grid; justify-items: center; gap: 12px; }
+.bar { width: min(100%, 1100px); display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+h1 { font: 700 18px/1.2 var(--display); margin: 0; margin-right: auto; }
+.bar button { font: 500 13px var(--ui); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+.bar button:hover { border-color: var(--ink); }
+.bar button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
 .seg { display: inline-flex; }
 .seg button { border-radius: 0; margin-left: -1px; }
 .seg button:first-child { border-radius: 8px 0 0 8px; margin-left: 0; }
 .seg button:last-child { border-radius: 0 8px 8px 0; }
 
-.stagewrap { display: grid; justify-items: center; gap: 12px; }
+/* The stage: the full 1495 x 1067 artboard on desktop; on a phone, the centre 375 wide. */
 .stage { position: relative; container-type: inline-size; overflow: hidden; background: #E7F1E1; border: 1px solid var(--line); }
 .stage.full { width: min(100%, 1100px); aspect-ratio: 1495 / 1067; border-radius: 12px; }
 .stage.phone { width: 300px; aspect-ratio: 375 / 812; border-radius: 38px; }
@@ -53,64 +49,353 @@ button.primary { background: var(--live); border-color: var(--live); color: #fff
 .stage.full .phonebox { left: calc(100cqw * 560 / 1495); top: 0; width: calc(100cqw * 375 / 1495); height: calc(100cqw * 812 / 1495); outline: 1px dashed rgba(31, 31, 31, .5); }
 .stage.phone .phonebox { inset: 0; }
 .phonebox .overlay { overflow: hidden; }
+/* tap the right half for Next, the left half for Back */
+.tap { position: absolute; top: 0; bottom: 0; width: 50%; z-index: 1; margin: 0; padding: 0; border: 0; background: transparent; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.tap:focus { outline: none; }
+.tap:focus-visible { outline: 2px solid var(--ink); outline-offset: -4px; }
+#tap-back { left: 0; }
+#tap-next { right: 0; }
 
-.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; width: min(100%, 1100px); }
-.framelist { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
-.framelist li { font-size: 12px; padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); }
-.framelist li b { font-family: var(--mono); font-weight: 700; margin-right: 4px; }
-.framelist li.now { background: var(--ink); border-color: var(--ink); color: var(--paper); }
-.note { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
-.note.warn { color: #9A5B00; }
-.readout { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 6px 18px; font-size: 12px; }
-.readout b { display: block; color: var(--muted); font-weight: 500; }
-.readout code { font-size: 12px; }
-.err { color: #B3261E; white-space: pre-wrap; font: 12px var(--mono); }
+/* The text layer. Sizes are in units of the 375-wide phone frame (--u), so the copy scales with the stage. */
+.overlay { --u: calc(100cqw / 375); position: absolute; inset: 0; color: #1F1F1F; pointer-events: none; }
+.hdr { position: absolute; top: calc(50 * var(--u)); left: 0; right: 0; display: grid; justify-items: center; gap: calc(22 * var(--u)); }
+.hdr > svg { width: calc(171 * var(--u)); height: auto; }
+.dashes { width: calc(339 * var(--u)); height: calc(2 * var(--u)); background:
+  linear-gradient(90deg, #1F1F1F 0 calc(9 * var(--u)), transparent 0) 0 0 / 100% 100% no-repeat,
+  repeating-linear-gradient(90deg, #8C9C88 0 calc(9 * var(--u)), transparent calc(9 * var(--u)) calc(12 * var(--u))); }
+.blk { position: absolute; left: calc(16 * var(--u)); right: calc(16 * var(--u)); text-align: center; display: grid; justify-items: center; }
+.blk-copy1 { top: calc(168 * var(--u)); }
+.blk-icon { top: calc(165 * var(--u)); }
+/* the icon is its own block, so the card starts below it: icon height (49) + its 22 gap */
+.blk-stat { top: calc(236 * var(--u)); }
+.t-serif { font: 500 calc(22 * var(--u)) / 1.36 var(--display); letter-spacing: -.005em; }
+.t-big { font: 700 calc(25 * var(--u)) / 1.3 var(--display); }
+.t-small { font: 500 calc(15.5 * var(--u)) / 1.42 var(--ui); }
+.t-icon { margin-bottom: calc(22 * var(--u)); }
+.t-icon svg { width: calc(50 * var(--u)); height: auto; display: block; }
+.pill { width: calc(154 * var(--u)); height: calc(39 * var(--u)); display: grid; place-items: center; border: calc(1.5 * var(--u)) solid #1F1F1F; border-radius: calc(8 * var(--u)); font: 700 calc(19 * var(--u)) / 1 var(--ui); letter-spacing: .02em; padding-top: calc(2 * var(--u)); margin-top: calc(11 * var(--u)); }
+.pill-blue { background: #B0C4EF; }
+.pill-green { background: #A0C35A; }
+.pill-yellow { background: #F9DF6D; }
+.pill-purple { background: #BA81C5; }
+/* spacing by what precedes a line, so cards of any length lay out the same way */
+.blk-stat > .yig-mask:has(.t-big) { margin-top: calc(14 * var(--u)); }
+.blk-stat > .yig-mask:has(.t-serif) + .yig-mask:has(.t-serif) { margin-top: 0; }
+.blk-stat > .yig-mask:has(.t-big) + .yig-mask:has(.t-serif) { margin-top: calc(14 * var(--u)); }
+.blk-stat > .yig-mask:has(.t-small) { margin-top: calc(10 * var(--u)); }
+.blk-stat > .yig-mask:has(.t-small) + .yig-mask:has(.t-small) { margin-top: 0; }
+.blk-stat > .yig-mask + .pill { margin-top: calc(24 * var(--u)); }
+/* starting words: one line per word, 4 apart like the Figma tile stack */
+.blk-stat > .yig-word { margin-top: calc(4 * var(--u)); }
+.blk-stat > .yig-mask:not(.yig-word) + .yig-word { margin-top: calc(16 * var(--u)); }
+.blk-stat > .yig-word + .yig-mask:has(.t-small) { margin-top: calc(14 * var(--u)); }
+/* Wordle letter tiles */
+.tilerows { display: grid; gap: calc(4 * var(--u)); }
+.blk-stat > .yig-mask:has(.tilerows) { margin-top: calc(16 * var(--u)); }
+.blk-stat > .yig-mask:has(.tilerows) + .yig-mask:has(.t-small) { margin-top: calc(14 * var(--u)); }
+.tiles { display: flex; gap: calc(4 * var(--u)); justify-content: center; }
+.tile { width: calc(47 * var(--u)); height: calc(47 * var(--u)); display: grid; place-items: center; box-sizing: border-box;
+  border: calc(1.5 * var(--u)) solid #1F1F1F; background: #FFFFFF; font: 700 calc(26 * var(--u)) / 1 var(--ui); }
+.tile-green { background: #6AAA64; border-color: #6AAA64; color: #FFFFFF; }
+/* community card: the popular word, larger, in the Figma frame's green tiles with dark borders */
+.tiles-big { gap: calc(4 * var(--u)); }
+.tiles-big .tile { width: calc(47 * var(--u) * 1.06); height: calc(47 * var(--u) * 1.06); font-size: calc(31 * var(--u)); border-color: #1F1F1F; }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>YIG Rive harness</h1>
-  <p class="sub">Plays the real built <code id="filelabel">…</code> with Rive's web runtime <code id="rtlabel"></code>, driven by <code>engineering/chapter-2-integration.js</code> and <code>yig-text-motion.css</code> exactly as engineering will use them. The copy is placeholder text.</p>
-
   <div class="bar">
-    <div class="group"><button id="back" disabled title="Back (←)">Back</button><button id="next" class="primary" disabled title="Next (→)">Next</button><button id="restart">Restart</button></div>
-    <div class="group"><label for="order">Game order</label>
-      <select id="order"><option value="wc">Wordle, then Connections</option><option value="cw">Connections, then Wordle</option></select></div>
-    <div class="group"><label for="p-wordle">Wordle</label>
-      <select id="p-wordle"><option value="own">own cards</option><option value="community">community card</option></select>
-      <label for="p-connections">Connections</label>
-      <select id="p-connections"><option value="own">own cards</option><option value="community">community card</option></select></div>
-    <div class="group"><label for="words">Starting words</label>
-      <select id="words"><option value="3">3</option><option value="2">2</option><option value="1">1</option><option value="0">none repeated</option></select></div>
-    <div class="group"><span class="lbl">View</span>
-      <span class="seg"><button id="v-full" aria-pressed="true">Full artboard</button><button id="v-phone" aria-pressed="false">Phone crop</button></span></div>
-    <div class="group"><span class="lbl">Scene value</span><span class="seg" id="scenes"></span></div>
+    <h1>Year in Games 2026 · Chapter 2 example</h1>
+    <button id="restart">Restart</button>
+    <span class="seg" role="group" aria-label="Size"><button id="v-full" aria-pressed="true">Desktop</button><button id="v-phone" aria-pressed="false">Phone</button></span>
   </div>
 
-  <div class="stagewrap">
-    <div class="stage full" id="stage">
-      <div class="art" id="art"><canvas id="yig-stage" width="1495" height="1067"></canvas></div>
-      <div class="phonebox"><div class="overlay" id="overlay" aria-hidden="true"></div></div>
-    </div>
-
-    <div class="panel">
-      <ol class="framelist" id="framelist" aria-label="Frames in this chapter"></ol>
-      <p class="note" id="framenote"></p>
-    </div>
-
-    <div class="panel">
-      <div class="readout">
-        <div><b>View model</b><code id="ro-vm">…</code></div>
-        <div><b>State machine</b><code id="ro-state">…</code></div>
-        <div><b>File</b><code id="ro-file">…</code></div>
-        <div><b>Integration file</b><code id="ro-int">…</code></div>
-      </div>
-      <p class="err" id="err" hidden></p>
-    </div>
+  <div class="stage full" id="stage">
+    <div class="art"><canvas id="yig-stage" width="1495" height="1067"></canvas></div>
+    <div class="phonebox"><div class="overlay" id="overlay" aria-hidden="true">
+      <div class="hdr"><svg width="171" height="40" viewBox="0 0 171 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#yigclip)">
+<path d="M39.1813 1.84238C39.1813 0.670723 38.0803 0.329236 37.1618 0.37045V0.552969C37.7153 0.564744 38.1392 0.753151 38.1392 1.11819C38.1392 1.37136 37.9567 1.69519 37.4032 1.69519C36.9675 1.69519 36.1197 1.44201 35.4367 1.21239C34.689 0.959221 33.9824 0.717825 33.3878 0.717825C32.2279 0.717825 31.3506 1.58332 31.3506 2.63722C31.3506 3.49683 31.9983 3.80887 32.2691 3.92074L32.3515 3.77944C32.1808 3.66757 32.0101 3.53804 32.0101 3.20244C32.0101 2.94927 32.2338 2.53713 32.8285 2.53713C33.3642 2.53713 34.0708 2.77852 35.0069 3.04347C35.8135 3.2672 36.7026 3.47916 37.1854 3.53804V5.37501L36.2787 6.12275V6.1934L37.1854 6.98235V9.51407C36.7202 9.78491 36.1844 9.85556 35.7134 9.85556C34.8538 9.85556 34.0295 9.63182 33.3819 8.90764L35.8135 7.73598V3.69112L32.8343 5.02174C33.1464 4.23279 33.7646 3.70878 34.4005 3.32608L34.3593 3.18478C32.5929 3.66168 30.9856 5.28669 30.9856 7.2944C30.9856 9.69659 32.9344 11.4747 35.1541 11.4747C37.5563 11.4747 39.0812 9.5965 39.0577 7.60056L38.9163 7.58879C38.5631 8.35419 38.0567 9.07249 37.3914 9.45519V6.99413L38.3511 6.22873L38.3394 6.1463L37.3914 5.3809V3.54393C38.2687 3.54393 39.1872 2.94927 39.1872 1.83649L39.1813 1.84238ZM34.0237 8.41307L33.3054 8.76633C32.8932 8.23055 32.6283 7.50636 32.6283 6.50545C32.6283 6.09331 32.6695 5.58697 32.799 5.2337L34.0413 4.68026L34.0295 8.41307H34.0237ZM40.3117 9.72603L39.5228 10.3207L39.6229 10.4326L40.0056 10.1617L41.3362 11.3746L43.1143 10.1853L43.0319 10.0557L42.5667 10.3501L41.9897 9.77313V5.70472L42.4725 5.35146L43.4911 6.16985V9.77313C43.4911 12.0222 42.9965 12.3873 41.978 12.7523V12.9054C43.6618 12.976 45.175 12.4108 45.175 9.52585V5.65173L45.7108 5.22781L45.6107 5.10417L45.1455 5.46921L43.6913 4.20924L41.9956 5.48099V0.611846H41.8661L39.7583 2.0249V2.15443C39.9702 2.28396 40.3235 2.36638 40.3235 3.07291V9.73192L40.3117 9.72603ZM51.1628 9.09015L49.7085 10.2206L48.1954 9.03128V8.32475L51.0097 6.44657V6.36414L49.6084 4.21513L46.5409 5.8578V9.75547L45.9345 10.2206L46.0346 10.3442L46.588 9.90855L48.5958 11.3628L51.2805 9.24324L51.1687 9.08427L51.1628 9.09015ZM48.1954 8.11868V5.20426L48.2955 5.13361L49.5967 7.18254L48.1954 8.11279V8.11868ZM62.5261 1.30071C62.5261 1.11819 62.4849 0.959221 62.4142 0.747263H62.2729C62.0904 1.24183 61.8608 1.51267 61.2838 1.51267C60.7774 1.51267 60.3771 1.20062 60.1651 0.976884C60.1651 0.98866 58.4694 2.94338 58.4694 2.94338L58.6108 3.07291L59.0935 2.51947C59.4586 2.80208 59.7294 3.07291 60.5478 3.08469V8.03037L57.0741 2.00723C56.8032 1.55388 56.3558 0.876793 55.5197 0.876793C54.5894 0.876793 53.724 1.68341 53.8358 3.03758H54.0066C54.0478 2.67255 54.2303 2.27218 54.6424 2.27218C54.9663 2.27218 55.2665 2.58423 55.4196 2.86684V4.8039C54.348 4.8039 53.6415 5.29847 53.6415 6.17574C53.6415 6.62909 53.8653 7.38861 54.6189 7.5358L54.6307 7.40627C54.5306 7.30618 54.4305 7.19431 54.4305 6.99413C54.4305 6.6703 54.6719 6.45835 55.1076 6.45835C55.1782 6.45835 55.3784 6.47012 55.4196 6.48779V9.00184C54.1596 9.01361 53.1882 9.70836 53.1882 10.8977C53.1882 12.087 54.1655 12.5639 55.1782 12.5109L55.19 12.3696C54.5541 12.299 54.2126 12.0046 54.2126 11.5924C54.2126 11.0861 54.5777 10.8153 55.0487 10.8153C55.5197 10.8153 55.9554 11.1096 56.2498 11.4511L57.9572 9.54351L57.8159 9.41398L57.3802 9.90855C56.7326 9.33155 56.3616 9.11959 55.6139 9.00184V3.05525L60.4065 11.4099H60.748V3.08469C61.6665 3.02581 62.5261 2.33695 62.5261 1.3066V1.30071ZM66.8064 9.09015L65.3522 10.2206L63.839 9.03128V8.32475L66.6534 6.44657V6.36414L65.2521 4.21513L62.1846 5.8578V9.75547L61.5782 10.2206L61.6783 10.3442L62.2317 9.90855L64.2394 11.3628L66.9242 9.24324L66.8123 9.08427L66.8064 9.09015ZM63.839 8.11868V5.20426L63.9391 5.13361L65.2403 7.18254L63.839 8.11279V8.11868ZM76.5271 4.86866L76.0914 5.19249L74.9609 4.23279L73.648 5.42211L74.1838 5.92845V10.409L72.7413 9.49052V5.84602L73.2064 5.5222L71.8228 4.23868L70.5393 5.428L71.075 5.93434V10.1912L70.8925 10.303L69.6326 9.41398V5.84014C69.6326 5.02174 69.2381 4.78035 68.7141 4.45652C68.2784 4.18569 68.0782 3.96196 68.0782 3.54982C68.0782 3.20833 68.4197 3.01403 68.5845 2.91394C68.5728 2.90217 68.5728 2.77264 68.5728 2.77264C68.1194 2.76086 66.8653 3.25543 66.8359 4.39765C66.8241 4.99231 67.1067 5.24548 67.4011 5.52809C67.6955 5.8107 67.9663 6.08153 67.9663 6.5761V10.0086L67.3305 10.5032L67.4305 10.6327L68.0075 10.1794L69.5737 11.4099L71.0574 10.409L72.6942 11.4099L75.8441 9.57295V5.58696L76.6213 5.02174L76.5212 4.88044L76.5271 4.86866ZM87.5371 1.60687L86.9424 2.14265L85.6118 0.982772L83.6748 2.42526V1.0652H83.4746L83.5158 10.6916C83.3156 10.6622 82.821 10.5503 82.3736 10.4797L82.3324 2.43704C82.3324 1.84238 81.9084 1.02399 80.8486 1.02399C79.7889 1.02399 79.0529 1.86004 79.0529 2.69021H79.2236C79.2825 2.33695 79.465 2.0249 79.8183 2.0249C80.1716 2.0249 80.4954 2.24863 80.4954 3.04347V5.36323C79.4062 5.40445 78.7879 6.01088 78.7879 6.76451C78.7879 7.22964 78.9999 7.95383 79.7653 7.97738L79.7947 7.83607C79.5416 7.72421 79.4827 7.56524 79.4827 7.42393C79.4827 7.08244 79.8065 6.94114 80.2599 6.94114H80.4718V10.6151C79.6122 10.9095 79.2119 11.5453 79.2119 12.2695C79.2119 13.2587 80.0008 14.0064 81.1607 14.0064C81.9791 14.0064 82.6856 13.8651 83.4392 13.6943C84.0457 13.5648 84.7816 13.4235 85.1349 13.4235C85.5883 13.4235 85.7826 13.6355 85.7826 13.9593C85.7826 14.3714 85.6 14.5245 85.3586 14.5952L85.3881 14.7365C86.3654 14.554 86.9307 13.9711 86.9307 13.0938C86.9307 12.2165 86.0711 11.6513 85.1055 11.6513C84.6109 11.6513 83.6335 11.8044 82.9035 11.9751C82.0851 12.1577 81.249 12.246 80.9958 12.246C80.5837 12.246 80.0774 12.0458 80.0774 11.4982C80.0774 11.0037 80.4895 10.6092 81.5022 10.6092C82.0556 10.6092 82.6738 10.6916 83.3509 10.8506C84.0692 11.0037 84.7051 11.2038 85.3292 11.2038C86.1888 11.2038 86.966 10.8918 86.966 9.63771V2.31928L87.6607 1.72462L87.5312 1.59509L87.5371 1.60687ZM85.1055 5.26903C84.9524 5.43977 84.6933 5.61052 84.3989 5.61052C84.0751 5.61052 83.8337 5.41033 83.6806 5.26903V2.61956L84.2871 2.20742L85.1055 2.95516V5.25725V5.26903ZM85.1055 7.03534C84.9642 6.89404 84.711 6.74096 84.3989 6.74096C84.0869 6.74096 83.8043 6.92348 83.6806 7.03534V5.48099C83.8102 5.59285 84.0928 5.79304 84.3989 5.79304C84.7051 5.79304 84.9642 5.62229 85.1055 5.48099V7.03534ZM85.1055 9.80257C85.1055 10.2854 84.7816 10.7505 84.1575 10.7505C84.0575 10.7505 83.7748 10.7387 83.6748 10.7211V7.24141C83.8161 7.11188 84.0692 6.91759 84.3931 6.91759C84.6874 6.91759 84.9288 7.08833 85.0996 7.24141V9.79668L85.1055 9.80257ZM93.2187 5.59285L91.2993 4.22101L88.4144 5.87546V9.74958L87.8197 10.2324L87.9021 10.356L88.3673 9.97331L90.2749 11.3746L93.2128 9.57884V5.59285H93.2187ZM90.0688 9.33744V5.09828L91.5643 6.16985V10.409L90.0688 9.33155V9.33744ZM98.8886 4.37998H98.7767C98.6237 4.52129 98.4235 4.62138 98.2527 4.62138C98.029 4.62138 97.7287 4.48007 97.5874 4.29756H97.4756L96.4746 5.39856L95.4443 4.29756L93.6898 5.51042L93.7722 5.65173L94.2373 5.33968L94.8437 5.98733V9.73192L94.0548 10.3266L94.1549 10.4384L94.5376 10.1676L95.9624 11.3805L97.8112 10.1499L97.7287 10.0204L97.2047 10.3325L96.51 9.70837V5.53986C96.8044 5.86369 97.1576 6.1463 97.5698 6.1463C98.3587 6.1463 98.8003 5.26903 98.8827 4.36821L98.8886 4.37998ZM106.025 10.0734L104.005 11.404L101.261 7.26496L103.198 4.25634L103.328 4.24457C103.552 4.4683 103.952 4.7097 104.317 4.7097C104.729 4.7097 105.012 4.48596 105.177 4.24457C105.177 4.24457 105.289 4.25634 105.289 4.24457C105.218 5.44566 104.411 6.12275 103.805 6.12275C103.198 6.12275 102.886 5.84014 102.563 5.63995L102.38 5.91079L105.347 10.303L105.942 9.93798L106.025 10.0793V10.0734ZM99.495 9.73192L98.7061 10.3266L98.8062 10.4384L99.1889 10.1676L100.52 11.3805L102.298 10.1912L102.198 10.0616L101.744 10.356L101.167 9.77902V0.611846H101.038L98.8886 2.03667V2.1662C99.1006 2.29573 99.495 2.34872 99.495 3.07291V9.73192ZM115.875 1.84827C115.875 0.676611 114.774 0.335123 113.855 0.376337V0.558856C114.409 0.570632 114.833 0.759039 114.833 1.12408C114.833 1.37725 114.65 1.70107 114.097 1.70107C113.661 1.70107 112.813 1.4479 112.13 1.21828C111.382 0.965109 110.676 0.723712 110.081 0.723712C108.921 0.723712 108.044 1.58921 108.044 2.64311C108.044 3.50271 108.692 3.81476 108.962 3.92663L109.045 3.78532C108.874 3.67346 108.703 3.54393 108.703 3.20833C108.703 2.95516 108.927 2.54302 109.522 2.54302C110.058 2.54302 110.764 2.78441 111.7 3.04936C112.507 3.27309 113.396 3.48505 113.879 3.54393V5.3809L112.972 6.12863V6.19929L113.879 6.98824V9.51996C113.414 9.79079 112.878 9.86145 112.407 9.86145C111.547 9.86145 110.723 9.63771 110.075 8.91352L112.507 7.74187V3.69112L109.528 5.02174C109.84 4.23279 110.458 3.70878 111.094 3.32608L111.053 3.18478C109.286 3.66757 107.673 5.29258 107.673 7.30029C107.673 9.70248 109.622 11.4806 111.842 11.4806C114.244 11.4806 115.769 9.60239 115.745 7.60645L115.604 7.59468C115.251 8.36008 114.744 9.07838 114.079 9.46108V7.00002L115.039 6.23461L115.027 6.15219L114.079 5.38678V3.54982C114.956 3.54982 115.875 2.95516 115.875 1.84238V1.84827ZM110.717 8.41896L109.999 8.77222C109.587 8.23644 109.322 7.51225 109.322 6.51134C109.322 6.0992 109.363 5.59285 109.492 5.23959L110.735 4.68614L110.723 8.41896H110.717ZM117.912 1.29482L117.829 1.28305L116.64 2.28396V2.36638L117.641 3.49683H117.741L118.93 2.50769L118.919 2.43704L117.918 1.29482H117.912ZM119.719 10.0734L119.266 10.3678L118.689 9.79079V5.69294L119.254 5.26903L119.142 5.12772L118.707 5.46332L117.676 4.23279L115.981 5.42211L116.081 5.57519L116.505 5.29258L117.029 5.94612V9.79079L116.263 10.3678L116.346 10.4797L116.74 10.197L118.041 11.3864L119.819 10.197L119.719 10.0675V10.0734ZM129.611 10.0028L129.187 10.2854L128.551 9.70837V5.68117L129.157 5.22781L129.057 5.09828L128.533 5.49276L127.179 4.23279L125.425 5.4751L124.082 4.23279L122.357 5.46332L121.297 4.23279L119.602 5.42211L119.684 5.57519L120.108 5.29258L120.685 5.92845V9.77313L120.22 10.2383L121.574 11.3805L122.887 10.1912L122.351 9.68481V5.66939L122.857 5.32791L123.776 6.17574V9.76724L123.323 10.2324L124.694 11.3746L125.978 10.1853L125.442 9.67893V5.63407L125.896 5.33968L126.873 6.17574V9.70837L126.478 10.1205L127.862 11.3805L129.687 10.1382L129.605 9.99686L129.611 10.0028ZM134.768 9.09604L133.314 10.2265L131.801 9.03717V8.33064L134.615 6.45246V6.37003L133.214 4.22101L130.146 5.86369V9.89088L132.195 11.3746L134.88 9.25501L134.768 9.09604ZM131.801 8.12457V5.21015L131.901 5.1395L133.202 7.18842L131.801 8.11868V8.12457ZM140.197 7.57112L139.055 6.71152C139.82 6.04621 140.114 5.15716 140.114 4.55073C140.114 4.4683 140.103 4.30933 140.085 4.16803H139.944C139.832 4.48007 139.602 4.75091 139.137 4.75091C138.672 4.75091 138.36 4.49774 138.077 4.18569L135.404 5.63995V7.80075L136.393 8.57792C135.392 9.46697 135.204 10.0911 135.204 10.5444C135.204 11.1391 135.475 11.563 135.981 11.7632L136.052 11.6336C135.922 11.5218 135.81 11.4511 135.81 11.1803C135.81 10.9801 136.052 10.6975 136.505 10.6975C137.082 10.6975 137.435 11.092 137.624 11.3039C137.624 11.2922 140.197 9.76135 140.197 9.76135V7.57112ZM139.561 5.78715C139.166 6.49367 138.248 7.18842 137.736 7.5829L137.088 7.07656V4.96875C137.341 5.53398 137.965 6.01677 138.642 6.01677C139.037 6.01677 139.249 5.94612 139.561 5.79304V5.78715ZM138.513 10.5091C138.219 9.84378 137.524 9.36688 136.817 9.36688C136.647 9.36688 136.152 9.36688 135.699 9.64949C135.969 9.19613 136.758 8.3483 137.777 7.74187L138.513 8.30709V10.5091Z" fill="#1F1F1F"/>
+</g>
+<path d="M17.4364 21.445V24.8384H15.9565L11.7211 31.1405V35.9373H13.7878V39.3307H4.55147V35.9373H6.59264V31.8039L1.66831 24.8384H0.392578V21.445H8.86344V24.8384H7.40911L10.1137 28.9973H10.1392L12.9713 24.8384H11.568V21.445H17.4364Z" fill="#1F1F1F"/>
+<path d="M28.6054 35.5291C27.7889 38.3102 25.314 39.6369 22.4819 39.6369C20.5938 39.6369 18.8078 39.1266 17.5576 37.953C16.3073 36.7538 15.644 35.1208 15.644 33.2072C15.644 29.3035 18.5526 26.9051 22.1757 26.9051C25.8753 26.9051 28.6309 29.6097 28.6309 33.4624C28.6309 33.7685 28.6054 34.0492 28.5799 34.3554H20.4152C20.5428 36.0394 21.5123 36.8558 22.8901 36.8558C24.0128 36.8558 24.7272 36.3455 25.1099 35.5291H28.6054ZM20.7724 30.8344C20.5173 31.2681 20.4152 31.8039 20.3897 32.5183H24.3445V32.3652C24.2424 30.9619 23.7066 29.8648 22.3798 29.8648C21.6654 29.8648 21.1041 30.1965 20.7724 30.8344Z" fill="#1F1F1F"/>
+<path d="M34.2597 39.5859C31.6061 39.5859 29.9732 38.0295 29.9732 35.478C29.9732 32.901 31.8358 31.2681 34.6934 31.2681C36.0967 31.2681 37.2449 31.7274 38.0358 32.3652V32.0591C37.9848 30.5282 36.9387 29.5841 34.9741 29.5841C33.5963 29.5841 32.3971 29.9413 31.2234 30.5537V27.6961C32.6777 27.2368 34.2341 26.9051 36.4029 26.9051C41.1231 26.9051 42.8071 29.0994 42.8071 31.2171V36.3966H44.0573V39.3307H38.0868V37.9274C37.2449 39.1011 35.7905 39.5859 34.2597 39.5859ZM36.3774 36.8813C37.449 36.8813 38.1379 36.32 38.1379 35.2484C38.1379 34.2023 37.449 33.5899 36.4029 33.5899C35.3313 33.5899 34.5658 34.2023 34.5658 35.2484C34.5658 36.32 35.2802 36.8813 36.3774 36.8813Z" fill="#1F1F1F"/>
+<path d="M45.0288 36.3966H46.2025V30.0944H45.0033V27.1858H50.8972V29.1504C51.7647 27.9002 53.0659 26.8796 54.7754 26.8796C54.9285 26.8796 55.1837 26.9051 55.3878 26.9051V30.5792C54.5458 30.5537 54.0865 30.5537 53.5762 30.6558C52.7087 30.7323 51.9178 31.115 51.4585 31.7784C51.0758 32.3397 50.9482 33.0286 50.9482 34.2533V36.3966H52.3515V39.3307H45.0288V36.3966Z" fill="#1F1F1F"/>
+<path d="M62.7709 21.7767H67.6187V25.6294H62.7709V21.7767ZM61.6227 36.3966H62.8219V30.0944H61.6227V27.1858H67.5421V36.3966H68.7668V39.3307H61.6227V36.3966Z" fill="#1F1F1F"/>
+<path d="M69.7455 36.3966H70.9447V30.0944H69.7455V27.1858H75.6394V28.7422C76.6855 27.7471 77.7827 26.9051 79.5432 26.9051C82.0436 26.9051 83.8551 28.5891 83.8551 30.9109V36.3966H85.0543V39.3307H79.1349V31.8294C79.1349 30.8088 78.4716 30.0689 77.4765 30.0689C76.3538 30.0689 75.6649 30.9875 75.6649 32.4673V36.3966H76.8131V39.3307H69.7455V36.3966Z" fill="#1F1F1F"/>
+<path d="M90.7016 30.1455C90.7016 24.5322 94.2227 21.1133 98.6367 21.1133C100.448 21.1133 101.852 21.547 103.025 22.4145V21.4705H106.852V27.2113H103.025C102.77 25.4253 101.698 24.6343 100.014 24.6343C97.6927 24.6343 96.2128 26.3183 96.2128 30.1455C96.2128 34.2788 97.5906 35.8607 100.346 35.8607C101.341 35.8607 102.183 35.6056 102.719 35.1974V32.8755H100.652V29.8393H106.852V39.3307H103.561V38.3102C102.694 39.0756 101.137 39.6624 99.2746 39.6624C94.1716 39.6624 90.7016 36.218 90.7016 30.1455Z" fill="#1F1F1F"/>
+<path d="M112.498 39.5859C109.844 39.5859 108.211 38.0295 108.211 35.478C108.211 32.901 110.074 31.2681 112.932 31.2681C114.335 31.2681 115.483 31.7274 116.274 32.3652V32.0591C116.223 30.5282 115.177 29.5841 113.212 29.5841C111.835 29.5841 110.635 29.9413 109.462 30.5537V27.6961C110.916 27.2368 112.472 26.9051 114.641 26.9051C119.361 26.9051 121.045 29.0994 121.045 31.2171V36.3966H122.296V39.3307H116.325V37.9274C115.483 39.1011 114.029 39.5859 112.498 39.5859ZM114.616 36.8813C115.687 36.8813 116.376 36.32 116.376 35.2484C116.376 34.2023 115.687 33.5899 114.641 33.5899C113.57 33.5899 112.804 34.2023 112.804 35.2484C112.804 36.32 113.519 36.8813 114.616 36.8813Z" fill="#1F1F1F"/>
+<path d="M123.242 36.3966H124.441V30.0944H123.242V27.1858H129.135V28.6911C130.309 27.4919 131.304 26.9051 132.656 26.9051C134.264 26.9051 135.285 27.4919 136.28 28.8187C137.555 27.4409 138.703 26.9051 140.107 26.9051C142.607 26.9051 144.24 28.6401 144.24 31.064V36.3966H145.414V39.3307H139.52V31.906C139.52 30.7323 139.035 30.0434 138.168 30.0434C137.275 30.0434 136.688 30.8088 136.688 32.1611V36.3966H137.785V39.3307H131.968V31.8549C131.968 30.7578 131.483 30.0434 130.666 30.0434C129.773 30.0434 129.161 30.8599 129.161 32.1356V36.3966H130.233V39.3307H123.242V36.3966Z" fill="#1F1F1F"/>
+<path d="M158.67 35.5291C157.853 38.3102 155.378 39.6369 152.546 39.6369C150.658 39.6369 148.872 39.1266 147.622 37.953C146.372 36.7538 145.708 35.1208 145.708 33.2072C145.708 29.3035 148.617 26.9051 152.24 26.9051C155.94 26.9051 158.695 29.6097 158.695 33.4624C158.695 33.7685 158.67 34.0492 158.644 34.3554H150.48C150.607 36.0394 151.577 36.8558 152.955 36.8558C154.077 36.8558 154.792 36.3455 155.174 35.5291H158.67ZM150.837 30.8344C150.582 31.2681 150.48 31.8039 150.454 32.5183H154.409V32.3652C154.307 30.9619 153.771 29.8648 152.444 29.8648C151.73 29.8648 151.169 30.1965 150.837 30.8344Z" fill="#1F1F1F"/>
+<path d="M162.188 35.1208C162.417 36.4476 163.004 37.1365 164.356 37.1365C165.173 37.1365 165.862 36.8048 165.862 35.9883C165.862 35.4015 165.479 35.0188 164.867 34.8146L162.264 33.8706C160.81 33.3348 159.891 32.2632 159.891 30.7068C159.891 28.538 161.805 26.9051 164.433 26.9051C165.581 26.9051 166.551 27.2113 167.444 27.7726V27.1858H169.944V30.9875H167.546C167.367 29.8138 166.78 29.1249 165.658 29.1249C164.841 29.1249 164.28 29.5586 164.28 30.222C164.28 30.7578 164.663 31.1661 165.352 31.3957L167.954 32.2887C169.638 32.85 170.608 33.8706 170.608 35.5801C170.608 38.004 168.643 39.6114 165.862 39.6114C164.51 39.6114 163.514 39.3563 162.137 38.5908V39.3307H159.636V35.1208H162.188Z" fill="#1F1F1F"/>
+<defs>
+<clipPath id="yigclip">
+<rect width="110.136" height="15.1138" fill="white" transform="translate(30.4321)"/>
+</clipPath>
+</defs>
+</svg>
+      <div class="dashes"></div></div>
+    </div></div>
+    <button class="tap" id="tap-back" aria-label="Back"></button>
+    <button class="tap" id="tap-next" aria-label="Next"></button>
   </div>
 </div>
 
-<script src="/vendor/rive/rive.js"></script>
-<script type="module" src="/harness.js"></script>
+<script type="module">
+// ---------------------------------------------------------------------------------------------------------------
+// EXAMPLE DATA. This stands in for the Games API. None of these numbers are real.
+// To try other cases, edit EXAMPLE_PLAYER and press Restart:
+//   - flip gameOrder to ["connections", "wordle"]
+//   - give connections solves: 10 or more, to get its own cards instead of the community card
+//   - set wordle.topStartingWords to one word (singular label) or [] (the card is left out)
+//   - set wordle.hardestWordResult to "solved", "missed" or "not played"
+// ---------------------------------------------------------------------------------------------------------------
+const EXAMPLE_PLAYER = {
+  gameOrder: ["wordle", "connections"],
+  wordle: {
+    solves: 212,
+    averageGuesses: 3.9,
+    bestGuesses: 2,
+    bestGuessesCount: 14,
+    topStartingWords: ["ADIEU", "CRANE"],
+    hardestWordResult: "missed", // "solved" | "missed" | "not played"
+  },
+  connections: {
+    solves: 7, // fewer than 10: this player gets the community card for Connections
+    solvingOrder: ["yellow", "green", "blue", "purple"],
+    purpleFirstCount: 3,
+    solveRate: 86,
+    averageMistakes: 1.4,
+    perfectPuzzles: 2,
+  },
+};
+
+// EXAMPLE DATA too: the year-wide numbers, the same for every player.
+const EXAMPLE_COMMUNITY = {
+  wordle: {
+    averageGuesses: 4.1,            // across all solvers
+    mostPopularStartingWord: "ADIEU",
+    hardestWord: "PSHAW",
+    hardestWordMonth: "July",
+    hardestWordDay: 15,
+    hardestWordStumpedPercent: 38,
+  },
+  connections: {
+    pictureOnlyDate: "February 7",
+    pictureOnlyStumpedPercent: 61,
+  },
+};
+
+// The text test (harness/text-test.mjs) swaps in other players here.
+const player = window.__yigTestPlayer ?? EXAMPLE_PLAYER;
+const community = EXAMPLE_COMMUNITY;
+
+// An example of the logic you'll write: the chapter's cards in order, from the player's stats. The opener comes
+// first, then each game in the player's order. With 10 or more solves a game gets the player's own cards, in design
+// order, leaving out a card that has no stat to show; with fewer it gets one community card.
+// Each card's scene and community are what chapter-2-integration.js reads; card and variant are only for this page's copy.
+// Strands, Spelling Bee, The Mini, The Midi and The Crossword aren't here yet: they'll be added as their rooms ship.
+function buildCards(p) {
+  const cards = [{ scene: "opener" }];
+  for (const game of p.gameOrder) {
+    const s = p[game];
+    if (!s) continue;
+    if (s.solves < 10) { cards.push({ scene: game, community: true }); continue; }
+    if (game === "wordle") {
+      cards.push({ scene: game, card: "average-guesses" });
+      cards.push({ scene: game, card: "best-solves" });
+      cards.push({ scene: game, card: "hardest-word", variant: s.hardestWordResult });
+      if (s.topStartingWords.length) cards.push({ scene: game, card: "starting-words" });
+    }
+    if (game === "connections") {
+      cards.push({ scene: game, card: "solving-order" });
+      if (s.purpleFirstCount > 0) cards.push({ scene: game, card: "purple-first" });
+      cards.push({ scene: game, card: "solve-rate" });
+      cards.push({ scene: game, card: "average-mistakes" });
+      if (s.perfectPuzzles > 0) cards.push({ scene: game, card: "perfect-puzzles" });
+    }
+  }
+  return cards;
+}
+
+// The copy. Everything that goes into markup passes through esc(), because the real values come from an API.
+const esc = (v) => String(v).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+// one designed line, in its own mask so it can rise on its own
+const line = (style, text) => `<span class="yig-mask"><span class="yig-line ${style}">${esc(text)}</span></span>`;
+const tiles = (word) => [...word].map((ch) => `<span class="tile tile-green">${esc(ch)}</span>`).join("");
+const pill = (colour) => `<span class="yig-pop pill pill-${esc(colour)}">${esc(colour.toUpperCase())}</span>`;
+
+// Placeholder copy: the last line of the hardest-word card, by whether the player solved that day's puzzle.
+const HARDEST_WORD_ENDING = { missed: "including you!", solved: "but not you!", "not played": "You sat that one out." };
+
+// One function per card: it returns the card's lines.
+const COPY = {
+  wordle: {
+    "average-guesses": (s, y) => [
+      line("t-serif", "On average, you solved Wordle"),
+      line("t-serif", "puzzles in"),
+      line("t-big", `${s.averageGuesses} guesses`),
+      line("t-small", "The average across all solvers was"),
+      line("t-small", `${y.averageGuesses} guesses. Well played!`),
+    ],
+    "best-solves": (s) => [
+      line("t-serif", "Your best solves took"),
+      line("t-big", `${s.bestGuesses} guesses`),
+      line("t-serif", "which you did"),
+      line("t-big", `${s.bestGuessesCount} times`),
+      line("t-small", "Luck. Skill. What a thrill."),
+    ],
+    "hardest-word": (s, y, card) => [
+      line("t-serif", "The hardest word"),
+      line("t-serif", "of the year was"),
+      `<span class="yig-mask"><span class="yig-line tilerows"><span class="tiles">${tiles(y.hardestWord)}</span></span></span>`,
+      line("t-small", `Over ${y.hardestWordStumpedPercent}% of players were stumped on ${y.hardestWordMonth}`),
+      line("t-small", card.variant === "not played"
+        ? `${y.hardestWordDay}. ${HARDEST_WORD_ENDING["not played"]}`
+        : `${y.hardestWordDay}, ${HARDEST_WORD_ENDING[card.variant]}`),
+    ],
+    "starting-words": (s) => [
+      line("t-serif", "And your top"),
+      line("t-serif", s.topStartingWords.length === 1 ? "starting word was" : "starting words were"),
+      ...s.topStartingWords.map((w) => `<span class="yig-mask yig-word"><span class="yig-line tiles">${tiles(w)}</span></span>`),
+      line("t-small", "Look at you, making the first move."),
+    ],
+    community: (s, y) => [
+      line("t-serif", "In Wordle, the most popular"),
+      line("t-serif", "starting word was"),
+      `<span class="yig-mask yig-word"><span class="yig-line tiles tiles-big">${tiles(y.mostPopularStartingWord)}</span></span>`,
+      line("t-small", "Oh là là!"),
+    ],
+  },
+  connections: {
+    "solving-order": (s) => [
+      line("t-serif", "In Connections, your most"),
+      line("t-serif", "common solving order was"),
+      ...s.solvingOrder.map(pill),
+    ],
+    "purple-first": (s) => [
+      line("t-serif", "You got the purple category first"),
+      line("t-big", `${s.purpleFirstCount} times`),
+      line("t-small", "We see you, overachiever."),
+    ],
+    "solve-rate": (s) => [
+      line("t-serif", "And of puzzles you attempted,"),
+      line("t-serif", "you had a"),
+      line("t-big", `${s.solveRate}% solve rate`),
+    ],
+    "average-mistakes": (s) => [
+      line("t-serif", "On average, you solved puzzles"),
+      line("t-serif", "while making"),
+      line("t-big", `${s.averageMistakes} mistakes`),
+      line("t-small", "Blame it on the red herrings."),
+    ],
+    "perfect-puzzles": (s) => [
+      line("t-serif", "You also solved"),
+      line("t-big", `${s.perfectPuzzles} perfect puzzles`),
+      line("t-serif", "without mistakes."),
+      line("t-small", "And they say perfection doesn’t exist."),
+    ],
+    community: (s, y) => [
+      line("t-serif", "In Connections, a picture-only"),
+      line("t-serif", "puzzle stumped"),
+      line("t-big", `${y.pictureOnlyStumpedPercent}% of players`),
+      line("t-small", `${y.pictureOnlyDate}. What a day.`),
+    ],
+  },
+};
+
+// Each game's small icon: its own block, shown once per game while that game's cards change.
+const ICON = {
+  wordle: `<svg width="50" height="49" viewBox="0 0 50 49" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M34.1699 16.5884H34.1602V16.5979H34.1699V16.5884Z" fill="#7FA768"/>
+<path d="M34.1602 17.8367V46.9403H44.9723C46.595 46.9403 47.915 45.6674 47.915 44.0989V32.331V17.9024L34.1602 17.8367Z" fill="#6AAA64"/>
+<path d="M47.4355 5.18193V15.4306L34.1768 15.3731L34.2356 2.40625H44.5938C46.1576 2.40625 47.4355 3.65449 47.4355 5.18193Z" fill="white"/>
+<path d="M32.3944 32.7251V46.9238H17.9922V32.6594L32.3944 32.7251Z" fill="#6AAA64"/>
+<path d="M32.5956 16.9254L32.5199 31.6497L17.4619 31.5675L17.5292 16.8679L32.5956 16.9254Z" fill="#D1B036"/>
+<path d="M31.7134 2.40625L31.6545 15.3567L18.3789 15.3074V2.40625H31.7134Z" fill="white"/>
+<path d="M16.9327 32.5852V46.9974H5.31339C3.58142 46.9974 2.16895 45.6178 2.16895 43.9261V32.5852H16.9327Z" fill="#6AAA64"/>
+<path d="M15.8486 17.8367L15.7813 30.7871H2.48047V17.8367H15.8486Z" fill="white"/>
+<path d="M15.857 2.40625V15.3731H2.48047V5.18193C2.48047 3.65449 3.75842 2.40625 5.33065 2.40625H15.857V2.40625Z" fill="white"/>
+<path d="M44.636 0H5.37246C2.41298 0 0 2.34865 0 5.2393V43.5897C0 46.4803 2.41298 48.8372 5.37246 48.8372H44.636C47.5954 48.8372 50 46.4803 50 43.5897V5.2393C50 2.35687 47.5954 0 44.636 0ZM34.2021 16.6541H34.2105V16.6623H34.2021V16.6541ZM2.53069 17.9023H15.8988L15.8315 30.8528H2.53069V17.9023ZM15.8988 46.3818H5.37246C3.80024 46.3818 2.52228 45.1336 2.52228 43.5979V33.3082H15.8988V46.3818ZM15.8988 15.4387H2.53069V5.2393C2.53069 3.71186 3.80864 2.46362 5.38086 2.46362H15.9072V15.4387H15.8988ZM31.6798 46.3818H18.4211V33.2507L31.6798 33.3164V46.3818ZM31.6126 30.8446L18.3538 30.7789L18.4126 17.8284L31.6798 17.8777L31.6126 30.8446ZM31.6967 15.4223L18.4211 15.373V2.46362H31.7555L31.6967 15.4223ZM47.4777 43.5979C47.4777 45.1336 46.1998 46.3818 44.636 46.3818H34.2021V33.3082H47.4777V43.5979ZM47.4777 30.8446H34.1433L34.2021 17.8941L47.4777 17.9516V30.8446ZM47.4777 15.4962L34.2189 15.4387L34.2778 2.47183H44.636C46.1998 2.47183 47.4777 3.72007 47.4777 5.24752V15.4962Z" fill="black"/>
+</svg>`,
+  connections: `<svg width="50" height="49" viewBox="0 0 50 49" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M40.7377 9.04712H9.2627V39.7902H40.7377V9.04712Z" fill="#E20736"/>
+<path d="M25.4057 12.5163L28.9574 20.1416C29.0156 20.2648 29.1369 20.3501 29.2728 20.3643L37.5891 21.1795C37.9239 21.2127 38.0598 21.6155 37.8123 21.8382L31.3495 27.6674C31.2476 27.7622 31.2039 27.8996 31.233 28.0323L33.1156 35.7572C33.1932 36.0842 32.8342 36.3448 32.5382 36.1695L25.2553 31.89C25.134 31.8189 24.9788 31.8189 24.8526 31.89L17.5649 36.1742C17.2689 36.3496 16.905 36.0889 16.9875 35.7619L18.8701 28.0371C18.904 27.9044 18.8604 27.7622 18.7536 27.6722L12.2907 21.8335C12.0433 21.6107 12.184 21.2079 12.5139 21.1747L20.8303 20.3596C20.9661 20.3454 21.0874 20.2601 21.1457 20.1369L24.6973 12.5115C24.8381 12.2177 25.2699 12.2177 25.4057 12.5163Z" fill="white"/>
+<g clip-path="url(#clip0_11352_82751)">
+<path d="M43.7246 0.0332031H6.27567C2.83037 0.0332031 0.0341797 2.76436 0.0341797 6.12954V42.7076C0.0341797 46.0727 2.83037 48.8039 6.27567 48.8039H43.7246C47.1699 48.8039 49.9661 46.0727 49.9661 42.7076V6.12954C49.9661 2.76436 47.1699 0.0332031 43.7246 0.0332031ZM26.2484 2.47174H35.6107V11.6162H26.2484V2.47174ZM2.53078 6.12954C2.53078 4.11442 4.21257 2.47174 6.27567 2.47174H23.7518V11.6162H2.53078V6.12954ZM2.53078 14.0548H35.6107V23.1993H2.53078V14.0548ZM23.7518 25.6378V34.7823H14.3896V25.6378H23.7518ZM11.893 46.3654H6.27567C4.21257 46.3654 2.53078 44.7227 2.53078 42.7076V37.2209H11.893V46.3654ZM11.893 34.7823H2.53078V25.6378H11.893V34.7823ZM47.4695 42.7076C47.4695 44.7227 45.7877 46.3654 43.7246 46.3654H14.3896V37.2209H47.4695V42.7076ZM47.4695 34.7823H26.2484V25.6378H47.4695V34.7823ZM47.4695 23.1993H38.1073V14.0548H47.4695V23.1993ZM47.4695 11.6162H38.1073V2.47174H43.7246C45.7877 2.47174 47.4695 4.11442 47.4695 6.12954V11.6162Z" fill="black"/>
+<path d="M11.8935 37.2209V46.3655H6.27614C4.21305 46.3655 2.53125 44.7228 2.53125 42.7077V37.2209H11.8935Z" fill="white"/>
+<path d="M23.7519 25.6379H14.3896V34.7824H23.7519V25.6379Z" fill="white"/>
+<path d="M47.4697 14.0547H38.1074V23.1992H47.4697V14.0547Z" fill="white"/>
+<path d="M35.6103 2.47168H26.248V11.6162H35.6103V2.47168Z" fill="white"/>
+<path d="M47.4697 6.12948V11.6162H38.1074V2.47168H43.7248C45.7879 2.47168 47.4697 4.11437 47.4697 6.12948Z" fill="#BC70C4"/>
+<path d="M11.8935 25.6379H2.53125V34.7824H11.8935V25.6379Z" fill="#BC70C4"/>
+<path d="M47.4695 37.2209V42.7077C47.4695 44.7228 45.7877 46.3655 43.7246 46.3655H14.3896V37.2209H47.4695Z" fill="#BC70C4"/>
+<path d="M47.4691 25.6379H26.248V34.7824H47.4691V25.6379Z" fill="#BC70C4"/>
+<path d="M35.6111 14.0547H2.53125V23.1992H35.6111V14.0547Z" fill="#BC70C4"/>
+<path d="M23.7523 2.47168V11.6162H2.53125V6.12948C2.53125 4.11437 4.21305 2.47168 6.27614 2.47168H23.7523Z" fill="#BC70C4"/>
+</g>
+<defs>
+<clipPath id="clip0_11352_82751">
+<rect width="50" height="48.8372" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,
+};
+
+const opener = [
+  line("t-serif", "Let’s take a closer look"),
+  line("t-serif", "at your puzzle powers."),
+];
+
+// Every card's copy is rendered up front, hidden. The integration file finds a card's copy by data-copy-frame (its
+// index in the cards) and a game's icon by data-icon-scene. data-copy-scene and data-copy-card are for the text test.
+const cards = buildCards(player);
+const overlay = document.getElementById("overlay");
+let html = "";
+const games = [...new Set(cards.map((c) => c.scene).filter((s) => s !== "opener"))];
+for (const game of games) {
+  html += `<div class="yig-icon blk blk-icon" data-icon-scene="${esc(game)}" hidden><span class="yig-pop t-icon">${ICON[game]}</span></div>`;
+}
+const position = {}; // 1-based position of each own card within its game
+cards.forEach((card, i) => {
+  if (card.scene === "opener") {
+    html += `<div class="yig-text blk blk-copy1" data-copy-frame="${i}" data-copy-scene="opener">${opener.join("")}</div>`;
+    return;
+  }
+  const render = COPY[card.scene][card.community ? "community" : card.card];
+  const lines = render(player[card.scene], community[card.scene], card).join("");
+  const n = card.community ? "" : ` data-copy-card="${(position[card.scene] = (position[card.scene] ?? 0) + 1)}"`;
+  html += `<div class="yig-text blk blk-stat" data-copy-frame="${i}" data-copy-scene="${esc(card.scene)}"${n} hidden>${lines}</div>`;
+});
+overlay.insertAdjacentHTML("beforeend", html);
+
+// The integration file reads the global player.chapterFrames as soon as it loads. A static import would run first
+// (imports are hoisted), so set the global, then load it with a dynamic import.
+window.player = { chapterFrames: cards };
+const integration = await import("./chapter-2-integration.js");
+const { onTap, onBack, yig } = integration;
+
+document.getElementById("tap-next").addEventListener("click", () => onTap());
+document.getElementById("tap-back").addEventListener("click", () => onBack());
+window.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowRight") { e.preventDefault(); onTap(); }
+  if (e.key === "ArrowLeft") { e.preventDefault(); onBack(); }
+});
+
+// Review controls, not part of the integration.
+document.getElementById("restart").addEventListener("click", () => location.reload());
+function setSize(size) {
+  document.getElementById("stage").className = `stage ${size}`;
+  document.getElementById("v-full").setAttribute("aria-pressed", String(size === "full"));
+  document.getElementById("v-phone").setAttribute("aria-pressed", String(size === "phone"));
+  yig.resizeDrawingSurfaceToCanvas(); // the canvas changed size, so the drawing surface follows
+}
+document.getElementById("v-full").addEventListener("click", () => setSize("full"));
+document.getElementById("v-phone").addEventListener("click", () => setSize("phone"));
+window.addEventListener("resize", () => yig.resizeDrawingSurfaceToCanvas());
+
+// for the console and the text test
+window.yigExample = { cards, ...integration };
+</script>
 </body>
 </html>

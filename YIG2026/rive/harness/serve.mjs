@@ -1,6 +1,7 @@
-// Local server for the review harness. Serves the page, the pinned Rive web runtime, the engineering
-// files as-is, and the chapter's built .riv at the path engineering's code loads it from.
-// It rebuilds the .riv with the Rive CLI whenever scene.rml is newer than the build.
+// Local server for the review harness. Serves the example page (index.html) with the same file names it has in
+// the handoff folder: chapter-2-integration.js and yig-text-motion.css from engineering/ as-is, and the chapter's
+// built .riv as chapter-2.riv. It rebuilds the .riv with the Rive CLI whenever scene.rml is newer than the build.
+// The only addition is a link to the NYT fonts, so the review shows real type; the handoff page falls back cleanly.
 import http from "node:http";
 import fs from "node:fs";
 import os from "node:os";
@@ -15,34 +16,25 @@ const port = Number(process.env.PORT || 8765);
 const rive = process.env.RIVE_BIN || path.join(os.homedir(), ".rive/bin/rive");
 const projectDir = path.join(repo, "chapters", chapter);
 
-const roots = {
-  "/vendor/rive/": path.join(here, "node_modules/@rive-app/canvas"),
-  "/engineering/": path.join(repo, "engineering"),
-  "/art/": path.join(repo, "art"),
-  "/fonts/": path.join(here, "fonts"),
+// the page's own relative URLs, mapped to where the files live in this repo
+const files = {
+  "/chapter-2-integration.js": path.join(repo, "engineering", "chapter-2-integration.js"),
+  "/yig-text-motion.css": path.join(repo, "engineering", "yig-text-motion.css"),
 };
-
-// The runtime's rive.js is UMD: it sets window.rive when loaded as a classic script. Engineering's code
-// does `import { Rive } from "@rive-app/canvas"`, so the import map points that name here.
-const esmShim = `const r = window.rive;
-export const { Rive, Layout, Fit, Alignment, RuntimeLoader, EventType, StateMachineInputType } = r;
-export default r;
-`;
-
-const pageFiles = new Set(["harness.js", "text-layer.css", "copy.html"]);
+const fontsRoot = path.join(here, "fonts");
 
 const types = {
   ".html": "text/html; charset=utf-8", ".js": "text/javascript", ".mjs": "text/javascript",
-  ".css": "text/css", ".json": "application/json", ".wasm": "application/wasm", ".svg": "image/svg+xml",
-  ".png": "image/png", ".woff2": "font/woff2", ".riv": "application/octet-stream", ".map": "application/json",
+  ".css": "text/css", ".json": "application/json", ".svg": "image/svg+xml",
+  ".png": "image/png", ".woff2": "font/woff2", ".riv": "application/octet-stream",
 };
 
 function newestBuild() {
   const dir = path.join(projectDir, "build");
   if (!fs.existsSync(dir)) return null;
-  const files = fs.readdirSync(dir).filter((f) => f.endsWith(".riv")).map((f) => path.join(dir, f));
-  files.sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs);
-  return files[0] || null;
+  const builds = fs.readdirSync(dir).filter((f) => f.endsWith(".riv")).map((f) => path.join(dir, f));
+  builds.sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs);
+  return builds[0] || null;
 }
 
 let building = null;
@@ -68,31 +60,27 @@ function sendFile(res, file) {
   });
 }
 
+function sendPage(res) {
+  fs.readFile(path.join(here, "index.html"), "utf8", (err, html) => {
+    if (err) { res.writeHead(500).end(String(err.message)); return; }
+    res.writeHead(200, { "content-type": types[".html"], "cache-control": "no-store" });
+    res.end(html.replace("</head>", '<link rel="stylesheet" href="/fonts/fonts.css">\n</head>'));
+  });
+}
+
 http.createServer(async (req, res) => {
   const url = new URL(req.url, "http://localhost");
   const p = decodeURIComponent(url.pathname);
   try {
-    if (p === "/" || p === "/index.html") return sendFile(res, path.join(here, "index.html"));
-    if (pageFiles.has(p.slice(1))) return sendFile(res, path.join(here, p.slice(1)));
-    if (p === "/vendor/rive-esm.js") {
-      res.writeHead(200, { "content-type": "text/javascript", "cache-control": "no-store" });
-      return res.end(esmShim);
-    }
-    if (p === "/yig/chapter-2.riv") {
+    if (p === "/" || p === "/index.html") return sendPage(res);
+    if (p in files) return sendFile(res, files[p]);
+    if (p === "/chapter-2.riv") {
       const { built } = await ensureBuilt();
       return sendFile(res, built);
     }
-    if (p === "/api/riv") {
-      const { built, rebuilt } = await ensureBuilt();
-      const st = fs.statSync(built);
-      res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" });
-      return res.end(JSON.stringify({ chapter, file: path.relative(repo, built), bytes: st.size, builtAt: st.mtime.toISOString(), rebuilt }));
-    }
-    for (const [prefix, root] of Object.entries(roots)) {
-      if (!p.startsWith(prefix)) continue;
-      const file = path.resolve(root, p.slice(prefix.length));
-      if (file !== root && !file.startsWith(root + path.sep)) break; // no path traversal
-      return sendFile(res, file);
+    if (p.startsWith("/fonts/")) {
+      const file = path.resolve(fontsRoot, p.slice("/fonts/".length));
+      if (file.startsWith(fontsRoot + path.sep)) return sendFile(res, file); // no path traversal
     }
     res.writeHead(404).end("not found");
   } catch (e) {

@@ -6,11 +6,13 @@
   2. builds the chapter with `rive --once`
   3. checks the artboard is included in the export: includeInExport is not false in scene.rml, and the built
      .riv contains the artboard, state machine and view model by name
-  4. copies the build as chapter-2.riv together with engineering/chapter-2-integration.js and
-     engineering/yig-text-motion.css into deliver/<chapter>/
-  5. writes deliver/<chapter>/README.md (a short note for engineering), and refreshes engineering/README.md
+  4. checks the example page (harness/index.html) pins a Rive runtime and loads only files that are delivered
+  5. copies the build as chapter-2.riv, engineering/chapter-2-integration.js, engineering/yig-text-motion.css and the
+     example page as index.html into deliver/<chapter>/, removing anything else there, and writes README.md
+     (one page for engineering, also copied to engineering/README.md)
+  6. zips deliver/<chapter>/ to deliver/yig-chapter-2-handoff.zip
 
-Nothing is copied to repo-depot; copy the deliver/<chapter>/ folder there yourself when you are ready.
+deliver/ is ignored by git; send the zip.
 """
 import json
 import os
@@ -18,6 +20,7 @@ import re
 import shutil
 import subprocess
 import sys
+import zipfile
 from pathlib import Path
 
 import check
@@ -27,7 +30,12 @@ from rml_read import Scene, REPO, chapter_dir
 RIVE = os.path.expanduser("~/.rive/bin/rive")
 # the file name engineering's integration code loads from; one name per chapter
 DELIVERED_NAME = {"ch2": "chapter-2.riv"}
-FILES = ["chapter-2-integration.js", "yig-text-motion.css"]
+FILES = ["chapter-2-integration.js", "yig-text-motion.css"]   # from engineering/
+PAGE = REPO / "harness" / "index.html"                          # the example page, copied as index.html
+ZIP_NAME = {"ch2": "yig-chapter-2-handoff.zip"}
+ZIP_ROOT = {"ch2": "chapter-2"}                                 # the folder name inside the zip
+# everything deliver/<chapter>/ may hold; anything else left from an older delivery is removed
+ALLOWED = {"chapter-2.riv", "chapter-2-integration.js", "yig-text-motion.css", "index.html", "README.md"}
 
 
 def fail(msg):
@@ -35,70 +43,121 @@ def fail(msg):
     sys.exit(1)
 
 
-def readme(scene, riv_name, riv_bytes, chapter, revision):
+def readme(scene, riv_name, riv_bytes, chapter, revision, runtime):
     ab = scene.artboard
-    numbers = scene.scene_numbers()
-    # Shelf is the opener; every other layer name is the game it shows
-    # (the Shelf layer has no intro, so its scene value is only in the conditions of "Shelf Exit")
-    rooms = {}
-    for name, n in numbers.items():                 # every room has several layers ("Wordle", "Wordle Exit", ...)
-        rooms.setdefault(n, name.split(" ")[0])
-    labels = {n: ("the chapter opener" if room == "Shelf" else room) for n, room in rooms.items()}
-    table = "\n".join(f"| {n} | {labels[n]} |" for n in sorted(labels))
-    table += "\n| 3 to 7 | Strands, Spelling Bee, The Mini, The Midi, The Crossword (not built yet) |"
+    sm = ab.find("StateMachine").get("name")
+    vm = scene.view_model.get("name")
+    built = sorted(set(scene.scene_numbers().values()))
     return f"""# Year in Games 2026, Chapter 2: handoff for engineering
 
-Load the chapter's file, call our Next or Back function when the player taps, and reveal the next copy. Everything else, including
-all animation timing, is inside the Rive file and `yig-text-motion.css`.
+This folder is a working example of Chapter 2. Run it, tap through it, then build the real thing the same way.
 
-## The three steps
+## Run it locally
 
-1. **Load `{riv_name}`** with the Rive web runtime, autoplay on, state machine `"{scene.artboard.find('StateMachine').get('name')}"`, and
-   `autoBind: true` so the file's view model is bound (see `chapter-2-integration.js`; pin the runtime version you ship).
-2. **On Next, call `onTap()`; on Back, call `onBack()`.** They set the view model numbers `direction` (1 or −1)
-   and `scene` (the scene the new frame shows). Setting the value `scene` already has does nothing, so it is
-   always safe. Back on the opener does nothing. A Back that lands while the rooms are panning waits for the
-   pan to end (at most 1.65 s), then plays; the integration file handles it, nothing for you to time.
-3. **Reveal the next copy** with class `yig-in`, plus `yig-quick` when the scene didn't change, and `yig-back` on
-   Back. The CSS does all the timing: copy for a new game rises 3.2 s after the tap, matching the Rive intro; copy
-   for a game you come back to arrives when the pan ends. Hide the old copy at once. A tap that only moves to the
-   game's next card, while that game's intro is still running, waits until the intro ends (the integration file
-   sets that delay).
+```bash
+cd chapter-2
+python3 -m http.server 8000      # or any static server; opening index.html from disk won't load the .riv
+```
 
-`chapter-2-integration.js` does all three; use it as written. Its exports are `onTap`, `onBack`, `setScene` and `yig`.
-
-## Scene values
-
-| `scene` | Shows |
-|---|---|
-{table}
-
-A game has several cards, one frame each. A tap inside a game keeps the same `scene` (the text changes, Rive keeps
-looping); the tap after the game's last card sets the next game's `scene`. A game appears in one run of cards;
-Back returns through them in reverse.
-
-## Cards that depend on the stats
-
-You decide both of these from the player's stats; the Rive file and the integration code handle the rest.
-
-- **Community card.** A player who solved fewer than 10 of a game's puzzles gets one community card for that game
-  instead of their own cards. Mark that frame `community: true` (for example `{{ scene: "wordle", community: true }}`).
-  The integration file sets the view model boolean `community` before `scene` on the tap that enters the game, and
-  the game's Rive lockup (icon plus word) is then left out. The pan, the room and the 3.2 s intro are unchanged,
-  and the HTML icon pops in with the card, as on a game's first card.
-- **Wordle starting words.** The "top starting words" card takes a list of 1 to 3 words, one line each (`.yig-mask`
-  per word), with the label "starting word was" for one word and "starting words were" for more. Leave the card
-  out of the frames when no word was used more than once.
+Open http://localhost:8000/. Tap the right half of the stage (or →) for Next, the left half (or ←) for Back.
+**Restart** reloads; **Desktop / Phone** switches between the full {ab.get('width')} × {ab.get('height')} artboard and the
+centre 375-wide phone crop. The page loads the Rive runtime from jsDelivr, so it needs the network.
 
 ## Files
 
 | File | What it is |
 |---|---|
-| `{riv_name}` | the Rive file ({riv_bytes:,} bytes): artboard `"{ab.get('name')}"` {ab.get('width')} × {ab.get('height')}, state machine `"{scene.artboard.find('StateMachine').get('name')}"`, view model `"{scene.view_model.get('name')}"` with the numbers `scene` and `direction` and the boolean `community` |
-| `chapter-2-integration.js` | the integration code: load, Next and Back (`scene`, `direction`), reveal copy |
-| `yig-text-motion.css` | text motion v3: Rise in 720 ms, Lift out 240 ms (clear in 340 ms), Pop 560 ms, reversed on Back; waits 3.2 s for a new game |
+| `{riv_name}` | the Rive file ({riv_bytes:,} bytes): artboard `"{ab.get('name')}"`, state machine `"{sm}"`, view model `"{vm}"` (numbers `scene`, `direction`; boolean `community`) |
+| `chapter-2-integration.js` | our integration code. Use it as written: it loads the file, handles Next and Back, and reveals the copy |
+| `yig-text-motion.css` | the text motion; all text timing lives here |
+| `index.html` | the example page: example player data, `buildCards`, the copy, and the tap wiring |
 
-Built from `chapters/{chapter}` {revision}.
+## Cards and game names
+
+The chapter is an ordered list of cards, one per tap. Give it to the integration as `player.chapterFrames`
+(a global it reads when imported). Each card names its game:
+
+```js
+[{{ scene: "opener" }}, {{ scene: "wordle" }}, {{ scene: "wordle" }}, {{ scene: "connections", community: true }}]
+```
+
+- `scene` is one of `"opener"`, `"wordle"`, `"connections"`, `"strands"`, `"spelling-bee"`, `"mini"`, `"midi"`, `"daily"`.
+  The integration turns the name into the Rive number; you never set Rive values yourself.
+- `community: true` marks a game's community card (the player solved fewer than 10 of its puzzles). Rive then
+  leaves out that game's lockup; everything else plays the same.
+- Any other fields (the example uses `card` and `variant`) are yours, for choosing the copy.
+- The opener comes first, then each game's cards together, in the player's order.
+- An unknown name throws. A game that isn't built in the `.riv` yet keeps the current room on screen, still changes
+  the copy, and logs a console warning, so you can wire up later games before their art ships.
+
+## buildCards: an example of your logic
+
+In `index.html`, `EXAMPLE_PLAYER` stands in for the Games API (it's made-up data), and `buildCards(player)` turns
+it into the card list. It's an example of the logic you'll write against the real stats, not code to ship:
+
+- the opener first, then each game in the player's order;
+- 10 or more solves: the game's own cards, skipping a card that has no stat (for example the top starting words
+  card when no word repeated), and picking the hardest-word card's variant from the result (solved, missed,
+  not played);
+- fewer than 10 solves: the game's one community card;
+- games not built yet are left out for now.
+
+The example player is a mixed case: Wordle with its own cards and two starting words, then Connections as a
+community card. The comment above `EXAMPLE_PLAYER` shows how to try other cases.
+
+Each card's copy is a block of HTML, rendered up front and hidden, marked `data-copy-frame="<card index>"`; each game's
+icon is a block marked `data-icon-scene="<game name>"`. The integration shows and hides them.
+
+## onTap and onBack
+
+Call `onTap()` on Next and `onBack()` on Back. That's the whole integration:
+
+- They move to the next or previous card, and set Rive's `scene`, `direction` and `community` for it. A card in the
+  same game changes only the copy; Rive keeps looping.
+- They reveal the card's copy and the game's icon, timed to Rive (3.2 s after the tap for a game's first visit, when
+  the pan ends for a game you come back to, about 0.34 s for a card in the same game).
+- Back on the opener, or Next on the last card, does nothing. A tap that would reverse a pan waits for it to end.
+  You don't time anything in JavaScript and you don't handle Rive events.
+
+The module also exports `setScene` and `yig` (the Rive instance, for cleanup: `yig.cleanup()`).
+
+## CSS classes
+
+All set by the integration; you only write the markup.
+
+| Class | Meaning |
+|---|---|
+| `yig-text` | a card's copy block |
+| `yig-icon` | a game's icon block, with the icon inside `yig-pop` |
+| `yig-mask` > `yig-line` | one designed line; each line rises in its own mask. `yig-pop` on an image pops instead |
+| `yig-in` | reveal: waits `--yig-delay` (3.2 s by default), then rises in |
+| `yig-quick` | same game: rises right after the old copy clears (`--yig-clear`, 340 ms) |
+| `yig-after-icon` | a game's first card: its lines start one step after the icon |
+| `yig-out` | leave: lifts out and dissolves |
+| `yig-back` | Back: the same moves, reversed (down instead of up) |
+
+## Rive runtime
+
+`@rive-app/canvas` **{runtime}**. Pin that version. In your app, `npm install @rive-app/canvas@{runtime}` and the
+integration's `import {{ Rive }} from "@rive-app/canvas"` resolves as usual. The example page maps that import to the
+same version on a CDN only so it runs without a build step.
+
+## Built and coming
+
+| Game | Name | Rive `scene` | Status |
+|---|---|---|---|
+| Opener | `"opener"` | 0 | built |
+| Wordle | `"wordle"` | 1 | built |
+| Connections | `"connections"` | 2 | built |
+| Strands | `"strands"` | 3 | coming |
+| Spelling Bee | `"spelling-bee"` | 4 | coming |
+| The Mini | `"mini"` | 5 | coming |
+| The Midi | `"midi"` | 6 | coming |
+| The Crossword | `"daily"` | 7 | coming |
+
+New games arrive as an updated `{riv_name}`; the card format and your calls don't change. Copy text is placeholder.
+
+Built from `chapters/{chapter}` {revision}. Rooms in this file: scene {", ".join(map(str, built))}.
 """
 
 
@@ -141,20 +200,46 @@ def main(argv):
     print(f'   includeInExport {flag}; the built file holds artboard "{ab.get("name")}", state machine '
           f'"{ab.find("StateMachine").get("name")}", view model "{scene.view_model.get("name")}" and the number "scene"')
 
-    print("4. copy")
+    print("4. the example page works from the delivery folder on its own")
+    page = PAGE.read_text()
+    runtime = re.search(r"@rive-app/canvas@(\d+\.\d+\.\d+)/", page)
+    if not runtime:
+        fail("harness/index.html does not load a pinned @rive-app/canvas version")
+    runtime = runtime.group(1)
+    integration = (REPO / "engineering" / "chapter-2-integration.js").read_text()
+    # every local file the page and the integration load must be one of the delivered files, by a relative path
+    local = re.findall(r'(?:href|src)="(?!https?:|data:|#)([^"]+)"', page) + re.findall(r'import\(\s*"(\./[^"]+)"', page)
+    local += re.findall(r'src:\s*"([^"]+)"', integration)
+    extra = sorted({u for u in local if u.lstrip("./") not in ALLOWED})
+    if extra:
+        fail(f"the example page or integration loads files that aren't delivered: {extra}")
+    print(f"   runtime @rive-app/canvas {runtime}; local files loaded: {', '.join(sorted({u.lstrip('./') for u in local}))}")
+
+    print("5. copy")
     out = REPO / "deliver" / chapter
     out.mkdir(parents=True, exist_ok=True)
+    for p in out.iterdir():
+        if p.name not in ALLOWED:
+            shutil.rmtree(p) if p.is_dir() else p.unlink()
     shutil.copy2(built, out / DELIVERED_NAME[chapter])
     for f in FILES:
         shutil.copy2(REPO / "engineering" / f, out / f)
+    shutil.copy2(PAGE, out / "index.html")
     # the commit the chapter's source was last changed in (not "dirty": the README itself is written into the repo)
     sha = subprocess.run(["git", "-C", str(REPO), "log", "-1", "--format=%h", "--", f"chapters/{chapter}"], capture_output=True, text=True).stdout.strip()
-    text = readme(scene, DELIVERED_NAME[chapter], built.stat().st_size, chapter, f"(source last changed in git {sha})" if sha else "")
+    text = readme(scene, DELIVERED_NAME[chapter], built.stat().st_size, chapter, f"(source last changed in git {sha})" if sha else "", runtime)
     (out / "README.md").write_text(text)
     (REPO / "engineering" / "README.md").write_text(text)
     for p in sorted(out.iterdir()):
         print(f"   {p.relative_to(REPO)}  ({p.stat().st_size:,} bytes)")
-    print("\ndone. Nothing was copied to repo-depot.")
+
+    print("6. zip")
+    zpath = REPO / "deliver" / ZIP_NAME[chapter]
+    with zipfile.ZipFile(zpath, "w", zipfile.ZIP_DEFLATED) as z:
+        for p in sorted(out.iterdir()):
+            z.write(p, f"{ZIP_ROOT[chapter]}/{p.name}")
+    print(f"   {zpath.relative_to(REPO)}  ({zpath.stat().st_size:,} bytes), unzips to {ZIP_ROOT[chapter]}/")
+    print("\ndone.")
 
 
 if __name__ == "__main__":

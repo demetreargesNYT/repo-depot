@@ -1,0 +1,6 @@
+/* The NYT fonts for the local harness only. serve.mjs links this into index.html; the handoff page leaves it out,
+   because engineering's site already loads these faces, and falls back to the system fonts on its own. */
+@font-face { font-family: "NYT Franklin"; font-weight: 500; src: url(/fonts/nyt-franklin-500.woff2) format("woff2"); font-display: swap; }
+@font-face { font-family: "NYT Franklin"; font-weight: 700; src: url(/fonts/nyt-franklin-700.woff2) format("woff2"); font-display: swap; }
+@font-face { font-family: "NYT Karnak"; font-weight: 500; src: url(/fonts/nyt-karnak-500.woff2) format("woff2"); font-display: swap; }
+@font-face { font-family: "NYT Karnak"; font-weight: 700; src: url(/fonts/nyt-karnak-700.woff2) format("woff2"); font-display: swap; }

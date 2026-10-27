@@ -8,7 +8,7 @@ Do all the Rive work in **Claude Code in VS Code, in `repo-depot/YIG2026/rive`**
 
 - **Rive CLI as the main tool.** The file is text, so changes are reviewable and diffable, and every push lands in the Team folder file as a named revision.
 - **Rive MCP as the second tool.** Connect it for the times the Editor is open and you want Claude Code to work on the live file.
-- **A local harness page instead of the GSAP prototype.** It plays the real `.riv` with Rive's web runtime and the real text CSS, with a button per scene. That way you're tuning the actual file engineering will ship, and the same page is what you show them.
+- **A local harness page instead of the GSAP prototype.** It plays the real `.riv` with Rive's web runtime and the real text CSS, with example player data and tap halves, no menus. That way you're tuning the actual file engineering will ship, and the same page is what you show them.
 - **Git, alongside Rive's own revision history.** Rive keeps revisions per file. Git keeps the RML diffs, the specs and the engineering files together, and lets you tag what you handed off.
 - **Engineering gets finished files only.** `npm run deliver ch2` builds `deliver/ch2/`; hand that folder over at each milestone.
 
@@ -33,7 +33,7 @@ Tell me what you moved and anything that didn't match.
 ```
 
 3. **Connect the Rive MCP**, once. ✅ Done (added for this folder; shows Connected). In a terminal: `claude mcp add --transport http rive http://127.0.0.1:9791/mcp`. It only works while the Rive desktop Editor is open.
-4. **Build the harness:** ✅ Done. Run it with `cd harness && npm install && npm start`, then open http://127.0.0.1:8765/ (see `harness/README.md`). The prompt used:
+4. **Build the harness:** ✅ Done. Run it with `cd harness && npm start`, then open http://127.0.0.1:8765/ (see `harness/README.md`). The prompt used:
 
 ```
 Build harness/index.html: a local page that loads chapters/chN/build/*.riv with the Rive web runtime,
@@ -56,4 +56,4 @@ in the harness.
 
 - **Adjusting motion:** ask Claude Code for the change ("make the pan 1.3 s and keep the intro at 3.2 s"), then look at it in the harness. Or tweak it by hand in the Editor, then ask Claude Code to `rive pull` and commit.
 - **A new game or chapter:** import its art in the Editor, pull, write its section of the spec, then build in stages.
-- **Handing off:** push a named revision, tag it in git, then copy the `.riv` and `engineering/` files into repo-depot.
+- **Handing off:** push a named revision, run `npm run deliver ch2`, send `deliver/yig-chapter-2-handoff.zip`, and tag the commit `rive/ch2-handoff-N`.

@@ -9,8 +9,9 @@ It lives inside repo-depot (moved in with its history from `~/Desktop/rive-tests
 - `chapters/chN/`: one Rive CLI project per chapter. Each is linked to its file in the Rive Team folder through its `rive.yaml`.
 - `art/chN/`: import SVGs, original exports and reference PNGs.
 - `docs/`: per-chapter animation specs, plus restructure notes.
-- `harness/`: a local page that plays a chapter's built `.riv` with the real Rive web runtime and the text CSS, for review.
+- `harness/`: one example page, `index.html`, that plays a chapter's built `.riv` with the real Rive web runtime and the text CSS. It is our review page and engineering's example (`npm run deliver ch2` copies it into the handoff), so write it the way engineering will build it: example player data, `buildCards`, the copy, tap halves. No review menus.
 - `engineering/`: what developers get: integration code, `yig-text-motion.css`, and a short README.
+- `deliver/` (not in git): `npm run deliver ch2` writes `deliver/ch2/` (the `.riv`, integration, CSS, example page, README) and zips it to `deliver/yig-chapter-2-handoff.zip`, which is what gets sent.
 - `reference/`: the earlier HTML prototypes, kept as motion references only. They aren't the source of truth.
 
 ## How engineering uses a chapter (keep it this small)

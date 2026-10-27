@@ -646,7 +646,7 @@ Built from adding Wordle and Connections. A new game, say Strands (scene 3), is 
 7. **The layers.** `Strands`: Waiting → Intro (`scene` == 3) → Loop. `Strands Exit`: the moves exactly as the other rooms have them (`npm run check` lists any difference). `Strands Draw`: Below ↔ On Top on `scene` == 3. Wrap its lockup in a `Strands Lockup Gate` and add `Strands Lockup Shown`, `Strands Lockup Hidden` and the `Strands Lockup` layer (see Community cards).
 8. **Draw order.** Nothing else to re-point: every room's Top target is the shared Top Marker.
 9. **Check.** `npm run check ch2`; then the slower passes before handoff: `npm run tap` (interrupted Next taps), `npm run back` (Next and Back at exact frames), `npm run text`, and look at it in the harness.
-10. **Add its cards** to `harness/copy.html`, and its scene number to the integration file's table.
+10. **Add its cards** to `harness/index.html` (its stats in `EXAMPLE_PLAYER`, its cards in `buildCards`, their copy), and its name to the integration file's `BUILT` set.
 
 ## Ease reference
 
