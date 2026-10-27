@@ -12,4 +12,5 @@ CHAPTER=ch1 PORT=9000 npm start   # another chapter or port
 - The server rebuilds the `.riv` with `rive --once` whenever `scene.rml` is newer than the build, so reload the page after an edit.
 - **Next** (→) runs engineering's `onTap()` and **Back** (←) its `onBack()`. **Restart** reloads the file and the integration code. The scene buttons set the file's number directly, as a shortcut.
 - The page reads the integration file's source: with `chapterFrames` it uses the scene style (frame list, one `scene` value); without it, the game + frame style.
+- The harness builds its frame list with game names (`{ scene: "wordle" }`), the same as engineering's page will; the integration file turns each name into the Rive scene number. Only the scene buttons use numbers, as a shortcut that sets the file's value directly.
 - The integration file is imported untouched. It must export `onTap`, `onBack`, `setScene` and `yig` (the Rive instance, for the readouts and cleanup).

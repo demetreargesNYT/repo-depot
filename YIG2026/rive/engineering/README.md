@@ -8,7 +8,7 @@ all animation timing, is inside the Rive file and `yig-text-motion.css`.
 1. **Load `chapter-2.riv`** with the Rive web runtime, autoplay on, state machine `"Chapter 2"`, and
    `autoBind: true` so the file's view model is bound (see `chapter-2-integration.js`; pin the runtime version you ship).
 2. **On Next, call `onTap()`; on Back, call `onBack()`.** They set the view model numbers `direction` (1 or −1)
-   and `scene` (the scene the new frame shows). Setting the value `scene` already has does nothing, so it is
+   and `scene` (the number for the game the new frame names). Setting the value `scene` already has does nothing, so it is
    always safe. Back on the opener does nothing. A Back that lands while the rooms are panning waits for the
    pan to end (at most 1.65 s), then plays; the integration file handles it, nothing for you to time.
 3. **Reveal the next copy** with class `yig-in`, plus `yig-quick` when the scene didn't change, and `yig-back` on
@@ -19,17 +19,25 @@ all animation timing, is inside the Rive file and `yig-text-motion.css`.
 
 `chapter-2-integration.js` does all three; use it as written. Its exports are `onTap`, `onBack`, `setScene` and `yig`.
 
-## Scene values
+## Game names
 
-| `scene` | Shows |
-|---|---|
-| 0 | the chapter opener |
-| 1 | Wordle |
-| 2 | Connections |
-| 3 to 7 | Strands, Spelling Bee, The Mini, The Midi, The Crossword (not built yet) |
+Your frame list names games, never numbers: each frame is `{ scene: "<name>" }`. The integration file translates the
+name to the Rive file's `scene` number (its `SCENE` table), so you never write or read the number. An unknown name
+throws.
 
-A game has several cards, one frame each. A tap inside a game keeps the same `scene` (the text changes, Rive keeps
-looping); the tap after the game's last card sets the next game's `scene`. A game appears in one run of cards;
+| Name in your frames | Rive `scene` | Shows |
+|---|---|---|
+| `"opener"` | 0 | the chapter opener |
+| `"wordle"` | 1 | Wordle |
+| `"connections"` | 2 | Connections |
+| `"strands"` | 3 | Strands (not built yet) |
+| `"spelling-bee"` | 4 | Spelling Bee (not built yet) |
+| `"mini"` | 5 | The Mini (not built yet) |
+| `"midi"` | 6 | The Midi (not built yet) |
+| `"daily"` | 7 | The Crossword (not built yet) |
+
+A game has several cards, one frame each. A tap inside a game keeps the same game name (the text changes, Rive keeps
+looping); the tap after the game's last card moves to the next game's frame. A game appears in one run of cards;
 Back returns through them in reverse.
 
 ## Cards that depend on the stats

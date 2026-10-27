@@ -1,10 +1,11 @@
-// Scene numbers agreed with design. 0 is the chapter's opening frame.
-const SCENE = { opener: 0, wordle: 1, connections: 2, strands: 3, spellingBee: 4, mini: 5, midi: 6, crossword: 7 };
+// Frames name their game; this table turns the name into the Rive file's scene number. 0 is the chapter's opening frame.
+const SCENE = { opener: 0, wordle: 1, connections: 2, strands: 3, "spelling-bee": 4, mini: 5, midi: 6, daily: 7 };
 
 // The chapter's frames in order, built from the player's stats: the opener, then each game's cards in the
 // player's order. Each frame names the scene it shows; a game with several cards has several frames in a row.
 // A player who solved fewer than 10 of a game's puzzles gets one community card for that game instead of their own
 // cards: mark that frame community: true (the game's Rive lockup is then left out; everything else is the same).
+// Names: "opener", "wordle", "connections", "strands", "spelling-bee", "mini", "midi", "daily".
 // Example: [{ scene: "opener" }, { scene: "wordle", community: true }, { scene: "connections" }, { scene: "connections" }]
 const frames = player.chapterFrames;
 
@@ -55,6 +56,7 @@ function move(step) {
   clearTimeout(heldTimer);
   const target = frame + step;
   if (target < 0 || target > frames.length - 1) return;
+  if (!(frames[target].scene in SCENE)) throw new Error(`Unknown game "${frames[target].scene}" in chapterFrames`);
   const roomChange = frames[target].scene !== frames[frame].scene;
   const now = performance.now();
   if (roomChange && pan.endsAt > now && (step < 0 || pan.dir < 0)) {
