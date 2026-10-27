@@ -4,6 +4,10 @@ Rive animation for NYT Games' Year in Games 2026 recap ("Well Played"). Design l
 
 It lives inside repo-depot (moved in with its history from `~/Desktop/rive-tests/yig-rive`, now `yig-rive-archive`; don't work there). Git commands run against repo-depot, so commit and push follow repo-depot's rules, and add only files under `YIG2026/rive/`. Rive tags are `rive/ch2-…`.
 
+## Status
+
+The whole-experience plan is in `docs/rive-plan.md`: three Rive files (Start + Chapter 1, Chapter 2, Chapters 3 + 4 + End), two How-to overlay files, and one integration file for all of them. Stage 0 (the plan) is done; Stage 1 (the Spelling Bee comparison) is next. The illustrator's file (Rive file 2668591) is the art source: read only, never edit or push to it. The floor line is 712 in every file. The Rive CLI is signed in as lindsey.liang on purpose; push under that login as normal.
+
 ## Layout
 
 - `chapters/chN/`: one Rive CLI project per chapter. Each is linked to its file in the Rive Team folder through its `rive.yaml`.

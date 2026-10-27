@@ -1,0 +1,165 @@
+# Year in Games 2026: Rive plan for the whole experience
+
+Status: approved by Demetre. Stage 0 done when this file is committed; Stage 1 (Spelling Bee comparison) is next.
+
+## Decisions
+
+- Both flows (subscriber/registered and anonymous) ship as the same files. Only the card list and the HTML copy differ.
+- **Floor line is 712 in every file.** The illustrator's file has 710.5 (Chapters 1–3), 711 (Chapter 4) and 740 (End); we set them all to 712 as rooms come in.
+- **One integration file for the whole experience**, not one per Rive file (see "The integration").
+- **Ads and the top-game video are cards.** When an ad or the video finishes, engineering calls `onTap()` like any other tap.
+- **The illustrator's ball rig does not come in.** No joystick, no `Ball_Move` solo, no `Ball_Squash` or `Ball_Scale` helper animations. Each room's ball is plain ball art, like Wordle and Connections, with its squash, scale and movement keyed directly in the room's intro and loop. The illustrator's ball motion is the reference for timing and shape only.
+- **Fix the loops that don't close ourselves**, after a quick look at each in the Editor. Every fix is listed under "Fixes to the illustrator's art" so the illustrator can match their source.
+- **Rive CLI login:** it runs as lindsey.liang on purpose. Push under it as normal.
+- Art source: the illustrator's Rive file (file 2668591, Team folder). Never edit or push to it. A read-only copy is pulled into `/tmp` when needed.
+
+## The files
+
+| File | Scenes | Starts on | Ends on |
+|---|---|---|---|
+| 1 · Start + Chapter 1 | Loading, Start, Ad 1, Chapter 1 (five rooms, one per card, c1s1–c1s5), Ad 2 | Loading | empty Chapter 1 room (cream F1ECC0 wall, orange FF811E floor) |
+| 2 · Chapter 2 | Opens on the empty Chapter 1 room and pans into the opener (floor changes orange to pink), then the player's games and community cards, then an empty Chapter 3 backdrop | empty Chapter 1 room | empty Chapter 3 backdrop (lavender E1DBF5 wall, green 05CE7C floor) |
+| 3 · Chapters 3, 4 + End | Ad 3 (anons), Chapter 3, Chapter 4 (seven top-game versions chosen by `topGame`), the top-game video (a card), End | empty Chapter 3 backdrop | End loop on the orange floor |
+| how-to-mobile.riv | one artboard, "Mobile" | | |
+| how-to-desktop.riv | one artboard, "Desktop" | | |
+
+- **Start** shares Chapter 1's room and moves into it in one continuous motion (c0 is c1s1 without the clock and window).
+- **An ad** is one more scene: the props leave, the wall and floor stay. An ad is a card; engineering's ad finishes and they call `onTap()`.
+- **Chapter 1** is five rooms that pan on the same colors, one per card.
+- **The handoff rule:** every file starts and ends on an empty backdrop, and both files show the same picture at a handoff (same wall color, floor color, floor line at 712, no ball), so the file swap is invisible.
+- **How-to overlay:** two separate files, `how-to-mobile.riv` and `how-to-desktop.riv`. Engineering serves one by breakpoint and places it over the stage; the idle timer is on their side. Keep the two files' structure identical (same artboard name pattern, same state machine name, same view model, same value names) so they can be merged into one file later if we want.
+
+## The integration
+
+Engineering builds one card list for the whole experience. Each card is tagged with what it shows:
+
+```js
+{ game: "opener" } { game: "wordle" } { game: "connections", community: true }
+{ ad: 1 }  { chapter1: 3 }  { topGame: "wordle" }  { video: true }  { game: "end" }
+```
+
+They call `start(cards)`, `onTap()` and `onBack()`, exactly as today. The integration works out which Rive file each card belongs to, loads the next file in the background, and swaps files on the handoff frame itself.
+
+How it fits with the Chapter 2 handoff they already have:
+
+- `engineering/chapter-2-integration.js` stays as it is and keeps working. The new integration (`engineering/yig-integration.js`) exports the same three calls plus the same `setScene` and `yig`, and takes over the logic in `chapter-2-integration.js` for File 2, so Chapter 2's `game` names, `community`, `BUILT` set, pan hold, intro waits and copy timing carry over unchanged.
+- Cards that were `{ game: "wordle" }` today still mean the same thing. New tags are added, none renamed. A card with no file tag is treated as Chapter 2, so today's card lists keep working.
+- The text CSS, `data-copy-frame` and `data-icon-game` markup stay as they are.
+- Ad and video cards have no Rive copy. The integration shows nothing for them and tells engineering's code nothing except what the card is; engineering owns the ad and the video.
+
+How a swap works:
+
+1. While a file is on screen, the integration loads the next file into a second, hidden canvas with autoplay paused on its first picture.
+2. On the tap that crosses a file boundary, it shows the second canvas and hides the first on one frame. Because both show the same picture, nothing visible changes. Then it sets the new file's `scene`, so the pan or intro starts from the shared picture.
+3. Back across a boundary is the mirror: the pan back finishes inside the later file (back to the empty room), then the integration swaps to the earlier file already set to its last scene. A Back during a pan waits for the pan, as today.
+4. The old canvas is cleaned up (`cleanup()`) after the swap.
+
+What this makes harder than three separate files, honestly:
+
+- Memory and loading: two Rive instances are alive around each handoff, and the next file has to be loaded in time. A slow connection could reach the handoff before the next file has loaded; the integration needs a rule for that (hold the tap and show the current empty room until it is ready).
+- Back across a boundary needs the earlier file reloaded at its last scene, which is the one case where we load a file twice.
+- One module to test instead of three small ones, with a bigger card-to-file table. It is more logic in our code and less in engineering's, which matches their priority.
+- If a file fails to load, the integration has to fail in one place; with separate files each failure is local.
+- None of this is a blocker. The cost is mostly the preload/swap code and its tests, written once.
+
+## The art
+
+The illustrator's file has 22 artboards, none exporting. Every room carries its own wall and floor shapes (removed on the way in) and the shared ball rig (not brought in). Findings on timing, measured from keyframes:
+
+| Artboard | What it is | Wall / floor | Motion | Fits our rules? |
+|---|---|---|---|---|
+| NYT_YIG_c0 | Start | F1ECC0 / FF811E | Ball_Loop 1 s loop (start = end); Loop 5 s loop (dog); Dog_Eye 5 s | Loop fine. Needs the move into c1s1 and a 3.2 s intro. |
+| c1s1 | Ch1 card 1 | F1ECC0 / FF811E | Ball 7 s one-shot (older ball, vertex-keyed); Loop 5 s loop; Pendulum 3 s ping-pong | Loops close. Ball needs cutting to a 3.2 s intro plus loop. Has a hidden full-frame still to delete. |
+| c1s2 | Ch1 card 2 | same | Ball 5 s loop | No: ball ends 94 and 190 units from where it starts. |
+| c1s3 | Ch1 card 3 | same | Ball 5 s loop | Nearly: 2 units off. |
+| c1s4 | Ch1 card 4 | same | Ball 5 s loop | Yes. Hidden tracing image to delete. |
+| c1s5 | Ch1 card 5 | same | Ball 3 s loop | No: x ends 257 units away. Tracing image visible at 19%. |
+| c2s1 | Ch2 opener (shelves, trophies, door, cat tree) | E7F1E1 / FEA0C9 | c2s1_Loop 7 s loop (closes) | Looks like a fuller version of our Shelf room. Leftover `c2-wordle 2` node. |
+| c2s2 | Wordle | C3E2C0 / FEA0C9 | Ball 3 s loop | No: 35 and 58 units off. |
+| c2s3 | Connections | E1DBF5 / FEA0C9 | Ball 3 s loop | Nearly: 1 unit. |
+| c1s8 | Strands (misnamed; its state machine is "c2s8") | DFF3F0 / FEA0C9 | Ball 3 s loop | Yes. |
+| c2s4 | Spelling Bee | FFFDEF / FEA0C9 | Ball 4 s loop | Yes (1 unit). |
+| c2s5 | The Mini | 95BEFA / FEA0C9 | Ball 2.5 s loop | No: 86 and 135 units off. |
+| c2s6 | The Midi | 7EAAF1 / FEA0C9 | Ball 2.5 s loop | No: 175 and 104 units off. |
+| c2s7 | The Crossword | 6493E6 / FEA0C9 | Ball 3 s loop (keys radius and opacity) | Needs a look in the Editor. |
+| c3s1 | Chapter 3 | E1DBF5 / 05CE7C | Loop 5 s one-shot; Ball 7 s one-shot | No: Loop doesn't repeat and doesn't close. |
+| c4s1 × 5 | Chapter 4 (Strands, SpellineBee, Connections, Crossword, Wordle) | DFF3F0, FFFDEF, E1DBF5, C0D8F8, C3E2C0 / FFBC45 | Fireworks 5 s loops; Ball 7 s one-shot ending with the ball scaled to 5.2× | Fireworks loops don't close; needs a check. |
+| c5s1 | End | DFF3F0 / FF811E | Loop 5 s loop (closes) | Floor at 740, moves to 712. |
+
+None of the rooms has an intro, a pan or 3.2 s timing; we add those ourselves.
+
+**Chapter 4 is mostly one room.** All five versions hold the same stack of every game's pieces plus the ball. Only the wall color, the fireworks group and the fireworks timing change. So `topGame` picks a wall color and a fireworks set over one shared stack. The stack is built once.
+
+## How scenes come in
+
+Copy each room in as RML with a small script (`tools/import_room.py`) that reads the read-only pulled copy and writes the room's art into a `<Room>` group in our file. It gives every node a fresh id, copies the SVG and image assets the room uses, and leaves out the room's wall, floor, reference images and ball rig. Then the room is plain RML like Wordle, and our checks, Waiting poses, wall lag, draw rules and Lockup Gates all work on it. Nesting scene artboards as components is not used: our parent timelines can't key inside a nested artboard, a nested artboard clips to its own frame (cutting off pieces that start outside it and the ball rolling in from beyond the left edge), and draw rules target Shapes, not nested artboards. The Editor import is kept for art that exists only as SVG (the missing lockups).
+
+The ball in each room is rebuilt as plain ball art, the way Wordle and Connections do it, with its squash, scale and movement keyed in the room's intro and loop, using the illustrator's ball motion for timing and shape.
+
+## What's missing
+
+From the illustrator:
+1. Chapter 4 has no Mini or Midi version. Because the stack is shared, each needs a fireworks set and a wall color (95BEFA and 7EAAF1 from Chapter 2 as a start).
+2. Loading has no art.
+3. The How-to overlay has no art, for Mobile or Desktop.
+4. Lockups for Strands, Spelling Bee, The Mini, The Midi and The Crossword (only Wordle and Connections exist, in our Chapter 2).
+5. No intros anywhere. For each new room I propose an intro in the style of Wordle and Connections (pieces arriving and settling, exactly 3.2 s) for Demetre to approve or adjust in the harness.
+6. Loops that don't close (list below).
+
+On our side:
+7. Floor line to 712 everywhere.
+8. Ad and Loading scenes in File 1; the Chapter 2 ending (empty Chapter 3 backdrop) and how engineering knows to swap to File 3 (the integration decides it from the card list).
+9. `topGame` and the video card in File 3.
+10. The tools (`check_chapter.py`, `check.py`, `deliver.py`) assume the Chapter 2 artboard and names. They need to take each file's artboard and room list.
+11. Chapter 2 opener: before swapping our Shelf art for c2s1, show both side by side in the harness for Demetre to choose.
+
+## Fixes to the illustrator's art
+
+Each fix is made in our copy only, after a quick look in the Editor, and recorded here so the illustrator can match their source if they want.
+
+| Artboard | Problem | Fix we made | Status |
+|---|---|---|---|
+| c1s2 | ball loop ends 94 / 190 units from its start | to do | to do |
+| c1s3 | ball loop 2 units off | to do | to do |
+| c1s5 | ball loop x ends 257 units away; tracing image visible | to do | to do |
+| c2s2 (Wordle) | ball loop 35 / 58 units off | to do | to do |
+| c2s3 (Connections) | ball loop 1 unit off | to do | to do |
+| c2s5 (Mini) | ball loop 86 / 135 units off | to do | to do |
+| c2s6 (Midi) | ball loop 175 / 104 units off | to do | to do |
+| c2s7 (Crossword) | check ball loop | to do | to do |
+| c3s1 | Loop is one-shot and doesn't close | to do | to do |
+| c4s1 ×5 | fireworks loops don't close | to do | to do |
+| c1s8 | misnamed (is Strands), state machine "c2s8" | renamed | to do |
+| c4s1_SpellineBee | name typo | renamed | to do |
+| c1s1, c1s4, c1s5 | reference images | removed | to do |
+| c5s1 | floor at 740 | set to 712 | to do |
+
+## Order of work
+
+Each stage ends with `npm run check`, a screenshot, a push with `--name`, and a git commit. Stages that change what's on screen end with a list of exactly what to look at in the harness.
+
+**Stage 0: Plan in the repo.** This file, the CLAUDE.md Status section and the login line. Commit.
+
+**Stage 1: Spelling Bee comparison** (scratch copy only, never committed, no Rive file link). Bring c2s4 into a copy of Chapter 2 as scene 4, once as a nested component and once as an RML copy with the ball rebuilt directly, and show both in the harness. It passes if it does everything Wordle does: pans in and out with the same 1280 / 1600 travel, ball keeps looping while leaving, loop starts and ends on one pose, 3.2 s intro, arrives already built on return, Back is the mirror, backdrop crossfades to FFFDEF, nothing clipped, `npm run check` passes. Stop for Demetre's pick.
+- *By hand:* look at both in the harness and pick one.
+
+**Stage 2: Finish Chapter 2 (File 2).** Bring in Strands, Spelling Bee, The Mini, The Midi and The Crossword with layers, intro, Waiting pose, loop fixes and lockup. Opener choice (side by side). Open on the empty Chapter 1 room and pan into the opener. Add the ending into the empty Chapter 3 backdrop. Update the README and handoff.
+- *By hand:* import the five missing lockup SVGs in the Editor (I `rive pull`). Approve intro motion and the opener choice.
+
+**Stage 3: File 1, Start + Chapter 1.** Generalize the tools. Loading, Start into Chapter 1 in one continuous motion, five rooms, Ad 1 and Ad 2 as empty-room scenes, ending on the empty Chapter 1 room.
+- *By hand:* create the empty Rive file in the Team folder and send me its id. Import Loading art when it exists.
+
+**Stage 4: File 3, Chapters 3, 4 + End.** Opens on the empty Chapter 3 backdrop (Ad 3). Chapter 3 as one room with HTML badges. Chapter 4 with `topGame`. End at 712.
+- *By hand:* create the empty Rive file, send me its id. Import Mini and Midi fireworks when they arrive.
+
+**Stage 5: How-to overlay.** `how-to-mobile.riv` and `how-to-desktop.riv`, identical structure.
+- *By hand:* import the art in the Editor, create the two files.
+
+**Stage 6: The one integration, then handoffs.** `engineering/yig-integration.js` and its tests (card-to-file table, preload, swap on the handoff frame, Back across a boundary, held taps). Then full render, pixel and timing passes per file, `npm run deliver`, tags.
+- *By hand:* check each file-to-file handoff in the harness; send the zip.
+
+## Verification
+
+- Every stage: `npm run check` (verify; intros exactly 3.2 s; loops start and end on one pose; Waiting pose equals intro's first keys; everything clears the artboard).
+- At each handoff: render the last frame of one file and the first frame of the next; they match exactly.
+- Motion and feel are reviewed by Demetre in the harness.
