@@ -4,9 +4,10 @@
 //   http://127.0.0.1:8765/#mini   starts on the card before The Mini, so one tap plays The Mini's intro
 //   Replay                        replays the current room's intro (reloads to the card before it, then taps Next)
 //
-// Names: opener, wordle, connections, strands, spelling-bee, mini, midi, daily (daily is The Crossword).
-const SCENE = { opener: 0, wordle: 1, connections: 2, strands: 3, "spelling-bee": 4, mini: 5, midi: 6, daily: 7 };
-const ALIAS = { crossword: "daily", "the-mini": "mini", "the-midi": "midi", "the-crossword": "daily", spellingbee: "spelling-bee", bee: "spelling-bee" };
+// Names: chapter1 (the empty start room), opener, wordle, connections, strands, spelling-bee, mini, midi, daily (daily is The Crossword), chapter3
+// (the Chapter 2 ending: no intro of its own, so #chapter3 is for viewing the backdrop crossfade, not a replay).
+const SCENE = { opener: 0, wordle: 1, connections: 2, strands: 3, "spelling-bee": 4, mini: 5, midi: 6, daily: 7, chapter3: 8, chapter1: 9 };
+const ALIAS = { crossword: "daily", "the-mini": "mini", "the-midi": "midi", "the-crossword": "daily", spellingbee: "spelling-bee", bee: "spelling-bee", "chapter-3": "chapter3", ending: "chapter3", start: "chapter1", "chapter-1": "chapter1" };
 const gameOfScene = (n) => Object.keys(SCENE).find((g) => SCENE[g] === n);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -57,4 +58,4 @@ window.addEventListener("hashchange", () => location.reload());
 const game = hashGame();
 const play = sessionStorage.getItem("yigReplay") === "1";
 sessionStorage.removeItem("yigReplay");
-if (game && game !== "opener") jumpTo(game, play);
+if (game && game !== "chapter1") jumpTo(game, play);

@@ -30,7 +30,7 @@ There's no ad between Chapters 2, 3 and 4 in this flow, so those handoffs betwee
 
 ## Chapter 2 rules
 
-- **Seven games.** Wordle, Connections, Spelling Bee, Strands, and the three crosswords: The Mini, The Midi and The Daily.
+- **Seven games.** Wordle, Connections, Spelling Bee, Strands, and the three crosswords: The Mini, The Midi and The Crossword (card key `"daily"`).
 - **Order.** The opener comes first, then the player's games in the player's order.
 - **10 or more solves in 2026.** The game gets its full set of cards. In the current design, Wordle has 4 cards and Connections has 5. Each other game has its own set in Figma.
 - **Fewer than 10 solves.** The game gets its one "Community fallback card" instead, an all-player stat (for example "In Wordle, the most popular starting word was ADIEU").
@@ -39,7 +39,7 @@ There's no ad between Chapters 2, 3 and 4 in this flow, so those handoffs betwee
 - **Variants.** Some cards have versions picked by a threshold. Example: Wordle's hardest word of the year has three versions: played and solved it, played and missed it, didn't play it. Variants are HTML only; the Rive room doesn't change.
 - **Within a game,** a tap changes only the HTML copy, and the room keeps looping.
 - **Between games,** a tap plays the Rive transition to the next game's room.
-- **Lockup.** A game's first card opens with that game's lockup (icon plus word) in Rive. The small HTML icon then stays for the rest of that game's cards. Community cards have no lockup.
+- **Lockup.** A game's first card opens with that game's lockup (icon plus word) in Rive. The small HTML icon then stays for the rest of that game's cards. Community cards skip the Rive lockup but still show the small HTML icon.
 - **Connections pills.** The solving-order pills follow the player's own order from the stats.
 
 ## Anonymous flow
@@ -47,7 +47,7 @@ There's no ad between Chapters 2, 3 and 4 in this flow, so those handoffs betwee
 | # | Part | Difference from the subscriber flow |
 |---|---|---|
 | 1–5 | Loading, Start, Ad 1, Chapter 1, Ad 2 | Same, with all-player copy (for example "Together, you all completed X million puzzles"). |
-| 6 | Chapter 2 | The opener, then one community card per game, with no lockups. Every tap moves to the next game's room. The current mock shows Connections, Spelling Bee, The Mini and Strands. |
+| 6 | Chapter 2 | The opener, then one community card per game, with no Rive lockups (the small HTML icon still shows). Every tap moves to the next game's room. The current mock shows Connections, Spelling Bee, The Mini and Strands. |
 | 7 | Ad 3 | New for anons. It plays over the empty Chapter 3 room. |
 | 8 | Chapter 3 | Highlights Connections' 1000th puzzle and Wordle's 5th birthday instead of badges. |
 | 9 | Chapter 4 | The top game for everyone is Wordle. The video is a special one from all the editors. |

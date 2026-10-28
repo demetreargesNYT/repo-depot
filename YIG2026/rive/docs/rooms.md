@@ -34,7 +34,18 @@ illustrator's shape keys and are not listed here.
 
 **Loop:** 1.80 s (108 frames at 60/s), repeats. First and last frames are the same pose.
 
-No intro of its own (the opener is the first frame).
+### Intro · exactly 3.2 s
+
+- **Floor and front slide in** (Shelf Floor Plane): moves left 1600 px (x 2357 → 757), starts 0.05 s, takes 1.50 s, power2.inOut (slow, fast, slow)
+- **Floor and front slide in** (Shelf Wall Plane): moves left 1280 px (x 1991 → 711), starts 0.05 s, takes 1.50 s, power2.inOut (slow, fast, slow)
+- **Shelf Cat Shelf**: drops 570 px (y -577 → -8), starts 1.00 s, takes 0.50 s, power2.in (starts slow, speeds up)
+- **Shelf Cat Shelf**: squash on landing: 1.03 wide × 0.93 tall at 1.57 s (reached over 0.07 s, power2.out); back to 1 by 1.82 s (back.out)
+- **Shelf Trophy Shelf**: drops 544 px (y -577 → -33), starts 1.13 s, takes 0.50 s, power2.in (starts slow, speeds up)
+- **Shelf Trophy Shelf**: squash on landing: 1.03 wide × 0.93 tall at 1.70 s (reached over 0.07 s, power2.out); back to 1 by 1.95 s (back.out)
+- **Shelf Crown Shelf**: drops 604 px (y -577 → 28), starts 1.27 s, takes 0.50 s, power2.in (starts slow, speeds up)
+- **Shelf Crown Shelf**: squash on landing: 1.03 wide × 0.93 tall at 1.83 s (reached over 0.07 s, power2.out); back to 1 by 2.08 s (back.out)
+
+### Ball · intro
 
 
 ### Ball · loop

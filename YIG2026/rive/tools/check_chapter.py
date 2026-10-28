@@ -10,6 +10,8 @@ from rml_read import Scene, chapter_dir
 INTRO_FRAMES = 192    # 3.2 s at 60 fps; the text CSS waits exactly this long
 OUTRO_FRAMES = 96     # 1.6 s
 ARTBOARD = (1495, 1067)
+START_SCENE = 9                  # the empty Chapter 1 room File 2 opens on: colours only, no room
+START_COLORS = "Chapter 1 Colors"
 TOL = 1e-4
 
 results = []
@@ -131,23 +133,37 @@ def run(chapter):
             # without early exit a tap during a fade waits for that fade to finish, so the wall reaches the old
             # room's colour first and the new room arrives on it; with it the fade turns from the colour on screen
             check(tr.get("enableEarlyExit") == "true", f"Backdrop fade to {targets[n]} can be interrupted (enableEarlyExit), so a tap mid-fade turns from the colour on screen")
-        want = {per_room[r]: f"{r} Colors" for r in rooms}
-        check(targets == want, f"Backdrop's AnyState sends each scene value to its room's Colors (want {want}, has {targets})")
+        want_rooms = {per_room[r]: f"{r} Colors" for r in rooms}
+        check(all(targets.get(n) == name for n, name in want_rooms.items()),
+              f"Backdrop's AnyState sends each room's scene value to its own Colors (want {want_rooms}, has {targets})")
+        # a scene with no animated room (an ad, a chapter handoff) may still have a Colors pose of its own: the
+        # shared backdrop crossfades to it like any room's, but there is no "<label> Room" node to go with it
+        extra = {n: name for n, name in targets.items() if n not in want_rooms}
+        for n, name in extra.items():
+            label = name.rsplit(" Colors", 1)[0]
+            check(n not in per_room.values() and not any(e.get("name") == f"{label} Room" for e in ab.iter("Node")),
+                  f"scene {n}'s {name} is a shared-backdrop-only scene (no {label} Room of its own)")
         entry = layer.find("EntryState/StateTransition")
-        check(entry is not None and state_anim.get(entry.get("stateToId")) == "Shelf Colors", "Backdrop starts on Shelf Colors")
-    for room in rooms:
-        a = A.get(f"{room} Colors")
-        check(a is not None, f'"{room} Colors" timeline exists')
+        check(entry is not None and state_anim.get(entry.get("stateToId")) == START_COLORS, f"Backdrop starts on {START_COLORS}")
+    colors_names = sorted(set(targets.values())) if layer is not None else [f"{room} Colors" for room in rooms]
+    for name in colors_names:
+        a = A.get(name)
+        check(a is not None, f'"{name}" timeline exists')
         if a is None:
             continue
         ks = s.keys(a)
         check(s.duration(a) == 1 and set(ks) == {("Wall colour", "colorValue"), ("Floor colour", "colorValue")} and all(len(v) == 1 for v in ks.values()),
-              f"{room} Colors is one frame holding only the Background's wall and floor colours")
-    # the base colour on load is the opener's, so nothing flashes before the Backdrop layer's first frame
-    shelf = A.get("Shelf Colors")
-    if shelf is not None and base_wall:
-        held = s.keys(shelf)[("Wall colour", "colorValue")][0][1]
-        check(held.upper() == base_wall.upper(), f"the Background's own wall colour ({base_wall}) is the opener's ({held})")
+              f"{name} is one frame holding only the Background's wall and floor colours")
+    # the base colour on load is the start scene's (the empty Chapter 1 room), so nothing flashes before the Backdrop layer's first frame
+    start = A.get(START_COLORS)
+    if start is not None and base_wall:
+        held = s.keys(start)[("Wall colour", "colorValue")][0][1]
+        check(held.upper() == base_wall.upper(), f"the Background's own wall colour ({base_wall}) is {START_COLORS}'s ({held})")
+        want_start = {"Wall colour": "FFF1ECC0", "Floor colour": "FFFF811E"}
+        got_start = {o: ks[0][1].upper() for (o, _p), ks in s.keys(start).items()}
+        check(got_start == want_start, f"{START_COLORS} is the cream wall F1ECC0 and orange floor FF811E File 1 ends on ({got_start})")
+        dflt_scene = next((v.get("propertyValue", "0") for v in s.view_model.iter("ViewModelInstanceNumber") if v.get("viewModelPropertyId") == props["scene"].get("id")), None)
+        check(dflt_scene == str(START_SCENE), f"the file starts on scene {START_SCENE}, the empty Chapter 1 room, with no room of its own (scene defaults to {dflt_scene})")
     # only the Colors timelines may key the Background, or two layers would fight over its colours
     for name, a in A.items():
         if not name.endswith(" Colors"):
@@ -231,7 +247,7 @@ def run(chapter):
         got = sorted(layer_moves(s, el))
         check(got == want, f'layer "{room} Exit" has exactly the Next and Back moves' + ("" if got == want else f"; extra {sorted(set(got) - set(want))}, missing {sorted(set(want) - set(got))}"))
         start = start_of(s, el)
-        check(start == (R("Home (2)") if room == "Shelf" else R("Home")), f'layer "{room} Exit" starts in {start}')
+        check(start == R("Home"), f'layer "{room} Exit" starts in {start}')
         # the outro must end exactly where the Gone pose holds the room, and that must be off the artboard (the
         # room's art reaches at most 1600 right of its origin), or the hand-over from Outro to Gone would jump
         o_end = s.keys(outro)[(f"{room} Room", "x")][-1][1]
@@ -274,7 +290,7 @@ def run(chapter):
     if flag is not None:
         dflt = next((v.get("propertyValue", "false") for v in s.view_model.iter("ViewModelInstanceBoolean") if v.get("viewModelPropertyId") == flag.get("id")), None)
         check(dflt == "false", f"community defaults to false, so a game shows its lockup unless told otherwise (it is {dflt})")
-    for room in [r for r in rooms if f"{r} Intro" in A]:
+    for room in [r for r in rooms if f"{r} Intro" in A and any(e.get("name") == f"{r} Lockup Gate" for e in ab.iter("Node"))]:   # the opener is not a game: no lockup
         gate = s.node(f"{room} Lockup Gate") if any(e.get("name") == f"{room} Lockup Gate" for e in ab.iter("Node")) else None
         kids = [c.get("name") for c in gate if c.tag == "Node"] if gate is not None else []
         check(gate is not None and kids == [f"{room} Lockup"] and s.parent[gate].get("name") == f"{room} Room"
@@ -309,9 +325,9 @@ def run(chapter):
         check(gl is not None and sorted(got) == sorted(want) and start_of(s, gl) == f"{room} Lockup Shown",
               f'layer "{room} Lockup" starts Shown, and reads community only while scene == {n}: hides when it is true, shows when it is false, at once')
 
-    # the opener's toy ball is keyed only by its own loop
+    # the opener's toy ball is keyed only by its own loop, and held on the loop's first pose by its Intro and Waiting
     for name, a in A.items():
-        if name != "Shelf Loop":
+        if name not in ("Shelf Loop", "Shelf Intro", "Shelf Waiting"):
             bad = [o for (o, _p) in s.keys(a) if o in ("Shelf Ball", "Shelf Ball Spin")]
             check(not bad, f"{name} does not key the Shelf Ball or its Spin")
     return results

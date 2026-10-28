@@ -1,6 +1,6 @@
 """Interrupted-tap test: no browser, no wall-clock timing.
 
-    python3 tools/tap_test.py ch2                      both orders, tap 2 at 0.5, 1.5, 2.5 and 3.0 s into the intro
+    python3 tools/tap_test.py ch2                      every order (Wordle then Connections and back, the opener then Wordle, the last game then the Chapter 3 ending), tap 2 at 0.5, 1.5, 2.5 and 3.0 s into the intro
     python3 tools/tap_test.py ch2 --times 0.5 --orders cw --keep /tmp/frames
 
 Scenario: from the opener, tap 1 starts the first game at t = 0. Tap 2 starts the second game T seconds later,
@@ -29,7 +29,10 @@ from PIL import Image, ImageChops
 from rml_read import chapter_dir
 
 RIVE = os.path.expanduser("~/.rive/bin/rive")
-GAMES = {1: "Wordle", 2: "Connections"}
+GAMES = {0: "Shelf", 1: "Wordle", 2: "Connections"}
+# the orders to run: letters name the first and second game; "x" as the second is the Chapter 3 ending, an empty
+# scene with no room, so only the first game leaving is tested
+ORDERS = {"wc": (1, 2), "cw": (2, 1), "sw": (0, 1), "wx": (1, None), "cx": (2, None)}
 THRESHOLD = 12            # per-channel difference that counts as "drawn"
 SETTLED = 1.7             # s after tap 2: the 1.55 s pan is over
 DTS = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.5, 3.4]   # s after tap 2
@@ -95,12 +98,13 @@ def prepare(src, first, second, T, hide):
         st.set("animationId", held.get("id"))
         at_exit_time(st.find("StateTransition"))
     hold_then(f"{first} Draw", f"{first} On Top")
-    hold_then(f"{second} Draw", f"{second} Below")
+    if second:
+        hold_then(f"{second} Draw", f"{second} Below")
 
-    # second game's layer: Waiting -> Intro fires after T seconds, not on "scene == n"
-    waiting = next(st for st in layers[second].findall("AnimationState") if st.find("StateTransition") is not None)
-    next(a for a in ab.iter("LinearAnimation") if a.get("id") == waiting.get("animationId")).set("duration", frames)
-    at_exit_time(waiting.find("StateTransition"))
+        # second game's layer: Waiting -> Intro fires after T seconds, not on "scene == n"
+        waiting = next(st for st in layers[second].findall("AnimationState") if st.find("StateTransition") is not None)
+        next(a for a in ab.iter("LinearAnimation") if a.get("id") == waiting.get("animationId")).set("duration", frames)
+        at_exit_time(waiting.find("StateTransition"))
 
     for n in ab.iter("Node"):
         if n.get("name") in {f"{g} {part}" for g in hide for part in ("Room", "Lockup")}:
@@ -126,10 +130,10 @@ def lit(img):
 
 
 def run_case(chapter, order, T, keep):
-    first, second = (GAMES[1], GAMES[2]) if order == "wc" else (GAMES[2], GAMES[1])
-    scene = 1 if order == "wc" else 2
+    scene, other = ORDERS[order]
+    first, second = GAMES[scene], GAMES.get(other)
     src = chapter_dir(chapter)
-    full, second_only, bare = (prepare(src, first, second, T, h) for h in ((), (first,), (first, second)))
+    full, second_only, bare = (prepare(src, first, second, T, h) for h in ((), (first,), tuple(g for g in (first, second) if g)))
     tmp = Path(tempfile.mkdtemp())
     rows = []
     try:
@@ -157,7 +161,7 @@ def main(argv):
     chapter = argv[0] if argv and not argv[0].startswith("--") else "ch2"
     flag = lambda n, d: argv[argv.index(n) + 1] if n in argv else d
     times = [float(t) for t in flag("--times", "0.5,1.5,2.5,3.0").split(",")]
-    orders = flag("--orders", "wc,cw").split(",")
+    orders = flag("--orders", ",".join(ORDERS)).split(",")
     keep = flag("--keep", None)
     failures = 0
     for order in orders:
@@ -167,7 +171,7 @@ def main(argv):
             stale = [r for r in rows if r["dt"] >= SETTLED and r["drawn"]]
             ok = not over and not stale
             failures += not ok
-            print(f'{"PASS" if ok else "FAIL"}  {first:11s} then {second:11s}  tap 2 at {T:3.1f} s   '
+            print(f'{"PASS" if ok else "FAIL"}  {first:11s} then {(second or "Chapter 3"):11s}  tap 2 at {T:3.1f} s   '
                   f'frames with old art over the new room\'s art: {len(over)} of {len(rows)}   old art still on stage after {SETTLED} s: {len(stale)}')
             for r in over[:3] + stale[:2]:
                 print(f'        +{r["dt"]:.2f} s: old art spans {r["bbox"]}; {r["over"]} px of it cover the new room\'s art, within {r["over_bbox"]}')

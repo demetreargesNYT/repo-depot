@@ -204,9 +204,10 @@ const EXAMPLE_COMMUNITY = {
 // first, then each game in the player's order. With 10 or more solves a game gets the player's own cards, in design
 // order, leaving out a card that has no stat to show; with fewer it gets one community card.
 // Each card's game and community are what chapter-2-integration.js reads; card and variant are only for this page's copy.
-// Strands, The Mini, The Midi and The Crossword aren't here yet: they'll be added as their rooms ship.
 function buildCards(p) {
-  const cards = [{ game: "opener" }];
+  // The file opens on the empty Chapter 1 room (where File 1 ends and Ad 2 plays): always the first card, with no copy.
+  // The first tap pans from it into the opener.
+  const cards = [{ game: "chapter1" }, { game: "opener" }];
   for (const game of p.gameOrder) {
     const s = p[game];
     if (!s) continue;
@@ -230,6 +231,10 @@ function buildCards(p) {
       if (s.perfectPuzzles > 0) cards.push({ game, card: "perfect-puzzles" });
     }
   }
+  // The Chapter 2 ending: after the player's last game, this card's own tap leaves that room for the empty Chapter 3
+  // backdrop. Copy and timing are placeholder; the card itself (and chapter-2-integration.js's SCENE/BUILT entries
+  // for "chapter3") are the framework piece.
+  cards.push({ game: "chapter3", card: "end" });
   return cards;
 }
 
@@ -290,6 +295,8 @@ const COPY = {
   mini: { placeholder: () => placeholder("The Mini"), community: () => placeholder("The Mini") },
   midi: { placeholder: () => placeholder("The Midi"), community: () => placeholder("The Midi") },
   daily: { placeholder: () => placeholder("The Crossword"), community: () => placeholder("The Crossword") },
+  // PLACEHOLDER COPY: the Chapter 2 ending has no copy yet; this only lets you see the backdrop and its crossfade.
+  chapter3: { end: () => placeholder("On to Chapter 3") },
   // PLACEHOLDER COPY: Spelling Bee has no final copy yet; these cards only let you see the room and lockup.
   "spelling-bee": {
     pangrams: (s) => [
@@ -431,14 +438,16 @@ const opener = [
 function renderCopy(player, community) {
   const cards = buildCards(player);
   let html = "";
-  const games = [...new Set(cards.map((c) => c.game).filter((g) => g !== "opener"))];
+  // chapter3 (the ending) has no lockup and no small icon of its own, so it's left out here, not just "opener".
+  const games = [...new Set(cards.map((c) => c.game).filter((g) => g !== "opener" && ICON[g]))];
   for (const game of games) {
     html += `<div class="yig-icon blk blk-icon" data-icon-game="${esc(game)}" hidden><span class="yig-pop t-icon">${ICON[game]}</span></div>`;
   }
   const position = {}; // 1-based position of each own card within its game
   cards.forEach((card, i) => {
+    if (card.game === "chapter1") return; // nothing to read here: the room is empty
     if (card.game === "opener") {
-      html += `<div class="yig-text blk blk-copy1" data-copy-frame="${i}" data-copy-game="opener">${opener.join("")}</div>`;
+      html += `<div class="yig-text blk blk-copy1" data-copy-frame="${i}" data-copy-game="opener" hidden>${opener.join("")}</div>`;
       return;
     }
     const render = COPY[card.game][card.community ? "community" : card.card];

@@ -12,7 +12,12 @@
 //   B  tap to the next game: the old card and icon are gone or leaving at once, the new icon pops and the
 //      new first card rises 3.2 s after the tap, with its lines one step (120 ms) after the icon.
 //   C  the icon stays put on a game's later cards: no restart of its animation on a same-game tap.
-//   D-G Back, H community cards, I starting words, J and L a game that isn't built yet, K a full run-through: see below.
+//   D-G Back, H community cards, I starting words, J and L a game that isn't built yet, K a full run-through,
+//   M the first tap (empty Chapter 1 room to the opener), N the ending (last game to Chapter 3): see below.
+//
+// The card list is { game: "chapter1" } (the room the file opens on, no copy), the opener, the games, then
+// { game: "chapter3" } (the empty Chapter 3 backdrop the file ends on). Cases that time a game's first visit
+// first spend a tap on the opener (openerStep below), so they start where a player does.
 import { spawn } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
@@ -34,14 +39,28 @@ for (let i = 0; i < 60; i++) { try { targets = await (await fetch(`http://127.0.
 const ws = new WebSocket(targets.find((t) => t.type === "page").webSocketDebuggerUrl);
 await new Promise((r) => (ws.onopen = r));
 let id = 0; const pending = new Map(); const warnings = [];
+// J and L need a game that isn't built in the .riv yet. Every game is built now, so those cases ask for the
+// integration file with "strands" taken out of its BUILT list: the page's request for it is answered here with the
+// edited copy (the file on disk is not touched). It is the same code path engineering would hit for a new game.
+let unbuilt = false;
+async function answer(d) {
+  const { requestId, request } = d.params;
+  if (!unbuilt) return send("Fetch.continueRequest", { requestId });
+  const src = await (await fetch(request.url)).text();
+  const body = src.replace(/^const BUILT = new Set\(\[.*$/m, (line) => line.replace('"strands", ', ""));
+  if (body === src) throw new Error("text-test: could not find strands in the BUILT list");
+  return send("Fetch.fulfillRequest", { requestId, responseCode: 200, responseHeaders: [{ name: "content-type", value: "text/javascript" }, { name: "cache-control", value: "no-store" }], body: Buffer.from(body).toString("base64") });
+}
 ws.onmessage = (m) => {
   const d = JSON.parse(m.data);
+  if (d.method === "Fetch.requestPaused") answer(d);
   if (d.id && pending.has(d.id)) { pending.get(d.id)(d); pending.delete(d.id); }
   if (d.method === "Runtime.consoleAPICalled" && d.params.type === "warning") warnings.push(d.params.args.map((a) => a.value ?? a.description ?? "").join(" "));
 };
 const send = (method, params = {}) => new Promise((r) => { const i = ++id; pending.set(i, r); ws.send(JSON.stringify({ id: i, method, params })); });
 const ev = async (expr) => (await send("Runtime.evaluate", { expression: expr, awaitPromise: true, returnByValue: true })).result?.result?.value;
 await send("Page.enable"); await send("Runtime.enable");
+await send("Fetch.enable", { patterns: [{ urlPattern: "*chapter-2-integration.js*", requestStage: "Request" }] });
 
 // The test player: both games with 10+ solves and every stat above 0, so each gets all its own cards
 // (Wordle 4, Connections 5), and three starting words. Cases change a copy of it.
@@ -74,7 +93,9 @@ const cardsPerGame = async () => ev("window.yigExample.cards.reduce((n, c) => (n
 const VM = "window.yigExample.yig.viewModelInstance";
 // What engineering would do to add a card for a game that isn't built yet: a strands card at the end of the list
 // and its hidden copy block, then start() again with the new list (start() copies the list it's given).
-const ADD_STRANDS = `(() => { const cards = window.yigExample.cards; cards.push({ game: "strands", card: "test" });
+const ADD_STRANDS = `(() => { const cards = window.yigExample.cards;
+  if (cards[cards.length - 1].game === 'chapter3') { cards.pop(); document.querySelector('[data-copy-frame="' + cards.length + '"]')?.remove(); }
+  cards.push({ game: "strands", card: "test" });
   document.getElementById('overlay').insertAdjacentHTML('beforeend', '<div class="yig-text blk blk-stat" data-copy-frame="' + (cards.length - 1) +
     '" data-copy-game="strands" data-copy-card="1" hidden><span class="yig-mask"><span class="yig-line t-serif">Strands test card</span></span></div>');
   window.yigExample.start(cards); })()`;
@@ -111,6 +132,8 @@ const INSTALL = `(() => {
 
 const results = [];
 const check = (ok, text) => results.push({ ok, text });
+// The first tap: from the empty Chapter 1 room into the opener, waiting out its intro. Not marked in the log.
+const openerStep = async () => { await ev("document.getElementById('tap-next').click()"); await sleep((INTRO + 0.6) * 1000); };
 const fmt = (v) => (v === undefined || v === null ? "never" : v.toFixed(2) + " s");
 
 for (const order of ["wc", "cw"]) {
@@ -124,7 +147,9 @@ for (const order of ["wc", "cw"]) {
     const at = (s) => ev("window.__t0 + " + s * 1000).then(() => s);
     const first = games[0], second = games[1];
 
-    // tap 1 starts the first game; tap 2 (same game, next card) lands T s into its intro
+    // the opener first; then tap 1 starts the first game and tap 2 (same game, next card) lands T s into its intro
+    await openerStep();
+    await ev("window.__log.length = 0");
     await tap(); await wait(T); await tap();
     await wait(INTRO + 1.5);
     const log = await ev("window.__log");
@@ -167,7 +192,8 @@ for (const order of ["wc", "cw"]) {
 //   E  Back across a game boundary (second game card 1 to the first game's last card), from rest: the old card
 //      and icon leave at once, and the first game's icon and last card arrive when the pan ends (1.65 s).
 //   F  Back during that pan's Next: the Back waits for the pan to end, then plays; the text follows it.
-//   G  Back on the opener does nothing: the scene stays 0 and the opener copy stays.
+//   G  Back on the first card (the empty Chapter 1 room) does nothing: the scene stays 9 and no copy shows.
+//   G2 Back from the opener returns to it: scene 9, no copy, and Next brings the opener (already built) back.
 const PAN = 1.65;
 for (const order of ["wc", "cw"]) {
   const games = order === "wc" ? ["wordle", "connections"] : ["connections", "wordle"];
@@ -179,12 +205,34 @@ for (const order of ["wc", "cw"]) {
   const wait = (s) => sleep(s * 1000);
   const after = (log, label) => log.filter((e) => e.label === label).map((e) => e.at);
 
-  // G: Back on the opener
+  // G: Back on the first card, the empty Chapter 1 room
   await press("back");
   await wait(0.6);
   const vmScene = await ev(`${VM}.number('scene').value`);
-  const openerShown = await ev(`(() => { const o = document.querySelector('[data-copy-game="opener"]'); return !o.hidden && !o.classList.contains('yig-out'); })()`);
-  check(vmScene === 0 && openerShown, `G  ${first} first: Back on the opener does nothing (scene ${vmScene}, opener copy shown ${openerShown})`);
+  const noCopy = (await shownCopy()) === "";
+  check(vmScene === 9 && noCopy, `G  ${first} first: Back on the empty Chapter 1 room does nothing (scene ${vmScene}, copy shown ${noCopy ? "none" : "some"})`);
+
+  // M: the first tap, empty Chapter 1 room to the opener: its copy rises 3.2 s later (the intro), like a game's first card
+  await ev("window.__log.length = 0");
+  await press("next");
+  await wait(INTRO + 0.8);
+  let logM = await ev("window.__log");
+  const tm = after(logM, "next")[0];
+  const riseM = logM.find((e) => e.card === "opener#-" && e.cardRising);
+  const sceneM = await ev(`${VM}.number('scene').value`);
+  check(sceneM === 0 && !!riseM && Math.abs(riseM.at - tm - INTRO) <= TOL, `M  ${first} first: the first tap pans to the opener (scene ${sceneM}); its copy rises ${fmt(riseM ? riseM.at - tm : null)} after the tap (want ${INTRO} s, the intro)`);
+
+  // G2: Back from the opener to the empty room, and Next again (no second intro: the copy comes back as the pan ends)
+  await press("back"); await wait(PAN + 0.4);
+  const sceneG2 = await ev(`${VM}.number('scene').value`);
+  const copyG2 = await shownCopy();
+  await ev("window.__log.length = 0");
+  await press("next"); await wait(PAN + 0.8);
+  const logG2 = await ev("window.__log");
+  const tg = after(logG2, "next")[0];
+  const riseG2 = logG2.find((e) => e.card === "opener#-" && e.cardRising);
+  check(sceneG2 === 9 && copyG2 === "", `G2 ${first} first: Back from the opener returns to the empty Chapter 1 room (scene ${sceneG2}, copy ${copyG2 || "none"})`);
+  check(!!riseG2 && Math.abs(riseG2.at - tg - PAN) <= TOL, `G2 ${first} first: Next again brings the opener back, its copy rising ${fmt(riseG2 ? riseG2.at - tg : null)} after the tap (want ${PAN} s, the end of the pan)`);
 
   // D: into the first game, on to card 2, then Back to card 1
   await press("next"); await wait(INTRO + 0.6);
@@ -246,9 +294,11 @@ for (const order of ["wc", "cw"]) {
   p[first].solves = 7; // fewer than 10: the first game gets its community card
   await load(p);
   await ev(INSTALL);
+  await openerStep();
+  await ev("window.__log.length = 0");
   const frames = await ev("window.yigExample.cards.map((f) => f.game + (f.community ? '*' : ''))");
   const ownSecond = frames.filter((f) => f === second).length;
-  check(frames.filter((f) => f.startsWith(first)).length === 1 && frames[1] === first + "*" && ownSecond > 1,
+  check(frames[0] === "chapter1" && frames[frames.length - 1] === "chapter3" && frames.filter((f) => f.startsWith(first)).length === 1 && frames[2] === first + "*" && ownSecond > 1,
         `H  ${first} community, ${second} own: the frames are ${frames.join(", ")}`);
   await ev("window.__mark('tap'); document.getElementById('tap-next').click()");
   await sleep(300);
@@ -289,12 +339,14 @@ for (const n of [3, 2, 1, 0]) {
 //      cleared (0.34 s). Back from it: the previous card and its icon come back the same way, and the scene still
 //      hasn't changed.
 {
+  unbuilt = true;
   await load(basePlayer("wc"));
   const cardsIn = await cardsPerGame();
   await ev(ADD_STRANDS);
   await ev(INSTALL);
   const press = (id) => ev(`window.__mark('${id}'); document.getElementById('tap-${id}').click()`);
   const wait = (s) => sleep(s * 1000);
+  await openerStep();
   await press("next"); await wait(INTRO + 0.6);
   for (let i = 2; i <= cardsIn.wordle; i++) { await press("next"); await wait(0.4); }
   await press("next"); await wait(INTRO + 0.6);
@@ -347,12 +399,15 @@ for (const T of [0.5, 1.5, 2.5]) {
   const p = basePlayer("wc");
   p.gameOrder = ["wordle"];
   p.wordle.solves = 7;
+  unbuilt = true;
   await load(p);
   await ev(ADD_STRANDS);
   const games = await ev("window.yigExample.cards.map((c) => c.game + (c.community ? '*' : '')).join(',')");
   await ev(INSTALL);
   const press = (id) => ev(`window.__mark('${id}'); document.getElementById('tap-${id}').click()`);
   const wait = (s) => sleep(s * 1000);
+  await openerStep();
+  await ev("window.__log.length = 0");
   warnings.length = 0;
   await press("next"); await wait(T);
   await press("next");
@@ -382,26 +437,69 @@ for (const T of [0.5, 1.5, 2.5]) {
   check(sceneB === 1 && shownB === "wordle#-", `L  Back from it: the Wordle community card is back (${shownB || "none"}) and the scene is still 1 (${sceneB})`);
 }
 
+unbuilt = false;
+
+//   N  the ending: the tap after the last game's last card pans to the empty Chapter 3 backdrop (scene 8). The game's
+//      card and icon leave at once; the ending's own copy (placeholder here) arrives 3.2 s later like a first visit.
+//      Back returns to the last game's last card: its icon and card arrive when the pan ends (1.65 s).
+{
+  await load(basePlayer("wc"));
+  const cardsIn = await cardsPerGame();
+  await ev(INSTALL);
+  const press = (id) => ev(`window.__mark('${id}'); document.getElementById('tap-${id}').click()`);
+  const wait = (s) => sleep(s * 1000);
+  await openerStep();
+  await press("next"); await wait(INTRO + 0.6);
+  for (let i = 2; i <= cardsIn.wordle; i++) { await press("next"); await wait(0.4); }
+  await press("next"); await wait(INTRO + 0.6);
+  for (let i = 2; i <= cardsIn.connections; i++) { await press("next"); await wait(0.4); }
+  await wait(0.6);
+  const last = "connections#" + cardsIn.connections;
+  await ev("window.__log.length = 0");
+  await press("next");
+  await wait(INTRO + 0.8);
+  let logN = await ev("window.__log");
+  const tn = logN.find((e) => e.label === "next").at;
+  const sceneN = await ev(`${VM}.number('scene').value`);
+  const goneN = logN.find((e) => !e.label && e.at >= tn && e.icon !== "connections" && e.card !== last);
+  const riseN = logN.find((e) => e.card === "chapter3#1" && e.cardRising);
+  check(sceneN === 8, `N  last game to the ending: Rive is on scene 8, the empty Chapter 3 backdrop (scene ${sceneN})`);
+  check(!!goneN && goneN.at - tn <= QUICK + TOL, `N  last game to the ending: the old card and icon are gone ${fmt(goneN ? goneN.at - tn : null)} after the tap`);
+  check(!!riseN && Math.abs(riseN.at - tn - INTRO) <= TOL, `N  last game to the ending: the ending's copy rises ${fmt(riseN ? riseN.at - tn : null)} after the tap (want ${INTRO} s)`);
+  await ev("window.__log.length = 0");
+  await press("back");
+  await wait(PAN + 1.0);
+  logN = await ev("window.__log");
+  const tb = logN.find((e) => e.label === "back").at;
+  const iconB = logN.find((e) => e.icon === "connections" && e.iconPopping);
+  const cardB = logN.find((e) => e.card === last && e.cardRising);
+  const sceneB = await ev(`${VM}.number('scene').value`);
+  check(sceneB === 2 && !!iconB && Math.abs(iconB.at - tb - PAN) <= TOL && !!cardB && Math.abs(cardB.at - tb - PAN - STEP) <= TOL,
+        `N  Back from the ending: scene ${sceneB} (want 2); Connections' icon arrives ${fmt(iconB ? iconB.at - tb : null)} and its last card ${fmt(cardB ? cardB.at - tb : null)} after the tap (want ${PAN} s and ${(PAN + STEP).toFixed(2)} s)`);
+}
+
 //   K  the page's own example player, no injection: Next to the last card, then Back to the opener, waiting for
 //      each arrival. After every tap the copy on screen is that card's, and the run ends on scene 0.
 {
   await load(null);
   const cards = await ev("window.yigExample.cards.map((c) => c.game)");
   const shown = () => ev(`[...document.querySelectorAll('.yig-text')].filter((e) => !e.hidden).map((e) => e.dataset.copyFrame).join(',')`);
+  const want = (i) => (cards[i] === "chapter1" ? "" : String(i));    // the empty Chapter 1 room has no copy
   const bad = [];
   for (let i = 1; i < cards.length; i++) {
     await ev("document.getElementById('tap-next').click()");
     await sleep(cards[i] !== cards[i - 1] ? (INTRO + 0.6) * 1000 : 1000);
-    const v = await shown(); if (v !== String(i)) bad.push(`Next to ${i}: ${v || "none"}`);
+    const v = await shown(); if (v !== want(i)) bad.push(`Next to ${i}: ${v || "none"}`);
   }
   for (let i = cards.length - 2; i >= 0; i--) {
     await ev("document.getElementById('tap-back').click()");
     await sleep(cards[i] !== cards[i + 1] ? (PAN + 0.6) * 1000 : 1000);
-    const v = await shown(); if (v !== String(i)) bad.push(`Back to ${i}: ${v || "none"}`);
+    const v = await shown(); if (v !== want(i)) bad.push(`Back to ${i}: ${v || "none"}`);
   }
   const sceneEnd = await ev(`${VM}.number('scene').value`);
   check(!bad.length, `K  example player (${cards.join(", ")}): the right copy after every tap, Next to the end and Back (${bad.join("; ") || "all " + (2 * cards.length - 2) + " taps"})`);
-  check(sceneEnd === 0, `K  example player: ends on the opener (scene ${sceneEnd})`);
+  check(sceneEnd === 9, `K  example player: ends on the empty Chapter 1 room (scene ${sceneEnd})`);
+  check(cards[0] === "chapter1" && cards[cards.length - 1] === "chapter3", `K  example player: the cards start with chapter1 and end with chapter3 (${cards[0]} ... ${cards[cards.length - 1]})`);
 }
 
 proc.kill(); ws.close();

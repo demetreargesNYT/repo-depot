@@ -32,6 +32,9 @@ from rml_read import Scene, chapter_dir
 
 RIVE = os.path.expanduser("~/.rive/bin/rive")
 ROOMS = {0: "Shelf", 1: "Wordle", 2: "Connections"}
+EMPTY = {9: "Chapter 1", 8: "Chapter 3"}       # the file's first and last scenes: the shared backdrop only, no room
+NAMES = {**ROOMS, **EMPTY}
+START = 9                                       # the file opens on the empty Chapter 1 room
 MOVE = 1.65           # s the integration file treats a room change as running (PAN_MS)
 
 
@@ -44,7 +47,7 @@ def pan_peak():
 
 
 TOP_SPEED = pan_peak() * 1.1     # a snap moves a room faster than any frame of a clean pan
-SPOTS = [(sc, d) for sc in ROOMS for d in (1, -1)]
+SPOTS = [(sc, d) for sc in NAMES for d in (1, -1)]
 
 
 def instrument(src):
@@ -104,7 +107,7 @@ def schedule(taps):
     """Apply the integration file's rule to [(seconds, scene, direction)] user taps; returns when each reaches
     the file. A room change while a pan runs waits for it if it is a Back, or if the pan is a Back; a Next during
     a Next pan goes at once. A later tap during the wait replaces the held one."""
-    out, scene, pan_dir, pan_end, held = [], 0, 0, -1.0, None
+    out, scene, pan_dir, pan_end, held = [], START, 0, -1.0, None
     events = sorted(taps)
     i = 0
     while i < len(events) or held:
@@ -170,8 +173,11 @@ def judge(fired, rows):
         last_dir = d
     for frame, st in rows:
         t = frame / 60
-        current = ROOMS[int(st["scene"])]
-        visited.add(current)
+        current = int(st["scene"])
+        current = ROOMS[current] if current in ROOMS else None      # None: an empty scene, nothing but the backdrop
+        if current:
+            visited.add(current)
+        expected = [current] if current else []
         xs = {r: st.get(f"x {r}", 0) for r in ROOMS.values()}
         if prev:
             for r in xs:
@@ -187,7 +193,7 @@ def judge(fired, rows):
             a, b = (xs[r] for r in moving)
             if abs(abs(a - b) - 1600) > 1:
                 apart.append((round(t, 2), {r: round(xs[r]) for r in moving}))
-        if t >= last + MOVE + 0.05 and (abs(xs[current]) > 0.5 or on != [current]):
+        if t >= last + MOVE + 0.05 and (any(abs(xs[r]) > 0.5 for r in expected) or on != expected):
             stray.append((round(t, 2), {r: round(xs[r]) for r in visited}))
         if frame > 0:                                  # frame 0 holds the authored values, before the first advance
             for r in ROOMS.values():                   # the readout is an internal index: compare, don't name
@@ -195,7 +201,7 @@ def judge(fired, rows):
     draw = [r for r, v in draw_vals.items() if len(v[True]) > 1 or len(v[False]) > 1 or (v[True] & v[False])]
     out.append((not snaps, f"no snap (most a room moves between frames is the pan's own speed)" + ("" if not snaps else f": {snaps[:3]}")))
     out.append((not apart, "during a Back, and the Next after one, the two rooms move together, 1600 apart" + ("" if not apart else f": {apart[:3]}")))
-    out.append((not stray, f"after the last move only the current room is on stage, at home" + ("" if not stray else f": {stray[:2]}")))
+    out.append((not stray, f"after the last move only the current room (none, on the empty Chapter 1 and Chapter 3 scenes) is on stage, at home" + ("" if not stray else f": {stray[:2]}")))
     out.append((not draw, "each room's draw rule has one target while it is the scene and another otherwise, switching at the tap" + ("" if not draw else f": {draw}")))
     return out
 
@@ -204,14 +210,24 @@ def cases(first, second):
     a, b = first, second             # scene numbers, in the order the player sees the games
     T = [0.5, 1.0, 2.5]
     out = []
+    # the file opens on the empty Chapter 1 room (scene 9); the first tap pans into the opener. Every case does that
+    # at 0.2 s, then everything else is shifted 4 s later so the opener's pan is over.
+    go = [(0.2, 0, 1)]
+    sh = lambda taps: go + [(t + 4.0, sc, d) for t, sc, d in taps]
+    out.append(("Next from Chapter 1 to the opener, Back to Chapter 1 0.5 s later", [(0.2, 0, 1), (0.7, 9, -1)]))
+    out.append(("Next from Chapter 1 to the opener, Back to Chapter 1 2.5 s later, Next 0.5 s after that", [(0.2, 0, 1), (2.7, 9, -1), (3.2, 0, 1)]))
+    out.append(("opener, Back to Chapter 1 once the intro is over", [(0.2, 0, 1), (4.0, 9, -1)]))
     for t in T:
-        out.append((f"Next to {ROOMS[a]}, Back to the opener {t} s later", [(0.2, a, 1), (0.2 + t, 0, -1)]))
-        out.append((f"Next to {ROOMS[a]}, Next to {ROOMS[b]}, Back {t} s later", [(0.2, a, 1), (4.0, b, 1), (4.0 + t, a, -1)]))
-        out.append((f"at {ROOMS[b]}: Back to {ROOMS[a]}, Next {t} s later", [(0.2, a, 1), (4.0, b, 1), (8.0, a, -1), (8.0 + t, b, 1)]))
-        out.append((f"at {ROOMS[b]}: Back, Back {t} s apart", [(0.2, a, 1), (4.0, b, 1), (8.0, a, -1), (8.0 + t, 0, -1)]))
+        out.append((f"Next to {ROOMS[a]}, Back to the opener {t} s later", sh([(0.2, a, 1), (0.2 + t, 0, -1)])))
+        out.append((f"Next to {ROOMS[a]}, Next to {ROOMS[b]}, Back {t} s later", sh([(0.2, a, 1), (4.0, b, 1), (4.0 + t, a, -1)])))
+        out.append((f"at {ROOMS[b]}: Back to {ROOMS[a]}, Next {t} s later", sh([(0.2, a, 1), (4.0, b, 1), (8.0, a, -1), (8.0 + t, b, 1)])))
+        out.append((f"at {ROOMS[b]}: Back, Back {t} s apart", sh([(0.2, a, 1), (4.0, b, 1), (8.0, a, -1), (8.0 + t, 0, -1)])))
+        out.append((f"at {ROOMS[b]} (the last game): Next to Chapter 3, Back {t} s later", sh([(0.2, a, 1), (4.0, b, 1), (8.0, 8, 1), (8.0 + t, b, -1)])))
+        out.append((f"at {ROOMS[b]}: Next to Chapter 3, Back, Next {t} s apart", sh([(0.2, a, 1), (4.0, b, 1), (8.0, 8, 1), (12.0, b, -1), (12.0 + t, 8, 1)])))
     out.append((f"Next to {ROOMS[a]}, Next to {ROOMS[b]} 0.5 s later, Back 0.3 s after that",
-                [(0.2, a, 1), (0.7, b, 1), (1.0, a, -1)]))
-    out.append((f"three taps during one pan: Next, Back, Next, Back", [(0.2, a, 1), (0.6, 0, -1), (0.9, a, 1), (1.2, 0, -1)]))
+                sh([(0.2, a, 1), (0.7, b, 1), (1.0, a, -1)])))
+    out.append((f"three taps during one pan: Next, Back, Next, Back", sh([(0.2, a, 1), (0.6, 0, -1), (0.9, a, 1), (1.2, 0, -1)])))
+    out.append((f"Next to {ROOMS[b]}, Next to Chapter 3 0.5 s later, Back 0.3 s after that", sh([(0.2, b, 1), (0.7, 8, 1), (1.0, b, -1)])))
     return out
 
 
@@ -226,7 +242,7 @@ def main(argv):
                 res = judge(fired, rows)
                 bad = [t for ok, t in res if not ok]
                 failed += bool(bad)
-                plays = ", ".join(f"{ROOMS[sc]}{'' if d > 0 else ' (back)'} at {t:.2f} s" for t, sc, d in fired)
+                plays = ", ".join(f"{NAMES[sc]}{'' if d > 0 else ' (back)'} at {t:.2f} s" for t, sc, d in fired)
                 print(f'{"PASS" if not bad else "FAIL"}  {label}   [{plays}]')
                 for t in bad:
                     print("        " + t)

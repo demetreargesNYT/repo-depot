@@ -1,9 +1,14 @@
-// Cards name their game; this table turns the name into the Rive file's scene number. 0 is the chapter's opening frame.
-const SCENE = { opener: 0, wordle: 1, connections: 2, strands: 3, "spelling-bee": 4, mini: 5, midi: 6, daily: 7 };
+// Cards name their game; this table turns the name into the Rive file's scene number. "chapter1" is this file's
+// first scene: the file loads on the empty Chapter 1 room (cream wall, orange floor, no ball), the same picture
+// File 1 ends on and Ad 2 plays over. Make it the first card; the first tap pans from it into the opener, which
+// plays its 3.2 s intro like a game does (without a lockup: the opener is not a game). "chapter3" is this file's last scene: after the player's last game, the room leaves and an empty Chapter 3
+// backdrop pans in, the same way any game-to-game move does. It has no lockup and no ball; File 3 takes over from it
+// (and, for anonymous players, Ad 3 plays over it). Add it to the card list once, after the player's last game card.
+const SCENE = { opener: 0, wordle: 1, connections: 2, strands: 3, "spelling-bee": 4, mini: 5, midi: 6, daily: 7, chapter3: 8, chapter1: 9 };
 
 // The rooms chapter-2.riv has so far. Add a game here when its room ships in the .riv. A card for a game that isn't
 // built yet still shows its copy, but Rive stays on the room already on screen, so the page never pans to nothing.
-const BUILT = new Set(["opener", "wordle", "connections", "strands", "spelling-bee", "mini", "midi", "daily"]);
+const BUILT = new Set(["chapter1", "opener", "wordle", "connections", "strands", "spelling-bee", "mini", "midi", "daily", "chapter3"]);
 
 import { Rive } from "@rive-app/canvas"; // pin the version you ship
 
@@ -15,7 +20,7 @@ const yig = new Rive({
   autoBind: true, // binds the "Chapter 2" view model that drives the state machine
   onLoad: () => {
     yig.resizeDrawingSurfaceToCanvas();
-    setScene(SCENE.opener);
+    setScene(SCENE.chapter1);
   },
 });
 
@@ -32,27 +37,27 @@ const PAN_MS = 1650;   // a room change: the rooms' moves run 1.6 s (the pan its
                        // so a held tap never lands on the frame a move hands over to its resting pose
 let cards = [];        // set by start()
 let frame = 0;
-let room = "opener";   // the room Rive is showing; a card for a game that isn't built yet leaves it where it is
+let room = "chapter1";   // the room Rive is showing; a card for a game that isn't built yet leaves it where it is
 let introEndsAt = {};  // per game: when its first-visit intro (and its lockup) finishes, in performance.now() time
 let pan = { dir: 0, endsAt: 0 }; // the room change on screen: which way the camera is moving, and when it stops
 let heldTimer = 0;     // a tap waiting for a pan to end
 
-// Call once with the chapter's cards in order, before any tap. Build them from the player's stats: the opener, then
+// Call once with the chapter's cards in order, before any tap. Build them from the player's stats: { game: "chapter1" }, the opener, then
 // each game's cards in the player's order; a game with several cards has several in a row. Each card names its game.
 // A player who solved fewer than 10 of a game's puzzles gets one community card for that game instead of their own
 // cards: mark that card community: true (the game's Rive lockup is then left out; everything else is the same).
-// Games: "opener", "wordle", "connections", "strands", "spelling-bee", "mini", "midi", "daily". Other fields on a
+// Games: "chapter1" (always the first card), "opener", "wordle", "connections", "strands", "spelling-bee", "mini", "midi", "daily". Other fields on a
 // card (your own card id, say) are ignored here. The copy for card i is the element with data-copy-frame="i".
-// Example: start([{ game: "opener" }, { game: "wordle", community: true }, { game: "connections" }, { game: "connections" }])
-// The list is copied, so change it by calling start() again; a second call starts the chapter over from the opener.
+// Example: start([{ game: "chapter1" }, { game: "opener" }, { game: "wordle", community: true }, { game: "connections" }, { game: "connections" }])
+// The list is copied, so change it by calling start() again; a second call starts the chapter over from the empty Chapter 1 room.
 function start(list) {
   clearTimeout(heldTimer);
   cards = [...list];
   frame = 0;
-  room = "opener";
+  room = "chapter1";
   introEndsAt = {};
   pan = { dir: 0, endsAt: 0 };
-  if (yig.viewModelInstance) setScene(SCENE.opener); // before Rive has loaded, onLoad does this
+  if (yig.viewModelInstance) setScene(SCENE.chapter1); // before Rive has loaded, onLoad does this
 }
 
 // Next: call from the tap handler that already advances the stats. Before start() it does nothing.
@@ -60,7 +65,8 @@ function onTap() {
   move(+1);
 }
 
-// Back: call from the back control. On the opener it does nothing.
+// Back: call from the back control. On the first card (the empty Chapter 1 room) it does nothing; from the opener it
+// pans back to it.
 function onBack() {
   move(-1);
 }
@@ -85,7 +91,7 @@ function move(step) {
     return;
   }
   frame = target;
-  const firstVisit = roomChange && step > 0 && !(game in introEndsAt) && game !== "opener";
+  const firstVisit = roomChange && step > 0 && !(game in introEndsAt);
   if (roomChange) pan = { dir: step, endsAt: now + PAN_MS };
   if (firstVisit) introEndsAt[game] = now + INTRO_MS; // a first visit plays the game's intro
   if (built) {
