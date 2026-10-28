@@ -1,0 +1,19 @@
+{
+  "room": "Spelling Bee",
+  "scene": 4,
+  "artboard": "NYT_YIG_c2s4",
+  "loop": "Ball",
+  "ball": "Ball_Move",
+  "wall": "FFFFFDEF",
+  "floor": "FFFEA0C9",
+  "lockup": "art/ch2/originals/spelling-bee-lockup.svg",
+  "intro": {
+    "plane": [0.05, 1.55],
+    "drops": [
+      {"name": "Mug", "ids": ["1:50042", "1:50279"], "from": 1.00, "to": 1.50},
+      {"name": "Left Hex", "ids": ["1:49034"], "from": 1.10, "to": 1.60},
+      {"name": "Right Hex", "ids": ["1:49073"], "from": 1.20, "to": 1.70}
+    ],
+    "ball": {"roll": [1.15, 1.90], "land": [1.90, 2.05]}
+  }
+}

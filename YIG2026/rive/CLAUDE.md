@@ -6,7 +6,7 @@ It lives inside repo-depot (moved in with its history from `~/Desktop/rive-tests
 
 ## Status
 
-The whole-experience plan is in `docs/rive-plan.md`: three Rive files (Start + Chapter 1, Chapter 2, Chapters 3 + 4 + End), two How-to overlay files, and one integration file for all of them. Stage 0 (the plan) is done; Stage 1 (the Spelling Bee comparison) is next. The illustrator's file (Rive file 2668591) is the art source: read only, never edit or push to it. The floor line is 712 in every file. The Rive CLI is signed in as lindsey.liang on purpose; push under that login as normal.
+The whole-experience plan is in `docs/rive-plan.md`: three Rive files (Start + Chapter 1, Chapter 2, Chapters 3 + 4 + End), two How-to overlay files, and one integration file for all of them. Stages 0 and 1 are done (rooms come in as an RML copy); Stage 2 is under way, one room at a time, each reviewed by Demetre before the next. The illustrator's file (Rive file 2668591) is the art source: read only, never edit or push to it. The floor line is 712 in every file. The Rive CLI is signed in as lindsey.liang on purpose; push under that login as normal.
 
 ## Layout
 
@@ -56,6 +56,7 @@ The whole-experience plan is in `docs/rive-plan.md`: three Rive files (Start + C
 
 ## Build rules
 
+- A room's loop is the illustrator's, copied exactly (keys, timing, easing, positions, pivots). Bake the ball rig into direct keys; never reinterpret. Close a loop only by setting a property's last key to its first, and list the fix in `docs/rive-plan.md`. Use `tools/import_room.py`; the intro is the only motion designed here.
 - The Rive CLI is the primary tool. New artwork goes in through the Rive Editor first (the CLI has no SVG import), then `rive pull`.
 - Wrap anything that rotates or squashes so its group's own position sits on the pivot, with an inner "Art" group offset back.
 - Keep `includeInExport` true on every artboard that ships.

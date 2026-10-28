@@ -1,6 +1,6 @@
 # Year in Games 2026: Rive plan for the whole experience
 
-Status: approved by Demetre. Stage 0 done when this file is committed; Stage 1 (Spelling Bee comparison) is next.
+Status: approved by Demetre. Stage 0 (plan) and Stage 1 (Spelling Bee comparison) are done. Stage 2 is under way: Spelling Bee is in Chapter 2 for review; Strands, The Mini, The Midi and The Crossword follow one at a time, each reviewed before the next.
 
 ## Decisions
 
@@ -8,7 +8,9 @@ Status: approved by Demetre. Stage 0 done when this file is committed; Stage 1 (
 - **Floor line is 712 in every file.** The illustrator's file has 710.5 (Chapters 1–3), 711 (Chapter 4) and 740 (End); we set them all to 712 as rooms come in.
 - **One integration file for the whole experience**, not one per Rive file (see "The integration").
 - **Ads and the top-game video are cards.** When an ad or the video finishes, engineering calls `onTap()` like any other tap.
-- **The illustrator's ball rig does not come in.** No joystick, no `Ball_Move` solo, no `Ball_Squash` or `Ball_Scale` helper animations. Each room's ball is plain ball art, like Wordle and Connections, with its squash, scale and movement keyed directly in the room's intro and loop. The illustrator's ball motion is the reference for timing and shape only.
+- **Rooms come in as an RML copy, not as nested components** (decided after the Spelling Bee test, see below).
+- **A room's loop is the illustrator's loop, copied exactly:** the same keyframes, timing, easing, positions and pivots for every piece, ball included. Nothing is reinterpreted. The only change allowed is where a loop does not close: that property's last key is set to its first, as small a change as possible, and it is added to "Fixes to the illustrator's art". The intro is the only new motion we design.
+- **The illustrator's ball rig does not come in.** No joystick, no `Ball_Move` solo, no `Ball_Squash` or `Ball_Scale` helper animations. Each room's ball is plain ball art. What the rig produced is baked into direct keys, sampled from the joystick's own keys and the rig animations (values the rig held still are set on the art; values that move get one key per frame, thinned only where a straight line is exact), so the ball moves the same. The ball's position keys, and every other piece's keys, are copied from the source untouched.
 - **Fix the loops that don't close ourselves**, after a quick look at each in the Editor. Every fix is listed under "Fixes to the illustrator's art" so the illustrator can match their source.
 - **Rive CLI login:** it runs as lindsey.liang on purpose. Push under it as normal.
 - Art source: the illustrator's Rive file (file 2668591, Team folder). Never edit or push to it. A read-only copy is pulled into `/tmp` when needed.
@@ -131,8 +133,34 @@ Each fix is made in our copy only, after a quick look in the Editor, and recorde
 | c4s1 ×5 | fireworks loops don't close | to do | to do |
 | c1s8 | misnamed (is Strands), state machine "c2s8" | renamed | to do |
 | c4s1_SpellineBee | name typo | renamed | to do |
+| c2s4 (Spelling Bee) | Ball_Move y: last key (frame 236) is 755, first is 756 | last key set to 756 | done in Chapter 2 |
 | c1s1, c1s4, c1s5 | reference images | removed | to do |
+| c2s4 (Spelling Bee) | hidden second child in each mug group; unused Ball_02 variant; the joystick, Ball_Move solo and Ball_Squash / Ball_Scale helper animations | left out (the rig is baked) | done |
 | c5s1 | floor at 740 | set to 712 | to do |
+
+## Stage 1 result: Spelling Bee as an RML copy
+
+Spelling Bee was built both ways in a scratch copy and tested against Wordle. Both built clean, played the same intro frame for frame, passed all 56 Next/Back/mid-pan tap cases with Wordle and Connections, passed the tap-out and draw-order checks, rendered identically (0 differing pixels) during pans, and played without console errors in the web runtime. Demetre picked the RML copy. The reasons:
+
+- The rule checks (`npm run check`) read only the main artboard. In the component version the room's intro, Waiting pose and loop rules were not checked at all, so the tools would need reworking.
+- The component needs a second view model, a component entry, a stateful instance bound to `scene`, and a `NestedStateMachine` child. Leaving out that last one built clean and did nothing, silently.
+- Its one advantage, editing the art in its own artboard in the Editor, matters less than checked, plain RML that works with every tool we have.
+- The component clips to its own 1495-wide frame. Nothing in Spelling Bee overhangs, so it did not show, but art that does would be cut.
+
+## Importing a room
+
+`tools/import_room.py tools/rooms/<room>.json` brings a room in; `tools/svg_to_rml.py` converts the lockup SVGs. Both have tests (`python3 -m unittest discover -s tools/tests`). The importer edits `scene.rml` by adding text only, prints every loop fix, and prints any art that overhangs the 1495-wide frame. The intro is designed in the room's config.
+
+Spelling Bee's loop was checked against the illustrator's c2s4 on all 239 frames: frames 1 to 212 match to within 1 to 2 colour levels of anti-aliasing; frames 213 to 239 differ only by the ball sitting up to 1 px higher, which is the one closing fix. A scrubbable side-by-side is in `deliver/compare/spelling-bee/index.html` (not in git).
+
+What still differs from c2s4, by design: our shared backdrop draws the floor line (2 px, same dark as every room) where the source has its own softer line; the source artboard has rounded corners; the source's frame 0 shown by the CLI is its authored pose, not a loop frame.
+
+## Lockups
+
+All seven lockups are in `art/ch2/originals/` (`*-lockup.svg`, 175 x 128). They are plain filled paths and are converted to Rive shapes exactly, icon and word as separate nodes, placed in the same frame as Wordle's: the SVG point (87.5, 66.275) sits at the lockup's Art node, so the same frame placement means the same position in every room. Each is wired and timed like Wordle's (in from frame 115, gone at frame 192 / 3.2 s, hidden on community cards).
+
+- The new Wordle and Connections SVGs match the lockups already in Rive: every shape's bounding box is within 0.001 units, fills are identical, and the only difference from the previously committed SVGs is rounding of 0.001. Two Connections shapes have one vertex fewer (the Editor kept a duplicated closing vertex). Nothing needs swapping.
+- Consistency across the seven, in the room: icon bottoms are within 0.2 px (398.3 to 398.5), word baselines within 0.7 px (437.1 to 437.7), word centres within 0.34 px of 748. Icon sizes differ: five icons are 70.8 x 70.8, Strands is 77.1 x 80.8 and Spelling Bee 76.7 x 75.8 (their art extends upward from the same bottom line). Spelling Bee's icon centre is 0.9 px left of 748.
 
 ## Order of work
 
@@ -140,10 +168,10 @@ Each stage ends with `npm run check`, a screenshot, a push with `--name`, and a 
 
 **Stage 0: Plan in the repo.** This file, the CLAUDE.md Status section and the login line. Commit.
 
-**Stage 1: Spelling Bee comparison** (scratch copy only, never committed, no Rive file link). Bring c2s4 into a copy of Chapter 2 as scene 4, once as a nested component and once as an RML copy with the ball rebuilt directly, and show both in the harness. It passes if it does everything Wordle does: pans in and out with the same 1280 / 1600 travel, ball keeps looping while leaving, loop starts and ends on one pose, 3.2 s intro, arrives already built on return, Back is the mirror, backdrop crossfades to FFFDEF, nothing clipped, `npm run check` passes. Stop for Demetre's pick.
+**Stage 1: Spelling Bee comparison (done)** (scratch copy only, never committed, no Rive file link). Bring c2s4 into a copy of Chapter 2 as scene 4, once as a nested component and once as an RML copy with the ball rebuilt directly, and show both in the harness. It passes if it does everything Wordle does: pans in and out with the same 1280 / 1600 travel, ball keeps looping while leaving, loop starts and ends on one pose, 3.2 s intro, arrives already built on return, Back is the mirror, backdrop crossfades to FFFDEF, nothing clipped, `npm run check` passes. Stop for Demetre's pick.
 - *By hand:* look at both in the harness and pick one.
 
-**Stage 2: Finish Chapter 2 (File 2).** Bring in Strands, Spelling Bee, The Mini, The Midi and The Crossword with layers, intro, Waiting pose, loop fixes and lockup. Opener choice (side by side). Open on the empty Chapter 1 room and pan into the opener. Add the ending into the empty Chapter 3 backdrop. Update the README and handoff.
+**Stage 2: Finish Chapter 2 (File 2).** Rooms one at a time, in this order: Spelling Bee, Strands, The Mini, The Midi, The Crossword. For each: import with `tools/import_room.py`, copy the illustrator's loop exactly, add its lockup, propose a 3.2 s intro in Spelling Bee's style, report art that overhangs the frame, run the checks, show the side-by-side with the illustrator's version and the room in the harness, and stop for review. The Chapter 2 ending and the opener swap come later. Bring in Strands, Spelling Bee, The Mini, The Midi and The Crossword with layers, intro, Waiting pose, loop fixes and lockup. Opener choice (side by side). Open on the empty Chapter 1 room and pan into the opener. Add the ending into the empty Chapter 3 backdrop. Update the README and handoff.
 - *By hand:* import the five missing lockup SVGs in the Editor (I `rive pull`). Approve intro motion and the opener choice.
 
 **Stage 3: File 1, Start + Chapter 1.** Generalize the tools. Loading, Start into Chapter 1 in one continuous motion, five rooms, Ad 1 and Ad 2 as empty-room scenes, ending on the empty Chapter 1 room.
