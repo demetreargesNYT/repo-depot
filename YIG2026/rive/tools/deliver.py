@@ -181,7 +181,9 @@ def main(argv):
     project = chapter_dir(chapter)
 
     print("1. fast check")
-    results = check.build_checks(project) + check_chapter.run(chapter) + [check.opener_clears(project), check.community_hides_lockup(project)]
+    results = (check.build_checks(project) + check_chapter.run(chapter)
+               + [check.opener_clears(project), check.community_hides_lockup(project),
+                  check.rooms_are_separate(chapter), check.rooms_sheet_current(chapter)])
     bad = [t for ok, t in results if not ok]
     if bad:
         for t in bad:

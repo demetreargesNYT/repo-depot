@@ -20,7 +20,7 @@ and NYT Karnak) apply as normal.
 
 | File | What it is |
 |---|---|
-| `chapter-2.riv` | the Rive file (63,523 bytes): artboard `"Chapter 2"`, state machine `"Chapter 2"`, view model `"Chapter 2"` (numbers `scene`, `direction`; boolean `community`) |
+| `chapter-2.riv` | the Rive file (187,043 bytes): artboard `"Chapter 2"`, state machine `"Chapter 2"`, view model `"Chapter 2"` (numbers `scene`, `direction`; boolean `community`) |
 | `chapter-2-integration.js` | our integration code. Use it as written: it loads the file, handles Next and Back, and reveals the copy |
 | `yig-text-motion.css` | the text motion; all text timing lives here |
 | `index.html` | the example page: example player data, `buildCards`, the copy, `start(cards)` and the tap wiring |
@@ -124,4 +124,4 @@ The icons for Strands, Spelling Bee, The Mini, The Midi and The Crossword on the
 
 New games arrive as an updated `chapter-2.riv`; the card format and your calls don't change. Copy text is placeholder.
 
-Built from `chapters/ch2` (source last changed in git 8edc3df). Rooms in this file: scene 0, 1, 2, 3, 4, 5, 6, 7.
+Built from `chapters/ch2` (source last changed in git bb024b0). Rooms in this file: scene 0, 1, 2, 3, 4, 5, 6, 7.
