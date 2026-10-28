@@ -134,7 +134,12 @@ Each fix is made in our copy only, after a quick look in the Editor, and recorde
 | c1s8 | misnamed (is Strands), state machine "c2s8" | renamed | to do |
 | c4s1_SpellineBee | name typo | renamed | to do |
 | c2s4 (Spelling Bee) | Ball_Move y: last key (frame 236) is 755, first is 756 | last key set to 756 | done in Chapter 2 |
+| c1s8 (Strands) | none: the loop closes | none | done |
+| c2s5 (The Mini) | Ball_Move x ends 86 units from where it starts (last key frame 91), y 135 (last key frame 129) | the ball's keys are untouched; x and y return to their first values over frames 129 to 149 (the tail that was held) | done |
+| c2s6 (The Midi) | the ball moves through two nodes and neither closes: Ball_01 x/y end 205.5 / 22 from their start (last key frame 97), Ball_Move x/y 175.5 / 104.5 (frame 142). In the world the ball ends 30 right of and 126 below where it starts | all four return to their first values over frames 142 to 149 | done |
+| c2s7 (The Crossword) | Ball_01 y ends 54 from its start (last key frame 158), Ball_01 x 141 (frame 129), and the Group 2 piece fades in at frame 129 and never fades out | the ball's keys and the fade-in are untouched; all three return to their first values over frames 158 to 179 (the group fades out) | done |
 | c1s1, c1s4, c1s5 | reference images | removed | to do |
+| c1s8 (Strands) | a hidden bit in the left strand's group; the unused Ball_02 variant; the source's own floor stroke key | left out | done |
 | c2s4 (Spelling Bee) | hidden second child in each mug group; unused Ball_02 variant; the joystick, Ball_Move solo and Ball_Squash / Ball_Scale helper animations | left out (the rig is baked) | done |
 | c5s1 | floor at 740 | set to 712 | to do |
 
@@ -154,6 +159,21 @@ Spelling Bee was built both ways in a scratch copy and tested against Wordle. Bo
 Spelling Bee's loop was checked against the illustrator's c2s4 on all 239 frames: frames 1 to 212 match to within 1 to 2 colour levels of anti-aliasing; frames 213 to 239 differ only by the ball sitting up to 1 px higher, which is the one closing fix. A scrubbable side-by-side is in `deliver/compare/spelling-bee/index.html` (not in git).
 
 What still differs from c2s4, by design: our shared backdrop draws the floor line (2 px, same dark as every room) where the source has its own softer line; the source artboard has rounded corners; the source's frame 0 shown by the CLI is its authored pose, not a loop frame.
+
+## The other four rooms
+
+Strands, The Mini, The Midi and The Crossword were brought in together with `tools/import_room.py` (configs in `tools/rooms/`). Each loop is the illustrator's, copied key for key; the ball rig is baked. Nothing overhangs the 1495 x 1067 frame in any room, and the ball's path stays inside it. Each room is checked against the illustrator's artboard on every loop frame with `tools/compare_room.py`; the viewers are in `deliver/compare/` (not in git). Proposed intros, all exactly 3.2 s, in Spelling Bee's style (the floor pans in 0.05 to 1.55 s carrying the pieces on it, pieces that float drop in and settle with a small squash, the ball rolls in along the floor from the left and lands in the loop's first pose, the lockup plays as Wordle's does):
+
+- **Strands:** the shoes ride the floor in; the blue strand drops at 1.00 s (lands 1.50) and the yellow strand with its base bar at 1.15 s (lands 1.65); the ball rolls in from 1.15 s and hops up onto the yellow strand's top.
+- **The Mini:** the big cube rides the floor in; the other cubes drop together at 1.10 s (land 1.60); the ball rolls in along the front of the floor.
+- **The Midi:** the long base rides the floor in; the doors and the upper boxes drop together at 1.10 s (land 1.60); the ball rolls in and hops up to the loop's first pose.
+- **The Crossword:** the base with its small cubes rides the floor in; the doors and front boxes drop together at 1.10 s (land 1.60); the ball rolls in and hops up to the loop's first pose.
+
+The Mini, The Midi and The Crossword have loops that do not close (see the fix list). In each, every key the illustrator set is untouched and the ball (and in the Crossword, the Group 2 fade-in) returns to where it started over the last frames of the loop. The illustrator may want to look at those three.
+
+Strands needs one more thing. In the illustrator's file the Floor is listed above the ball and above most of the pieces, so the ball sinks behind the floor and is cut off at the floor line. Our floor is the shared backdrop at the bottom, so the importer clips everything the source draws under the floor to the area above the floor line (a clip rectangle in the room, `Strands Floor Clip`). With it, Strands matches the source on every frame; without it the ball showed over the floor.
+
+The closing rule, as built: a gap up to 2 px (0.02 for rotation, scale and opacity) is closed by setting the property's last key to its first; a wider gap keeps every key and adds a return, with all returns in a room starting on the same frame, the latest last key among them.
 
 ## Lockups
 

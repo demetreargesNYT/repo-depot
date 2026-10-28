@@ -56,7 +56,7 @@ The whole-experience plan is in `docs/rive-plan.md`: three Rive files (Start + C
 
 ## Build rules
 
-- A room's loop is the illustrator's, copied exactly (keys, timing, easing, positions, pivots). Bake the ball rig into direct keys; never reinterpret. Close a loop only by setting a property's last key to its first, and list the fix in `docs/rive-plan.md`. Use `tools/import_room.py`; the intro is the only motion designed here.
+- A room's loop is the illustrator's, copied exactly (keys, timing, easing, positions, pivots). Bake the ball rig into direct keys; never reinterpret. Close a loop only by setting a property's last key to its first, and list the fix in `docs/rive-plan.md`. Use `tools/import_room.py` (and `tools/compare_room.py` for the frame-by-frame check against the source); the intro is the only motion designed here. The illustrator's file is kept read-only in `.cache/illustrator/` (git ignores it; the importer pulls it again if it is missing); never push to or edit it.
 - The Rive CLI is the primary tool. New artwork goes in through the Rive Editor first (the CLI has no SVG import), then `rive pull`.
 - Wrap anything that rotates or squashes so its group's own position sits on the pivot, with an inner "Art" group offset back.
 - Keep `includeInExport` true on every artboard that ships.

@@ -1,0 +1,17 @@
+{
+  "room": "The Mini",
+  "scene": 5,
+  "artboard": "NYT_YIG_c2s5",
+  "loop": "Ball",
+  "ball": "Ball_Move",
+  "wall": "FF95BEFA",
+  "floor": "FFFEA0C9",
+  "lockup": "art/ch2/originals/mini-lockup.svg",
+  "intro": {
+    "plane": [0.05, 1.55],
+    "drops": [
+      {"name": "Cubes", "ids": ["1:94149", "1:94369", "1:94097", "1:94159"], "from": 1.10, "to": 1.60}
+    ],
+    "ball": {"roll": [1.15, 1.90], "land": [1.90, 2.05]}
+  }
+}

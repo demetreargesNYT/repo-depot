@@ -75,8 +75,17 @@ SOURCE = """<Rive version="1" kind="fragment">
     <KeyedObject objectId="0:10" id="0:120">
       <KeyedProperty property="x" id="0:121">
         <KeyFrameDouble value="700" interpolationType="linear" id="0:122"/>
-        <KeyFrameDouble value="706" frame="120" id="0:123"/>
+        <KeyFrameDouble value="701" frame="120" id="0:123"/>
       </KeyedProperty>
+    </KeyedObject>
+    <KeyedObject objectId="0:50" id="0:130">
+      <KeyedProperty property="x" id="0:131">
+        <KeyFrameDouble value="1480" interpolationType="linear" id="0:132"/>
+        <KeyFrameDouble value="1500" frame="100" id="0:133"/>
+      </KeyedProperty>
+    </KeyedObject>
+    <KeyedObject objectId="0:18" id="0:140">
+      <KeyedProperty property="colorValue" id="0:141"><KeyFrameColor value="FF00FF00" id="0:142"/></KeyedProperty>
     </KeyedObject>
   </LinearAnimation>
 </Artboard>
@@ -170,29 +179,44 @@ class Build(unittest.TestCase):
             with self.subTest(frame=f):
                 self.assertAlmostEqual(I.value_at(keys["scaleX"], f), want, 6)
 
-    def test_a_loop_that_does_not_close_is_closed_and_recorded(self):
-        self.assertEqual(len(self.b.fixes), 1)
-        what, was, now = self.b.fixes[0]
-        self.assertIn("Piece x", what)
-        self.assertEqual((was, now), (706.0, 700.0))
+    def test_a_small_gap_sets_the_last_key_and_a_wide_one_adds_a_return(self):
+        fixes = {what.split(":")[0]: (what, was, now) for what, was, now in self.b.fixes}
+        what, was, now = fixes["Piece x"]
+        self.assertIn("set to the first", what)
+        self.assertEqual((was, now), (701.0, 700.0))
+        what, was, now = fixes["Overhang x"]
+        self.assertIn("returns to it over frames 100 to 119", what)
+        self.assertEqual((was, now), (1500.0, 1480.0))
+        loop = self.anims["Test Room Loop"]
+        overhang = next(e for e in self.room.iter() if e.get("name") == "Overhang")
+        ko = next(k for k in loop.findall("KeyedObject") if k.get("objectId") == overhang.get("id"))
+        keys = I.read_keys(ko.find("KeyedProperty"))
+        self.assertEqual([(f, v) for f, v, _, _ in keys], [(0, 1480.0), (100, 1500.0), (119, 1480.0)])
+        self.assertEqual(keys[1][2], "linear", "the held tail now travels back")
+
+    def test_colour_keys_are_held_by_the_intro(self):
+        piece_fill = next(e for e in self.room.iter("SolidColor") if e.get("colorValue") == "FF00FF00")
+        intro = self.anims["Test Room Intro"]
+        ko = next(k for k in intro.findall("KeyedObject") if k.get("objectId") == piece_fill.get("id"))
+        self.assertEqual(ko.find("KeyedProperty/KeyFrameColor").get("value"), "FF00FF00")
 
     def test_intro_is_3_2_s_and_ends_on_the_loop_start(self):
         intro, waiting = self.anims["Test Room Intro"], self.anims["Test Room Waiting"]
         self.assertEqual(intro.get("duration"), "192")
         first = {(ko.get("objectId"), kp.get("property")): I.read_keys(kp)[0][1]
-                 for ko in intro.findall("KeyedObject") for kp in ko.findall("KeyedProperty")}
+                 for ko in intro.findall("KeyedObject") for kp in ko.findall("KeyedProperty") if kp[0].tag == "KeyFrameDouble"}
         held = {(ko.get("objectId"), kp.get("property")): I.read_keys(kp)[0][1]
-                for ko in waiting.findall("KeyedObject") for kp in ko.findall("KeyedProperty")}
+                for ko in waiting.findall("KeyedObject") for kp in ko.findall("KeyedProperty") if kp[0].tag == "KeyFrameDouble"}
         self.assertEqual(first.keys(), held.keys())
         for k in first:
             self.assertAlmostEqual(first[k], held[k])
         loop = self.anims["Test Room Loop"]
         ends = {(ko.get("objectId"), kp.get("property")): I.read_keys(kp)[-1][1]
-                for ko in intro.findall("KeyedObject") for kp in ko.findall("KeyedProperty")}
+                for ko in intro.findall("KeyedObject") for kp in ko.findall("KeyedProperty") if kp[0].tag == "KeyFrameDouble"}
         for ko in loop.findall("KeyedObject"):
             for kp in ko.findall("KeyedProperty"):
                 key = (ko.get("objectId"), kp.get("property"))
-                if key in ends and kp.get("property") in ("x", "y", "scaleX", "scaleY"):
+                if kp[0].tag == "KeyFrameDouble" and key in ends and kp.get("property") in ("x", "y", "scaleX", "scaleY"):
                     with self.subTest(key=key):
                         self.assertAlmostEqual(ends[key], I.read_keys(kp)[0][1], 4)
 
@@ -220,6 +244,43 @@ class Build(unittest.TestCase):
         out = I.splice(self.text, self.pieces)
         with self.assertRaises(SystemExit):
             I.Build(CONFIG, out, ET.fromstring(SOURCE))
+
+
+class FloorAboveTheBall(unittest.TestCase):
+    """In the source, what is listed after the Floor is drawn under it; the importer clips those pieces at the floor line."""
+
+    def build(self, source):
+        b = I.Build(CONFIG, CHAPTER.read_text(), ET.fromstring(source))
+        return b, b.build()
+
+    def test_nothing_is_clipped_when_the_floor_is_at_the_bottom(self):
+        _, pieces = self.build(SOURCE)
+        self.assertEqual([e for e in pieces["room"].iter("ClippingShape")], [])
+
+    def test_everything_after_the_floor_is_clipped_to_above_the_floor_line(self):
+        floor_first = SOURCE.replace('  <Node y="710" name="Floor 9" id="0:90"/>\n', "").replace(
+            '  <Node x="700" y="600" name="Piece" id="0:10">', '  <Node y="710" name="Floor 9" id="0:90"/>\n  <Node x="700" y="600" name="Piece" id="0:10">', 1)
+        b, pieces = self.build(floor_first)
+        room = pieces["room"]
+        clip = next(e for e in room.iter("Shape") if e.get("name") == "Test Room Floor Clip")
+        self.assertEqual(clip.get("y"), "712")
+        clipped = {s.get("id") for s in room.iter("Shape") if any(c.tag == "ClippingShape" and c.get("sourceId") == clip.get("id") for c in s)}
+        art = [s for s in room.iter("Shape") if s.find("Fill") is not None and s.get("name") != "Test Room Floor Clip"
+               and not any(p.get("name", "").startswith("Test Room Lockup") for p in [])]
+        ball_shape = next(s for s in room.iter("Shape") if s.get("name") == "Ball_Base")
+        self.assertIn(ball_shape.get("id"), clipped)
+        self.assertTrue(any("under the floor" in n for n in b.notes))
+
+
+class ArtSource(unittest.TestCase):
+    def test_a_missing_custom_path_is_an_error_not_a_pull(self):
+        with self.assertRaises(SystemExit):
+            I.ensure_illustrator(Path(tempfile.gettempdir()) / "no-such-art" / "scene.rml")
+
+    def test_the_default_lives_in_the_ignored_cache(self):
+        self.assertEqual(I.ILLUSTRATOR, Path(__file__).resolve().parents[2] / ".cache" / "illustrator" / "scene.rml")
+        ignored = (Path(__file__).resolve().parents[2] / ".gitignore").read_text().split()
+        self.assertIn(".cache/", ignored)
 
 
 if __name__ == "__main__":

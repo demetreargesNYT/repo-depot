@@ -1,0 +1,18 @@
+{
+  "room": "Strands",
+  "scene": 3,
+  "artboard": "NYT_YIG_c1s8",
+  "loop": "Ball",
+  "ball": "Ball_Move",
+  "wall": "FFDFF3F0",
+  "floor": "FFFEA0C9",
+  "lockup": "art/ch2/originals/strands-lockup.svg",
+  "intro": {
+    "plane": [0.05, 1.55],
+    "drops": [
+      {"name": "Left Strand", "ids": ["1:46508"], "from": 1.00, "to": 1.50},
+      {"name": "Yellow Strand", "ids": ["1:46412", "1:50530"], "from": 1.15, "to": 1.65}
+    ],
+    "ball": {"roll": [1.15, 1.90], "land": [1.90, 2.05]}
+  }
+}

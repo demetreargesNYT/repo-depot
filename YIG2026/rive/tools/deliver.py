@@ -166,7 +166,7 @@ same version on a CDN only so it runs without a build step.
 |---|---|---|---|
 {games_table}
 
-The Spelling Bee icon on the example page is a placeholder cut from its lockup, until final icons are supplied.
+The icons for Strands, Spelling Bee, The Mini, The Midi and The Crossword on the example page are placeholders cut from their lockups, until final icons are supplied. Their card copy is placeholder too.
 
 New games arrive as an updated `{riv_name}`; the card format and your calls don't change. Copy text is placeholder.
 

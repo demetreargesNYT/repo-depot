@@ -155,7 +155,7 @@ import { start, onTap, onBack, setScene, yig } from "./chapter-2-integration.js"
 // ---------------------------------------------------------------------------------------------------------------
 // The text test (harness/text-test.mjs) swaps in other players here, through window.__yigTestPlayer.
 const EXAMPLE_PLAYER = window.__yigTestPlayer ?? {
-  gameOrder: ["wordle", "spelling-bee", "connections"],
+  gameOrder: ["wordle", "connections", "strands", "spelling-bee", "mini", "midi", "daily"],
   wordle: {
     solves: 212,
     averageGuesses: 3.9,
@@ -164,6 +164,11 @@ const EXAMPLE_PLAYER = window.__yigTestPlayer ?? {
     topStartingWords: ["ADIEU", "CRANE"],
     hardestWordResult: "missed", // "solved" | "missed" | "not played"
   },
+  // PLACEHOLDER stats for the four newest rooms: only here so you can tap through all seven games.
+  strands: { solves: 30 },
+  mini: { solves: 50 },
+  midi: { solves: 40 },
+  daily: { solves: 90 },
   "spelling-bee": {
     solves: 64,
     genius: 21,
@@ -212,6 +217,7 @@ function buildCards(p) {
       cards.push({ game, card: "hardest-word", variant: s.hardestWordResult });
       if (s.topStartingWords.length) cards.push({ game, card: "starting-words" });
     }
+    if (["strands", "mini", "midi", "daily"].includes(game)) cards.push({ game, card: "placeholder" });
     if (game === "spelling-bee") {
       cards.push({ game, card: "pangrams" });
       cards.push({ game, card: "genius" });
@@ -236,6 +242,9 @@ const pill = (colour) => `<span class="yig-pop pill pill-${esc(colour)}">${esc(c
 
 // Placeholder copy: the last line of the hardest-word card, by whether the player solved that day's puzzle.
 const HARDEST_WORD_ENDING = { missed: "including you!", solved: "but not you!", "not played": "You sat that one out." };
+
+// A placeholder card: a title, a big word, and a label saying the copy is not final.
+const placeholder = (title) => [line("t-serif", title), line("t-big", "Placeholder"), line("t-small", "PLACEHOLDER COPY")];
 
 // One function per card: it returns the card's lines.
 const COPY = {
@@ -276,6 +285,11 @@ const COPY = {
       line("t-small", "Oh là là!"),
     ],
   },
+  // PLACEHOLDER COPY: one card per newest room, so you can see its room and lockup.
+  strands: { placeholder: () => placeholder("Strands"), community: () => placeholder("Strands") },
+  mini: { placeholder: () => placeholder("The Mini"), community: () => placeholder("The Mini") },
+  midi: { placeholder: () => placeholder("The Midi"), community: () => placeholder("The Midi") },
+  daily: { placeholder: () => placeholder("The Crossword"), community: () => placeholder("The Crossword") },
   // PLACEHOLDER COPY: Spelling Bee has no final copy yet; these cards only let you see the room and lockup.
   "spelling-bee": {
     pangrams: (s) => [
@@ -328,6 +342,40 @@ const COPY = {
 
 // Each game's small icon: its own block, shown once per game while that game's cards change.
 const ICON = {
+  // PLACEHOLDER ICONS for the newest rooms, cut from their lockups until final icons are supplied.
+  strands: `<svg width="50" height="49" viewBox="48.83 1.54 77.09 80.76" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M125.929 15.3716C125.929 17.7365 125.101 19.9831 123.682 21.875L123.564 21.9933C123.209 22.4662 122.854 22.821 122.381 23.1757V59.7129C122.381 62.9054 120.135 65.7433 117.06 66.571C113.868 67.3987 110.675 65.9797 109.02 63.0237L98.1414 42.9223C97.9049 44.9324 97.1955 46.7061 96.013 48.3615L95.8948 48.4797C95.5401 48.9527 95.0671 49.4257 94.5941 49.7804V75.0845C94.5941 78.1588 92.584 81.1149 89.6279 81.9426C88.9184 82.1791 88.209 82.2973 87.4995 82.2973C85.0164 82.2973 82.6516 80.9966 81.3509 78.6318L66.5705 52.7365V60.3041C68.6988 62.3142 70.1178 65.0338 70.1178 68.2264C70.1178 74.1385 65.388 78.8683 59.4759 78.8683C53.5637 78.8683 48.834 74.1385 48.834 68.2264C48.834 65.0338 50.2529 62.196 52.3813 60.3041V25.8953C52.3813 23.1757 53.8002 20.6926 56.1651 19.3919C59.7124 17.5 63.8509 18.9189 65.7428 22.1115L76.5029 41.3852C76.6211 39.0203 77.4489 36.6554 79.1043 34.7635L79.2225 34.527C79.5772 34.0541 80.0502 33.6993 80.5232 33.3446V8.39529C80.5232 5.20272 82.7698 2.36488 85.8441 1.53718C89.0367 0.709478 92.2293 2.1284 93.8847 5.08448L108.429 31.9257V23.4122C107.837 22.9392 107.364 22.348 106.891 21.7568L106.773 21.6385C105.472 19.8649 104.881 17.7365 104.881 15.6081C104.881 9.69596 109.611 4.96623 115.523 4.96623C121.199 4.72975 125.929 9.57772 125.929 15.3716Z" fill="black"/>
+<path d="M118.953 25.304V59.5946C118.953 60.8953 118.362 62.1959 117.179 62.7872C115.406 63.8513 113.159 63.1419 112.331 61.3682L92.2301 24.9493C91.9936 24.3581 91.1659 24.5946 91.1659 25.1858V31.4527C88.9193 30.625 86.3179 30.625 84.0713 31.3345V8.27702C84.0713 6.62161 85.1355 5.2027 86.7909 4.84797C88.328 4.49324 89.9835 5.2027 90.8112 6.62161L110.913 43.1588C111.149 43.75 111.977 43.5135 111.977 42.9223V25.304C113.159 25.6588 114.223 25.8953 115.524 25.8953C116.588 25.8953 117.771 25.777 118.953 25.304Z" fill="#EFC929"/>
+<path d="M91.047 52.0271V75.4392C91.047 77.0947 89.9828 78.3953 88.4456 78.8683C88.2091 78.9865 87.8544 78.9865 87.4997 78.9865C86.199 78.9865 85.0166 78.2771 84.4253 77.2129L64.0875 41.7399C63.851 41.267 63.0233 41.3852 63.0233 41.9764V58.1757C61.8409 57.821 60.6584 57.5845 59.476 57.5845C58.2936 57.5845 57.1111 57.821 55.9287 58.1757V25.5406C55.9287 23.8852 56.9929 22.5845 58.5301 22.1115C60.0672 21.7568 61.7226 22.348 62.5503 23.767L82.8882 59.2399C83.2429 59.7129 83.9524 59.5947 83.9524 59.0034V52.1453C85.0166 52.5001 86.199 52.7365 87.3814 52.7365C88.6821 52.6183 89.8645 52.3818 91.047 52.0271Z" fill="#AAE5F2"/>
+<path d="M87.3817 48.9527C91.2999 48.9527 94.4763 45.7764 94.4763 41.8581C94.4763 37.9399 91.2999 34.7635 87.3817 34.7635C83.4635 34.7635 80.2871 37.9399 80.2871 41.8581C80.2871 45.7764 83.4635 48.9527 87.3817 48.9527Z" fill="white"/>
+<path d="M115.287 22.4662C119.205 22.4662 122.382 19.2898 122.382 15.3716C122.382 11.4533 119.205 8.27698 115.287 8.27698C111.369 8.27698 108.192 11.4533 108.192 15.3716C108.192 19.2898 111.369 22.4662 115.287 22.4662Z" fill="white"/>
+<path d="M59.3583 75.3209C63.2765 75.3209 66.4529 72.1445 66.4529 68.2263C66.4529 64.3081 63.2765 61.1317 59.3583 61.1317C55.44 61.1317 52.2637 64.3081 52.2637 68.2263C52.2637 72.1445 55.44 75.3209 59.3583 75.3209Z" fill="white"/>
+</svg>`,
+  mini: `<svg width="50" height="49" viewBox="52.46 11.41 70.76 70.76" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M123.22 20.368V73.2139C123.22 78.1581 119.195 82.1708 114.263 82.1708H61.4169C56.4727 82.1708 52.46 78.1581 52.46 73.2139V20.368C52.46 15.4358 56.4727 11.4111 61.4169 11.4111H114.263C119.195 11.4111 123.22 15.4358 123.22 20.368Z" fill="black"/>
+<path d="M86.0904 14.9938V45.0413H56.043V20.368C56.043 17.4062 58.4554 14.9938 61.4171 14.9938H86.0904Z" fill="white"/>
+<path d="M119.637 20.368V45.0413H89.5771V14.9938H114.262C117.224 14.9938 119.637 17.4062 119.637 20.368Z" fill="white"/>
+<path d="M119.637 48.5286V73.2138C119.637 76.1756 117.224 78.588 114.262 78.588H89.5771V48.5286H119.637Z" fill="white"/>
+</svg>`,
+  midi: `<svg width="50" height="49" viewBox="52.46 11.41 70.76 70.76" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M114.263 13.2021H61.4175C57.4601 13.2021 54.252 16.4103 54.252 20.3677V73.2136C54.252 77.171 57.4601 80.3791 61.4175 80.3791H114.263C118.221 80.3791 121.429 77.171 121.429 73.2136V20.3677C121.429 16.4103 118.221 13.2021 114.263 13.2021Z" fill="white"/>
+<path d="M114.263 11.4111H61.4169C56.4777 11.4111 52.46 15.4289 52.46 20.3681V73.2139C52.46 78.1531 56.4777 82.1708 61.4169 82.1708H114.263C119.202 82.1708 123.22 78.1531 123.22 73.2139V20.3681C123.22 15.4289 119.202 11.4111 114.263 11.4111ZM97.2656 33.7964H78.4153V14.9938H97.2656V33.7964ZM74.8325 56.2027H56.0428V37.3792H74.8325V56.2027ZM78.4153 59.7855H97.2656V78.5881H78.4153V59.7855ZM100.848 37.3791H119.637V56.2026H100.848V37.3791ZM61.4169 14.9939H74.8324V33.7965H56.0427V20.3681C56.0427 17.4045 58.4534 14.9939 61.4169 14.9939ZM114.263 78.5881H100.849V59.7855H119.637V73.2139C119.637 76.1774 117.226 78.5881 114.263 78.5881Z" fill="black"/>
+</svg>`,
+  daily: `<svg width="50" height="49" viewBox="52.12 11.38 70.76 70.76" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M113.923 11.3765H61.077C56.1328 11.3765 52.1201 15.3892 52.1201 20.3334V73.1792C52.1201 78.1235 56.1328 82.1362 61.077 82.1362H113.923C118.855 82.1362 122.88 78.1235 122.88 73.1792V20.3334C122.88 15.3892 118.855 11.3765 113.923 11.3765Z" fill="black"/>
+<path d="M119.297 48.2551H105.778V62.0607H119.297V48.2551Z" fill="white"/>
+<path d="M119.297 65.0464V73.1793C119.297 76.141 116.885 78.5534 113.923 78.5534H105.778V65.0464H119.297Z" fill="white"/>
+<path d="M102.792 65.0464H88.9863V78.5534H102.792V65.0464Z" fill="white"/>
+<path d="M86.001 65.0464H72.1953V78.5534H86.001V65.0464Z" fill="white"/>
+<path d="M86.001 48.2551H72.1953V62.0607H86.001V48.2551Z" fill="white"/>
+<path d="M69.2101 48.2551H55.7031V62.0607H69.2101V48.2551Z" fill="white"/>
+<path d="M69.2101 31.4639H55.7031V45.2695H69.2101V31.4639Z" fill="white"/>
+<path d="M119.297 31.4639H105.778V45.2695H119.297V31.4639Z" fill="white"/>
+<path d="M102.792 31.4639H88.9863V45.2695H102.792V31.4639Z" fill="white"/>
+<path d="M102.792 14.9592H88.9863V28.4782H102.792V14.9592Z" fill="white"/>
+<path d="M86.001 14.9592H72.1953V28.4782H86.001V14.9592Z" fill="white"/>
+<path d="M69.2101 14.9592V28.4782H55.7031V20.3334C55.7031 17.3716 58.1035 14.9592 61.0773 14.9592H69.2101Z" fill="white"/>
+</svg>`,
   // PLACEHOLDER ICON for Spelling Bee, cut from its lockup until final icons are supplied.
   "spelling-bee": `<svg width="50" height="49" viewBox="48.22 6.47 76.69 75.77" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M56.8154 57.1259C56.8154 70.0326 66.4759 80.4504 79.7428 80.4504H100.081C112.437 79.4785 123.126 69.3808 123.126 57.1259C123.126 44.2193 113.348 33.8607 100.081 33.8607C100.081 33.8607 80.4641 33.8015 79.7428 33.8607C67.5046 34.9393 56.8154 44.9422 56.8154 57.1259Z" fill="#F8CD0E"/>
