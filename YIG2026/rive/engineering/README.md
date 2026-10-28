@@ -2,6 +2,20 @@
 
 This folder is a working example of Chapter 2. Run it, tap through it, then build the real thing the same way.
 
+## What changed since handoff-4
+
+- **One state machine name and one view model name, in every file: `"Backdrop"` for both.** Your side is the same as before:
+  `start(cards)`, `onTap()` and `onBack()`.
+- **`scene` and `direction` are enums (named values), not numbers.**
+  - `direction`: `forward`, `back`.
+  - `scene`: `intro`, `wordle`, `connections`, `strands`, `spelling-bee`, `mini`, `midi`, `daily`, `to-chapter-3`, `from-chapter-1`. The last two, `to-chapter-3` and `from-chapter-1`, are the empty pictures
+    this file ends and starts on; they are internal to our integration, so your card list never names them as scenes.
+- **`community` is now `lockup`, and true means the lockup is shown** (it defaults to true; a community card sets it to false).
+  The `community: true` tag on a card in your list is unchanged: the integration turns it into `lockup = false`.
+- **The handoff-4 integration will not work with this `.riv`**, because it set the old numbers and the old `"Chapter 2"` state
+  machine name. Use the `chapter-2-integration.js` in this folder instead. The card list, the markup, the CSS and the three
+  calls are unchanged.
+
 ## Run it locally
 
 ```bash
@@ -159,4 +173,4 @@ The icons for Strands, Spelling Bee, The Mini, The Midi and The Crossword on the
 
 New games arrive as an updated `chapter-2.riv`; the card format and your calls don't change. Copy text is placeholder.
 
-Built from `chapters/ch2` (source last changed in git 583e68a). Rooms in this file: connections, daily, intro, midi, mini, spelling-bee, strands, wordle.
+Built from `chapters/ch2` (source last changed in git 51a9281). Rooms in this file: connections, daily, intro, midi, mini, spelling-bee, strands, wordle.
