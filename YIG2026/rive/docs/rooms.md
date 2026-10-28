@@ -30,7 +30,7 @@ ball and loop are keyed only on its own pieces, so a change in one room never re
 illustrator's shape keys and are not listed here.
 
 
-## The opener (Shelf) · scene 0
+## The opener (Shelf) · scene `intro`
 
 **Loop:** 1.80 s (108 frames at 60/s), repeats. First and last frames are the same pose.
 
@@ -55,7 +55,7 @@ illustrator's shape keys and are not listed here.
 - **Move 3**: 1.50 s to 1.65 s (0.15 s): ends where it began
 - Waits: 0.30–0.75 s, 1.05–1.50 s
 
-## Wordle · scene 1
+## Wordle · scene `wordle`
 
 **Loop:** 7.20 s (432 frames at 60/s), repeats. First and last frames are the same pose.
 
@@ -80,7 +80,7 @@ illustrator's shape keys and are not listed here.
 - **Shadow E**: scale 0 → 1, starts 1.88 s, takes 0.20 s, power2.out
 - **Shadow K**: scale 0 → 1, starts 2.02 s, takes 0.20 s, power2.out
 - **Shadow R**: scale 0 → 1, starts 2.02 s, takes 0.20 s, power2.out
-- **Lockup** (icon and word): fades in 1.92–2.13 s, held, fades out ending 3.20 s; hidden on community cards
+- **Lockup** (icon and word): fades in 1.92–2.13 s, held, fades out ending 3.20 s; hidden when lockup is false (community cards and anon slides)
 
 ### Ball · intro
 
@@ -109,7 +109,7 @@ illustrator's shape keys and are not listed here.
 - **Move 9**: 4.30 s to 5.13 s (0.83 s): 82 px left
 - Waits: 1.67–1.78 s, 1.82–2.02 s, 2.08–2.40 s, 2.82–2.88 s, 3.03–3.10 s, 3.38–3.45 s, 3.55–3.67 s, 4.17–4.30 s
 
-## Connections · scene 2
+## Connections · scene `connections`
 
 **Loop:** 6.20 s (372 frames at 60/s), repeats. First and last frames are the same pose.
 
@@ -147,7 +147,7 @@ illustrator's shape keys and are not listed here.
 - **Right Slab Lime**: turns -8° → 0°, starts 1.63 s, takes 0.42 s, power2.in (starts slow, speeds up)
 - **Right Slab Lime**: drops 800 px (y -748 → 52), starts 1.63 s, takes 0.42 s, power2.in (starts slow, speeds up)
 - **Right Slab Lime**: squash on landing: 1.032 wide × 0.92 tall at 2.12 s (reached over 0.07 s, power2.out); back to 1 by 2.37 s (back.out)
-- **Lockup** (icon and word): fades in 2.10–2.32 s, held, fades out ending 3.20 s; hidden on community cards
+- **Lockup** (icon and word): fades in 2.10–2.32 s, held, fades out ending 3.20 s; hidden when lockup is false (community cards and anon slides)
 
 ### Ball · intro
 
@@ -172,7 +172,7 @@ illustrator's shape keys and are not listed here.
 - **Move 8**: 4.12 s to 4.27 s (0.15 s): 14 px down
 - Waits: 1.55–1.68 s, 1.72–1.92 s, 1.98–2.35 s, 3.25–3.38 s, 3.55–3.62 s, 3.78–3.87 s, 4.02–4.12 s
 
-## Strands · scene 3
+## Strands · scene `strands`
 
 **Loop:** 3.00 s (180 frames at 60/s), repeats. First and last frames are the same pose.
 
@@ -186,7 +186,7 @@ illustrator's shape keys and are not listed here.
 - **Strands Yellow Strand 1**: squash on landing: 1.03 wide × 0.93 tall at 1.72 s (reached over 0.07 s, power2.out); back to 1 by 1.97 s (back.out)
 - **Strands Yellow Strand 2**: drops 800 px (y -118 → 682), starts 1.15 s, takes 0.50 s, power2.in (starts slow, speeds up)
 - **Strands Yellow Strand 2**: squash on landing: 1.03 wide × 0.93 tall at 1.72 s (reached over 0.07 s, power2.out); back to 1 by 1.97 s (back.out)
-- **Lockup** (icon and word): fades in 1.92–2.13 s, held, fades out ending 3.20 s; hidden on community cards
+- **Lockup** (icon and word): fades in 1.92–2.13 s, held, fades out ending 3.20 s; hidden when lockup is false (community cards and anon slides)
 
 ### Ball · intro
 
@@ -200,7 +200,7 @@ illustrator's shape keys and are not listed here.
 - **Move 2**: 1.50 s to 2.98 s (1.48 s): 177 px right and 72 px up, rising 137 px above its start/finish height
 - Waits: 1.25–1.50 s
 
-## Spelling Bee · scene 4
+## Spelling Bee · scene `spelling-bee`
 
 **Loop:** 4.00 s (240 frames at 60/s), repeats. First and last frames are the same pose.
 
@@ -216,7 +216,7 @@ illustrator's shape keys and are not listed here.
 - **Spelling Bee Left Hex**: squash on landing: 1.03 wide × 0.93 tall at 1.67 s (reached over 0.07 s, power2.out); back to 1 by 1.92 s (back.out)
 - **Spelling Bee Right Hex**: drops 800 px (y -181 → 619), starts 1.20 s, takes 0.50 s, power2.in (starts slow, speeds up)
 - **Spelling Bee Right Hex**: squash on landing: 1.03 wide × 0.93 tall at 1.77 s (reached over 0.07 s, power2.out); back to 1 by 2.02 s (back.out)
-- **Lockup** (icon and word): fades in 1.92–2.13 s, held, fades out ending 3.20 s; hidden on community cards
+- **Lockup** (icon and word): fades in 1.92–2.13 s, held, fades out ending 3.20 s; hidden when lockup is false (community cards and anon slides)
 
 ### Ball · intro
 
@@ -227,7 +227,7 @@ illustrator's shape keys and are not listed here.
 
 - **Move 1**: 0.00 s to 3.93 s (3.93 s): ends where it began, rising 203 px above its start/finish height
 
-## The Mini · scene 5
+## The Mini · scene `mini`
 
 **Loop:** 2.50 s (150 frames at 60/s), repeats. First and last frames are the same pose.
 
@@ -243,7 +243,7 @@ illustrator's shape keys and are not listed here.
 - **The Mini Cubes 2**: squash on landing: 1.03 wide × 0.93 tall at 1.83 s (reached over 0.07 s, power2.out); back to 1 by 2.08 s (back.out)
 - **The Mini Cubes 4**: drops 800 px (y -40 → 760), starts 1.27 s, takes 0.50 s, power2.in (starts slow, speeds up)
 - **The Mini Cubes 4**: squash on landing: 1.03 wide × 0.93 tall at 1.83 s (reached over 0.07 s, power2.out); back to 1 by 2.08 s (back.out)
-- **Lockup** (icon and word): fades in 1.92–2.13 s, held, fades out ending 3.20 s; hidden on community cards
+- **Lockup** (icon and word): fades in 1.92–2.13 s, held, fades out ending 3.20 s; hidden when lockup is false (community cards and anon slides)
 
 ### Ball · intro
 
@@ -255,7 +255,7 @@ illustrator's shape keys and are not listed here.
 - **Move 2**: 1.52 s to 2.48 s (0.97 s): 86 px right and 135 px down, rising 150 px above its start/finish height
 - Waits: 1.23–1.52 s
 
-## The Midi · scene 6
+## The Midi · scene `midi`
 
 **Loop:** 2.50 s (150 frames at 60/s), repeats. First and last frames are the same pose.
 
@@ -267,7 +267,7 @@ illustrator's shape keys and are not listed here.
 - **The Midi Boxes 1**: squash on landing: 1.03 wide × 0.93 tall at 1.57 s (reached over 0.07 s, power2.out); back to 1 by 1.82 s (back.out)
 - **The Midi Boxes 2**: drops 800 px (y -24 → 776), starts 1.13 s, takes 0.50 s, power2.in (starts slow, speeds up)
 - **The Midi Boxes 2**: squash on landing: 1.03 wide × 0.93 tall at 1.70 s (reached over 0.07 s, power2.out); back to 1 by 1.95 s (back.out)
-- **Lockup** (icon and word): fades in 1.92–2.13 s, held, fades out ending 3.20 s; hidden on community cards
+- **Lockup** (icon and word): fades in 1.92–2.13 s, held, fades out ending 3.20 s; hidden when lockup is false (community cards and anon slides)
 
 ### Ball · intro
 
@@ -281,7 +281,7 @@ illustrator's shape keys and are not listed here.
 - **Move 3**: 2.15 s to 2.48 s (0.33 s): 59 px right and 148 px up
 - Waits: 0.98–1.35 s, 1.88–2.15 s
 
-## The Crossword · scene 7
+## The Crossword · scene `daily`
 
 **Loop:** 3.00 s (180 frames at 60/s), repeats. First and last frames are the same pose.
 
@@ -293,7 +293,7 @@ illustrator's shape keys and are not listed here.
 - **The Crossword Front Boxes 1**: squash on landing: 1.03 wide × 0.93 tall at 1.57 s (reached over 0.07 s, power2.out); back to 1 by 1.82 s (back.out)
 - **The Crossword Front Boxes 2**: drops 800 px (y -52 → 748), starts 1.13 s, takes 0.50 s, power2.in (starts slow, speeds up)
 - **The Crossword Front Boxes 2**: squash on landing: 1.03 wide × 0.93 tall at 1.70 s (reached over 0.07 s, power2.out); back to 1 by 1.95 s (back.out)
-- **Lockup** (icon and word): fades in 1.92–2.13 s, held, fades out ending 3.20 s; hidden on community cards
+- **Lockup** (icon and word): fades in 1.92–2.13 s, held, fades out ending 3.20 s; hidden when lockup is false (community cards and anon slides)
 
 ### Ball · intro
 

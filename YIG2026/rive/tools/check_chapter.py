@@ -10,7 +10,7 @@ from rml_read import Scene, chapter_dir
 INTRO_FRAMES = 192    # 3.2 s at 60 fps; the text CSS waits exactly this long
 OUTRO_FRAMES = 96     # 1.6 s
 ARTBOARD = (1495, 1067)
-START_SCENE = 9                  # the empty Chapter 1 room File 2 opens on: colours only, no room
+START_SCENE = "from-chapter-1"   # the empty Chapter 1 room File 2 opens on: colours only, no room
 START_COLORS = "Chapter 1 Colors"
 TOL = 1e-4
 
@@ -65,7 +65,7 @@ def layer_moves(s, layer):
             for c in tr.findall("TransitionViewModelCondition"):
                 prop = props[c.find(".//DataBindContext").get("sourcePathIds").split("-")[-1]]
                 op = "==" if c.get("opValue", "equal") == "equal" else "!="
-                conds.append((prop, op, int(float(c.find("TransitionValueNumberComparator").get("value", "0")))))
+                conds.append((prop, op, s.cond_value(c)))
             gate = "end" if tr.get("enableExitTime") == "true" and not conds else tuple(sorted(conds))
             c = tr.find("CubicEaseInterpolator")
             blend = tr.get("interpolationType") == "cubic" and c is not None and s.eases_of(c) == "power2.inOut"
@@ -87,11 +87,28 @@ def run(chapter):
     # state machine and view model
     sm = ab.find("StateMachine")
     check(sm is not None and s.names.get(ab.get("defaultStateMachineId")) == sm.get("name"), "the state machine is the artboard's default, so it plays on load")
-    props = {p.get("name"): p for p in s.view_model if p.tag == "ViewModelPropertyNumber"}
-    check("scene" in props, 'the view model has a number property named "scene"')
-    check("direction" in props, 'the view model has a number property named "direction" (1 Next, -1 Back)')
-    dflt = next((v.get("propertyValue", "0") for v in s.view_model.iter("ViewModelInstanceNumber") if "direction" in props and v.get("viewModelPropertyId") == props["direction"].get("id")), None)
-    check(dflt == "1", f"direction defaults to 1 (Next), so a file loaded without our integration code behaves as before (it is {dflt})")
+    m = s.manifest
+    if m is not None:
+        check(sm is not None and sm.get("name") == m["stateMachine"], f'the state machine is named "{m["stateMachine"]}", the same in every file (it is "{sm.get("name") if sm is not None else None}")')
+        check(s.view_model.get("name") == m["viewModel"], f'the view model is named "{m["viewModel"]}", the same in every file (it is "{s.view_model.get("name")}")')
+        check(ab.get("name") == m["artboard"], f'the artboard is named "{m["artboard"]}" (it is "{ab.get("name")}")')
+    props = {p.get("name"): p for p in s.view_model if p.tag.startswith("ViewModelProperty")}
+    check(props.get("scene") is not None and props["scene"].tag == "ViewModelPropertyEnumCustom", 'the view model has an enum property named "scene"')
+    check(props.get("direction") is not None and props["direction"].tag == "ViewModelPropertyEnumCustom", 'the view model has an enum property named "direction" (forward, back)')
+    enums = {e.get("id"): e for e in s.root.findall("DataEnumCustom")}
+    if "direction" in props:
+        d_enum = enums.get(props["direction"].get("enumId"))
+        d_values = [v.get("key") for v in d_enum] if d_enum is not None else None
+        check(d_values == ["forward", "back"], f"the direction enum is forward, back, in that order (it is {d_values})")
+        d = s.property_default(props["direction"].get("id"))
+        check(d == "forward", f"direction defaults to forward, so a file loaded without our integration code behaves as before (it is {d})")
+    if "scene" in props:
+        s_enum = enums.get(props["scene"].get("enumId"))
+        if m is not None:
+            want_scenes = [x["name"] for x in m["scenes"]]
+            got_scenes = [v.get("key") for v in s_enum] if s_enum is not None else None
+            check(got_scenes == want_scenes, f"the scene enum lists the manifest's scenes in order (file: {got_scenes}, manifest: {want_scenes})")
+        check(all(v.get("key") == v.get("value") for v in (s_enum if s_enum is not None else [])), "every scene's key and label are the same name, so either spelling sets it")
     numbers = s.scene_numbers()
     layers = {l.get("name") for l in sm.findall("StateMachineLayer")}
     for room in rooms:
@@ -99,6 +116,12 @@ def run(chapter):
     vals = [v for k, v in numbers.items() if not k.endswith("Exit") or True]
     per_room = {r: numbers.get(r, numbers.get(f"{r} Exit")) for r in rooms}
     check(len(set(per_room.values())) == len(per_room), f"each room waits for its own scene value: {per_room}")
+    if m is not None:
+        scene_list = [x["name"] for x in m["scenes"]]
+        for x in m["scenes"]:
+            if "room" in x:
+                check(per_room.get(x["room"]) == scene_list.index(x["name"]), f'{x["room"]} waits for the manifest\'s "{x["name"]}" scene (it waits for {per_room.get(x["room"])})')
+        check(sorted(x["room"] for x in m["scenes"] if "room" in x) == rooms, f"the manifest lists exactly the rooms in the file ({rooms})")
 
     # backdrop: one shared Background (wall, floor, floor line) under every room; its colours change by crossfade
     bg = s.node("Background")
@@ -124,7 +147,7 @@ def run(chapter):
         targets = {}
         for tr in trs:
             cond = tr.find("TransitionViewModelCondition")
-            n = int(float(cond.find("TransitionValueNumberComparator").get("value", "0"))) if cond is not None and cond.get("opValue", "equal") == "equal" else None
+            n = s.cond_value(cond) if cond is not None and cond.get("opValue", "equal") == "equal" else None
             targets[n] = state_anim.get(tr.get("stateToId"))
             c = tr.find("CubicEaseInterpolator")
             ease = s.eases_of(c) if c is not None else None
@@ -162,8 +185,8 @@ def run(chapter):
         want_start = {"Wall colour": "FFF1ECC0", "Floor colour": "FFFF811E"}
         got_start = {o: ks[0][1].upper() for (o, _p), ks in s.keys(start).items()}
         check(got_start == want_start, f"{START_COLORS} is the cream wall F1ECC0 and orange floor FF811E File 1 ends on ({got_start})")
-        dflt_scene = next((v.get("propertyValue", "0") for v in s.view_model.iter("ViewModelInstanceNumber") if v.get("viewModelPropertyId") == props["scene"].get("id")), None)
-        check(dflt_scene == str(START_SCENE), f"the file starts on scene {START_SCENE}, the empty Chapter 1 room, with no room of its own (scene defaults to {dflt_scene})")
+        dflt_scene = s.property_default(props["scene"].get("id"))
+        check(dflt_scene == START_SCENE, f"the file starts on scene {START_SCENE}, the empty Chapter 1 room, with no room of its own (scene defaults to {dflt_scene})")
     # only the Colors timelines may key the Background, or two layers would fight over its colours
     for name, a in A.items():
         if not name.endswith(" Colors"):
@@ -228,8 +251,9 @@ def run(chapter):
         # from the plain timeline (continuous); a Back during any pan, or a Next during a Back pan, waits in the
         # integration file
         el = next(l for l in sm.findall("StateMachineLayer") if l.get("name") == f"{room} Exit")
-        S, N, B = ("scene", "==", n), ("scene", "!=", n), ("direction", "==", -1)
-        F = ("direction", "!=", -1)
+        BACK = 1                                    # the place of "back" in the Direction enum
+        S, N, B = ("scene", "==", n), ("scene", "!=", n), ("direction", "==", BACK)
+        F = ("direction", "!=", BACK)
         R = lambda p: f"{room} {p}"
         want = sorted([
             (R("Home"), R("Home (2)"), (S,), "0", False),
@@ -284,12 +308,13 @@ def run(chapter):
         unknown = sorted(k for k in l_keys if k not in i_last)
         check(not unknown, f"every property {room} Loop keys is also set by {room} Intro" + ("" if not unknown else f": {unknown}"))
 
-    # community cards: a boolean hides each game's lockup through a gate, and nothing else changes
-    flag = next((p for p in s.view_model if p.tag == "ViewModelPropertyBoolean" and p.get("name") == "community"), None)
-    check(flag is not None, 'the view model has a boolean named "community"')
+    # lockup: a boolean shows or hides each game's lockup through a gate (anon slides and community cards turn it off), and nothing else changes
+    flag = next((p for p in s.view_model if p.tag == "ViewModelPropertyBoolean" and p.get("name") == "lockup"), None)
+    check(flag is not None, 'the view model has a boolean named "lockup"')
     if flag is not None:
-        dflt = next((v.get("propertyValue", "false") for v in s.view_model.iter("ViewModelInstanceBoolean") if v.get("viewModelPropertyId") == flag.get("id")), None)
-        check(dflt == "false", f"community defaults to false, so a game shows its lockup unless told otherwise (it is {dflt})")
+        dflt = s.property_default(flag.get("id"))
+        check(dflt == "true", f"lockup defaults to true, so a game shows its lockup unless told otherwise (it is {dflt})")
+    check(not any(p.get("name") == "community" for p in s.view_model), 'the view model has no "community" property (it is "lockup" now, and true means shown)')
     for room in [r for r in rooms if f"{r} Intro" in A and any(e.get("name") == f"{r} Lockup Gate" for e in ab.iter("Node"))]:   # the opener is not a game: no lockup
         gate = s.node(f"{room} Lockup Gate") if any(e.get("name") == f"{room} Lockup Gate" for e in ab.iter("Node")) else None
         kids = [c.get("name") for c in gate if c.tag == "Node"] if gate is not None else []
@@ -313,17 +338,15 @@ def run(chapter):
                     conds = []
                     for c in tr.findall("TransitionViewModelCondition"):
                         pid = c.find(".//DataBindContext").get("sourcePathIds").split("-")[-1]
-                        b, v = c.find("TransitionValueBooleanComparator"), c.find("TransitionValueNumberComparator")
-                        val = b.get("value", "false") if b is not None else int(float(v.get("value", "0")))
-                        conds.append((pid, c.get("opValue", "equal"), val))
+                        conds.append((pid, c.get("opValue", "equal"), s.cond_value(c)))
                     got.append((names[st.get("id")], names[tr.get("stateToId")], tuple(sorted(conds, key=str)), tr.get("duration", "0")))
         fid = flag.get("id") if flag is not None else None
         sid = props["scene"].get("id")
         n = per_room[room]
-        want = [(f"{room} Lockup Shown", f"{room} Lockup Hidden", tuple(sorted([(fid, "equal", "true"), (sid, "equal", n)], key=str)), "0"),
-                (f"{room} Lockup Hidden", f"{room} Lockup Shown", tuple(sorted([(fid, "equal", "false"), (sid, "equal", n)], key=str)), "0")]
+        want = [(f"{room} Lockup Shown", f"{room} Lockup Hidden", tuple(sorted([(fid, "equal", "false"), (sid, "equal", n)], key=str)), "0"),
+                (f"{room} Lockup Hidden", f"{room} Lockup Shown", tuple(sorted([(fid, "equal", "true"), (sid, "equal", n)], key=str)), "0")]
         check(gl is not None and sorted(got) == sorted(want) and start_of(s, gl) == f"{room} Lockup Shown",
-              f'layer "{room} Lockup" starts Shown, and reads community only while scene == {n}: hides when it is true, shows when it is false, at once')
+              f'layer "{room} Lockup" starts Shown, and reads lockup only while scene == {n}: hides when it is false, shows when it is true, at once')
 
     # the opener's toy ball is keyed only by its own loop, and held on the loop's first pose by its Intro and Waiting
     for name, a in A.items():

@@ -292,6 +292,18 @@ class Build:
         if f"{self.name} Room" in self.named:
             raise SystemExit(f"{self.name} Room is already in this chapter; restore scene.rml (git checkout) to import it again")
 
+    def scene_value_id(self):
+        """The id of this room's value in the Scene enum. cfg["scene"] is the scene's name, or its place in the enum."""
+        enum = next(e for e in self.root.findall("DataEnumCustom") if e.get("name") == "Scene")
+        values = [v for v in enum if v.tag == "DataEnumValue"]
+        want = self.cfg["scene"]
+        return values[want].get("id") if isinstance(want, int) else next(v for v in values if v.get("key") == want).get("id")
+
+    def backdrop_colour_ids(self):
+        """(wall, floor) SolidColor ids of the shared Background, found by name."""
+        shapes = {sh.get("name"): sh for sh in self.named["Background"] if sh.tag == "Shape"}
+        return tuple(shapes[n].find("Fill").find("SolidColor").get("id") for n in ("Wall", "Floor"))
+
     def register(self, tree):
         for e in tree.iter():
             if e.get("id"):
@@ -673,10 +685,11 @@ class Build:
             c = fresh(self.anims[f"Wordle {m}"], self.ids, dict(drmap))
             c.set("name", f"{name} {m}")
             new[c.get("name")] = c
+        wall_id, floor_id = self.backdrop_colour_ids()
         new[f"{name} Colors"] = ET.fromstring(
             f'<LinearAnimation fps="60" duration="1" name="{name} Colors" id="{ids()}">'
-            f'<KeyedObject objectId="1:2304" id="{ids()}"><KeyedProperty property="colorValue" id="{ids()}">{key_xml(0, cfg["wall"], None, ids, True)}</KeyedProperty></KeyedObject>'
-            f'<KeyedObject objectId="1:2297" id="{ids()}"><KeyedProperty property="colorValue" id="{ids()}">{key_xml(0, cfg["floor"], None, ids, True)}</KeyedProperty></KeyedObject>'
+            f'<KeyedObject objectId="{wall_id}" id="{ids()}"><KeyedProperty property="colorValue" id="{ids()}">{key_xml(0, cfg["wall"], None, ids, True)}</KeyedProperty></KeyedObject>'
+            f'<KeyedObject objectId="{floor_id}" id="{ids()}"><KeyedProperty property="colorValue" id="{ids()}">{key_xml(0, cfg["floor"], None, ids, True)}</KeyedProperty></KeyedObject>'
             f'</LinearAnimation>')
         new.update(self.lockup_animations(made))
 
@@ -689,16 +702,16 @@ class Build:
             lay = fresh(self.layers[ln], self.ids, dict(amap))
             self.rename(lay)
             for cond in lay.iter("TransitionViewModelCondition"):
-                dbc, cmp_ = cond.find(".//DataBindContext"), cond.find("TransitionValueNumberComparator")
+                dbc, cmp_ = cond.find(".//DataBindContext"), cond.find("TransitionValueEnumComparator")
                 if dbc is not None and dbc.get("sourcePathIds", "").endswith("-" + scene_prop) and cmp_ is not None:
-                    cmp_.set("value", str(cfg["scene"]))
+                    cmp_.set("value", self.scene_value_id())
             layers.append(lay)
 
         bd = self.layers["Backdrop"]
         state_id = ids()
-        tr = fresh(bd.find("AnyState").findall("StateTransition")[1], self.ids, {})
+        tr = fresh(bd.find("AnyState").findall("StateTransition")[0], self.ids, {})
         tr.set("stateToId", state_id)
-        tr.find(".//TransitionValueNumberComparator").set("value", str(cfg["scene"]))
+        tr.find(".//TransitionValueEnumComparator").set("value", self.scene_value_id())
         state = ET.fromstring(f'<AnimationState animationId="{new[f"{name} Colors"].get("id")}" x="{160 + 240 * len(bd.findall("AnimationState"))}" y="0" id="{state_id}"/>')
 
         self.report_overhang(planes, ball, loop_src)
@@ -765,7 +778,7 @@ def splice(text, pieces):
 
     room_text = to_text(pieces["room"], 3)
     before('<Node name="Connections Room"', room_text, 3)
-    before('<StateMachine name="Chapter 2"', "\n".join(to_text(a, 2) for a in pieces["animations"]), 2)
+    before('<StateMachine name="Backdrop"', "\n".join(to_text(a, 2) for a in pieces["animations"]), 2)
     # Backdrop: one more AnyState transition and one more state
     start = text.index('<StateMachineLayer name="Backdrop"')
     end = text.index("</StateMachineLayer>", start)

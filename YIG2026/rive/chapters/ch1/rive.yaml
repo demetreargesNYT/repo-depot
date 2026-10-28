@@ -1,8 +1,0 @@
-name: yig-test
-logs:
-  file: build/rive.log
-  problems: build/problems.log
-main: "YIG Test"
-push:
-  projectId: 1559255
-  fileId: 2666044

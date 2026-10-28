@@ -4,6 +4,7 @@ RML omits any attribute that equals its default, so a key with value 0 has no
 value attribute at all. Everything here treats a missing value as 0; never read
 keys with a regular expression.
 """
+import json
 import math
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -37,6 +38,40 @@ class Scene:
         self.parent = {c: p for p in self.root.iter() for c in p}
         self.animations = {a.get("name"): a for a in self.artboard.iter("LinearAnimation")}
         self.view_model = self.root.find("ViewModel")
+        manifest = self.path.parent / "chapter.json"
+        self.manifest = json.loads(manifest.read_text()) if manifest.exists() else None
+
+    # enums: a comparator or a default points at a DataEnumValue by id; its place in the enum is the value Rive stores
+    def enum_index(self, value_id):
+        e = self.by_id[value_id]
+        return [v.get("id") for v in self.parent[e] if v.tag == "DataEnumValue"].index(value_id)
+
+    def enum_name(self, value_id):
+        return self.by_id[value_id].get("key")
+
+    def enum_names(self, enum_name):
+        enum = next(e for e in self.root.findall("DataEnumCustom") if e.get("name") == enum_name)
+        return [v.get("key") for v in enum if v.tag == "DataEnumValue"]
+
+    def cond_value(self, cond):
+        """What a TransitionViewModelCondition compares against: an enum value's index, "true"/"false", or a number."""
+        e = cond.find("TransitionValueEnumComparator")
+        if e is not None:
+            return self.enum_index(e.get("value"))
+        b = cond.find("TransitionValueBooleanComparator")
+        if b is not None:
+            return b.get("value", "false")
+        return int(float(cond.find("TransitionValueNumberComparator").get("value", "0")))
+
+    def property_default(self, prop_id):
+        """A view model property's default: the enum value's name, "true"/"false", or the number as written."""
+        for v in self.view_model.iter("ViewModelInstanceEnum"):
+            if v.get("viewModelPropertyId") == prop_id:
+                return self.enum_name(v.get("propertyValue"))
+        for v in self.view_model.iter():
+            if v.tag.startswith("ViewModelInstance") and v.get("viewModelPropertyId") == prop_id:
+                return v.get("propertyValue", "0" if v.tag.endswith("Number") else "false")
+        return None
 
     def node(self, name):
         hits = [e for e in self.artboard.iter("Node") if e.get("name") == name]
@@ -95,7 +130,7 @@ class Scene:
         return EASES.get(key, f"cubic{key}")
 
     def scene_numbers(self):
-        """{state machine layer name: scene value its Intro/Home->Shown transition waits for}, read from the conditions."""
+        """{state machine layer name: the scene's place in the Scene enum its Intro/Home->Shown transition waits for}."""
         out = {}
         props = {p.get("id"): p.get("name") for p in self.view_model if p.tag.startswith("ViewModelProperty")}
         for layer in self.artboard.find("StateMachine").findall("StateMachineLayer"):
@@ -105,8 +140,12 @@ class Scene:
                 for c in tr.findall("TransitionViewModelCondition"):
                     ctx = c.find(".//DataBindContext").get("sourcePathIds").split("-")[-1]
                     if c.get("opValue", "equal") == "equal" and props.get(ctx) == "scene":
-                        out[layer.get("name")] = int(float(c.find("TransitionValueNumberComparator").get("value", "0")))
+                        out[layer.get("name")] = self.cond_value(c)
         return out
+
+    def scene_names(self):
+        """The Scene enum's names in order; scene_numbers() values index into this."""
+        return self.enum_names("Scene")
 
 
 def degrees(rad):

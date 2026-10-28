@@ -92,7 +92,7 @@ SOURCE = """<Rive version="1" kind="fragment">
 </Rive>"""
 
 CONFIG = {
-    "room": "Test Room", "scene": 9, "artboard": "TEST_room", "loop": "Loop", "ball": "Ball_Move",
+    "room": "Test Room", "scene": "from-chapter-1", "artboard": "TEST_room", "loop": "Loop", "ball": "Ball_Move",
     "wall": "FF123456", "floor": "FF654321", "lockup": "art/ch2/originals/spelling-bee-lockup.svg",
     "intro": {"plane": [0.05, 1.55], "drops": [{"name": "Piece", "ids": ["0:10"], "from": 1.0, "to": 1.5}],
               "ball": {"roll": [1.15, 1.9], "land": [1.9, 2.05]}},
@@ -227,9 +227,9 @@ class Build(unittest.TestCase):
         self.assertIn("Test Room Lockup Gate", self.names())
         self.assertEqual(sorted(l.get("name") for l in self.pieces["layers"]),
                          ["Test Room", "Test Room Draw", "Test Room Exit", "Test Room Lockup"])
-        values = {c.get("value") for l in self.pieces["layers"] for c in l.iter("TransitionValueNumberComparator")}
-        self.assertIn("9", values)
-        self.assertNotIn("1", values, "no layer still waits for Wordle's scene")
+        values = {c.get("value") for l in self.pieces["layers"] for c in l.iter("TransitionValueEnumComparator")}
+        self.assertIn("1:9109", values, "the layers wait for the room's own scene (from-chapter-1)")
+        self.assertNotIn("1:9101", values, "no layer still waits for Wordle's scene")
 
     def test_splice_builds_and_adds_only(self):
         out = I.splice(self.text, self.pieces)

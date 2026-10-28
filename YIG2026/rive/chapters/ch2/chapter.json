@@ -1,0 +1,100 @@
+{
+  "_about": "Source of truth for this file's names, enums and rooms. The tools read it; `npm run check` verifies the .rml against it. `setBy: engineering` properties are the ones engineering may set if they ever drive Rive directly; `setBy: integration` ones only our integration sets. Scene order is the enum order: the index in this list is the value Rive stores.",
+  "file": "File 2 · Chapter 2",
+  "artboard": "Chapter 2",
+  "stateMachine": "Backdrop",
+  "viewModel": "Backdrop",
+  "riv": "chapter-2.riv",
+  "properties": {
+    "scene": {
+      "type": "enum",
+      "enum": "Scene",
+      "default": "from-chapter-1",
+      "setBy": "engineering",
+      "about": "Which room the stage shows. Setting the same value again does nothing."
+    },
+    "direction": {
+      "type": "enum",
+      "enum": "Direction",
+      "values": [
+        "forward",
+        "back"
+      ],
+      "default": "forward",
+      "setBy": "engineering",
+      "about": "forward for Next, back for Back. Set before scene."
+    },
+    "lockup": {
+      "type": "boolean",
+      "default": true,
+      "setBy": "engineering",
+      "about": "true shows the game lockup, false hides it (anon slides and community cards). Read only while a game's scene is entered."
+    }
+  },
+  "scenes": [
+    {
+      "name": "intro",
+      "kind": "opener",
+      "room": "Shelf",
+      "title": "The opener (Shelf)"
+    },
+    {
+      "name": "wordle",
+      "kind": "game",
+      "room": "Wordle",
+      "title": "Wordle"
+    },
+    {
+      "name": "connections",
+      "kind": "game",
+      "room": "Connections",
+      "title": "Connections"
+    },
+    {
+      "name": "strands",
+      "kind": "game",
+      "room": "Strands",
+      "title": "Strands"
+    },
+    {
+      "name": "spelling-bee",
+      "kind": "game",
+      "room": "Spelling Bee",
+      "title": "Spelling Bee"
+    },
+    {
+      "name": "mini",
+      "kind": "game",
+      "room": "The Mini",
+      "title": "The Mini"
+    },
+    {
+      "name": "midi",
+      "kind": "game",
+      "room": "The Midi",
+      "title": "The Midi"
+    },
+    {
+      "name": "daily",
+      "kind": "game",
+      "room": "The Crossword",
+      "title": "The Crossword"
+    },
+    {
+      "name": "to-chapter-3",
+      "kind": "picture",
+      "internal": true,
+      "colors": "Chapter 3 Colors",
+      "about": "Empty Chapter 3 backdrop: this file's last picture and File 3's first. Our integration passes through it."
+    },
+    {
+      "name": "from-chapter-1",
+      "kind": "picture",
+      "internal": true,
+      "colors": "Chapter 1 Colors",
+      "about": "Empty Chapter 1 room: this file's first picture (its default) and File 1's last."
+    }
+  ],
+  "roomsSheet": "docs/rooms.md",
+  "tuneLaterNote": true
+}

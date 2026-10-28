@@ -25,7 +25,7 @@ from pathlib import Path
 from PIL import Image, ImageChops, ImageDraw
 
 import import_room
-from rml_read import REPO, chapter_dir
+from rml_read import REPO, Scene, chapter_dir
 
 import xml.etree.ElementTree as ET
 
@@ -99,6 +99,9 @@ def main(argv):
     n = int(loop.get("duration", 60))
     w2, h2 = int((CROP[2] - CROP[0]) * SCALE), int((CROP[3] - CROP[1]) * SCALE)
     src, ours = source_project(cfg["artboard"]), our_project(args.chapter)
+    scene = cfg["scene"]            # a scene name, or (in the older configs) its place in the Scene enum
+    if isinstance(scene, int):
+        scene = Scene(chapter_dir(args.chapter) / "scene.rml").scene_names()[scene]
     out = REPO / "deliver" / "compare" / slug(cfg["room"])
     work = CACHE / f"frames-{slug(cfg['room'])}"
     for d in (out, work):
@@ -108,7 +111,7 @@ def main(argv):
 
     def one(frame):
         a = render(src, work / f"s{frame}.png", frame)
-        b = render(ours, work / f"o{frame}.png", frame + INTRO_FRAMES, cfg["scene"])
+        b = render(ours, work / f"o{frame}.png", frame + INTRO_FRAMES, scene)
         d = differing(a, b)
         count = sum(1 for p in d.getdata() if p)
         faded = Image.blend(b, Image.new("RGB", b.size, "white"), 0.6)

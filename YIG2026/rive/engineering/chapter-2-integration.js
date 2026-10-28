@@ -1,10 +1,13 @@
-// Cards name their game; this table turns the name into the Rive file's scene number. "chapter1" is this file's
+// Cards name their game; this table turns the name into the Rive file's scene (a value of its "scene" enum). "chapter1" is this file's
 // first scene: the file loads on the empty Chapter 1 room (cream wall, orange floor, no ball), the same picture
 // File 1 ends on and Ad 2 plays over. Make it the first card; the first tap pans from it into the opener, which
 // plays its 3.2 s intro like a game does (without a lockup: the opener is not a game). "chapter3" is this file's last scene: after the player's last game, the room leaves and an empty Chapter 3
 // backdrop pans in, the same way any game-to-game move does. It has no lockup and no ball; File 3 takes over from it
 // (and, for anonymous players, Ad 3 plays over it). Add it to the card list once, after the player's last game card.
-const SCENE = { opener: 0, wordle: 1, connections: 2, strands: 3, "spelling-bee": 4, mini: 5, midi: 6, daily: 7, chapter3: 8, chapter1: 9 };
+const SCENE = {
+  opener: "intro", wordle: "wordle", connections: "connections", strands: "strands", "spelling-bee": "spelling-bee",
+  mini: "mini", midi: "midi", daily: "daily", chapter3: "to-chapter-3", chapter1: "from-chapter-1",
+};
 
 // The rooms chapter-2.riv has so far. Add a game here when its room ships in the .riv. A card for a game that isn't
 // built yet still shows its copy, but Rive stays on the room already on screen, so the page never pans to nothing.
@@ -15,21 +18,24 @@ import { Rive } from "@rive-app/canvas"; // pin the version you ship
 const yig = new Rive({
   src: "chapter-2.riv", // relative to the page; point it at wherever you host the file
   canvas: document.getElementById("yig-stage"),
-  stateMachine: "Chapter 2",
+  stateMachine: "Backdrop", // the same name in every file
   autoplay: true,
-  autoBind: true, // binds the "Chapter 2" view model that drives the state machine
+  autoBind: true, // binds the "Backdrop" view model (the same name in every file) that drives the state machine
   onLoad: () => {
     yig.resizeDrawingSurfaceToCanvas();
     setScene(SCENE.chapter1);
   },
 });
 
-// The file reads scene, direction (1 forward, -1 back) so a room knows which way to leave, and community, which
-// leaves out the lockup of the game being entered. Both are set before scene, so the file sees them on the same frame.
-function setScene(n, direction = 1, community = false) {
-  yig.viewModelInstance.number("direction").value = direction;
-  yig.viewModelInstance.boolean("community").value = community;
-  yig.viewModelInstance.number("scene").value = n;
+// The file reads three properties of its "Backdrop" view model: scene (an enum: the room to show), direction (an enum,
+// "forward" for Next or "back" for Back, so a room knows which way to leave) and lockup (true shows the game lockup of
+// the room being entered, false leaves it out; a community card sets it to false). direction and lockup are set before
+// scene, so the file sees them on the same frame. `name` is a scene name, like "wordle" or "intro". `step` is +1 for
+// Next and -1 for Back, and `community` is the card's flag, which becomes lockup = !community.
+function setScene(name, step = 1, community = false) {
+  yig.viewModelInstance.enum("direction").value = step < 0 ? "back" : "forward";
+  yig.viewModelInstance.boolean("lockup").value = !community;
+  yig.viewModelInstance.enum("scene").value = name;
 }
 
 const INTRO_MS = 3200; // every intro is exactly this long

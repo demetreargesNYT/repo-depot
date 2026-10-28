@@ -1,5 +1,7 @@
 # Chapter 2 animation spec
 
+> **Names changed after this spec was written.** Every Rive file now has a state machine and a view model both named `Backdrop`; `scene` and `direction` are enums (named values, not numbers); and `community` is now `lockup`, with the meaning flipped (true shows the lockup). The generated listings and the passages engineering relies on are current. The prose still describes the first three rooms (opener, Wordle, Connections); the other rooms are in `docs/rooms.md`, and every name and property is in `chapters/ch2/chapter.json`.
+
 This documents the Chapter 2 Rive file as it is now. **The file is the source of truth; this spec describes it.**
 It matches the file's revision named in `chapters/ch2` (see the git tag `ch2-scene-structure` and later commits).
 The key listings below are generated from `chapters/ch2/scene.rml`, so they cannot drift:
@@ -34,10 +36,10 @@ One number drives the whole file. Engineering sets it; nothing else is exposed.
 | 2 | Connections | Connections Room |
 | 3–7 | Strands, Spelling Bee, The Mini, The Midi, The Crossword | not built yet; see "Adding a game" |
 
-- The view model is named "Chapter 2" with one number property, `scene`, default 0. The state machine is "Chapter 2", the artboard's default, so it plays on load.
+- The view model and the state machine are both named "Backdrop" (the same in every file). The view model has `scene` (an enum of room names, default `from-chapter-1`), `direction` and `lockup`. The state machine is the artboard's default, so it plays on load.
 - Setting the same value again does nothing, so it is always safe to set.
 - A game appears in one unbroken run of cards in a chapter. A room that has left comes back on Back (from the right side, mirroring how it left) or on the Next that follows a Back, always already built.
-- Setting a value no room waits for (3 to 7 today) makes the current room leave and nothing arrive: the Background shows, empty, in the opener's colours (checked at scene 3 and 7, 3.5 s in).
+- Setting a scene no room waits for makes the current room leave and nothing arrive: the Background shows, empty, in the opener's colours (checked at scene 3 and 7, 3.5 s in).
 
 ## Structure
 
@@ -501,13 +503,13 @@ Connections Draw Rules drawTargetId: 0 Connections Bottom
 
 ## State machine
 
-Three layers per room, plus a Lockup layer per game and the Backdrop, so layers never key the same property. A second number, `direction` (1 Next, the default; −1 Back), tells a room which way to leave; our integration file sets it with every `scene`.
+Three layers per room, plus a Lockup layer per game and the Backdrop, so layers never key the same property. A second enum, `direction` (`forward` for Next, the default; `back` for Back), tells a room which way to leave; our integration file sets it with every `scene`.
 
 - **`<Room>`**: Waiting → Intro when `scene` == n (no exit time, duration 0) → Loop at exit time 100% (duration 0). The Shelf layer has no intro: it starts in Shelf Loop.
 - **`<Room> Exit`**, the room's position. "Shown" plays the Home pose again, so the room holds at x 0 while it is the current scene. Shelf Exit starts in Shown, because the opener is on screen at load.
   - Home → Shown when `scene` == n. A first visit's position comes from the room's intro.
-  - Shown → Outro when `scene` != n and `direction` != −1 (Next), then Gone at the end.
-  - Shown → Back Out when `scene` != n and `direction` == −1 (Back), then Right at the end.
+  - Shown → Outro when `scene` != n and `direction` != back (Next), then Gone at the end.
+  - Shown → Back Out when `scene` != n and `direction` == back (Back), then Right at the end.
   - Gone → Return, and Right → Forward In, when `scene` == n; both reach Shown at the end.
   - Forward In → Outro on a Next, blended 1550 ms power2.inOut: a Next during a Forward In carries on left without a snap.
   - **Every other move starts from a held pose.** Reversing a move part-way snaps the room (measured: about a quarter of the move in one frame), so it is never asked to: the integration file holds a room-changing Back during any pan, and a Next during a Back pan, until the pan ends.
@@ -517,85 +519,194 @@ Three layers per room, plus a Lockup layer per game and the Backdrop, so layers 
 
 <!-- keys: State machine -->
 ```text
-State machine "Chapter 2" · view model "Chapter 2": scene, direction, community · default state machine: Chapter 2
-layer "Shelf": starts in Shelf Loop
-layer "Shelf Exit": starts in Shelf Home (2)
-  Shelf Home -> Shelf Home (2) when scene == 0, 0 ms
-  Shelf Home (2) -> Shelf Outro when scene != 0 and direction != -1, 0 ms
-  Shelf Home (2) -> Shelf Back Out when scene != 0 and direction == -1, 0 ms
+State machine "Backdrop" · view model "Backdrop": scene, direction, lockup · default state machine: Backdrop
+layer "Shelf": starts in Shelf Waiting
+  Shelf Waiting -> Shelf Intro when scene == intro, 0 ms
+  Shelf Intro -> Shelf Loop at the end (exit time 100%), 0 ms
+layer "Shelf Exit": starts in Shelf Home
+  Shelf Home -> Shelf Home (2) when scene == intro, 0 ms
+  Shelf Home (2) -> Shelf Outro when scene != intro and direction != back, 0 ms
+  Shelf Home (2) -> Shelf Back Out when scene != intro and direction == back, 0 ms
   Shelf Outro -> Shelf Gone at the end (exit time 100%), 0 ms
-  Shelf Gone -> Shelf Return when scene == 0, 0 ms
+  Shelf Gone -> Shelf Return when scene == intro, 0 ms
   Shelf Back Out -> Shelf Right at the end (exit time 100%), 0 ms
-  Shelf Right -> Shelf Forward In when scene == 0, 0 ms
+  Shelf Right -> Shelf Forward In when scene == intro, 0 ms
   Shelf Return -> Shelf Home (2) at the end (exit time 100%), 0 ms
-  Shelf Forward In -> Shelf Outro when scene != 0 and direction != -1, 1550 ms power2.inOut blend
+  Shelf Forward In -> Shelf Outro when scene != intro and direction != back, 1550 ms power2.inOut blend
   Shelf Forward In -> Shelf Home (2) at the end (exit time 100%), 0 ms
 layer "Wordle": starts in Wordle Waiting
-  Wordle Waiting -> Wordle Intro when scene == 1, 0 ms
+  Wordle Waiting -> Wordle Intro when scene == wordle, 0 ms
   Wordle Intro -> Wordle Loop at the end (exit time 100%), 0 ms
 layer "Wordle Exit": starts in Wordle Home
-  Wordle Home -> Wordle Home (2) when scene == 1, 0 ms
-  Wordle Home (2) -> Wordle Outro when scene != 1 and direction != -1, 0 ms
-  Wordle Home (2) -> Wordle Back Out when scene != 1 and direction == -1, 0 ms
+  Wordle Home -> Wordle Home (2) when scene == wordle, 0 ms
+  Wordle Home (2) -> Wordle Outro when scene != wordle and direction != back, 0 ms
+  Wordle Home (2) -> Wordle Back Out when scene != wordle and direction == back, 0 ms
   Wordle Outro -> Wordle Gone at the end (exit time 100%), 0 ms
-  Wordle Gone -> Wordle Return when scene == 1, 0 ms
+  Wordle Gone -> Wordle Return when scene == wordle, 0 ms
   Wordle Back Out -> Wordle Right at the end (exit time 100%), 0 ms
-  Wordle Right -> Wordle Forward In when scene == 1, 0 ms
+  Wordle Right -> Wordle Forward In when scene == wordle, 0 ms
   Wordle Return -> Wordle Home (2) at the end (exit time 100%), 0 ms
-  Wordle Forward In -> Wordle Outro when scene != 1 and direction != -1, 1550 ms power2.inOut blend
+  Wordle Forward In -> Wordle Outro when scene != wordle and direction != back, 1550 ms power2.inOut blend
   Wordle Forward In -> Wordle Home (2) at the end (exit time 100%), 0 ms
 layer "Connections": starts in Connections Waiting
-  Connections Waiting -> Connections Intro when scene == 2, 0 ms
+  Connections Waiting -> Connections Intro when scene == connections, 0 ms
   Connections Intro -> Connections Loop at the end (exit time 100%), 0 ms
 layer "Connections Exit": starts in Connections Home
-  Connections Home -> Connections Home (2) when scene == 2, 0 ms
-  Connections Home (2) -> Connections Outro when scene != 2 and direction != -1, 0 ms
-  Connections Home (2) -> Connections Back Out when scene != 2 and direction == -1, 0 ms
+  Connections Home -> Connections Home (2) when scene == connections, 0 ms
+  Connections Home (2) -> Connections Outro when scene != connections and direction != back, 0 ms
+  Connections Home (2) -> Connections Back Out when scene != connections and direction == back, 0 ms
   Connections Outro -> Connections Gone at the end (exit time 100%), 0 ms
-  Connections Gone -> Connections Return when scene == 2, 0 ms
+  Connections Gone -> Connections Return when scene == connections, 0 ms
   Connections Back Out -> Connections Right at the end (exit time 100%), 0 ms
-  Connections Right -> Connections Forward In when scene == 2, 0 ms
+  Connections Right -> Connections Forward In when scene == connections, 0 ms
   Connections Return -> Connections Home (2) at the end (exit time 100%), 0 ms
-  Connections Forward In -> Connections Outro when scene != 2 and direction != -1, 1550 ms power2.inOut blend
+  Connections Forward In -> Connections Outro when scene != connections and direction != back, 1550 ms power2.inOut blend
   Connections Forward In -> Connections Home (2) at the end (exit time 100%), 0 ms
-layer "Backdrop": starts in Shelf Colors
-  any state -> Shelf Colors when scene == 0, 1450 ms power1.inOut blend, early exit
-  any state -> Wordle Colors when scene == 1, 1450 ms power1.inOut blend, early exit
-  any state -> Connections Colors when scene == 2, 1450 ms power1.inOut blend, early exit
+layer "Backdrop": starts in Chapter 1 Colors
+  any state -> Shelf Colors when scene == intro, 1450 ms power1.inOut blend, early exit
+  any state -> Wordle Colors when scene == wordle, 1450 ms power1.inOut blend, early exit
+  any state -> Connections Colors when scene == connections, 1450 ms power1.inOut blend, early exit
+  any state -> Spelling Bee Colors when scene == spelling-bee, 1450 ms power1.inOut blend, early exit
+  any state -> Strands Colors when scene == strands, 1450 ms power1.inOut blend, early exit
+  any state -> The Mini Colors when scene == mini, 1450 ms power1.inOut blend, early exit
+  any state -> The Midi Colors when scene == midi, 1450 ms power1.inOut blend, early exit
+  any state -> The Crossword Colors when scene == daily, 1450 ms power1.inOut blend, early exit
+  any state -> Chapter 3 Colors when scene == to-chapter-3, 1450 ms power1.inOut blend, early exit
+  any state -> Chapter 1 Colors when scene == from-chapter-1, 1450 ms power1.inOut blend, early exit
 layer "Shelf Draw": starts in Shelf Below
-  Shelf Below -> Shelf On Top when scene == 0, 0 ms
-  Shelf On Top -> Shelf Below when scene != 0, 0 ms
+  Shelf Below -> Shelf On Top when scene == intro, 0 ms
+  Shelf On Top -> Shelf Below when scene != intro, 0 ms
 layer "Wordle Draw": starts in Wordle Below
-  Wordle Below -> Wordle On Top when scene == 1, 0 ms
-  Wordle On Top -> Wordle Below when scene != 1, 0 ms
+  Wordle Below -> Wordle On Top when scene == wordle, 0 ms
+  Wordle On Top -> Wordle Below when scene != wordle, 0 ms
 layer "Connections Draw": starts in Connections Below
-  Connections Below -> Connections On Top when scene == 2, 0 ms
-  Connections On Top -> Connections Below when scene != 2, 0 ms
+  Connections Below -> Connections On Top when scene == connections, 0 ms
+  Connections On Top -> Connections Below when scene != connections, 0 ms
 layer "Wordle Lockup": starts in Wordle Lockup Shown
-  Wordle Lockup Shown -> Wordle Lockup Hidden when community == true and scene == 1, 0 ms
-  Wordle Lockup Hidden -> Wordle Lockup Shown when community == false and scene == 1, 0 ms
+  Wordle Lockup Shown -> Wordle Lockup Hidden when lockup == false and scene == wordle, 0 ms
+  Wordle Lockup Hidden -> Wordle Lockup Shown when lockup == true and scene == wordle, 0 ms
 layer "Connections Lockup": starts in Connections Lockup Shown
-  Connections Lockup Shown -> Connections Lockup Hidden when community == true and scene == 2, 0 ms
-  Connections Lockup Hidden -> Connections Lockup Shown when community == false and scene == 2, 0 ms
+  Connections Lockup Shown -> Connections Lockup Hidden when lockup == false and scene == connections, 0 ms
+  Connections Lockup Hidden -> Connections Lockup Shown when lockup == true and scene == connections, 0 ms
+layer "Spelling Bee": starts in Spelling Bee Waiting
+  Spelling Bee Waiting -> Spelling Bee Intro when scene == spelling-bee, 0 ms
+  Spelling Bee Intro -> Spelling Bee Loop at the end (exit time 100%), 0 ms
+layer "Spelling Bee Exit": starts in Spelling Bee Home
+  Spelling Bee Home -> Spelling Bee Home (2) when scene == spelling-bee, 0 ms
+  Spelling Bee Home (2) -> Spelling Bee Outro when scene != spelling-bee and direction != back, 0 ms
+  Spelling Bee Home (2) -> Spelling Bee Back Out when scene != spelling-bee and direction == back, 0 ms
+  Spelling Bee Outro -> Spelling Bee Gone at the end (exit time 100%), 0 ms
+  Spelling Bee Gone -> Spelling Bee Return when scene == spelling-bee, 0 ms
+  Spelling Bee Back Out -> Spelling Bee Right at the end (exit time 100%), 0 ms
+  Spelling Bee Right -> Spelling Bee Forward In when scene == spelling-bee, 0 ms
+  Spelling Bee Return -> Spelling Bee Home (2) at the end (exit time 100%), 0 ms
+  Spelling Bee Forward In -> Spelling Bee Outro when scene != spelling-bee and direction != back, 1550 ms power2.inOut blend
+  Spelling Bee Forward In -> Spelling Bee Home (2) at the end (exit time 100%), 0 ms
+layer "Spelling Bee Draw": starts in Spelling Bee Below
+  Spelling Bee Below -> Spelling Bee On Top when scene == spelling-bee, 0 ms
+  Spelling Bee On Top -> Spelling Bee Below when scene != spelling-bee, 0 ms
+layer "Spelling Bee Lockup": starts in Spelling Bee Lockup Shown
+  Spelling Bee Lockup Shown -> Spelling Bee Lockup Hidden when lockup == false and scene == spelling-bee, 0 ms
+  Spelling Bee Lockup Hidden -> Spelling Bee Lockup Shown when lockup == true and scene == spelling-bee, 0 ms
+layer "Strands": starts in Strands Waiting
+  Strands Waiting -> Strands Intro when scene == strands, 0 ms
+  Strands Intro -> Strands Loop at the end (exit time 100%), 0 ms
+layer "Strands Exit": starts in Strands Home
+  Strands Home -> Strands Home (2) when scene == strands, 0 ms
+  Strands Home (2) -> Strands Outro when scene != strands and direction != back, 0 ms
+  Strands Home (2) -> Strands Back Out when scene != strands and direction == back, 0 ms
+  Strands Outro -> Strands Gone at the end (exit time 100%), 0 ms
+  Strands Gone -> Strands Return when scene == strands, 0 ms
+  Strands Back Out -> Strands Right at the end (exit time 100%), 0 ms
+  Strands Right -> Strands Forward In when scene == strands, 0 ms
+  Strands Return -> Strands Home (2) at the end (exit time 100%), 0 ms
+  Strands Forward In -> Strands Outro when scene != strands and direction != back, 1550 ms power2.inOut blend
+  Strands Forward In -> Strands Home (2) at the end (exit time 100%), 0 ms
+layer "Strands Draw": starts in Strands Below
+  Strands Below -> Strands On Top when scene == strands, 0 ms
+  Strands On Top -> Strands Below when scene != strands, 0 ms
+layer "Strands Lockup": starts in Strands Lockup Shown
+  Strands Lockup Shown -> Strands Lockup Hidden when lockup == false and scene == strands, 0 ms
+  Strands Lockup Hidden -> Strands Lockup Shown when lockup == true and scene == strands, 0 ms
+layer "The Mini": starts in The Mini Waiting
+  The Mini Waiting -> The Mini Intro when scene == mini, 0 ms
+  The Mini Intro -> The Mini Loop at the end (exit time 100%), 0 ms
+layer "The Mini Exit": starts in The Mini Home
+  The Mini Home -> The Mini Home (2) when scene == mini, 0 ms
+  The Mini Home (2) -> The Mini Outro when scene != mini and direction != back, 0 ms
+  The Mini Home (2) -> The Mini Back Out when scene != mini and direction == back, 0 ms
+  The Mini Outro -> The Mini Gone at the end (exit time 100%), 0 ms
+  The Mini Gone -> The Mini Return when scene == mini, 0 ms
+  The Mini Back Out -> The Mini Right at the end (exit time 100%), 0 ms
+  The Mini Right -> The Mini Forward In when scene == mini, 0 ms
+  The Mini Return -> The Mini Home (2) at the end (exit time 100%), 0 ms
+  The Mini Forward In -> The Mini Outro when scene != mini and direction != back, 1550 ms power2.inOut blend
+  The Mini Forward In -> The Mini Home (2) at the end (exit time 100%), 0 ms
+layer "The Mini Draw": starts in The Mini Below
+  The Mini Below -> The Mini On Top when scene == mini, 0 ms
+  The Mini On Top -> The Mini Below when scene != mini, 0 ms
+layer "The Mini Lockup": starts in The Mini Lockup Shown
+  The Mini Lockup Shown -> The Mini Lockup Hidden when lockup == false and scene == mini, 0 ms
+  The Mini Lockup Hidden -> The Mini Lockup Shown when lockup == true and scene == mini, 0 ms
+layer "The Midi": starts in The Midi Waiting
+  The Midi Waiting -> The Midi Intro when scene == midi, 0 ms
+  The Midi Intro -> The Midi Loop at the end (exit time 100%), 0 ms
+layer "The Midi Exit": starts in The Midi Home
+  The Midi Home -> The Midi Home (2) when scene == midi, 0 ms
+  The Midi Home (2) -> The Midi Outro when scene != midi and direction != back, 0 ms
+  The Midi Home (2) -> The Midi Back Out when scene != midi and direction == back, 0 ms
+  The Midi Outro -> The Midi Gone at the end (exit time 100%), 0 ms
+  The Midi Gone -> The Midi Return when scene == midi, 0 ms
+  The Midi Back Out -> The Midi Right at the end (exit time 100%), 0 ms
+  The Midi Right -> The Midi Forward In when scene == midi, 0 ms
+  The Midi Return -> The Midi Home (2) at the end (exit time 100%), 0 ms
+  The Midi Forward In -> The Midi Outro when scene != midi and direction != back, 1550 ms power2.inOut blend
+  The Midi Forward In -> The Midi Home (2) at the end (exit time 100%), 0 ms
+layer "The Midi Draw": starts in The Midi Below
+  The Midi Below -> The Midi On Top when scene == midi, 0 ms
+  The Midi On Top -> The Midi Below when scene != midi, 0 ms
+layer "The Midi Lockup": starts in The Midi Lockup Shown
+  The Midi Lockup Shown -> The Midi Lockup Hidden when lockup == false and scene == midi, 0 ms
+  The Midi Lockup Hidden -> The Midi Lockup Shown when lockup == true and scene == midi, 0 ms
+layer "The Crossword": starts in The Crossword Waiting
+  The Crossword Waiting -> The Crossword Intro when scene == daily, 0 ms
+  The Crossword Intro -> The Crossword Loop at the end (exit time 100%), 0 ms
+layer "The Crossword Exit": starts in The Crossword Home
+  The Crossword Home -> The Crossword Home (2) when scene == daily, 0 ms
+  The Crossword Home (2) -> The Crossword Outro when scene != daily and direction != back, 0 ms
+  The Crossword Home (2) -> The Crossword Back Out when scene != daily and direction == back, 0 ms
+  The Crossword Outro -> The Crossword Gone at the end (exit time 100%), 0 ms
+  The Crossword Gone -> The Crossword Return when scene == daily, 0 ms
+  The Crossword Back Out -> The Crossword Right at the end (exit time 100%), 0 ms
+  The Crossword Right -> The Crossword Forward In when scene == daily, 0 ms
+  The Crossword Return -> The Crossword Home (2) at the end (exit time 100%), 0 ms
+  The Crossword Forward In -> The Crossword Outro when scene != daily and direction != back, 1550 ms power2.inOut blend
+  The Crossword Forward In -> The Crossword Home (2) at the end (exit time 100%), 0 ms
+layer "The Crossword Draw": starts in The Crossword Below
+  The Crossword Below -> The Crossword On Top when scene == daily, 0 ms
+  The Crossword On Top -> The Crossword Below when scene != daily, 0 ms
+layer "The Crossword Lockup": starts in The Crossword Lockup Shown
+  The Crossword Lockup Shown -> The Crossword Lockup Hidden when lockup == false and scene == daily, 0 ms
+  The Crossword Lockup Hidden -> The Crossword Lockup Shown when lockup == true and scene == daily, 0 ms
 ```
 <!-- /keys -->
 
-What engineering relies on: the artboard "Chapter 2", the state machine "Chapter 2", the view model "Chapter 2" with the numbers `scene` and `direction` and the boolean `community` (all set by our integration file), and the file loaded with autoplay and the view model bound (`autoBind`). Nothing else is needed. Each intro takes exactly 3.2 s from the moment `scene` changes, and its loop starts on the same frame.
+What engineering relies on: the artboard "Chapter 2", the state machine "Backdrop", the view model "Backdrop" with the enums `scene` and `direction` and the boolean `lockup` (all set by our integration file; the full list and who sets what is in `chapters/ch2/chapter.json`), and the file loaded with autoplay and the view model bound (`autoBind`). Nothing else is needed. Each intro takes exactly 3.2 s from the moment `scene` changes, and its loop starts on the same frame.
 
 ## Community cards
 
 A player who solved fewer than 10 of a game's puzzles sees one community card for that game instead of their own
-cards. The view model boolean `community` (default false) leaves out that game's Rive lockup and changes nothing
+cards. The view model boolean `lockup` (default true; a community card sets it to false) leaves out that game's Rive lockup and changes nothing
 else: the pan, the backdrop, the pieces, the ball and the 3.2 s intro all run as normal.
 
 Each game's lockup sits alone in a `<Room> Lockup Gate` node at 0, 0, so the lockup's own intro keys are untouched.
 A `<Room> Lockup` layer holds the gate's opacity with two one-frame poses: it starts on Shown (1), goes to Hidden (0)
-when `community` is true and `scene` is the game, and back to Shown when `community` is false and `scene` is the
+when `lockup` is false and `scene` is the game, and back to Shown when `lockup` is true and `scene` is the
 game, at once. Reading the flag only while the game is the scene means a later game's flag can't hide or show this
-game's lockup while it is still leaving. Our integration file sets `community` before `scene` on the tap that enters
-a game. `npm run check` renders Wordle with `community` on and requires it to equal Wordle with its lockup removed.
+game's lockup while it is still leaving. Our integration file sets `lockup` before `scene` on the tap that enters
+a game. `npm run check` renders Wordle with `lockup` off and requires it to equal Wordle with its lockup removed.
 
-Adding a game (3 to 7) is the same small step: wrap its lockup in a gate, add its two poses and its layer.
+Adding a game is the same small step: wrap its lockup in a gate, add its two poses and its layer.
 
 <!-- keys: Wordle Lockup Shown -->
 ```text

@@ -58,7 +58,8 @@ def instrument(src):
     t = p.read_text()
     s = Scene(p)
     vm = s.view_model.get("id")
-    prop = {e.get("name"): e.get("id") for e in s.view_model if e.tag == "ViewModelPropertyNumber"}
+    prop = {e.get("name"): e.get("id") for e in s.view_model if e.tag.startswith("ViewModelProperty")}
+    enum_ids = {e.get("name"): [v.get("id") for v in e if v.tag == "DataEnumValue"] for e in s.root.findall("DataEnumCustom")}
     top = max(int(i.split(":")[1]) for i in s.by_id if i.startswith("9:")) if any(i.startswith("9:") for i in s.by_id) else 0
     n = [top]
 
@@ -73,10 +74,10 @@ def instrument(src):
         b = new()
         boxes.append(f'<Shape x="{x}" y="{y}" name="Test Tap {i}" id="{b}"><Rectangle width="10" height="10" originX="0" originY="0" name="R" id="{new()}"/>'
                      f'<Fill name="F" id="{new()}"><SolidColor colorValue="01000000" name="C" id="{new()}"/></Fill></Shape>')
-        write = lambda pid, v: (f'<ListenerViewModelChange><BindablePropertyNumber propertyValue="{v}">'
-                                f'<DataBindContext sourcePathIds="{vm}-{pid}" propertyKey="636" direction="true"/></BindablePropertyNumber></ListenerViewModelChange>')
+        write = lambda pid, v: (f'<ListenerViewModelChange><BindablePropertyEnum propertyValue="{v}">'
+                                f'<DataBindContext sourcePathIds="{vm}-{pid}" propertyKey="637" direction="true"/></BindablePropertyEnum></ListenerViewModelChange>')
         listeners.append(f'<StateMachineListenerSingle targetId="{b}" listenerTypeValue="down" name="Test Listener {i}" id="{new()}">'
-                         + write(prop["direction"], d) + write(prop["scene"], sc) + '</StateMachineListenerSingle>')
+                         + write(prop["direction"], enum_ids["Direction"][0 if d > 0 else 1]) + write(prop["scene"], enum_ids["Scene"][sc]) + '</StateMachineListenerSingle>')
     first = s.artboard[0]
     m = re.search(r'\n( *)<\w+ [^>]*id="%s"' % first[0].get("id"), t)    # the first child of the top group draws on top
     t = t[:m.start()] + "\n" + "\n".join(m.group(1) + b for b in boxes) + t[m.start():]
@@ -95,9 +96,9 @@ def instrument(src):
         insts.append(f'<ViewModelInstanceNumber viewModelPropertyId="{pid}" id="{new()}"/>')
         m = re.search(r'<DrawRules [^>]*id="%s"[^>]*>' % dr.get("id"), t)
         t = t[:m.end()] + f'<DataBindContext sourcePathIds="{vm}-{pid}" propertyKey="121" direction="true" id="{new()}"/>' + t[m.end():]
-    m = re.search(r'<ViewModelPropertyNumber name="scene" id="%s"/>' % prop["scene"], t)
+    m = re.search(r'<ViewModelPropertyEnumCustom [^>]*name="scene" id="%s"/>' % prop["scene"], t)
     t = t[:m.end()] + "".join(readouts) + t[m.end():]
-    m = re.search(r'<ViewModelInstanceNumber [^>]*viewModelPropertyId="%s"[^>]*/>' % prop["scene"], t)
+    m = re.search(r'<ViewModelInstanceEnum [^>]*viewModelPropertyId="%s"[^>]*/>' % prop["scene"], t)
     t = t[:m.end()] + "".join(insts) + t[m.end():]
     p.write_text(t)
     return dst, where
@@ -157,7 +158,7 @@ def run_case(project, where, taps, settle=2.2):
     return fired, rows
 
 
-def judge(fired, rows):
+def judge(fired, rows, names):
     """[(ok, text)] for one case. A room not visited yet sits at x 0 with its art held off stage by its Waiting
     pose, so it only counts as on stage once it has been the current scene."""
     out = []
@@ -173,7 +174,7 @@ def judge(fired, rows):
         last_dir = d
     for frame, st in rows:
         t = frame / 60
-        current = int(st["scene"])
+        current = names.index(st["scene"])
         current = ROOMS[current] if current in ROOMS else None      # None: an empty scene, nothing but the backdrop
         if current:
             visited.add(current)
@@ -234,12 +235,13 @@ def cases(first, second):
 def main(argv):
     chapter = argv[0] if argv and not argv[0].startswith("--") else "ch2"
     project, where = instrument(chapter_dir(chapter))
+    names = Scene(chapter_dir(chapter) / "scene.rml").scene_names()
     failed = 0
     try:
         for first, second in ((1, 2), (2, 1)):
             for label, taps in cases(first, second):
                 fired, rows = run_case(project, where, taps)
-                res = judge(fired, rows)
+                res = judge(fired, rows, names)
                 bad = [t for ok, t in res if not ok]
                 failed += bool(bad)
                 plays = ", ".join(f"{NAMES[sc]}{'' if d > 0 else ' (back)'} at {t:.2f} s" for t, sc, d in fired)

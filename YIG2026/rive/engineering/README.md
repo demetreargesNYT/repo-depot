@@ -20,7 +20,7 @@ and NYT Karnak) apply as normal.
 
 | File | What it is |
 |---|---|
-| `chapter-2.riv` | the Rive file (188,475 bytes): artboard `"Chapter 2"`, state machine `"Chapter 2"`, view model `"Chapter 2"` (numbers `scene`, `direction`; boolean `community`) |
+| `chapter-2.riv` | the Rive file (188,503 bytes): artboard `"Chapter 2"`, state machine `"Backdrop"`, view model `"Backdrop"` (enums `scene`, `direction`; boolean `lockup`) |
 | `chapter-2-integration.js` | our integration code. Use it as written: it loads the file, handles Next and Back, and reveals the copy |
 | `yig-text-motion.css` | the text motion; all text timing lives here |
 | `index.html` | the example page: example player data, `buildCards`, the copy, `start(cards)` and the tap wiring |
@@ -43,9 +43,9 @@ Each card names its game:
 ```
 
 - `game` is one of `"chapter1"`, `"opener"`, `"wordle"`, `"connections"`, `"strands"`, `"spelling-bee"`, `"mini"`, `"midi"`, `"daily"`, `"chapter3"`.
-  The integration turns the name into the Rive file's `scene` number; you never set Rive values yourself.
-- `community: true` marks a game's community card (the player solved fewer than 10 of its puzzles). Rive then
-  leaves out that game's lockup; everything else plays the same.
+  The integration turns the name into the Rive file's `scene` value; you never set Rive values yourself.
+- `community: true` marks a game's community card (the player solved fewer than 10 of its puzzles). The integration
+  then sets Rive's `lockup` to false, which leaves out that game's lockup; everything else plays the same.
 - Any other fields (the example uses `card` and `variant`) are yours, for choosing the copy.
 - **The list always starts with `{ game: "chapter1" }` and ends with `{ game: "chapter3" }`** (see "The first and last cards" below).
   Between them: the opener, then each game's cards together, in the player's order.
@@ -95,7 +95,7 @@ has Rive copy: the example page shows placeholder text on the last card only so 
 Call `start(cards)` once with the card list, then `onTap()` on Next and `onBack()` on Back. That's the whole
 integration:
 
-- They move to the next or previous card, and set Rive's `scene`, `direction` and `community` for it. A card in the
+- They move to the next or previous card, and set Rive's `scene`, `direction` and `lockup` for it. A card in the
   same game changes only the copy; Rive keeps looping.
 - They reveal the card's copy and the game's icon, timed to Rive (3.2 s after the tap for a game's first visit, when
   the pan ends for a game you come back to, about 0.34 s for a card in the same game).
@@ -119,6 +119,21 @@ All set by the integration; you only write the markup.
 | `yig-out` | leave: lifts out and dissolves |
 | `yig-back` | Back: the same moves, reversed (down instead of up) |
 
+## The Rive file's properties
+
+Every Rive file has a state machine named `"Backdrop"` and a view model named `"Backdrop"`, the same in all of our files. The
+integration sets these for you. If you ever drive Rive directly instead, these are the properties, and who sets them:
+
+| Property | Type | Who sets it | What it does |
+|---|---|---|---|
+| `scene` | enum: intro, wordle, connections, strands, spelling-bee, mini, midi, daily, to-chapter-3, from-chapter-1 | you may | Which room the stage shows. Setting the same value again does nothing. |
+| `direction` | enum: forward, back | you may | forward for Next, back for Back. Set before scene. |
+| `lockup` | boolean | you may | true shows the game lockup, false hides it (anon slides and community cards). Read only while a game's scene is entered. |
+
+Set `direction` and `lockup` before `scene`; setting the same `scene` again does nothing. `scene` also has two internal
+values, `from-chapter-1` and `to-chapter-3`: the empty pictures this file starts and ends on. Only our integration
+uses them, so a card list never names them as scenes.
+
 ## Rive runtime
 
 `@rive-app/canvas` **2.45.0**. Pin that version. In your app, `npm install @rive-app/canvas@2.45.0` and the
@@ -127,21 +142,21 @@ same version on a CDN only so it runs without a build step.
 
 ## Built and coming
 
-| Card | Name | Rive `scene` | Status |
+| Card | Name | Rive `scene` (enum value) | Status |
 |---|---|---|---|
-| Empty Chapter 1 room (first card) | `"chapter1"` | 9 | built |
-| Opener | `"opener"` | 0 | built |
-| Wordle | `"wordle"` | 1 | built |
-| Connections | `"connections"` | 2 | built |
-| Strands | `"strands"` | 3 | built |
-| Spelling Bee | `"spelling-bee"` | 4 | built |
-| The Mini | `"mini"` | 5 | built |
-| The Midi | `"midi"` | 6 | built |
-| The Crossword | `"daily"` | 7 | built |
-| Empty Chapter 3 backdrop (last card) | `"chapter3"` | 8 | built |
+| Empty Chapter 1 room (first card) | `"chapter1"` | `from-chapter-1` | built |
+| Opener | `"opener"` | `intro` | built |
+| Wordle | `"wordle"` | `wordle` | built |
+| Connections | `"connections"` | `connections` | built |
+| Strands | `"strands"` | `strands` | built |
+| Spelling Bee | `"spelling-bee"` | `spelling-bee` | built |
+| The Mini | `"mini"` | `mini` | built |
+| The Midi | `"midi"` | `midi` | built |
+| The Crossword | `"daily"` | `daily` | built |
+| Empty Chapter 3 backdrop (last card) | `"chapter3"` | `to-chapter-3` | built |
 
 The icons for Strands, Spelling Bee, The Mini, The Midi and The Crossword on the example page are placeholders cut from their lockups, until final icons are supplied. Their card copy is placeholder too.
 
 New games arrive as an updated `chapter-2.riv`; the card format and your calls don't change. Copy text is placeholder.
 
-Built from `chapters/ch2` (source last changed in git 583e68a). Rooms in this file: scene 0, 1, 2, 3, 4, 5, 6, 7.
+Built from `chapters/ch2` (source last changed in git 583e68a). Rooms in this file: connections, daily, intro, midi, mini, spelling-bee, strands, wordle.

@@ -86,8 +86,9 @@ def state_machine_lines(s):
                 for c in tr.findall("TransitionViewModelCondition"):
                     ctx = c.find(".//DataBindContext").get("sourcePathIds").split("-")[-1]
                     op = "==" if c.get("opValue", "equal") == "equal" else "!="
+                    enum = c.find("TransitionValueEnumComparator")
                     num, flag = c.find("TransitionValueNumberComparator"), c.find("TransitionValueBooleanComparator")
-                    value = num.get("value", "0") if num is not None else flag.get("value", "false")
+                    value = s.enum_name(enum.get("value")) if enum is not None else num.get("value", "0") if num is not None else flag.get("value", "false")
                     conds.append(f'{props[ctx]} {op} {value}')
                 gate = "at the end (exit time 100%)" if tr.get("enableExitTime") == "true" else "when " + " and ".join(conds)
                 blend = f'{tr.get("duration", "0")} ms'

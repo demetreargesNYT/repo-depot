@@ -6,7 +6,7 @@ The motion target is `prototype/chapter-2-prototype.html`. Choose either game or
 
 ## What changes
 
-1. **One number replaces two.** `scene`: 0 is the chapter opener, 1 Wordle, 2 Connections, 3 Strands, 4 Spelling Bee, 5 The Mini, 6 The Midi, 7 The Crossword. Keep whichever binding style the file already uses (it currently uses a view model with autoBind). Replace `game` and `frame` with a single number property, `scene`, default 0.
+1. **One value replaces two.** `scene` is now an enum (it began as a number: 0 the chapter opener, 1 Wordle, 2 Connections, 3 Strands, 4 Spelling Bee, 5 The Mini, 6 The Midi, 7 The Crossword; the names are `intro`, `wordle`, `connections`, `strands`, `spelling-bee`, `mini`, `midi`, `daily`). Keep whichever binding style the file already uses (it currently uses a view model with autoBind). Replace `game` and `frame` with a single number property, `scene`, default 0.
 2. **Each room brings its own colors.** Add a `<Room> Backdrop` group as the first (bottom) child of each room group:
    - Shelf Room: wall #E7F1E1
    - Wordle Room: wall #C3E2C0

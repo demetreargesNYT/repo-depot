@@ -192,8 +192,8 @@ for (const order of ["wc", "cw"]) {
 //   E  Back across a game boundary (second game card 1 to the first game's last card), from rest: the old card
 //      and icon leave at once, and the first game's icon and last card arrive when the pan ends (1.65 s).
 //   F  Back during that pan's Next: the Back waits for the pan to end, then plays; the text follows it.
-//   G  Back on the first card (the empty Chapter 1 room) does nothing: the scene stays 9 and no copy shows.
-//   G2 Back from the opener returns to it: scene 9, no copy, and Next brings the opener (already built) back.
+//   G  Back on the first card (the empty Chapter 1 room) does nothing: the scene stays from-chapter-1 and no copy shows.
+//   G2 Back from the opener returns to it: scene from-chapter-1, no copy, and Next brings the opener (already built) back.
 const PAN = 1.65;
 for (const order of ["wc", "cw"]) {
   const games = order === "wc" ? ["wordle", "connections"] : ["connections", "wordle"];
@@ -208,9 +208,9 @@ for (const order of ["wc", "cw"]) {
   // G: Back on the first card, the empty Chapter 1 room
   await press("back");
   await wait(0.6);
-  const vmScene = await ev(`${VM}.number('scene').value`);
+  const vmScene = await ev(`${VM}.enum('scene').value`);
   const noCopy = (await shownCopy()) === "";
-  check(vmScene === 9 && noCopy, `G  ${first} first: Back on the empty Chapter 1 room does nothing (scene ${vmScene}, copy shown ${noCopy ? "none" : "some"})`);
+  check(vmScene === "from-chapter-1" && noCopy, `G  ${first} first: Back on the empty Chapter 1 room does nothing (scene ${vmScene}, copy shown ${noCopy ? "none" : "some"})`);
 
   // M: the first tap, empty Chapter 1 room to the opener: its copy rises 3.2 s later (the intro), like a game's first card
   await ev("window.__log.length = 0");
@@ -219,19 +219,19 @@ for (const order of ["wc", "cw"]) {
   let logM = await ev("window.__log");
   const tm = after(logM, "next")[0];
   const riseM = logM.find((e) => e.card === "opener#-" && e.cardRising);
-  const sceneM = await ev(`${VM}.number('scene').value`);
-  check(sceneM === 0 && !!riseM && Math.abs(riseM.at - tm - INTRO) <= TOL, `M  ${first} first: the first tap pans to the opener (scene ${sceneM}); its copy rises ${fmt(riseM ? riseM.at - tm : null)} after the tap (want ${INTRO} s, the intro)`);
+  const sceneM = await ev(`${VM}.enum('scene').value`);
+  check(sceneM === "intro" && !!riseM && Math.abs(riseM.at - tm - INTRO) <= TOL, `M  ${first} first: the first tap pans to the opener (scene ${sceneM}); its copy rises ${fmt(riseM ? riseM.at - tm : null)} after the tap (want ${INTRO} s, the intro)`);
 
   // G2: Back from the opener to the empty room, and Next again (no second intro: the copy comes back as the pan ends)
   await press("back"); await wait(PAN + 0.4);
-  const sceneG2 = await ev(`${VM}.number('scene').value`);
+  const sceneG2 = await ev(`${VM}.enum('scene').value`);
   const copyG2 = await shownCopy();
   await ev("window.__log.length = 0");
   await press("next"); await wait(PAN + 0.8);
   const logG2 = await ev("window.__log");
   const tg = after(logG2, "next")[0];
   const riseG2 = logG2.find((e) => e.card === "opener#-" && e.cardRising);
-  check(sceneG2 === 9 && copyG2 === "", `G2 ${first} first: Back from the opener returns to the empty Chapter 1 room (scene ${sceneG2}, copy ${copyG2 || "none"})`);
+  check(sceneG2 === "from-chapter-1" && copyG2 === "", `G2 ${first} first: Back from the opener returns to the empty Chapter 1 room (scene ${sceneG2}, copy ${copyG2 || "none"})`);
   check(!!riseG2 && Math.abs(riseG2.at - tg - PAN) <= TOL, `G2 ${first} first: Next again brings the opener back, its copy rising ${fmt(riseG2 ? riseG2.at - tg : null)} after the tap (want ${PAN} s, the end of the pan)`);
 
   // D: into the first game, on to card 2, then Back to card 1
@@ -276,11 +276,11 @@ for (const order of ["wc", "cw"]) {
   await press("back"); await wait(PAN + PAN + 0.6);
   log = await ev("window.__log");
   const tf = after(log, "back")[0];
-  const vmF = await ev(`${VM}.number('scene').value`);
+  const vmF = await ev(`${VM}.enum('scene').value`);
   const cardF = log.find((e) => e.card === first + "#" + cardsIn[first] && e.cardRising);
   const wantF = (PAN - 0.5) + PAN + STEP;
   const lF = `Back 0.5 s into the Next pan to ${second}`;
-  check(vmF === (first === "wordle" ? 1 : 2), `F  ${lF}: ends on ${first} (scene ${vmF})`);
+  check(vmF === first, `F  ${lF}: ends on ${first} (scene ${vmF})`);
   check(!!cardF && Math.abs(cardF.at - tf - wantF) <= TOL + 0.05, `F  ${lF}: waits for the pan, then ${first}'s last card arrives ${fmt(cardF ? cardF.at - tf : null)} after the tap (want ${wantF.toFixed(2)} s)`);
 }
 
@@ -302,19 +302,19 @@ for (const order of ["wc", "cw"]) {
         `H  ${first} community, ${second} own: the frames are ${frames.join(", ")}`);
   await ev("window.__mark('tap'); document.getElementById('tap-next').click()");
   await sleep(300);
-  const flag = await ev(`${VM}.boolean('community').value`);
+  const flag = await ev(`${VM}.boolean('lockup').value`);
   await sleep((INTRO + 1.2) * 1000);
   const log = await ev("window.__log");
   const t0 = log.find((e) => e.label === "tap").at;
   const pop = log.find((e) => e.icon === first && e.iconPopping);
   const rise = log.find((e) => e.card === first + "#-" && e.cardRising);
-  check(flag === true, `H  ${first} community card: the file's community is ${flag} after the tap (want true)`);
+  check(flag === false, `H  ${first} community card: the file's lockup is ${flag} after the tap (want false: a community card hides the lockup)`);
   check(!!pop && Math.abs(pop.at - t0 - INTRO) <= TOL, `H  ${first} community card: the icon pops ${fmt(pop ? pop.at - t0 : null)} after the tap (want ${INTRO} s)`);
   check(!!rise && Math.abs(rise.at - t0 - INTRO - STEP) <= TOL, `H  ${first} community card: its lines rise ${fmt(rise ? rise.at - t0 : null)} after the tap (want ${(INTRO + STEP).toFixed(2)} s)`);
   await ev("document.getElementById('tap-next').click()");
   await sleep(400);
-  const flag2 = await ev(`${VM}.boolean('community').value`);
-  check(flag2 === false, `H  then ${second}'s own cards: community is ${flag2} (want false)`);
+  const flag2 = await ev(`${VM}.boolean('lockup').value`);
+  check(flag2 === true, `H  then ${second}'s own cards: lockup is ${flag2} (want true)`);
 }
 const WORDS = ["ADIEU", "BREAD", "MOUSE"];
 for (const n of [3, 2, 1, 0]) {
@@ -352,7 +352,7 @@ for (const n of [3, 2, 1, 0]) {
   await press("next"); await wait(INTRO + 0.6);
   for (let i = 2; i <= cardsIn.connections; i++) { await press("next"); await wait(0.4); }
   await wait(0.6);
-  const sceneBefore = await ev(`${VM}.number('scene').value`);
+  const sceneBefore = await ev(`${VM}.enum('scene').value`);
   const lastCard = "connections#" + cardsIn.connections;
   warnings.length = 0;
   await ev("window.__log.length = 0");
@@ -363,13 +363,13 @@ for (const n of [3, 2, 1, 0]) {
   await wait(1.4);
   let log = await ev("window.__log");
   const tj = log.find((e) => e.label === "next").at;
-  const sceneJ = await ev(`${VM}.number('scene').value`);
+  const sceneJ = await ev(`${VM}.enum('scene').value`);
   const warned = warnings.filter((w) => w.includes("strands"));
   const goneJ = log.find((e) => !e.label && e.at >= tj && e.icon !== "connections" && e.card !== lastCard); // fully hidden
   const riseJ = log.find((e) => e.card === "strands#1" && e.cardRising);
   const shownJ = await ev(`[...document.querySelectorAll('.yig-text')].filter((e) => !e.hidden).map((e) => e.dataset.copyGame + '#' + (e.dataset.copyCard || '-')).join(',')`);
   const lJ = "strands card (not built) after Connections";
-  check(sceneBefore === 2 && sceneJ === 2, `J  ${lJ}: Rive's scene stays on connections (${sceneBefore} before, ${sceneJ} after)`);
+  check(sceneBefore === "connections" && sceneJ === "connections", `J  ${lJ}: Rive's scene stays on connections (${sceneBefore} before, ${sceneJ} after)`);
   check(warned.length === 1, `J  ${lJ}: one warning names strands (${warned.length}: ${warned[0] ?? "none"})`);
   check(leavingJ, `J  ${lJ}: the old card and icon are leaving at once (${leavingJ})`);
   check(!!goneJ && goneJ.at - tj <= QUICK + TOL, `J  ${lJ}: ...and gone ${fmt(goneJ ? goneJ.at - tj : null)} after the tap (want by ${QUICK} s)`);
@@ -380,12 +380,12 @@ for (const n of [3, 2, 1, 0]) {
   await press("back"); await wait(1.4);
   log = await ev("window.__log");
   const tk = log.find((e) => e.label === "back").at;
-  const sceneK = await ev(`${VM}.number('scene').value`);
+  const sceneK = await ev(`${VM}.enum('scene').value`);
   const iconK = log.find((e) => e.icon === "connections" && e.iconPopping);
   const cardK = log.find((e) => e.card === lastCard && e.cardRising);
   const shownK = await ev(`[...document.querySelectorAll('.yig-text')].filter((e) => !e.hidden).map((e) => e.dataset.copyGame + '#' + (e.dataset.copyCard || '-')).join(',')`);
   const lK = "Back from the strands card";
-  check(sceneK === 2, `J  ${lK}: the scene is still connections (${sceneK})`);
+  check(sceneK === "connections", `J  ${lK}: the scene is still connections (${sceneK})`);
   check(!!iconK && Math.abs(iconK.at - tk - QUICK) <= TOL, `J  ${lK}: the Connections icon comes back ${fmt(iconK ? iconK.at - tk : null)} after the tap (want ${QUICK} s)`);
   check(!!cardK && Math.abs(cardK.at - tk - QUICK - STEP) <= TOL, `J  ${lK}: ${lastCard} comes back ${fmt(cardK ? cardK.at - tk : null)} after the tap (want ${(QUICK + STEP).toFixed(2)} s)`);
   check(shownK === lastCard, `J  ${lK}: the copy on screen is ${shownK || "none"} (want ${lastCard})`);
@@ -415,15 +415,15 @@ for (const T of [0.5, 1.5, 2.5]) {
   await wait(Math.max(INTRO - T, QUICK) + 1.2);
   const log = await ev("window.__log");
   const [t1, t2] = log.filter((e) => e.label === "next").map((e) => e.at);
-  const sceneL = await ev(`${VM}.number('scene').value`);
-  const communityL = await ev(`${VM}.boolean('community').value`);
+  const sceneL = await ev(`${VM}.enum('scene').value`);
+  const lockupL = await ev(`${VM}.boolean('lockup').value`);
   const warned = warnings.filter((w) => w.includes("strands"));
   const goneL = log.find((e) => !e.label && e.at >= t2 && e.card !== "wordle#-");
   const riseL = log.find((e) => e.card === "strands#1" && e.cardRising);
   const startedAt = riseL ? riseL.at - t1 : null;
   const latest = Math.max(INTRO, T + QUICK);
   const lL = `strands card (not built) ${T.toFixed(1)} s into Wordle's intro (${games})`;
-  check(sceneL === 1 && communityL === true, `L  ${lL}: Rive stays on wordle with community on (scene ${sceneL}, community ${communityL})`);
+  check(sceneL === "wordle" && lockupL === false, `L  ${lL}: Rive stays on wordle with its lockup off (scene ${sceneL}, lockup ${lockupL})`);
   check(warned.length === 1, `L  ${lL}: one warning names strands (${warned.length}: ${warned[0] ?? "none"})`);
   check(!!goneL && goneL.at - t2 <= 0.15, `L  ${lL}: the Wordle card is gone within ${fmt(goneL ? goneL.at - t2 : null)} of the tap`);
   check(iconLeaving, `L  ${lL}: the Wordle icon leaves at once (${iconLeaving})`);
@@ -432,14 +432,14 @@ for (const T of [0.5, 1.5, 2.5]) {
 
   await ev("window.__log.length = 0");
   await press("back"); await wait(1.4);
-  const sceneB = await ev(`${VM}.number('scene').value`);
+  const sceneB = await ev(`${VM}.enum('scene').value`);
   const shownB = await shownCopy();
-  check(sceneB === 1 && shownB === "wordle#-", `L  Back from it: the Wordle community card is back (${shownB || "none"}) and the scene is still 1 (${sceneB})`);
+  check(sceneB === "wordle" && shownB === "wordle#-", `L  Back from it: the Wordle community card is back (${shownB || "none"}) and the scene is still 1 (${sceneB})`);
 }
 
 unbuilt = false;
 
-//   N  the ending: the tap after the last game's last card pans to the empty Chapter 3 backdrop (scene 8). The game's
+//   N  the ending: the tap after the last game's last card pans to the empty Chapter 3 backdrop (scene to-chapter-3). The game's
 //      card and icon leave at once; the ending's own copy (placeholder here) arrives 3.2 s later like a first visit.
 //      Back returns to the last game's last card: its icon and card arrive when the pan ends (1.65 s).
 {
@@ -460,10 +460,10 @@ unbuilt = false;
   await wait(INTRO + 0.8);
   let logN = await ev("window.__log");
   const tn = logN.find((e) => e.label === "next").at;
-  const sceneN = await ev(`${VM}.number('scene').value`);
+  const sceneN = await ev(`${VM}.enum('scene').value`);
   const goneN = logN.find((e) => !e.label && e.at >= tn && e.icon !== "connections" && e.card !== last);
   const riseN = logN.find((e) => e.card === "chapter3#1" && e.cardRising);
-  check(sceneN === 8, `N  last game to the ending: Rive is on scene 8, the empty Chapter 3 backdrop (scene ${sceneN})`);
+  check(sceneN === "to-chapter-3", `N  last game to the ending: Rive is on to-chapter-3, the empty Chapter 3 backdrop (scene ${sceneN})`);
   check(!!goneN && goneN.at - tn <= QUICK + TOL, `N  last game to the ending: the old card and icon are gone ${fmt(goneN ? goneN.at - tn : null)} after the tap`);
   check(!!riseN && Math.abs(riseN.at - tn - INTRO) <= TOL, `N  last game to the ending: the ending's copy rises ${fmt(riseN ? riseN.at - tn : null)} after the tap (want ${INTRO} s)`);
   await ev("window.__log.length = 0");
@@ -473,13 +473,13 @@ unbuilt = false;
   const tb = logN.find((e) => e.label === "back").at;
   const iconB = logN.find((e) => e.icon === "connections" && e.iconPopping);
   const cardB = logN.find((e) => e.card === last && e.cardRising);
-  const sceneB = await ev(`${VM}.number('scene').value`);
-  check(sceneB === 2 && !!iconB && Math.abs(iconB.at - tb - PAN) <= TOL && !!cardB && Math.abs(cardB.at - tb - PAN - STEP) <= TOL,
-        `N  Back from the ending: scene ${sceneB} (want 2); Connections' icon arrives ${fmt(iconB ? iconB.at - tb : null)} and its last card ${fmt(cardB ? cardB.at - tb : null)} after the tap (want ${PAN} s and ${(PAN + STEP).toFixed(2)} s)`);
+  const sceneB = await ev(`${VM}.enum('scene').value`);
+  check(sceneB === "connections" && !!iconB && Math.abs(iconB.at - tb - PAN) <= TOL && !!cardB && Math.abs(cardB.at - tb - PAN - STEP) <= TOL,
+        `N  Back from the ending: scene ${sceneB} (want connections); Connections' icon arrives ${fmt(iconB ? iconB.at - tb : null)} and its last card ${fmt(cardB ? cardB.at - tb : null)} after the tap (want ${PAN} s and ${(PAN + STEP).toFixed(2)} s)`);
 }
 
 //   K  the page's own example player, no injection: Next to the last card, then Back to the opener, waiting for
-//      each arrival. After every tap the copy on screen is that card's, and the run ends on scene 0.
+//      each arrival. After every tap the copy on screen is that card's, and the run ends on from-chapter-1.
 {
   await load(null);
   const cards = await ev("window.yigExample.cards.map((c) => c.game)");
@@ -496,9 +496,9 @@ unbuilt = false;
     await sleep(cards[i] !== cards[i + 1] ? (PAN + 0.6) * 1000 : 1000);
     const v = await shown(); if (v !== want(i)) bad.push(`Back to ${i}: ${v || "none"}`);
   }
-  const sceneEnd = await ev(`${VM}.number('scene').value`);
+  const sceneEnd = await ev(`${VM}.enum('scene').value`);
   check(!bad.length, `K  example player (${cards.join(", ")}): the right copy after every tap, Next to the end and Back (${bad.join("; ") || "all " + (2 * cards.length - 2) + " taps"})`);
-  check(sceneEnd === 9, `K  example player: ends on the empty Chapter 1 room (scene ${sceneEnd})`);
+  check(sceneEnd === "from-chapter-1", `K  example player: ends on the empty Chapter 1 room (scene ${sceneEnd})`);
   check(cards[0] === "chapter1" && cards[cards.length - 1] === "chapter3", `K  example player: the cards start with chapter1 and end with chapter3 (${cards[0]} ... ${cards[cards.length - 1]})`);
 }
 

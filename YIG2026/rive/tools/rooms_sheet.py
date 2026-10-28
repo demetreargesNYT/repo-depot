@@ -13,11 +13,10 @@ from pathlib import Path
 
 from rml_read import REPO, Scene, chapter_dir
 
-ROOMS = [  # (scene number, room name in the file, what the sheet calls it)
-    (0, "Shelf", "The opener (Shelf)"), (1, "Wordle", "Wordle"), (2, "Connections", "Connections"),
-    (3, "Strands", "Strands"), (4, "Spelling Bee", "Spelling Bee"), (5, "The Mini", "The Mini"),
-    (6, "The Midi", "The Midi"), (7, "The Crossword", "The Crossword"),
-]
+def rooms_of_manifest(scene):
+    """[(scene name, room name in the file, what the sheet calls it)] in the manifest's order."""
+    return [(x["name"], x["room"], x["title"]) for x in scene.manifest["scenes"] if "room" in x]
+
 
 EASE_WORDS = {
     "linear": "constant speed", "hold": "stays put", "power1.out": "fast, then a soft stop", "power2.in": "starts slow, speeds up",
@@ -251,9 +250,9 @@ def side(dx, dy):
 def render(chapter):
     scene = Scene(chapter_dir(chapter) / "scene.rml")
     sh = Sheet(scene)
-    out = [HEADER]
-    for n, room, title in ROOMS:
-        out.append(f"\n## {title} · scene {n}\n")
+    out = [header(chapter, scene)]
+    for n, room, title in rooms_of_manifest(scene):
+        out.append(f"\n## {title} · scene `{n}`\n")
         li = sh.loop_info(room)
         if li:
             fps, frames, pos, chain, lkeys = li
@@ -275,7 +274,7 @@ def render(chapter):
                         k = props.get("opacity")
                         if k:
                             lines.append(f"fades in {t(k.rows[0][0], fps)}–{t(k.rows[1][0], fps)} s, held, fades out ending {t(k.rows[-1][0], fps)} s")
-                out.append(f"- **Lockup** (icon and word): {'; '.join(lines)}; hidden on community cards")
+                out.append(f"- **Lockup** (icon and word): {'; '.join(lines)}; hidden when lockup is false (community cards and anon slides)")
             out.append("\n### Ball · intro\n")
             if ball_rows:
                 for label, props in ball_rows:
@@ -301,9 +300,7 @@ def render(chapter):
     return "\n".join(out) + "\n"
 
 
-HEADER = """# Rooms, in plain words
-
-## To tune later
+TUNE_LATER = """## To tune later
 
 **The ball in The Mini, The Midi and The Crossword does not look quite right, and its easing does not feel like the illustrator's original, even though `tools/compare_room.py` says the loops match.** Known, not fixed. Look into it when the finesse work starts. Best guesses at the cause, most likely first:
 
@@ -316,8 +313,10 @@ HEADER = """# Rooms, in plain words
 
 Ways to look: play the source's ball and ours at the same size, slowed, and plot ball position and scale per frame for both; compare crops of the ball only, with the floor-line rows included; check the rig's helper animations for keys on half frames; try the room with the ball left un-thinned.
 
+"""
 
-Generated from `chapters/ch2/scene.rml` by `python3 tools/rooms_sheet.py ch2`. Do not edit by hand: change the room, then run the
+HEADER = """
+Generated from `chapters/{chapter}/scene.rml` by `python3 tools/rooms_sheet.py {chapter}`. Do not edit by hand: change the room, then run the
 script (it also runs `--check` in `npm run check`). Use it to ask for changes in these terms, for example
 "The Mini: Move 2 of the ball 0.1 s slower" or "The Midi Boxes 2 drops 0.05 s later".
 
@@ -334,16 +333,30 @@ illustrator's shape keys and are not listed here.
 """
 
 
+def header(chapter, scene):
+    """The sheet's top: the ch2 tuning note only for a chapter whose manifest asks for it."""
+    note = TUNE_LATER if scene.manifest.get("tuneLaterNote") else ""
+    return "# Rooms, in plain words\n\n" + note + HEADER.format(chapter=chapter)
+
+
+def sheet_path(chapter):
+    return REPO / chapter_manifest_path(chapter)
+
+
+def chapter_manifest_path(chapter):
+    return Scene(chapter_dir(chapter) / "scene.rml").manifest.get("roomsSheet", f"docs/rooms-{chapter}.md")
+
+
 def main(argv):
     if not argv:
         raise SystemExit(__doc__)
     text = render(argv[0])
-    target = REPO / "docs" / "rooms.md"
+    target = sheet_path(argv[0])
     if "--check" in argv:
         if not target.exists() or target.read_text() != text:
-            print("docs/rooms.md is out of date: run python3 tools/rooms_sheet.py", argv[0])
+            print(f"{target.relative_to(REPO)} is out of date: run python3 tools/rooms_sheet.py", argv[0])
             return 1
-        print("docs/rooms.md is up to date")
+        print(f"{target.relative_to(REPO)} is up to date")
         return 0
     target.write_text(text)
     print(f"wrote {target.relative_to(REPO)} ({len(text.splitlines())} lines)")

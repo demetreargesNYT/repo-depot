@@ -47,15 +47,35 @@ def readme(scene, riv_name, riv_bytes, chapter, revision, runtime):
     ab = scene.artboard
     sm = ab.find("StateMachine").get("name")
     vm = scene.view_model.get("name")
-    built = sorted(set(scene.scene_numbers().values()))
-    games = [("Empty Chapter 1 room (first card)", "chapter1", 9), ("Opener", "opener", 0), ("Wordle", "wordle", 1), ("Connections", "connections", 2),
-             ("Strands", "strands", 3), ("Spelling Bee", "spelling-bee", 4), ("The Mini", "mini", 5), ("The Midi", "midi", 6),
-             ("The Crossword", "daily", 7), ("Empty Chapter 3 backdrop (last card)", "chapter3", 8)]
+    names = scene.scene_names()
+    built = sorted({names[i] for i in scene.scene_numbers().values()})
+    games = [("Empty Chapter 1 room (first card)", "chapter1", "from-chapter-1"), ("Opener", "opener", "intro"), ("Wordle", "wordle", "wordle"),
+             ("Connections", "connections", "connections"), ("Strands", "strands", "strands"), ("Spelling Bee", "spelling-bee", "spelling-bee"),
+             ("The Mini", "mini", "mini"), ("The Midi", "midi", "midi"), ("The Crossword", "daily", "daily"),
+             ("Empty Chapter 3 backdrop (last card)", "chapter3", "to-chapter-3")]
     backdrops = {"chapter1", "chapter3"}      # colours only: no room, no lockup, no ball
-    games_table = "\n".join(f'| {label} | `"{name}"` | {n} | {"built" if name in backdrops or n in built else "coming"} |' for label, name, n in games)
+    games_table = "\n".join(f'| {label} | `"{name}"` | `{n}` | {"built" if name in backdrops or n in built else "coming"} |' for label, name, n in games)
+    props = scene.manifest["properties"]
+    by = lambda who: ", ".join(f"`{k}`" for k, v in props.items() if v["setBy"] == who)
+    prop_rows = "\n".join(f'| `{k}` | {("enum: " + ", ".join(scene.enum_names(v["enum"]))) if v["type"] == "enum" else "boolean"} | {"you may" if v["setBy"] == "engineering" else "our integration only"} | {v["about"]} |'
+                          for k, v in props.items())
     return f"""# Year in Games 2026, Chapter 2: handoff for engineering
 
 This folder is a working example of Chapter 2. Run it, tap through it, then build the real thing the same way.
+
+## What changed since handoff-4
+
+- **One state machine name and one view model name, in every file: `"{sm}"` for both.** Your side is the same as before:
+  `start(cards)`, `onTap()` and `onBack()`.
+- **`scene` and `direction` are enums (named values), not numbers.**
+  - `direction`: {", ".join(f"`{v}`" for v in scene.enum_names("Direction"))}.
+  - `scene`: {", ".join(f"`{v}`" for v in names)}. The last two, `to-chapter-3` and `from-chapter-1`, are the empty pictures
+    this file ends and starts on; they are internal to our integration, so your card list never names them as scenes.
+- **`community` is now `lockup`, and true means the lockup is shown** (it defaults to true; a community card sets it to false).
+  The `community: true` tag on a card in your list is unchanged: the integration turns it into `lockup = false`.
+- **The handoff-4 integration will not work with this `.riv`**, because it set the old numbers and the old `"Chapter 2"` state
+  machine name. Use the `chapter-2-integration.js` in this folder instead. The card list, the markup, the CSS and the three
+  calls are unchanged.
 
 ## Run it locally
 
@@ -75,7 +95,7 @@ and NYT Karnak) apply as normal.
 
 | File | What it is |
 |---|---|
-| `{riv_name}` | the Rive file ({riv_bytes:,} bytes): artboard `"{ab.get('name')}"`, state machine `"{sm}"`, view model `"{vm}"` (numbers `scene`, `direction`; boolean `community`) |
+| `{riv_name}` | the Rive file ({riv_bytes:,} bytes): artboard `"{ab.get('name')}"`, state machine `"{sm}"`, view model `"{vm}"` (enums `scene`, `direction`; boolean `lockup`) |
 | `chapter-2-integration.js` | our integration code. Use it as written: it loads the file, handles Next and Back, and reveals the copy |
 | `yig-text-motion.css` | the text motion; all text timing lives here |
 | `index.html` | the example page: example player data, `buildCards`, the copy, `start(cards)` and the tap wiring |
@@ -98,9 +118,9 @@ Each card names its game:
 ```
 
 - `game` is one of `"chapter1"`, `"opener"`, `"wordle"`, `"connections"`, `"strands"`, `"spelling-bee"`, `"mini"`, `"midi"`, `"daily"`, `"chapter3"`.
-  The integration turns the name into the Rive file's `scene` number; you never set Rive values yourself.
-- `community: true` marks a game's community card (the player solved fewer than 10 of its puzzles). Rive then
-  leaves out that game's lockup; everything else plays the same.
+  The integration turns the name into the Rive file's `scene` value; you never set Rive values yourself.
+- `community: true` marks a game's community card (the player solved fewer than 10 of its puzzles). The integration
+  then sets Rive's `lockup` to false, which leaves out that game's lockup; everything else plays the same.
 - Any other fields (the example uses `card` and `variant`) are yours, for choosing the copy.
 - **The list always starts with `{{ game: "chapter1" }}` and ends with `{{ game: "chapter3" }}`** (see "The first and last cards" below).
   Between them: the opener, then each game's cards together, in the player's order.
@@ -150,7 +170,7 @@ has Rive copy: the example page shows placeholder text on the last card only so 
 Call `start(cards)` once with the card list, then `onTap()` on Next and `onBack()` on Back. That's the whole
 integration:
 
-- They move to the next or previous card, and set Rive's `scene`, `direction` and `community` for it. A card in the
+- They move to the next or previous card, and set Rive's `scene`, `direction` and `lockup` for it. A card in the
   same game changes only the copy; Rive keeps looping.
 - They reveal the card's copy and the game's icon, timed to Rive (3.2 s after the tap for a game's first visit, when
   the pan ends for a game you come back to, about 0.34 s for a card in the same game).
@@ -174,6 +194,19 @@ All set by the integration; you only write the markup.
 | `yig-out` | leave: lifts out and dissolves |
 | `yig-back` | Back: the same moves, reversed (down instead of up) |
 
+## The Rive file's properties
+
+Every Rive file has a state machine named `"{sm}"` and a view model named `"{vm}"`, the same in all of our files. The
+integration sets these for you. If you ever drive Rive directly instead, these are the properties, and who sets them:
+
+| Property | Type | Who sets it | What it does |
+|---|---|---|---|
+{prop_rows}
+
+Set `direction` and `lockup` before `scene`; setting the same `scene` again does nothing. `scene` also has two internal
+values, `from-chapter-1` and `to-chapter-3`: the empty pictures this file starts and ends on. Only our integration
+uses them, so a card list never names them as scenes.
+
 ## Rive runtime
 
 `@rive-app/canvas` **{runtime}**. Pin that version. In your app, `npm install @rive-app/canvas@{runtime}` and the
@@ -182,7 +215,7 @@ same version on a CDN only so it runs without a build step.
 
 ## Built and coming
 
-| Card | Name | Rive `scene` | Status |
+| Card | Name | Rive `scene` (enum value) | Status |
 |---|---|---|---|
 {games_table}
 
@@ -190,7 +223,7 @@ The icons for Strands, Spelling Bee, The Mini, The Midi and The Crossword on the
 
 New games arrive as an updated `{riv_name}`; the card format and your calls don't change. Copy text is placeholder.
 
-Built from `chapters/{chapter}` {revision}. Rooms in this file: scene {", ".join(map(str, built))}.
+Built from `chapters/{chapter}` {revision}. Rooms in this file: {", ".join(built)}.
 """
 
 
@@ -202,7 +235,7 @@ def main(argv):
 
     print("1. fast check")
     results = (check.build_checks(project) + check_chapter.run(chapter)
-               + [check.opener_clears(project), check.community_hides_lockup(project),
+               + [check.opener_clears(project), check.lockup_off_hides_lockup(project),
                   check.rooms_are_separate(chapter), check.rooms_sheet_current(chapter)])
     bad = [t for ok, t in results if not ok]
     if bad:
@@ -229,11 +262,11 @@ def main(argv):
     if flag == "false":
         fail('the artboard has includeInExport="false", so the export would leave it out')
     blob = built.read_bytes()
-    missing = [n for n in (ab.get("name"), ab.find("StateMachine").get("name"), scene.view_model.get("name"), "scene", "direction", "community") if n.encode() not in blob]
+    missing = [n for n in (ab.get("name"), ab.find("StateMachine").get("name"), scene.view_model.get("name"), "scene", "direction", "lockup") if n.encode() not in blob]
     if missing:
         fail(f"the built file does not contain {missing}")
     print(f'   includeInExport {flag}; the built file holds artboard "{ab.get("name")}", state machine '
-          f'"{ab.find("StateMachine").get("name")}", view model "{scene.view_model.get("name")}" and the number "scene"')
+          f'"{ab.find("StateMachine").get("name")}", view model "{scene.view_model.get("name")}" and the enum "scene"')
 
     print("4. the example page works from the delivery folder on its own")
     page = PAGE.read_text()

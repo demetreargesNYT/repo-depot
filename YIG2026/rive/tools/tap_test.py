@@ -26,13 +26,13 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 from PIL import Image, ImageChops
-from rml_read import chapter_dir
+from rml_read import Scene, chapter_dir
 
 RIVE = os.path.expanduser("~/.rive/bin/rive")
-GAMES = {0: "Shelf", 1: "Wordle", 2: "Connections"}
-# the orders to run: letters name the first and second game; "x" as the second is the Chapter 3 ending, an empty
-# scene with no room, so only the first game leaving is tested
-ORDERS = {"wc": (1, 2), "cw": (2, 1), "sw": (0, 1), "wx": (1, None), "cx": (2, None)}
+# the orders to run, by scene name: letters name the first and second game; "x" as the second is the Chapter 3 ending
+# (to-chapter-3), an empty scene with no room, so only the first game leaving is tested
+ORDERS = {"wc": ("wordle", "connections"), "cw": ("connections", "wordle"), "sw": ("intro", "wordle"),
+          "wx": ("wordle", None), "cx": ("connections", None)}
 THRESHOLD = 12            # per-channel difference that counts as "drawn"
 SETTLED = 1.7             # s after tap 2: the 1.55 s pan is over
 DTS = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.5, 3.4]   # s after tap 2
@@ -131,8 +131,9 @@ def lit(img):
 
 def run_case(chapter, order, T, keep):
     scene, other = ORDERS[order]
-    first, second = GAMES[scene], GAMES.get(other)
     src = chapter_dir(chapter)
+    rooms = {x["name"]: x["room"] for x in Scene(src / "scene.rml").manifest["scenes"] if "room" in x}
+    first, second = rooms[scene], rooms.get(other)
     full, second_only, bare = (prepare(src, first, second, T, h) for h in ((), (first,), tuple(g for g in (first, second) if g)))
     tmp = Path(tempfile.mkdtemp())
     rows = []
