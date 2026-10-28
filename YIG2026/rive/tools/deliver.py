@@ -48,9 +48,11 @@ def readme(scene, riv_name, riv_bytes, chapter, revision, runtime):
     sm = ab.find("StateMachine").get("name")
     vm = scene.view_model.get("name")
     built = sorted(set(scene.scene_numbers().values()))
-    games = [("Opener", "opener", 0), ("Wordle", "wordle", 1), ("Connections", "connections", 2), ("Strands", "strands", 3),
-             ("Spelling Bee", "spelling-bee", 4), ("The Mini", "mini", 5), ("The Midi", "midi", 6), ("The Crossword", "daily", 7)]
-    games_table = "\n".join(f'| {label} | `"{name}"` | {n} | {"built" if n == 0 or n in built else "coming"} |' for label, name, n in games)
+    games = [("Empty Chapter 1 room (first card)", "chapter1", 9), ("Opener", "opener", 0), ("Wordle", "wordle", 1), ("Connections", "connections", 2),
+             ("Strands", "strands", 3), ("Spelling Bee", "spelling-bee", 4), ("The Mini", "mini", 5), ("The Midi", "midi", 6),
+             ("The Crossword", "daily", 7), ("Empty Chapter 3 backdrop (last card)", "chapter3", 8)]
+    backdrops = {"chapter1", "chapter3"}      # colours only: no room, no lockup, no ball
+    games_table = "\n".join(f'| {label} | `"{name}"` | {n} | {"built" if name in backdrops or n in built else "coming"} |' for label, name, n in games)
     return f"""# Year in Games 2026, Chapter 2: handoff for engineering
 
 This folder is a working example of Chapter 2. Run it, tap through it, then build the real thing the same way.
@@ -92,15 +94,16 @@ const cards = buildCards(EXAMPLE_PLAYER); start(cards);
 Each card names its game:
 
 ```js
-[{{ game: "opener" }}, {{ game: "wordle" }}, {{ game: "wordle" }}, {{ game: "connections", community: true }}]
+[{{ game: "chapter1" }}, {{ game: "opener" }}, {{ game: "wordle" }}, {{ game: "wordle" }}, {{ game: "connections", community: true }}, {{ game: "chapter3" }}]
 ```
 
-- `game` is one of `"opener"`, `"wordle"`, `"connections"`, `"strands"`, `"spelling-bee"`, `"mini"`, `"midi"`, `"daily"`.
+- `game` is one of `"chapter1"`, `"opener"`, `"wordle"`, `"connections"`, `"strands"`, `"spelling-bee"`, `"mini"`, `"midi"`, `"daily"`, `"chapter3"`.
   The integration turns the name into the Rive file's `scene` number; you never set Rive values yourself.
 - `community: true` marks a game's community card (the player solved fewer than 10 of its puzzles). Rive then
   leaves out that game's lockup; everything else plays the same.
 - Any other fields (the example uses `card` and `variant`) are yours, for choosing the copy.
-- The opener comes first, then each game's cards together, in the player's order.
+- **The list always starts with `{{ game: "chapter1" }}` and ends with `{{ game: "chapter3" }}`** (see "The first and last cards" below).
+  Between them: the opener, then each game's cards together, in the player's order.
 - An unknown name throws. A game that isn't built in the `.riv` yet keeps the current room on screen, still changes
   the copy, and logs a console warning, so you can wire up later games before their art ships.
 
@@ -109,7 +112,7 @@ Each card names its game:
 In `index.html`, `EXAMPLE_PLAYER` stands in for the Games API (it's made-up data), and `buildCards(player)` turns
 it into the card list. It's an example of the logic you'll write against the real stats, not code to ship:
 
-- the opener first, then each game in the player's order;
+- `chapter1` first, then the opener, then each game in the player's order, then `chapter3` last;
 - 10 or more solves: the game's own cards, skipping a card that has no stat (for example the top starting words
   card when no word repeated), and picking the hardest-word card's variant from the result (solved, missed,
   not played);
@@ -125,6 +128,23 @@ community card. The comment above `EXAMPLE_PLAYER` shows how to try other cases.
 Each card's copy is a block of HTML, rendered up front and hidden, marked `data-copy-frame="<card index>"`; each game's
 icon is a block marked `data-icon-game="<game name>"`. The integration shows and hides them.
 
+## The first and last cards
+
+Chapter 2 is one of several Rive files that play back to back. The player never sees a file swap, because each file
+starts and ends on a picture of an empty room, and the file before or after shows exactly the same picture:
+
+- **First card, `{{ game: "chapter1" }}`**: the file loads on the empty Chapter 1 room (cream `#F1ECC0` wall, orange
+  `#FF811E` floor, floor line at 712, no ball, no copy). It is the picture File 1 ends on, where Ad 2 plays. The first
+  tap pans from it into the opener (the same pan as between games, 1.6 s), and the opener plays its own 3.2 s intro
+  (no lockup: it isn't a game). Back from the opener returns to it; Back on this card does nothing.
+- **Last card, `{{ game: "chapter3" }}`**: after the player's last game, a tap makes that room leave and an empty
+  Chapter 3 backdrop (lavender `#E1DBF5` wall, green `#05CE7C` floor, floor line at 712, no ball) pan in. It is the
+  picture File 3 opens on, and where Ad 3 plays for anonymous players. Back from it returns to the last game.
+
+File 1 and File 3 aren't built yet. When they are, one integration will swap files on these exact pictures, so keep
+these two cards in the list now and your calls (`start(cards)`, `onTap()`, `onBack()`) won't change. Neither card
+has Rive copy: the example page shows placeholder text on the last card only so you can see it arrive.
+
 ## start, onTap and onBack
 
 Call `start(cards)` once with the card list, then `onTap()` on Next and `onBack()` on Back. That's the whole
@@ -134,7 +154,7 @@ integration:
   same game changes only the copy; Rive keeps looping.
 - They reveal the card's copy and the game's icon, timed to Rive (3.2 s after the tap for a game's first visit, when
   the pan ends for a game you come back to, about 0.34 s for a card in the same game).
-- Back on the opener, Next on the last card, or a tap before `start`, does nothing. A tap that would reverse a pan waits for it to end.
+- Back on the first card (`chapter1`), Next on the last card (`chapter3`), or a tap before `start`, does nothing. A tap that would reverse a pan waits for it to end.
   You don't time anything in JavaScript and you don't handle Rive events.
 
 The module also exports `setScene` and `yig` (the Rive instance, for cleanup: `yig.cleanup()`).
@@ -162,7 +182,7 @@ same version on a CDN only so it runs without a build step.
 
 ## Built and coming
 
-| Game | Name | Rive `scene` | Status |
+| Card | Name | Rive `scene` | Status |
 |---|---|---|---|
 {games_table}
 

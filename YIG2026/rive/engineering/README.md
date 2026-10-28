@@ -20,7 +20,7 @@ and NYT Karnak) apply as normal.
 
 | File | What it is |
 |---|---|
-| `chapter-2.riv` | the Rive file (187,043 bytes): artboard `"Chapter 2"`, state machine `"Chapter 2"`, view model `"Chapter 2"` (numbers `scene`, `direction`; boolean `community`) |
+| `chapter-2.riv` | the Rive file (188,475 bytes): artboard `"Chapter 2"`, state machine `"Chapter 2"`, view model `"Chapter 2"` (numbers `scene`, `direction`; boolean `community`) |
 | `chapter-2-integration.js` | our integration code. Use it as written: it loads the file, handles Next and Back, and reveals the copy |
 | `yig-text-motion.css` | the text motion; all text timing lives here |
 | `index.html` | the example page: example player data, `buildCards`, the copy, `start(cards)` and the tap wiring |
@@ -39,15 +39,16 @@ const cards = buildCards(EXAMPLE_PLAYER); start(cards);
 Each card names its game:
 
 ```js
-[{ game: "opener" }, { game: "wordle" }, { game: "wordle" }, { game: "connections", community: true }]
+[{ game: "chapter1" }, { game: "opener" }, { game: "wordle" }, { game: "wordle" }, { game: "connections", community: true }, { game: "chapter3" }]
 ```
 
-- `game` is one of `"opener"`, `"wordle"`, `"connections"`, `"strands"`, `"spelling-bee"`, `"mini"`, `"midi"`, `"daily"`.
+- `game` is one of `"chapter1"`, `"opener"`, `"wordle"`, `"connections"`, `"strands"`, `"spelling-bee"`, `"mini"`, `"midi"`, `"daily"`, `"chapter3"`.
   The integration turns the name into the Rive file's `scene` number; you never set Rive values yourself.
 - `community: true` marks a game's community card (the player solved fewer than 10 of its puzzles). Rive then
   leaves out that game's lockup; everything else plays the same.
 - Any other fields (the example uses `card` and `variant`) are yours, for choosing the copy.
-- The opener comes first, then each game's cards together, in the player's order.
+- **The list always starts with `{ game: "chapter1" }` and ends with `{ game: "chapter3" }`** (see "The first and last cards" below).
+  Between them: the opener, then each game's cards together, in the player's order.
 - An unknown name throws. A game that isn't built in the `.riv` yet keeps the current room on screen, still changes
   the copy, and logs a console warning, so you can wire up later games before their art ships.
 
@@ -56,7 +57,7 @@ Each card names its game:
 In `index.html`, `EXAMPLE_PLAYER` stands in for the Games API (it's made-up data), and `buildCards(player)` turns
 it into the card list. It's an example of the logic you'll write against the real stats, not code to ship:
 
-- the opener first, then each game in the player's order;
+- `chapter1` first, then the opener, then each game in the player's order, then `chapter3` last;
 - 10 or more solves: the game's own cards, skipping a card that has no stat (for example the top starting words
   card when no word repeated), and picking the hardest-word card's variant from the result (solved, missed,
   not played);
@@ -72,6 +73,23 @@ community card. The comment above `EXAMPLE_PLAYER` shows how to try other cases.
 Each card's copy is a block of HTML, rendered up front and hidden, marked `data-copy-frame="<card index>"`; each game's
 icon is a block marked `data-icon-game="<game name>"`. The integration shows and hides them.
 
+## The first and last cards
+
+Chapter 2 is one of several Rive files that play back to back. The player never sees a file swap, because each file
+starts and ends on a picture of an empty room, and the file before or after shows exactly the same picture:
+
+- **First card, `{ game: "chapter1" }`**: the file loads on the empty Chapter 1 room (cream `#F1ECC0` wall, orange
+  `#FF811E` floor, floor line at 712, no ball, no copy). It is the picture File 1 ends on, where Ad 2 plays. The first
+  tap pans from it into the opener (the same pan as between games, 1.6 s), and the opener plays its own 3.2 s intro
+  (no lockup: it isn't a game). Back from the opener returns to it; Back on this card does nothing.
+- **Last card, `{ game: "chapter3" }`**: after the player's last game, a tap makes that room leave and an empty
+  Chapter 3 backdrop (lavender `#E1DBF5` wall, green `#05CE7C` floor, floor line at 712, no ball) pan in. It is the
+  picture File 3 opens on, and where Ad 3 plays for anonymous players. Back from it returns to the last game.
+
+File 1 and File 3 aren't built yet. When they are, one integration will swap files on these exact pictures, so keep
+these two cards in the list now and your calls (`start(cards)`, `onTap()`, `onBack()`) won't change. Neither card
+has Rive copy: the example page shows placeholder text on the last card only so you can see it arrive.
+
 ## start, onTap and onBack
 
 Call `start(cards)` once with the card list, then `onTap()` on Next and `onBack()` on Back. That's the whole
@@ -81,7 +99,7 @@ integration:
   same game changes only the copy; Rive keeps looping.
 - They reveal the card's copy and the game's icon, timed to Rive (3.2 s after the tap for a game's first visit, when
   the pan ends for a game you come back to, about 0.34 s for a card in the same game).
-- Back on the opener, Next on the last card, or a tap before `start`, does nothing. A tap that would reverse a pan waits for it to end.
+- Back on the first card (`chapter1`), Next on the last card (`chapter3`), or a tap before `start`, does nothing. A tap that would reverse a pan waits for it to end.
   You don't time anything in JavaScript and you don't handle Rive events.
 
 The module also exports `setScene` and `yig` (the Rive instance, for cleanup: `yig.cleanup()`).
@@ -109,8 +127,9 @@ same version on a CDN only so it runs without a build step.
 
 ## Built and coming
 
-| Game | Name | Rive `scene` | Status |
+| Card | Name | Rive `scene` | Status |
 |---|---|---|---|
+| Empty Chapter 1 room (first card) | `"chapter1"` | 9 | built |
 | Opener | `"opener"` | 0 | built |
 | Wordle | `"wordle"` | 1 | built |
 | Connections | `"connections"` | 2 | built |
@@ -119,9 +138,10 @@ same version on a CDN only so it runs without a build step.
 | The Mini | `"mini"` | 5 | built |
 | The Midi | `"midi"` | 6 | built |
 | The Crossword | `"daily"` | 7 | built |
+| Empty Chapter 3 backdrop (last card) | `"chapter3"` | 8 | built |
 
 The icons for Strands, Spelling Bee, The Mini, The Midi and The Crossword on the example page are placeholders cut from their lockups, until final icons are supplied. Their card copy is placeholder too.
 
 New games arrive as an updated `chapter-2.riv`; the card format and your calls don't change. Copy text is placeholder.
 
-Built from `chapters/ch2` (source last changed in git bb024b0). Rooms in this file: scene 0, 1, 2, 3, 4, 5, 6, 7.
+Built from `chapters/ch2` (source last changed in git 583e68a). Rooms in this file: scene 0, 1, 2, 3, 4, 5, 6, 7.
