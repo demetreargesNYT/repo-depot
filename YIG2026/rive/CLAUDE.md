@@ -4,6 +4,8 @@ Rive animation for NYT Games' Year in Games 2026 recap ("Well Played"). Design l
 
 It lives inside repo-depot (moved in with its history from `~/Desktop/rive-tests/yig-rive`, now `yig-rive-archive`; don't work there). Git commands run against repo-depot, so commit and push follow repo-depot's rules, and add only files under `YIG2026/rive/`. Rive tags are `rive/ch2-…`.
 
+Before planning any work, read `docs/experience.md` (the product picture: both flows, the Chapter 2 card rules, how it maps to the Rive files) alongside `docs/rive-plan.md`. When they disagree, ask Demetre; don't guess.
+
 ## Status
 
 Full plan and detail: `docs/rive-plan.md` (start with its "Where things stand"). In short, as of the last commit:
