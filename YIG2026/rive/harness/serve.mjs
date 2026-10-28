@@ -20,6 +20,7 @@ const projectDir = path.join(repo, "chapters", chapter);
 const files = {
   "/chapter-2-integration.js": path.join(repo, "engineering", "chapter-2-integration.js"),
   "/yig-text-motion.css": path.join(repo, "engineering", "yig-text-motion.css"),
+  "/review.js": path.join(here, "review.js"),
 };
 const fontsRoot = path.join(here, "fonts");
 
@@ -64,7 +65,9 @@ function sendPage(res) {
   fs.readFile(path.join(here, "index.html"), "utf8", (err, html) => {
     if (err) { res.writeHead(500).end(String(err.message)); return; }
     res.writeHead(200, { "content-type": types[".html"], "cache-control": "no-store" });
-    res.end(html.replace("</head>", '<link rel="stylesheet" href="/fonts/fonts.css">\n</head>'));
+    // review.js (hash jump, Replay) is ours alone: it is injected here and is not in index.html, so it never ships
+    res.end(html.replace("</head>", '<link rel="stylesheet" href="/fonts/fonts.css">\n</head>')
+      .replace("</body>", '<script type="module" src="/review.js"></script>\n</body>'));
   });
 }
 

@@ -104,11 +104,46 @@ def opener_clears(project):
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+def rooms_are_separate(chapter):
+    """Every timeline named for a room keys only pieces inside that room (its colours pose keys the shared backdrop),
+    so a change to one room's intro, ball or loop cannot reach another room."""
+    from rml_read import Scene
+    import rooms_sheet
+    scene = Scene(chapter_dir(chapter) / "scene.rml")
+    stage = scene.node("Chapter 2 Rive Import")
+    room_of = {}
+    for room in [r[1] for r in rooms_sheet.ROOMS]:
+        for e in scene.node(f"{room} Room").iter():
+            if e.get("id"):
+                room_of[e.get("id")] = room
+    background = {e.get("id") for e in scene.node("Background").iter() if e.get("id")}
+    leaks = []
+    for name, anim in scene.animations.items():
+        owner = next((r[1] for r in rooms_sheet.ROOMS if name.startswith(r[1] + " ")), None)
+        if owner is None:
+            continue
+        for ko in anim.findall("KeyedObject"):
+            oid = ko.get("objectId")
+            if name.endswith(" Colors"):
+                ok = oid in background
+            else:
+                ok = room_of.get(oid) == owner
+            if not ok:
+                leaks.append(f"{name} keys {scene.label(oid)}")
+    return not leaks, f"each room's timelines key only its own pieces: {len(leaks)} leak(s)" + ("" if not leaks else f" {leaks[:3]}")
+
+
+def rooms_sheet_current(chapter):
+    import rooms_sheet
+    return rooms_sheet.main([chapter, "--check"]) == 0, "docs/rooms.md matches the rooms (python3 tools/rooms_sheet.py ch2 rewrites it)"
+
+
 def main(argv):
     chapter = argv[0] if argv else "ch2"
     t0 = time.time()
     project = chapter_dir(chapter)
-    results = build_checks(project) + check_chapter.run(chapter) + [opener_clears(project), community_hides_lockup(project)]
+    results = build_checks(project) + check_chapter.run(chapter) + [opener_clears(project), community_hides_lockup(project),
+                                                                    rooms_are_separate(chapter), rooms_sheet_current(chapter)]
     failed = [t for ok, t in results if not ok]
     for ok, t in results:
         if not ok:

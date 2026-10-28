@@ -82,7 +82,7 @@ class Scene:
                 es = []
                 for k in sorted(kp, key=lambda k: int(k.get("frame", 0))):
                     it = k.get("interpolationType", "hold")
-                    if it in ("hold", "linear"):
+                    if it in ("hold", "linear", "cubicValue", "elastic"):    # the illustrator's own curves have no named ease
                         es.append(it)
                         continue
                     es.append(self.eases_of(k.find("CubicEaseInterpolator")))
