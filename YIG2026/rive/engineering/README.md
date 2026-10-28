@@ -115,11 +115,13 @@ same version on a CDN only so it runs without a build step.
 | Wordle | `"wordle"` | 1 | built |
 | Connections | `"connections"` | 2 | built |
 | Strands | `"strands"` | 3 | coming |
-| Spelling Bee | `"spelling-bee"` | 4 | coming |
+| Spelling Bee | `"spelling-bee"` | 4 | built |
 | The Mini | `"mini"` | 5 | coming |
 | The Midi | `"midi"` | 6 | coming |
 | The Crossword | `"daily"` | 7 | coming |
 
+The Spelling Bee icon on the example page is a placeholder cut from its lockup, until final icons are supplied.
+
 New games arrive as an updated `chapter-2.riv`; the card format and your calls don't change. Copy text is placeholder.
 
-Built from `chapters/ch2` (source last changed in git 8edc3df). Rooms in this file: scene 0, 1, 2.
+Built from `chapters/ch2` (source last changed in git 8edc3df). Rooms in this file: scene 0, 1, 2, 4.

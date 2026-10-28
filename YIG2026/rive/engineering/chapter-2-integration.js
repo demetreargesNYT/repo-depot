@@ -3,7 +3,7 @@ const SCENE = { opener: 0, wordle: 1, connections: 2, strands: 3, "spelling-bee"
 
 // The rooms chapter-2.riv has so far. Add a game here when its room ships in the .riv. A card for a game that isn't
 // built yet still shows its copy, but Rive stays on the room already on screen, so the page never pans to nothing.
-const BUILT = new Set(["opener", "wordle", "connections"]);
+const BUILT = new Set(["opener", "wordle", "connections", "spelling-bee"]);
 
 import { Rive } from "@rive-app/canvas"; // pin the version you ship
 

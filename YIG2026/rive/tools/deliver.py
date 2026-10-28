@@ -48,6 +48,9 @@ def readme(scene, riv_name, riv_bytes, chapter, revision, runtime):
     sm = ab.find("StateMachine").get("name")
     vm = scene.view_model.get("name")
     built = sorted(set(scene.scene_numbers().values()))
+    games = [("Opener", "opener", 0), ("Wordle", "wordle", 1), ("Connections", "connections", 2), ("Strands", "strands", 3),
+             ("Spelling Bee", "spelling-bee", 4), ("The Mini", "mini", 5), ("The Midi", "midi", 6), ("The Crossword", "daily", 7)]
+    games_table = "\n".join(f'| {label} | `"{name}"` | {n} | {"built" if n == 0 or n in built else "coming"} |' for label, name, n in games)
     return f"""# Year in Games 2026, Chapter 2: handoff for engineering
 
 This folder is a working example of Chapter 2. Run it, tap through it, then build the real thing the same way.
@@ -161,14 +164,9 @@ same version on a CDN only so it runs without a build step.
 
 | Game | Name | Rive `scene` | Status |
 |---|---|---|---|
-| Opener | `"opener"` | 0 | built |
-| Wordle | `"wordle"` | 1 | built |
-| Connections | `"connections"` | 2 | built |
-| Strands | `"strands"` | 3 | coming |
-| Spelling Bee | `"spelling-bee"` | 4 | coming |
-| The Mini | `"mini"` | 5 | coming |
-| The Midi | `"midi"` | 6 | coming |
-| The Crossword | `"daily"` | 7 | coming |
+{games_table}
+
+The Spelling Bee icon on the example page is a placeholder cut from its lockup, until final icons are supplied.
 
 New games arrive as an updated `{riv_name}`; the card format and your calls don't change. Copy text is placeholder.
 

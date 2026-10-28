@@ -155,7 +155,7 @@ import { start, onTap, onBack, setScene, yig } from "./chapter-2-integration.js"
 // ---------------------------------------------------------------------------------------------------------------
 // The text test (harness/text-test.mjs) swaps in other players here, through window.__yigTestPlayer.
 const EXAMPLE_PLAYER = window.__yigTestPlayer ?? {
-  gameOrder: ["wordle", "connections"],
+  gameOrder: ["wordle", "spelling-bee", "connections"],
   wordle: {
     solves: 212,
     averageGuesses: 3.9,
@@ -163,6 +163,11 @@ const EXAMPLE_PLAYER = window.__yigTestPlayer ?? {
     bestGuessesCount: 14,
     topStartingWords: ["ADIEU", "CRANE"],
     hardestWordResult: "missed", // "solved" | "missed" | "not played"
+  },
+  "spelling-bee": {
+    solves: 64,
+    genius: 21,
+    pangrams: 38,
   },
   connections: {
     solves: 7, // fewer than 10: this player gets the community card for Connections
@@ -194,7 +199,7 @@ const EXAMPLE_COMMUNITY = {
 // first, then each game in the player's order. With 10 or more solves a game gets the player's own cards, in design
 // order, leaving out a card that has no stat to show; with fewer it gets one community card.
 // Each card's game and community are what chapter-2-integration.js reads; card and variant are only for this page's copy.
-// Strands, Spelling Bee, The Mini, The Midi and The Crossword aren't here yet: they'll be added as their rooms ship.
+// Strands, The Mini, The Midi and The Crossword aren't here yet: they'll be added as their rooms ship.
 function buildCards(p) {
   const cards = [{ game: "opener" }];
   for (const game of p.gameOrder) {
@@ -206,6 +211,10 @@ function buildCards(p) {
       cards.push({ game, card: "best-solves" });
       cards.push({ game, card: "hardest-word", variant: s.hardestWordResult });
       if (s.topStartingWords.length) cards.push({ game, card: "starting-words" });
+    }
+    if (game === "spelling-bee") {
+      cards.push({ game, card: "pangrams" });
+      cards.push({ game, card: "genius" });
     }
     if (game === "connections") {
       cards.push({ game, card: "solving-order" });
@@ -267,6 +276,19 @@ const COPY = {
       line("t-small", "Oh là là!"),
     ],
   },
+  // PLACEHOLDER COPY: Spelling Bee has no final copy yet; these cards only let you see the room and lockup.
+  "spelling-bee": {
+    pangrams: (s) => [
+      line("t-serif", "In Spelling Bee, you found"),
+      line("t-big", `${s.pangrams} pangrams`),
+      line("t-small", "PLACEHOLDER COPY"),
+    ],
+    genius: (s) => [
+      line("t-serif", "You reached Genius"),
+      line("t-big", `${s.genius} times`),
+      line("t-small", "PLACEHOLDER COPY"),
+    ],
+  },
   connections: {
     "solving-order": (s) => [
       line("t-serif", "In Connections, your most"),
@@ -306,6 +328,14 @@ const COPY = {
 
 // Each game's small icon: its own block, shown once per game while that game's cards change.
 const ICON = {
+  // PLACEHOLDER ICON for Spelling Bee, cut from its lockup until final icons are supplied.
+  "spelling-bee": `<svg width="50" height="49" viewBox="48.22 6.47 76.69 75.77" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M56.8154 57.1259C56.8154 70.0326 66.4759 80.4504 79.7428 80.4504H100.081C112.437 79.4785 123.126 69.3808 123.126 57.1259C123.126 44.2193 113.348 33.8607 100.081 33.8607C100.081 33.8607 80.4641 33.8015 79.7428 33.8607C67.5046 34.9393 56.8154 44.9422 56.8154 57.1259Z" fill="#F8CD0E"/>
+<path d="M89.9717 21.0489V33.837H102.73C109.777 33.8489 115.489 28.1126 115.489 21.0489C115.489 13.9852 109.777 8.26074 102.73 8.26074C95.6828 8.26074 89.9717 13.9852 89.9717 21.0489Z" fill="white"/>
+<path d="M89.971 21.0489V33.837H77.2126C70.1653 33.8489 64.4541 28.1126 64.4541 21.0489C64.4541 13.9852 70.1653 8.26074 77.2126 8.26074C84.2598 8.26074 89.971 13.9852 89.971 21.0489Z" fill="white"/>
+<path d="M101.44 52.5155C101.44 50.3941 103.155 48.6755 105.272 48.6755C107.388 48.6755 109.103 50.3941 109.103 52.5155C109.103 54.637 107.388 56.3555 105.272 56.3555C103.155 56.3555 101.44 54.637 101.44 52.5155Z" fill="black"/>
+<path d="M109.6 33.9082C110.841 33.2445 111.988 32.3911 113.005 31.3719C115.76 28.6104 117.274 24.9482 117.274 21.0489C117.274 13.0134 110.747 6.47113 102.73 6.47113C97.2434 6.47113 92.4545 9.54076 89.9714 14.0563C87.5001 9.54076 82.7113 6.47113 77.213 6.47113C69.1961 6.47113 62.6691 13.0134 62.6691 21.0489C62.6691 24.9482 64.1826 28.6222 66.9376 31.3719C68.1555 32.5926 69.5626 33.5526 71.0643 34.2519C62.2788 38.0682 55.8582 46.2104 55.1015 55.3363H48.2197V58.9274H55.1015C55.9883 72.1304 66.4765 82.24 79.7316 82.24H100.211C113.833 81.1615 124.912 69.9022 124.912 57.1141C124.912 46.483 118.657 37.5941 109.588 33.8963L109.6 33.9082ZM91.7687 21.0489C91.7687 14.9926 96.6876 10.0622 102.73 10.0622C108.772 10.0622 113.691 14.9926 113.691 21.0489C113.691 23.9882 112.544 26.7496 110.475 28.8356C108.406 30.8978 105.662 32.0356 102.754 32.0356H91.7687V21.0489ZM66.2518 21.0489C66.2518 14.9926 71.1707 10.0622 77.213 10.0622C83.2552 10.0622 88.1741 14.9926 88.1741 21.0489V32.0356C85.892 32.0356 83.7873 32.0356 82.2147 32.0356H77.1775C74.2569 32.0356 71.5255 30.8978 69.4562 28.8356C67.3751 26.7615 66.24 23.9882 66.24 21.0489H66.2518ZM74.1386 77.9259C64.9866 75.5437 58.6015 67.4015 58.6015 57.1259C58.6015 48.1541 65.1995 40.0119 74.1386 36.9067V77.9259ZM88.1859 78.6608H79.7434C79.0576 78.6608 78.3836 78.6252 77.7214 78.5659V35.9348C78.4309 35.8045 79.1522 35.7097 79.8734 35.6385C80.039 35.6385 80.642 35.6267 81.5761 35.6148H88.1859V78.6371V78.6608ZM113.372 66.6074C110.782 66.6074 108.358 65.6 106.525 63.763L103.995 66.2993C106.502 68.8119 109.824 70.1867 113.372 70.1867C114.531 70.1867 115.654 70.0208 116.742 69.7363C112.828 74.643 106.797 78.0919 100.01 78.6371H91.7569V35.6267C94.6184 35.6267 97.5626 35.6385 100.081 35.6504C112.201 35.6504 121.341 44.883 121.341 57.1259C121.341 59.4608 120.88 61.7363 120.076 63.8934C118.267 65.6474 115.89 66.6074 113.372 66.6074Z" fill="black"/>
+</svg>`,
   wordle: `<svg width="50" height="49" viewBox="0 0 50 49" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M34.1699 16.5884H34.1602V16.5979H34.1699V16.5884Z" fill="#7FA768"/>
 <path d="M34.1602 17.8367V46.9403H44.9723C46.595 46.9403 47.915 45.6674 47.915 44.0989V32.331V17.9024L34.1602 17.8367Z" fill="#6AAA64"/>
