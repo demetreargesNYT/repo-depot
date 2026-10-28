@@ -1,6 +1,38 @@
 # Year in Games 2026: Rive plan for the whole experience
 
-Status: approved by Demetre. Stage 0 (plan) and Stage 1 (Spelling Bee comparison) are done. Stage 2 is under way: Spelling Bee is in Chapter 2 for review; Strands, The Mini, The Midi and The Crossword follow one at a time, each reviewed before the next.
+Status: approved by Demetre. Stages 0 and 1 are done. Stage 2 is under way: Spelling Bee is approved and pushed to Rive; the other four rooms are in and committed, awaiting his review.
+
+## Where things stand (for the next session)
+
+**Committed on `main`, last two commits not pushed to GitHub** (earlier work up to `e9f96af` is on GitHub). Rive file 2677803 (Chapter 2) has the opener, Wordle, Connections and Spelling Bee (revision 49089997 "Spelling Bee", tag `rive/ch2-spelling-bee`). The local `chapters/ch2/scene.rml` also has Strands, The Mini, The Midi and The Crossword; those are not pushed to Rive and must not be until Demetre approves.
+
+| Scene | Room | Lockup | Loop vs the illustrator | Closing fix |
+|---|---|---|---|---|
+| 1 | Wordle | in Rive | n/a (ours) | n/a |
+| 2 | Connections | in Rive | n/a (ours) | n/a |
+| 3 | Strands | yes | identical on all 179 frames (needs the floor clip) | none |
+| 4 | Spelling Bee | yes (pushed) | identical on frames 1 to 212; differs 213 to 239 | y last key 755 to 756 |
+| 5 | The Mini | yes | differs only frames 133 to 149 | x and y return over 129 to 149 |
+| 6 | The Midi | yes | differs only frames 144 to 149 | four properties return over 142 to 149 |
+| 7 | The Crossword | yes | differs only frames 160 to 179 | ball x/y and Group 2 opacity return over 158 to 179 |
+
+**Where to look.** Harness: `cd harness && npm start`, then http://127.0.0.1:8765/ (all seven games, one placeholder card each; the Spelling Bee, Strands, Mini, Midi and Crossword icons and the copy for those games are placeholders, labelled so). Loop viewers (illustrator | ours | difference, with a scrubber): `deliver/compare/index.html`, one folder per room; `deliver/` is not in git, so rebuild with `python3 tools/compare_room.py tools/rooms/<room>.json` (about 3 minutes per room; add `--workers 8` on a fast machine). Checks: `npm run check ch2` (2,296 pass) and `python3 -m unittest discover -s tools/tests` (26 pass).
+
+**What is left in Stage 2**
+1. **Demetre's review notes on the four rooms.** The intros are proposals (described below under "The other four rooms") and may change. The Mini, The Midi and The Crossword loops do not close in the illustrator's file; we added returns at the end of the loop. He may want them changed (for example by the illustrator, or by another closing rule in `close_all` in `tools/import_room.py`). Apply, re-run the checks, then push to Rive: `/Users/demetrearges/.rive/bin/rive push chapters/ch2 "--name=<label>" --yes` (the flag needs the `=`), commit, tag `rive/ch2-<label>`, and push main only when he asks. Before any push, `rive pull` into a temp folder to check the Rive file has no Editor edits (the CLI normalises small things, so compare structure, not bytes).
+2. **The Chapter 2 ending (not started).** After the last game the room leaves and an empty Chapter 3 backdrop (lavender E1DBF5 wall, green 05CE7C floor, floor line 712) pans in. This is the file's last scene, so the integration needs to know when the cards end.
+3. **The opener comparison (not started).** Show the current Shelf opener and the illustrator's c2s1 (cat tree, trophies, door, shelves) side by side in the harness. Do not swap until Demetre chooses. If c2s1 is chosen, import it the same way as a room (its loop is `c2s1_Loop`, 7 s; its ball keys `C2s1_Ball`).
+
+**After Stage 2**: Stage 3 (File 1, Start + Chapter 1), Stage 4 (File 3), Stage 5 (the two How-to overlay files), Stage 6 (the single integration file and handoffs). See "Order of work" below.
+
+**Things a new session should know without asking**
+- Commit straight to `main` (repo-depot exception), adding only the files changed, never `git add -A`. Never force-push. Pushes to GitHub and to Rive happen only when Demetre asks.
+- The Rive CLI is signed in as lindsey.liang on purpose.
+- The illustrator's file (Rive file 2668591) is a read-only copy in `.cache/illustrator/` (git ignores it; `tools/import_room.py` pulls it again if missing). Never push to or edit it. `.cache/view/` holds throwaway copies for rendering.
+- `tools/import_room.py` refuses a room that is already in the chapter. To redo one: `git checkout -- chapters/ch2/scene.rml`, then import the rooms again, in scene order, so the ids stay the same.
+- Floor line 712 everywhere. Icon sizes for Strands and Spelling Bee stay as drawn until he says to match them.
+- Leave the `/tmp/yig-*` scratch folders alone and do not ask about them. Skip screenshot contact sheets: he reviews in the harness and the viewers.
+- To avoid permission prompts: call the Rive CLI by its full path (`/Users/demetrearges/.rive/bin/rive`, not `$R`), keep commands simple (no long chains, no `rm -rf` mixed in), and note `.claude/settings.json` at the repo-depot root holds a read-only allowlist.
 
 ## Decisions
 
