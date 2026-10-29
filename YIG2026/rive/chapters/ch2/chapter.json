@@ -96,5 +96,46 @@
     }
   ],
   "roomsSheet": "docs/rooms.md",
-  "tuneLaterNote": true
+  "tuneLaterNote": true,
+  "tests": {
+    "rooms": [
+      "Shelf",
+      "Wordle",
+      "Connections"
+    ],
+    "scenes": [
+      "intro",
+      "wordle",
+      "connections",
+      "to-chapter-3",
+      "from-chapter-1"
+    ],
+    "start": "from-chapter-1",
+    "tapOrders": {
+      "wc": [
+        "wordle",
+        "connections"
+      ],
+      "cw": [
+        "connections",
+        "wordle"
+      ],
+      "sw": [
+        "intro",
+        "wordle"
+      ],
+      "wx": [
+        "wordle",
+        null
+      ],
+      "cx": [
+        "connections",
+        null
+      ]
+    },
+    "labels": {
+      "from-chapter-1": "Chapter 1",
+      "to-chapter-3": "Chapter 3"
+    }
+  }
 }

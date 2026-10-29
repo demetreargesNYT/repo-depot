@@ -1,0 +1,67 @@
+<Rive version="1" kind="fragment">
+    <!--
+      PLACEHOLDER for the Loading scene: a red ball hopping in place on the floor. Loading has no art yet. This file is in
+      the illustrator's format so tools/import_room.py brings it in like any room (tools/rooms/ch1-loading.json); when the
+      art arrives, replace the room by importing it, and delete this file.
+    -->
+    <Artboard width="1495" height="1067" name="PLACEHOLDER_loading" id="0:1">
+        <Node x="747.5" y="712" name="Loading Ball" id="0:10">
+            <Node y="-17.68" name="Loading Ball Art" id="0:11">
+                <Shape id="0:12">
+                    <Ellipse width="35.36" height="35.36" id="0:13"/>
+                    <Fill id="0:14">
+                        <SolidColor colorValue="FFFF5959" id="0:15"/>
+                    </Fill>
+                    <Stroke thickness="1.5" cap="round" join="round" id="0:16">
+                        <SolidColor colorValue="FF1F1F1F" id="0:17"/>
+                    </Stroke>
+                </Shape>
+                <Shape x="6.39" y="-6.22" rotation="-0.777" id="0:18">
+                    <Ellipse width="7.5" height="9.64" id="0:19"/>
+                    <Fill id="0:20">
+                        <SolidColor colorValue="FFFFFFFF" id="0:21"/>
+                    </Fill>
+                    <Stroke thickness="1.5" cap="round" join="round" id="0:22">
+                        <SolidColor colorValue="FF1F1F1F" id="0:23"/>
+                    </Stroke>
+                </Shape>
+            </Node>
+        </Node>
+        <LinearAnimation duration="60" loopValue="loop" name="Loop" id="0:30">
+            <KeyedObject objectId="0:10" id="0:31">
+                <KeyedProperty property="y" id="0:32">
+                    <KeyFrameDouble value="712" interpolationType="cubic" id="0:33">
+                        <CubicEaseInterpolator x1="0.33" y1="1" x2="0.68" y2="1" id="0:34"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="640" interpolationType="cubic" frame="18" id="0:35">
+                        <CubicEaseInterpolator x1="0.32" y1="0" x2="0.67" y2="0" id="0:36"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="712" frame="36" id="0:37"/>
+                    <KeyFrameDouble value="712" frame="60" id="0:38"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleX" id="0:39">
+                    <KeyFrameDouble value="1" frame="0" id="0:40"/>
+                    <KeyFrameDouble value="1" frame="36" interpolationType="cubic" id="0:41">
+                        <CubicEaseInterpolator x1="0.33" y1="1" x2="0.68" y2="1" id="0:42"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="1.18" frame="40" interpolationType="cubic" id="0:43">
+                        <CubicEaseInterpolator x1="0.34" y1="1.56" x2="0.64" y2="1" id="0:44"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="1" frame="52" id="0:45"/>
+                    <KeyFrameDouble value="1" frame="60" id="0:46"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY" id="0:47">
+                    <KeyFrameDouble value="1" frame="0" id="0:48"/>
+                    <KeyFrameDouble value="1" frame="36" interpolationType="cubic" id="0:49">
+                        <CubicEaseInterpolator x1="0.33" y1="1" x2="0.68" y2="1" id="0:50"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="0.82" frame="40" interpolationType="cubic" id="0:51">
+                        <CubicEaseInterpolator x1="0.34" y1="1.56" x2="0.64" y2="1" id="0:52"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="1" frame="52" id="0:53"/>
+                    <KeyFrameDouble value="1" frame="60" id="0:54"/>
+                </KeyedProperty>
+            </KeyedObject>
+        </LinearAnimation>
+    </Artboard>
+</Rive>

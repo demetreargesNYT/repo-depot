@@ -28,6 +28,14 @@ def chapter_dir(name):
     return d
 
 
+def chapter_dir_for_new(name):
+    """chapters/<name>, which must already hold a chapter.json (a new file starts from its manifest)."""
+    d = REPO / "chapters" / name
+    if not (d / "chapter.json").exists():
+        raise SystemExit(f"no {d / 'chapter.json'}: write the manifest first")
+    return d
+
+
 class Scene:
     def __init__(self, path):
         self.path = Path(path)

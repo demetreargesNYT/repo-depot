@@ -16,41 +16,13 @@ import sys
 
 from rml_read import chapter_dir
 
-SCENE_ID, DIRECTION_ID, LOCKUP_ID = "1:2713", "1:2855", "1:3260"      # the existing property ids; kept so no path changes
-SCENE_ENUM_ID, DIRECTION_ENUM_ID = "1:9001", "1:9002"
-SCENE_VALUE_BASE, DIRECTION_VALUE_BASE = 9100, 9200                   # a value's id is 1:<base + its index>; comparators and defaults point at it
+from viewmodel import DIRECTION_ID, ENUM_ID, LOCKUP_ID, SCENE_ID, VALUE_BASE, enum_xml, value_id, view_model_xml
+
+SCENE_ENUM_ID, DIRECTION_ENUM_ID = ENUM_ID["Scene"], ENUM_ID["Direction"]
+SCENE_VALUE_BASE, DIRECTION_VALUE_BASE = VALUE_BASE["Scene"], VALUE_BASE["Direction"]
 OLD_DIRECTION = {"1": "forward", "-1": "back"}                          # direction was 1 for Next and -1 for Back
 
 CONDITION = re.compile(r"<TransitionViewModelCondition\b.*?</TransitionViewModelCondition>", re.S)
-
-
-def value_id(base, index):
-    return f"1:{base + index}"
-
-
-def enum_xml(manifest, enum_id, name, values, base):
-    rows = "\n".join(f'        <DataEnumValue key="{v}" value="{v}" id="{value_id(base, i)}"/>' for i, v in enumerate(values))
-    return f'    <DataEnumCustom name="{name}" id="{enum_id}">\n{rows}\n    </DataEnumCustom>\n'
-
-
-def view_model_xml(manifest):
-    scenes = [s["name"] for s in manifest["scenes"]]
-    props = manifest["properties"]
-    s_default = scenes.index(props["scene"]["default"])
-    d_default = props["direction"]["values"].index(props["direction"]["default"])
-    l_default = str(props["lockup"]["default"]).lower()
-    return (
-        f'    <ViewModel defaultInstanceId="1:15" name="{manifest["viewModel"]}" id="1:14">\n'
-        f'        <ViewModelPropertyEnumCustom enumId="{SCENE_ENUM_ID}" name="scene" id="{SCENE_ID}"/>\n'
-        f'        <ViewModelPropertyEnumCustom enumId="{DIRECTION_ENUM_ID}" name="direction" id="{DIRECTION_ID}"/>\n'
-        f'        <ViewModelPropertyBoolean name="lockup" id="{LOCKUP_ID}"/>\n'
-        f'        <ViewModelInstance exports="true" name="Default" id="1:15">\n'
-        f'            <ViewModelInstanceEnum propertyValue="{value_id(SCENE_VALUE_BASE, s_default)}" viewModelPropertyId="{SCENE_ID}" id="1:2816"/>\n'
-        f'            <ViewModelInstanceEnum propertyValue="{value_id(DIRECTION_VALUE_BASE, d_default)}" viewModelPropertyId="{DIRECTION_ID}" id="1:2856"/>\n'
-        f'            <ViewModelInstanceBoolean propertyValue="{l_default}" viewModelPropertyId="{LOCKUP_ID}" id="1:3261"/>\n'
-        f'        </ViewModelInstance>\n'
-        f'    </ViewModel>\n'
-    )
 
 
 def convert_condition(block, direction_values):
@@ -76,8 +48,7 @@ def migrate(text, manifest):
     text = CONDITION.sub(lambda m: convert_condition(m.group(0), d_values), text)
     text, n = re.subn(r'<StateMachine name="[^"]*"', f'<StateMachine name="{manifest["stateMachine"]}"', text, count=1)
     assert n == 1, "no state machine to rename"
-    new_vm = enum_xml(manifest, SCENE_ENUM_ID, "Scene", [s["name"] for s in manifest["scenes"]], SCENE_VALUE_BASE) \
-        + enum_xml(manifest, DIRECTION_ENUM_ID, "Direction", d_values, DIRECTION_VALUE_BASE) + view_model_xml(manifest)
+    new_vm = enum_xml(manifest, "Scene") + enum_xml(manifest, "Direction") + view_model_xml(manifest)
     text, n = re.subn(r"    <ViewModel defaultInstanceId.*?</ViewModel>\n", lambda m: new_vm, text, count=1, flags=re.S)
     assert n == 1, "no view model to replace"
     return text

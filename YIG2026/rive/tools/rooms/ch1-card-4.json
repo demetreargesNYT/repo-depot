@@ -1,0 +1,4 @@
+{
+  "room": "Chapter 1 Card 4", "scene": "chapter-1-card-4", "artboard": "NYT_YIG_c1s4", "loop": "Ball", "ball": "Ball_Move",
+  "intro": {"plane": [0.05, 1.55], "drops": [], "ball": {"roll": [1.15, 1.9], "land": [1.9, 2.05]}}
+}

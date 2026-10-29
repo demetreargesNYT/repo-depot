@@ -53,13 +53,15 @@ def build_checks(project):
 def first_game(project):
     """(scene name, room) of the manifest's first game: the room the lockup and opener checks look at."""
     m = Scene(Path(project) / "scene.rml").manifest
-    x = next(x for x in m["scenes"] if x.get("kind") == "game")
-    return x["name"], x["room"]
+    x = next((x for x in m["scenes"] if x.get("kind") == "game"), None)
+    return (x["name"], x["room"]) if x else None
 
 
 def lockup_off_hides_lockup(project):
     """The first game with lockup off, at 2.6 s (its lockup is fully shown then): it must look exactly like that game
     with its lockup removed, and differ from the game with lockup on, so the flag hides the lockup and nothing else."""
+    if first_game(project) is None:
+        return True, "no game lockups in this file, so there is no lockup to hide"
     scene_name, room = first_game(project)
     tmp = Path(tempfile.mkdtemp())
     try:
@@ -90,7 +92,7 @@ def opener_clears(project):
     1.6 s and would hide a broken outro), it must draw nothing."""
     m = Scene(Path(project) / "scene.rml").manifest
     opener = next((x for x in m["scenes"] if x.get("kind") == "opener"), None)
-    if opener is None:
+    if opener is None or first_game(project) is None:
         return True, "no opener in this file, so there is no opener to clear"
     game = first_game(project)[0]
     tmp = Path(tempfile.mkdtemp())
@@ -148,7 +150,7 @@ def rooms_are_separate(chapter):
 
 def rooms_sheet_current(chapter):
     import rooms_sheet
-    return rooms_sheet.main([chapter, "--check"]) == 0, "docs/rooms.md matches the rooms (python3 tools/rooms_sheet.py ch2 rewrites it)"
+    return rooms_sheet.main([chapter, "--check"]) == 0, f"the rooms sheet matches the rooms (python3 tools/rooms_sheet.py {chapter} rewrites it)"
 
 
 def main(argv):

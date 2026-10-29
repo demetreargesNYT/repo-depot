@@ -1,0 +1,66 @@
+{
+  "room": "Chapter 1 Card 1",
+  "scene": "chapter-1-card-1",
+  "artboard": "NYT_YIG_c1s1",
+  "ball": {
+    "stand_in": {
+      "x": 1000,
+      "hops": [
+        120,
+        420
+      ],
+      "rise": 40
+    }
+  },
+  "loops": [
+    {
+      "anim": "Loop",
+      "from": 0,
+      "to": 300
+    },
+    {
+      "anim": "Pedulum",
+      "from": 9,
+      "to": 69,
+      "pingpong": true
+    },
+    {
+      "anim": "Dog_Eye",
+      "from": 0,
+      "to": 300,
+      "tile": false
+    }
+  ],
+  "loop_frames": 600,
+  "intro": {
+    "plane": [
+      0.05,
+      1.55
+    ],
+    "drops": [
+      {
+        "name": "Clock",
+        "ids": [
+          "0:258"
+        ],
+        "from": 1.0,
+        "to": 1.5
+      },
+      {
+        "name": "Window",
+        "ids": [
+          "0:2355"
+        ],
+        "from": 1.13,
+        "to": 1.63
+      }
+    ],
+    "ball": {
+      "roll": [
+        1.15,
+        1.9
+      ]
+    }
+  },
+  "start_pose_from": "Ball"
+}

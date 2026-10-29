@@ -284,7 +284,7 @@ def render(chapter):
                 times = [r[0] for _, p in details for k in p.values() for r in k.rows]
                 out.append(f"- Highlight and shape ease into the landing pose, {t(min(times), fps)} s to {t(max(times), fps)} s.")
         else:
-            out.append("No intro of its own (the opener is the first frame).\n")
+            out.append("No intro of its own (the file opens on this room, already built).\n")
         if li:
             out.append("\n### Ball · loop\n")
             moves = sh.moves(pos, fps)
@@ -336,6 +336,8 @@ illustrator's shape keys and are not listed here.
 def header(chapter, scene):
     """The sheet's top: the ch2 tuning note only for a chapter whose manifest asks for it."""
     note = TUNE_LATER if scene.manifest.get("tuneLaterNote") else ""
+    if scene.manifest.get("tuneLater"):
+        note = "## To tune later\n\n" + "\n\n".join(f"- {x}" for x in scene.manifest["tuneLater"]) + "\n\n"
     return "# Rooms, in plain words\n\n" + note + HEADER.format(chapter=chapter)
 
 

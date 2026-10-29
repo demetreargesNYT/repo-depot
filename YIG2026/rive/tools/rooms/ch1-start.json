@@ -1,0 +1,14 @@
+{
+  "room": "Start", "scene": "start", "artboard": "NYT_YIG_c0", "ball": "Ball_Move 2",
+  "loops": [
+    {"anim": "Loop", "from": 0, "to": 300},
+    {"anim": "Ball_Loop", "from": 0, "to": 60},
+    {"anim": "Dog_Eye", "from": 0, "to": 300, "tile": false}
+  ],
+  "loop_frames": 300,
+  "intro": {
+    "plane": [0.05, 1.55],
+    "drops": [],
+    "ball": {"roll": [1.15, 1.9], "land": [1.9, 2.05]}
+  }
+}

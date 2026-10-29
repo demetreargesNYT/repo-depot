@@ -1,0 +1,125 @@
+{
+  "_about": "Source of truth for this file's names, enums and rooms. See chapters/ch2/chapter.json for the full note. Scene order is the enum order: the index in this list is the value Rive stores.",
+  "file": "File 1 · Start + Chapter 1",
+  "artboard": "Start and Chapter 1",
+  "stateMachine": "Backdrop",
+  "viewModel": "Backdrop",
+  "riv": "start-chapter-1.riv",
+  "backdrop": "fixed",
+  "colors": {
+    "wall": "FFF1ECC0",
+    "floor": "FFFF811E"
+  },
+  "properties": {
+    "scene": {
+      "type": "enum",
+      "enum": "Scene",
+      "default": "loading",
+      "setBy": "engineering",
+      "about": "Which room the stage shows. Setting the same value again does nothing."
+    },
+    "direction": {
+      "type": "enum",
+      "enum": "Direction",
+      "values": [
+        "forward",
+        "back"
+      ],
+      "default": "forward",
+      "setBy": "engineering",
+      "about": "forward for Next, back for Back. Set before scene."
+    }
+  },
+  "scenes": [
+    {
+      "name": "loading",
+      "kind": "loading",
+      "room": "Loading",
+      "title": "Loading (placeholder)",
+      "about": "The file's default: a placeholder loop until the art arrives. Not a card; our integration leaves it when start(cards) is called."
+    },
+    {
+      "name": "start",
+      "kind": "start",
+      "room": "Start",
+      "title": "Start (c0)"
+    },
+    {
+      "name": "ad",
+      "kind": "picture",
+      "about": "The empty Chapter 1 room: no props, no ball. Ad 1 and Ad 2 play here, and it is the picture File 2 opens on (File 2's from-chapter-1)."
+    },
+    {
+      "name": "chapter-1-card-1",
+      "kind": "room",
+      "room": "Chapter 1 Card 1",
+      "title": "Chapter 1, card 1 (c1s1)"
+    },
+    {
+      "name": "chapter-1-card-2",
+      "kind": "room",
+      "room": "Chapter 1 Card 2",
+      "title": "Chapter 1, card 2 (c1s2)"
+    },
+    {
+      "name": "chapter-1-card-3",
+      "kind": "room",
+      "room": "Chapter 1 Card 3",
+      "title": "Chapter 1, card 3 (c1s3)"
+    },
+    {
+      "name": "chapter-1-card-4",
+      "kind": "room",
+      "room": "Chapter 1 Card 4",
+      "title": "Chapter 1, card 4 (c1s4)"
+    },
+    {
+      "name": "chapter-1-card-5",
+      "kind": "room",
+      "room": "Chapter 1 Card 5",
+      "title": "Chapter 1, card 5 (c1s5)"
+    }
+  ],
+  "roomsSheet": "docs/rooms-ch1.md",
+  "tests": {
+    "flow": [
+      "loading",
+      "start",
+      "ad",
+      "chapter-1-card-1",
+      "chapter-1-card-2",
+      "chapter-1-card-3",
+      "chapter-1-card-4",
+      "chapter-1-card-5"
+    ],
+    "tapOrders": {
+      "s1": [
+        "start",
+        "chapter-1-card-1"
+      ],
+      "12": [
+        "chapter-1-card-1",
+        "chapter-1-card-2"
+      ],
+      "45": [
+        "chapter-1-card-4",
+        "chapter-1-card-5"
+      ],
+      "5x": [
+        "chapter-1-card-5",
+        null
+      ]
+    }
+  },
+  "openLoops": [
+    [
+      "Chapter 1 Card 5 Ball",
+      "x"
+    ]
+  ],
+  "tuneLater": [
+    "**Card 1 (c1s1): the illustrator's 7 s ball story is not in.** In their file the ball comes out of the cuckoo clock, bounces across the window (the panes flip to Wordle tiles as it passes), drops to the floor, squashes the chair cushion and runs into the mouse hole. It plays once and does not loop. Our card 1 has a stand-in ball instead: it rolls in during the intro, rests on the floor at x 1000 (between the dog and the mouse hole) and hops in place twice in the 10 s loop (at 2 s and 7 s). The panes and the clock show how the story opens. To fit the story in during finesse: the source animation is `Ball` in NYT_YIG_c1s1 (420 frames, 57 objects), and the importer config is `tools/rooms/ch1-card-1.json` (`start_pose_from` sets the opening pose).",
+    "**Card 1: the dog's eye.** `Dog_Eye` plays once in the source and ends on a different shape. In the loop it plays at the start of the 10 s and returns to its first shape over frames 300 to 599 (a slow drift). Worth looking at.",
+    "**Card 5 (c1s5): the ball's 257-unit jump is the illustrator's.** The ball jumps between the two tile tops inside the loop (x 877 to 745 at frames 60 to 61, and 617 to 875 at frames 90 to 91) and again where the loop wraps (875 to 618). We left it exactly as made, with no return. The loop therefore does not start and end on one pose for this one property; `chapters/ch1/chapter.json` lists it under `openLoops` so the check allows it."
+  ]
+}

@@ -31,8 +31,7 @@ from rml_read import Scene, chapter_dir
 RIVE = os.path.expanduser("~/.rive/bin/rive")
 # the orders to run, by scene name: letters name the first and second game; "x" as the second is the Chapter 3 ending
 # (to-chapter-3), an empty scene with no room, so only the first game leaving is tested
-ORDERS = {"wc": ("wordle", "connections"), "cw": ("connections", "wordle"), "sw": ("intro", "wordle"),
-          "wx": ("wordle", None), "cx": ("connections", None)}
+ORDERS = {}               # filled from the chapter's manifest (tests.tapOrders) by main()
 THRESHOLD = 12            # per-channel difference that counts as "drawn"
 SETTLED = 1.7             # s after tap 2: the 1.55 s pan is over
 DTS = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.5, 3.4]   # s after tap 2
@@ -160,6 +159,7 @@ def run_case(chapter, order, T, keep):
 
 def main(argv):
     chapter = argv[0] if argv and not argv[0].startswith("--") else "ch2"
+    ORDERS.update({k: tuple(v) for k, v in Scene(chapter_dir(chapter) / "scene.rml").manifest["tests"]["tapOrders"].items()})
     flag = lambda n, d: argv[argv.index(n) + 1] if n in argv else d
     times = [float(t) for t in flag("--times", "0.5,1.5,2.5,3.0").split(",")]
     orders = flag("--orders", ",".join(ORDERS)).split(",")
@@ -172,7 +172,7 @@ def main(argv):
             stale = [r for r in rows if r["dt"] >= SETTLED and r["drawn"]]
             ok = not over and not stale
             failures += not ok
-            print(f'{"PASS" if ok else "FAIL"}  {first:11s} then {(second or "Chapter 3"):11s}  tap 2 at {T:3.1f} s   '
+            print(f'{"PASS" if ok else "FAIL"}  {first:11s} then {(second or "an empty scene"):11s}  tap 2 at {T:3.1f} s   '
                   f'frames with old art over the new room\'s art: {len(over)} of {len(rows)}   old art still on stage after {SETTLED} s: {len(stale)}')
             for r in over[:3] + stale[:2]:
                 print(f'        +{r["dt"]:.2f} s: old art spans {r["bbox"]}; {r["over"]} px of it cover the new room\'s art, within {r["over_bbox"]}')

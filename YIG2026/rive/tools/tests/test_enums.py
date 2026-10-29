@@ -10,7 +10,9 @@ from rml_read import REPO, Scene
 
 MANIFEST = {
     "stateMachine": "Backdrop", "viewModel": "Backdrop",
-    "properties": {"scene": {"default": "b"}, "direction": {"values": ["forward", "back"], "default": "forward"}, "lockup": {"default": True}},
+    "properties": {"scene": {"type": "enum", "enum": "Scene", "default": "b"},
+                   "direction": {"type": "enum", "enum": "Direction", "values": ["forward", "back"], "default": "forward"},
+                   "lockup": {"type": "boolean", "default": True}},
     "scenes": [{"name": "a"}, {"name": "b"}, {"name": "c"}],
 }
 

@@ -1,0 +1,5 @@
+name: yig-ch1
+logs:
+  file: build/rive.log
+  problems: build/problems.log
+main: "Start and Chapter 1"

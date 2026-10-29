@@ -15,6 +15,13 @@ const chapter = process.env.CHAPTER || "ch2";
 const port = Number(process.env.PORT || 8765);
 const rive = process.env.RIVE_BIN || path.join(os.homedir(), ".rive/bin/rive");
 const projectDir = path.join(repo, "chapters", chapter);
+// every Rive file the review pages can ask for, by the URL they use. Each is rebuilt with the CLI when its scene.rml is newer.
+const rivs = {
+  "/chapter-2.riv": path.join(repo, "chapters", "ch2"),
+  "/start-chapter-1.riv": path.join(repo, "chapters", "ch1"),
+};
+// review pages beyond the engineering example: File 1 on its own, until the one integration exists
+const pages = { "/file1": "file1.html" };
 
 // the page's own relative URLs, mapped to where the files live in this repo
 const files = {
@@ -30,27 +37,29 @@ const types = {
   ".png": "image/png", ".woff2": "font/woff2", ".riv": "application/octet-stream",
 };
 
-function newestBuild() {
-  const dir = path.join(projectDir, "build");
+function newestBuild(project = projectDir) {
+  const dir = path.join(project, "build");
   if (!fs.existsSync(dir)) return null;
   const builds = fs.readdirSync(dir).filter((f) => f.endsWith(".riv")).map((f) => path.join(dir, f));
   builds.sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs);
   return builds[0] || null;
 }
 
-let building = null;
-function ensureBuilt() {
-  const scene = fs.statSync(path.join(projectDir, "scene.rml")).mtimeMs;
-  const built = newestBuild();
+const building = new Map();
+function ensureBuilt(project = projectDir) {
+  const scene = fs.statSync(path.join(project, "scene.rml")).mtimeMs;
+  const built = newestBuild(project);
   if (built && fs.statSync(built).mtimeMs >= scene) return Promise.resolve({ built, rebuilt: false });
-  building ??= new Promise((resolve, reject) => {
-    execFile(rive, [projectDir, "--once"], (err, stdout, stderr) => {
-      building = null;
-      if (err) return reject(new Error(`rive --once failed:\n${stdout}\n${stderr}`));
-      resolve({ built: newestBuild(), rebuilt: true });
-    });
-  });
-  return building;
+  if (!building.has(project)) {
+    building.set(project, new Promise((resolve, reject) => {
+      execFile(rive, [project, "--once"], (err, stdout, stderr) => {
+        building.delete(project);
+        if (err) return reject(new Error(`rive --once failed:\n${stdout}\n${stderr}`));
+        resolve({ built: newestBuild(project), rebuilt: true });
+      });
+    }));
+  }
+  return building.get(project);
 }
 
 function sendFile(res, file) {
@@ -61,13 +70,13 @@ function sendFile(res, file) {
   });
 }
 
-function sendPage(res) {
-  fs.readFile(path.join(here, "index.html"), "utf8", (err, html) => {
+function sendPage(res, name = "index.html") {
+  fs.readFile(path.join(here, name), "utf8", (err, html) => {
     if (err) { res.writeHead(500).end(String(err.message)); return; }
     res.writeHead(200, { "content-type": types[".html"], "cache-control": "no-store" });
     // review.js (hash jump, Replay) is ours alone: it is injected here and is not in index.html, so it never ships
-    res.end(html.replace("</head>", '<link rel="stylesheet" href="/fonts/fonts.css">\n</head>')
-      .replace("</body>", '<script type="module" src="/review.js"></script>\n</body>'));
+    const withFonts = html.replace("</head>", '<link rel="stylesheet" href="/fonts/fonts.css">\n</head>');
+    res.end(name === "index.html" ? withFonts.replace("</body>", '<script type="module" src="/review.js"></script>\n</body>') : withFonts);
   });
 }
 
@@ -76,9 +85,10 @@ http.createServer(async (req, res) => {
   const p = decodeURIComponent(url.pathname);
   try {
     if (p === "/" || p === "/index.html") return sendPage(res);
+    if (p in pages) return sendPage(res, pages[p]);
     if (p in files) return sendFile(res, files[p]);
-    if (p === "/chapter-2.riv") {
-      const { built } = await ensureBuilt();
+    if (p in rivs) {
+      const { built } = await ensureBuilt(rivs[p]);
       return sendFile(res, built);
     }
     if (p.startsWith("/fonts/")) {

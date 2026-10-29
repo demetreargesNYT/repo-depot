@@ -1,0 +1,39 @@
+{
+  "room": "Chapter 1 Card 5",
+  "scene": "chapter-1-card-5",
+  "artboard": "NYT_YIG_c1s5",
+  "loop": "Ball",
+  "ball": "Ball_Move",
+  "intro": {
+    "plane": [
+      0.05,
+      1.55
+    ],
+    "drops": [
+      {
+        "name": "Top Row",
+        "ids": [
+          "1:38715"
+        ],
+        "from": 1.0,
+        "to": 1.5
+      }
+    ],
+    "ball": {
+      "roll": [
+        1.15,
+        1.9
+      ],
+      "land": [
+        1.9,
+        2.05
+      ]
+    }
+  },
+  "leave_open": [
+    [
+      "Ball_Move",
+      "x"
+    ]
+  ]
+}

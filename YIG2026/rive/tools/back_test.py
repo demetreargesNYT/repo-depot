@@ -31,11 +31,24 @@ from pathlib import Path
 from rml_read import Scene, chapter_dir
 
 RIVE = os.path.expanduser("~/.rive/bin/rive")
-ROOMS = {0: "Shelf", 1: "Wordle", 2: "Connections"}
-EMPTY = {9: "Chapter 1", 8: "Chapter 3"}       # the file's first and last scenes: the shared backdrop only, no room
-NAMES = {**ROOMS, **EMPTY}
-START = 9                                       # the file opens on the empty Chapter 1 room
+ROOMS, EMPTY, NAMES, SPOTS, START = {}, {}, {}, [], 0   # set from the chapter's manifest by configure()
 MOVE = 1.65           # s the integration file treats a room change as running (PAN_MS)
+
+
+def configure(chapter):
+    """Which rooms are instrumented, which scenes show only the backdrop, and the scene the file opens on, all from the
+    manifest (chapter.json: tests.rooms, tests.scenes, tests.labels, tests.start). Scenes are indexes into the Scene enum."""
+    global ROOMS, EMPTY, NAMES, SPOTS, START
+    s = Scene(chapter_dir(chapter) / "scene.rml")
+    m, names = s.manifest, s.scene_names()
+    t = m["tests"]
+    room_scene = {x["room"]: x["name"] for x in m["scenes"] if "room" in x}
+    ROOMS = {names.index(room_scene[r]): r for r in (t.get("rooms") or room_scene)}
+    EMPTY = {names.index(n): t.get("labels", {}).get(n, n) for n in (t.get("scenes") or names) if names.index(n) not in ROOMS}
+    NAMES = {**ROOMS, **EMPTY}
+    START = names.index(t.get("start") or m["properties"]["scene"]["default"])
+    SPOTS = [(sc, d) for sc in NAMES for d in (1, -1)]
+    return names, t
 
 
 def pan_peak():
@@ -47,7 +60,6 @@ def pan_peak():
 
 
 TOP_SPEED = pan_peak() * 1.1     # a snap moves a room faster than any frame of a clean pan
-SPOTS = [(sc, d) for sc in NAMES for d in (1, -1)]
 
 
 def instrument(src):
@@ -232,14 +244,39 @@ def cases(first, second):
     return out
 
 
+def flow_cases(flow):
+    """Cases for a file whose scenes play in a line (flow: scene indexes in the order Next visits them). Windows of three
+    consecutive scenes, each reached by Next taps 4 s apart so every intro is over: Back and Next at 0.5, 1 and 2.5 s after
+    a move, and several taps during one pan."""
+    out, T = [], [0.5, 1.0, 2.5]
+    for i in sorted({0, 2, len(flow) - 3}):
+        p, a, b = flow[i], flow[i + 1], flow[i + 2]
+        reach = [(0.2 + 4.0 * k, flow[k + 1], 1) for k in range(i)]
+        t0 = 0.2 + 4.0 * i
+        pre = lambda taps: reach + [(t + t0, sc, d) for t, sc, d in taps]
+        label = lambda x: NAMES[x]
+        for t in T:
+            out.append((f"[{label(p)}] Next to {label(a)}, Back {t} s later", pre([(0, a, 1), (t, p, -1)])))
+            out.append((f"[{label(p)}] Next to {label(a)}, Next to {label(b)}, Back {t} s later", pre([(0, a, 1), (4.0, b, 1), (4.0 + t, a, -1)])))
+            out.append((f"[{label(p)}] at {label(b)}: Back to {label(a)}, Next {t} s later", pre([(0, a, 1), (4.0, b, 1), (8.0, a, -1), (8.0 + t, b, 1)])))
+            out.append((f"[{label(p)}] at {label(b)}: Back, Back {t} s apart", pre([(0, a, 1), (4.0, b, 1), (8.0, a, -1), (8.0 + t, p, -1)])))
+        out.append((f"[{label(p)}] Next to {label(a)}, Next to {label(b)} 0.5 s later, Back 0.3 s after that", pre([(0, a, 1), (0.5, b, 1), (0.8, a, -1)])))
+        out.append((f"[{label(p)}] three taps during one pan: Next, Back, Next, Back", pre([(0, a, 1), (0.4, p, -1), (0.7, a, 1), (1.0, p, -1)])))
+    return out
+
+
 def main(argv):
     chapter = argv[0] if argv and not argv[0].startswith("--") else "ch2"
+    names, tests = configure(chapter)
     project, where = instrument(chapter_dir(chapter))
-    names = Scene(chapter_dir(chapter) / "scene.rml").scene_names()
     failed = 0
+    if tests.get("flow"):
+        runs = [(flow_cases([names.index(n) for n in tests["flow"]]))]
+    else:
+        runs = [cases(first, second) for first, second in ((1, 2), (2, 1))]
     try:
-        for first, second in ((1, 2), (2, 1)):
-            for label, taps in cases(first, second):
+        for run in runs:
+            for label, taps in run:
                 fired, rows = run_case(project, where, taps)
                 res = judge(fired, rows, names)
                 bad = [t for ok, t in res if not ok]

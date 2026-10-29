@@ -139,8 +139,18 @@ def run(chapter):
     colour_ids = {name: shapes[name].find("Fill").find("SolidColor").get("id") for name in ("Wall", "Floor") if name in shapes}
     base_wall = shapes["Wall"].find("Fill").find("SolidColor").get("colorValue") if "Wall" in shapes else None
     layer = next((l for l in sm.findall("StateMachineLayer") if l.get("name") == "Backdrop"), None)
-    check(layer is not None, 'the state machine has a "Backdrop" layer')
-    if layer is not None:
+    fixed = m is not None and m.get("backdrop") == "fixed"
+    if fixed:
+        # one picture behind every room: no colour poses and no crossfade, just the manifest's wall and floor
+        check(layer is None, "a fixed backdrop has no Backdrop layer (the wall and floor never change colour)")
+        want = {"Wall": m["colors"]["wall"].upper(), "Floor": m["colors"]["floor"].upper()}
+        got = {n: shapes[n].find("Fill").find("SolidColor").get("colorValue").upper() for n in ("Wall", "Floor") if n in shapes}
+        check(got == want, f"the Background's wall and floor are the manifest's {want} (they are {got})")
+        check(not any(n.endswith(" Colors") for n in A), "a fixed backdrop has no Colors timelines")
+        targets = {}
+    else:
+        check(layer is not None, 'the state machine has a "Backdrop" layer')
+    if layer is not None and not fixed:
         anys = layer.findall("AnyState")
         trs = anys[0].findall("StateTransition") if len(anys) == 1 else []
         state_anim = {st.get("id"): s.names.get(st.get("animationId")) for st in layer.findall("AnimationState")}
@@ -168,7 +178,7 @@ def run(chapter):
                   f"scene {n}'s {name} is a shared-backdrop-only scene (no {label} Room of its own)")
         entry = layer.find("EntryState/StateTransition")
         check(entry is not None and state_anim.get(entry.get("stateToId")) == START_COLORS, f"Backdrop starts on {START_COLORS}")
-    colors_names = sorted(set(targets.values())) if layer is not None else [f"{room} Colors" for room in rooms]
+    colors_names = [] if fixed else sorted(set(targets.values())) if layer is not None else [f"{room} Colors" for room in rooms]
     for name in colors_names:
         a = A.get(name)
         check(a is not None, f'"{name}" timeline exists')
@@ -179,7 +189,7 @@ def run(chapter):
               f"{name} is one frame holding only the Background's wall and floor colours")
     # the base colour on load is the start scene's (the empty Chapter 1 room), so nothing flashes before the Backdrop layer's first frame
     start = A.get(START_COLORS)
-    if start is not None and base_wall:
+    if start is not None and base_wall and not fixed:
         held = s.keys(start)[("Wall colour", "colorValue")][0][1]
         check(held.upper() == base_wall.upper(), f"the Background's own wall colour ({base_wall}) is {START_COLORS}'s ({held})")
         want_start = {"Wall colour": "FFF1ECC0", "Floor colour": "FFFF811E"}
@@ -300,7 +310,7 @@ def run(chapter):
 
         # loops start and end on the intro's last frame
         l_keys = s.keys(loop)
-        seam = sorted(k for k, ks in l_keys.items() if not same(ks[0][1], ks[-1][1]))
+        seam = sorted(k for k, ks in l_keys.items() if not same(ks[0][1], ks[-1][1]) and list(k) not in (m or {}).get("openLoops", []))
         check(not seam, f"{room} Loop's first and last keys match on every property" + ("" if not seam else f": {seam}"))
         i_last = last_values(s, intro)
         off = sorted((k, l_keys[k][0][1], i_last[k]) for k in l_keys if k in i_last and not same(l_keys[k][0][1], i_last[k]))
@@ -310,11 +320,14 @@ def run(chapter):
 
     # lockup: a boolean shows or hides each game's lockup through a gate (anon slides and community cards turn it off), and nothing else changes
     flag = next((p for p in s.view_model if p.tag == "ViewModelPropertyBoolean" and p.get("name") == "lockup"), None)
-    check(flag is not None, 'the view model has a boolean named "lockup"')
+    has_lockups = m is None or "lockup" in m["properties"]
+    check((flag is not None) == has_lockups, 'the view model has a boolean named "lockup" exactly when the file has game lockups')
     if flag is not None:
         dflt = s.property_default(flag.get("id"))
         check(dflt == "true", f"lockup defaults to true, so a game shows its lockup unless told otherwise (it is {dflt})")
     check(not any(p.get("name") == "community" for p in s.view_model), 'the view model has no "community" property (it is "lockup" now, and true means shown)')
+    if not has_lockups:
+        check(not any(e.get("name", "").endswith(" Lockup Gate") for e in ab.iter("Node")), "a file without game lockups has no lockup gates")
     for room in [r for r in rooms if f"{r} Intro" in A and any(e.get("name") == f"{r} Lockup Gate" for e in ab.iter("Node"))]:   # the opener is not a game: no lockup
         gate = s.node(f"{room} Lockup Gate") if any(e.get("name") == f"{room} Lockup Gate" for e in ab.iter("Node")) else None
         kids = [c.get("name") for c in gate if c.tag == "Node"] if gate is not None else []

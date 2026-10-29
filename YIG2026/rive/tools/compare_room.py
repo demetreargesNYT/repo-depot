@@ -62,6 +62,16 @@ def our_project(chapter):
     if d.exists():
         shutil.rmtree(d)
     shutil.copytree(chapter_dir(chapter), d, ignore=shutil.ignore_patterns("build"))
+    # a room the file opens on (Loading) starts looping at once, so with the scene set from outside it would show under
+    # every frame; the comparison is of one room at a time
+    manifest = Scene(d / "scene.rml").manifest
+    opening = {x["room"] + " Room" for x in manifest["scenes"] if x.get("kind") == "loading"}
+    if opening:
+        tree = ET.parse(d / "scene.rml")
+        for n in tree.getroot().iter("Node"):
+            if n.get("name") in opening:
+                n.set("hidden", "true")
+        tree.write(d / "scene.rml", encoding="utf-8")
     return d
 
 
@@ -95,8 +105,13 @@ def main(argv):
     cfg = json.loads(Path(args.config).read_text())
     ill = ET.parse(import_room.ensure_illustrator()).getroot()
     src_ab = next(a for a in ill.findall("Artboard") if a.get("name") == cfg["artboard"])
-    loop = next(a for a in src_ab.findall("LinearAnimation") if a.get("name") == cfg["loop"])
-    n = int(loop.get("duration", 60))
+    if cfg.get("loops"):                       # merged loops: the loop is as long as the config says
+        n = cfg["loop_frames"]
+    else:
+        loop = next(a for a in src_ab.findall("LinearAnimation") if a.get("name") == cfg["loop"])
+        n = int(loop.get("duration", 60))
+        if loop.get("enableWorkArea") == "true":   # the source plays only its work area
+            n = int(loop.get("workEnd", n))
     w2, h2 = int((CROP[2] - CROP[0]) * SCALE), int((CROP[3] - CROP[1]) * SCALE)
     src, ours = source_project(cfg["artboard"]), our_project(args.chapter)
     scene = cfg["scene"]            # a scene name, or (in the older configs) its place in the Scene enum
