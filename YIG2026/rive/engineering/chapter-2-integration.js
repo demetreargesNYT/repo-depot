@@ -18,7 +18,7 @@ import { Rive } from "@rive-app/canvas"; // pin the version you ship
 const yig = new Rive({
   src: "chapter-2.riv", // relative to the page; point it at wherever you host the file
   canvas: document.getElementById("yig-stage"),
-  stateMachine: "Backdrop", // the same name in every file
+  stateMachines: "Backdrop", // the same name in every file. Plural on purpose: runtime 2.27.3 ignores the singular `stateMachine` and never starts the file
   autoplay: true,
   autoBind: true, // binds the "Backdrop" view model (the same name in every file) that drives the state machine
   onLoad: () => {

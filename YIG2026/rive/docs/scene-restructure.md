@@ -1,6 +1,6 @@
 # Restructure Chapter 2 for multiple games
 
-The current "YIG Chapter 2" file (Rive file 2677803, revision 48903415 "7 State machine") handles one transition: the shelf room to the player's top game, driven by `game` and `frame`. A chapter runs through up to five games in the player's order, so this restructure lets any game follow any other. It's driven by one number, `scene`.
+The Chapter 2 file, "yig-ch2" (Rive file 2677803; then named "YIG Chapter 2", at revision 48903415 "7 State machine"), handles one transition: the shelf room to the player's top game, driven by `game` and `frame`. A chapter runs through up to five games in the player's order, so this restructure lets any game follow any other. It's driven by one number, `scene`.
 
 The motion target is `prototype/chapter-2-prototype.html`. Choose either game order and tap through four frames: opener, first game, the same game again (only the text changes), then the second game.
 

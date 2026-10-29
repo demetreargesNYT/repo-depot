@@ -23,7 +23,7 @@ Use this chat and the Claude project only for thinking, writing and reviews, if 
 Read CLAUDE.md and SETUP.md. Then set this repo up:
 1. git init, with a .gitignore that ignores build/ folders and .DS_Store.
 2. Move the Chapter 2 Rive project from ~/Desktop/rive-tests/yig-ch2 (now yig-ch2-archive) into chapters/ch2, keeping its
-   rive.yaml link to "YIG Chapter 2" (file 2677803). Run rive pull chapters/ch2 to confirm the link
+   rive.yaml link to "yig-ch2" (file 2677803; then named "YIG Chapter 2"). Run rive pull chapters/ch2 to confirm the link
    still works and the project matches revision 48903415.
 3. Copy ~/Desktop/rive-tests/yig-test/engineering/chapter-2-integration.js (now under yig-test-archive) into engineering/. It has
    the view model changes you made. The art and spec are already in this repo.
