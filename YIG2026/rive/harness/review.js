@@ -2,11 +2,13 @@
 // it, so the engineering example and the handoff never see it.
 //
 //   http://127.0.0.1:8765/#mini   starts on the card before The Mini, so one tap plays The Mini's intro
+//   ?player=midi-only#bridge      the same, with another of the page's example players (see EXAMPLE_PLAYERS)
 //   Replay                        replays the current room's intro (reloads to the card before it, then taps Next)
 //
 // Names: chapter1 (the empty start room), opener, wordle, connections, strands, spelling-bee, mini, midi, daily (daily is The Crossword), chapter3
-// (the Chapter 2 ending: no intro of its own, so #chapter3 is for viewing the backdrop crossfade, not a replay).
-const GAMES = ["opener", "wordle", "connections", "strands", "spelling-bee", "mini", "midi", "daily", "chapter3", "chapter1"];
+// (the Chapter 2 ending: no intro of its own, so #chapter3 is for viewing the backdrop crossfade, not a replay), bridge
+// (Chapter 2.5's bridge card, also empty: #bridge shows the pan into it and its copy arriving as the pan ends).
+const GAMES = ["opener", "wordle", "connections", "strands", "spelling-bee", "mini", "midi", "daily", "chapter3", "chapter1", "bridge"];
 const SCENE_NAME = { opener: "intro", chapter3: "to-chapter-3", chapter1: "from-chapter-1" }; // every other game's scene has its own name
 const ALIAS = { crossword: "daily", "the-mini": "mini", "the-midi": "midi", "the-crossword": "daily", spellingbee: "spelling-bee", bee: "spelling-bee", "chapter-3": "chapter3", ending: "chapter3", start: "chapter1", "chapter-1": "chapter1" };
 const gameOfScene = (name) => GAMES.find((g) => (SCENE_NAME[g] ?? g) === name);

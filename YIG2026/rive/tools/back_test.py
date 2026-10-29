@@ -237,10 +237,16 @@ def cases(first, second):
         out.append((f"at {ROOMS[b]}: Back, Back {t} s apart", sh([(0.2, a, 1), (4.0, b, 1), (8.0, a, -1), (8.0 + t, 0, -1)])))
         out.append((f"at {ROOMS[b]} (the last game): Next to Chapter 3, Back {t} s later", sh([(0.2, a, 1), (4.0, b, 1), (8.0, 8, 1), (8.0 + t, b, -1)])))
         out.append((f"at {ROOMS[b]}: Next to Chapter 3, Back, Next {t} s apart", sh([(0.2, a, 1), (4.0, b, 1), (8.0, 8, 1), (12.0, b, -1), (12.0 + t, 8, 1)])))
+        # Chapter 2.5 (scene 10, the bridge, an empty room): a game, the bridge, then the next game's first visit
+        out.append((f"at {ROOMS[a]}: Next to the bridge, Back {t} s later", sh([(0.2, a, 1), (4.0, 10, 1), (4.0 + t, a, -1)])))
+        out.append((f"at the bridge: Next to {ROOMS[b]}, Back to the bridge {t} s later", sh([(0.2, a, 1), (4.0, 10, 1), (8.0, b, 1), (8.0 + t, 10, -1)])))
+        out.append((f"at {ROOMS[b]}: Back to the bridge, Next {t} s later", sh([(0.2, a, 1), (4.0, 10, 1), (8.0, b, 1), (12.0, 10, -1), (12.0 + t, b, 1)])))
     out.append((f"Next to {ROOMS[a]}, Next to {ROOMS[b]} 0.5 s later, Back 0.3 s after that",
                 sh([(0.2, a, 1), (0.7, b, 1), (1.0, a, -1)])))
     out.append((f"three taps during one pan: Next, Back, Next, Back", sh([(0.2, a, 1), (0.6, 0, -1), (0.9, a, 1), (1.2, 0, -1)])))
     out.append((f"Next to {ROOMS[b]}, Next to Chapter 3 0.5 s later, Back 0.3 s after that", sh([(0.2, b, 1), (0.7, 8, 1), (1.0, b, -1)])))
+    out.append((f"Next to {ROOMS[a]}, Next to the bridge 0.5 s later, Next to {ROOMS[b]} 0.5 s after that, Back 0.3 s later",
+                sh([(0.2, a, 1), (0.7, 10, 1), (1.2, b, 1), (1.5, 10, -1)])))
     return out
 
 

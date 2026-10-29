@@ -93,6 +93,12 @@
       "internal": true,
       "colors": "Chapter 1 Colors",
       "about": "Empty Chapter 1 room: this file's first picture (its default) and File 1's last."
+    },
+    {
+      "name": "bridge",
+      "kind": "picture",
+      "colors": "Bridge Colors",
+      "about": "Chapter 2.5's bridge card, for players with exactly one qualifying game: an empty version of the opener's room (wall E7F1E1, pink floor). Its copy arrives when the pan ends. Its pieces are arranged on the Bridge Art artboard, which never exports."
     }
   ],
   "roomsSheet": "docs/rooms.md",
@@ -108,7 +114,8 @@
       "wordle",
       "connections",
       "to-chapter-3",
-      "from-chapter-1"
+      "from-chapter-1",
+      "bridge"
     ],
     "start": "from-chapter-1",
     "tapOrders": {
@@ -135,7 +142,8 @@
     },
     "labels": {
       "from-chapter-1": "Chapter 1",
-      "to-chapter-3": "Chapter 3"
+      "to-chapter-3": "Chapter 3",
+      "bridge": "Bridge"
     }
   }
 }

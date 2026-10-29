@@ -10,7 +10,7 @@ CHAPTER=ch1 PORT=9000 npm start   # another chapter or port
 
 - The server rebuilds the `.riv` with `rive --once` whenever `scene.rml` is newer than the build, so reload the page after an edit. It also adds the NYT fonts from `fonts/`, which the handoff leaves out (engineering's site has them).
 - Tap the right half of the stage (or →) for Next, which runs `onTap()`; the left half (or ←) for Back, `onBack()`. **Restart** reloads. **Desktop / Phone** switches between the full artboard and the phone crop.
-- There are no menus. To try another case, edit `EXAMPLE_PLAYER` at the top of the page's script (the comment above it lists the usual ones) and reload. `buildCards(player)` turns it into the card list.
+- There are no menus. Three example players are in the page's script, picked by `?player=` in the address: `wordle-only` (the default; one qualifying game, so Chapter 2.5 follows), `midi-only` (Chapter 2.5 with all five community cards) and `several-games` (no Chapter 2.5). To try another case, edit `EXAMPLE_PLAYERS` (the comment above it lists the usual ones) and reload. `buildCards(player)` turns a player into the card list. Our `#game` jump works with them too: `/?player=midi-only#bridge`.
 - Cards name their game (`{ game: "wordle" }`) and go to the integration once, as `const cards = buildCards(EXAMPLE_PLAYER); start(cards);`. The integration turns each name into a value of the Rive `scene` enum (and sets `direction` and `lockup`).
 - `npm run text` (from the repo root, with this server running) times the text against Rive and tests the cases by swapping in other players.
 

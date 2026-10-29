@@ -4,14 +4,19 @@
 // plays its 3.2 s intro like a game does (without a lockup: the opener is not a game). "chapter3" is this file's last scene: after the player's last game, the room leaves and an empty Chapter 3
 // backdrop pans in, the same way any game-to-game move does. It has no lockup and no ball; File 3 takes over from it
 // (and, for anonymous players, Ad 3 plays over it). Add it to the card list once, after the player's last game card.
+// "bridge" is Chapter 2.5's bridge card, for a player with exactly one qualifying game: an empty version of the
+// opener's room, between that game's cards and the community cards.
 const SCENE = {
   opener: "intro", wordle: "wordle", connections: "connections", strands: "strands", "spelling-bee": "spelling-bee",
-  mini: "mini", midi: "midi", daily: "daily", chapter3: "to-chapter-3", chapter1: "from-chapter-1",
+  mini: "mini", midi: "midi", daily: "daily", chapter3: "to-chapter-3", chapter1: "from-chapter-1", bridge: "bridge",
 };
 
 // The rooms chapter-2.riv has so far. Add a game here when its room ships in the .riv. A card for a game that isn't
 // built yet still shows its copy, but Rive stays on the room already on screen, so the page never pans to nothing.
-const BUILT = new Set(["chapter1", "opener", "wordle", "connections", "strands", "spelling-bee", "mini", "midi", "daily", "chapter3"]);
+const BUILT = new Set(["chapter1", "opener", "wordle", "connections", "strands", "spelling-bee", "mini", "midi", "daily", "chapter3", "bridge"]);
+
+// Rooms with nothing to build, so no intro: their copy arrives when the pan ends (1.65 s), even on the first visit.
+const NO_INTRO = new Set(["bridge"]);
 
 import { Rive } from "@rive-app/canvas"; // pin the version you ship
 
@@ -49,12 +54,14 @@ let pan = { dir: 0, endsAt: 0 }; // the room change on screen: which way the cam
 let heldTimer = 0;     // a tap waiting for a pan to end
 
 // Call once with the chapter's cards in order, before any tap. Build them from the player's stats: { game: "chapter1" }, the opener, then
-// each game's cards in the player's order; a game with several cards has several in a row. Each card names its game.
-// A player who solved fewer than 10 of a game's puzzles gets one community card for that game instead of their own
-// cards: mark that card community: true (the game's Rive lockup is then left out; everything else is the same).
-// Games: "chapter1" (always the first card), "opener", "wordle", "connections", "strands", "spelling-bee", "mini", "midi", "daily". Other fields on a
-// card (your own card id, say) are ignored here. The copy for card i is the element with data-copy-frame="i".
-// Example: start([{ game: "chapter1" }, { game: "opener" }, { game: "wordle", community: true }, { game: "connections" }, { game: "connections" }])
+// the cards of each game the player completed 10 or more puzzles in, in the player's order; a game with several cards
+// has several in a row. Each card names its game. A player with exactly one such game then gets Chapter 2.5: the
+// bridge card ({ game: "bridge" }), then one community card for each other community game, marked community: true
+// (the game's Rive lockup is then left out; everything else is the same). Then { game: "chapter3" }, the last card.
+// Games: "chapter1" (always the first card), "opener", "wordle", "connections", "strands", "spelling-bee", "mini", "midi", "daily",
+// "bridge", "chapter3". Other fields on a card (your own card id, say) are ignored here. The copy for card i is the
+// element with data-copy-frame="i".
+// Example: start([{ game: "chapter1" }, { game: "opener" }, { game: "midi" }, { game: "bridge" }, { game: "wordle", community: true }, { game: "chapter3" }])
 // The list is copied, so change it by calling start() again; a second call starts the chapter over from the empty Chapter 1 room.
 function start(list) {
   clearTimeout(heldTimer);
@@ -97,7 +104,7 @@ function move(step) {
     return;
   }
   frame = target;
-  const firstVisit = roomChange && step > 0 && !(game in introEndsAt);
+  const firstVisit = roomChange && step > 0 && !(game in introEndsAt) && !NO_INTRO.has(game);
   if (roomChange) pan = { dir: step, endsAt: now + PAN_MS };
   if (firstVisit) introEndsAt[game] = now + INTRO_MS; // a first visit plays the game's intro
   if (built) {
@@ -112,7 +119,8 @@ function move(step) {
 // What changes on a tap:
 //  - the room changes: the old game's icon and text leave at once, and the new game's text and icon arrive when
 //    the room has settled: 3.2 s after the tap on a game's first visit (the intro and its lockup), at the end of
-//    the move (1.65 s) when the game comes back already built, or when that game's interrupted intro ends, if later.
+//    the move (1.65 s) when the game comes back already built (or the room has no intro, like the bridge), or when
+//    that game's interrupted intro ends, if later.
 //  - the game changes but the room doesn't (a game that isn't built yet, or back from one): the old icon and text
 //    leave at once as above, and the new ones arrive once the old text has cleared, or when the room's intro ends,
 //    if later. The delay is explicit because yig-quick only applies to the text, not the icon.

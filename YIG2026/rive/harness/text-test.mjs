@@ -12,7 +12,8 @@
 //   B  tap to the next game: the old card and icon are gone or leaving at once, the new icon pops and the
 //      new first card rises 3.2 s after the tap, with its lines one step (120 ms) after the icon.
 //   C  the icon stays put on a game's later cards: no restart of its animation on a same-game tap.
-//   D-G Back, H community cards, I starting words, J and L a game that isn't built yet, K a full run-through,
+//   D-G Back, H Chapter 2.5 (the bridge and community cards), I starting words, J and L a game that isn't built yet,
+//   K a full run-through of each of the page's example players,
 //   M the first tap (empty Chapter 1 room to the opener), N the ending (last game to Chapter 3): see below.
 //
 // The card list is { game: "chapter1" } (the room the file opens on, no copy), the opener, the games, then
@@ -62,27 +63,27 @@ const ev = async (expr) => (await send("Runtime.evaluate", { expression: expr, a
 await send("Page.enable"); await send("Runtime.enable");
 await send("Fetch.enable", { patterns: [{ urlPattern: "*chapter-2-integration.js*", requestStage: "Request" }] });
 
-// The test player: both games with 10+ solves and every stat above 0, so each gets all its own cards
+// The test player: both games with 10+ completed puzzles and every stat above 0, so each gets all its own cards
 // (Wordle 4, Connections 5), and three starting words. Cases change a copy of it.
 const basePlayer = (order) => ({
   gameOrder: order === "cw" ? ["connections", "wordle"] : ["wordle", "connections"],
-  wordle: { solves: 212, averageGuesses: 3.9, bestGuesses: 2, bestGuessesCount: 14,
+  wordle: { completed: 212, averageGuesses: 3.9, bestGuesses: 2, bestGuessesCount: 14,
             topStartingWords: ["ADIEU", "BREAD", "MOUSE"], hardestWordResult: "missed" },
-  connections: { solves: 140, solvingOrder: ["yellow", "green", "blue", "purple"], purpleFirstCount: 3,
+  connections: { completed: 140, solvingOrder: ["yellow", "green", "blue", "purple"], purpleFirstCount: 3,
                  solveRate: 86, averageMistakes: 1.4, perfectPuzzles: 2 },
 });
 
-// Load the page with this player (null: the page's own EXAMPLE_PLAYER), and wait until Rive has loaded and bound
-// its view model, plus the settle time the old harness gave a fresh run.
+// Load the page with this player (null: the page's own example player, chosen by `query`, e.g. "?player=midi-only"),
+// and wait until Rive has loaded and bound its view model, plus the settle time the old harness gave a fresh run.
 let injected = null;
-async function load(testPlayer) {
+async function load(testPlayer, query = "") {
   if (injected) await send("Page.removeScriptToEvaluateOnNewDocument", { identifier: injected });
   injected = null;
   if (testPlayer) {
     const r = await send("Page.addScriptToEvaluateOnNewDocument", { source: `window.__yigTestPlayer = ${JSON.stringify(testPlayer)};` });
     injected = r.result.identifier;
   }
-  await send("Page.navigate", { url: BASE });
+  await send("Page.navigate", { url: BASE + query });
   for (let i = 0; i < 150; i++) {
     await sleep(100);
     if (await ev("!!window.yigExample?.yig?.viewModelInstance")) break;
@@ -284,37 +285,84 @@ for (const order of ["wc", "cw"]) {
   check(!!cardF && Math.abs(cardF.at - tf - wantF) <= TOL + 0.05, `F  ${lF}: waits for the pan, then ${first}'s last card arrives ${fmt(cardF ? cardF.at - tf : null)} after the tap (want ${wantF.toFixed(2)} s)`);
 }
 
-// Community cards and the starting-words list:
-//   H  a community card for the first game: the frame list has one card for it, community is set in the file,
-//      the icon pops 3.2 s after the tap and the card's lines follow one step later, as on a game's first card.
+// Chapter 2.5 and the starting-words list:
+//   H  Chapter 2.5, for a player with exactly one qualifying game: the cards are that game's, the bridge, then one
+//      community card for each other community game in the order Wordle, Connections, Spelling Bee, The Mini,
+//      Strands (never the player's own), then the ending. A player with two or more qualifying games gets no bridge and
+//      no community cards, and a game under 10 completed puzzles is left out. Timing: the tap after the game's last
+//      card pans to the empty bridge room; the old card and icon leave at once and the bridge copy rises when the pan
+//      ends (1.65 s), with no icon. The first community card: lockup false, its icon pops 3.2 s after the tap and its
+//      lines one step later. Back from it to the bridge: the bridge copy returns when the pan ends.
 //   I  the starting-words card: one line per word, singular label for one word, and left out when none repeated.
+const COMMUNITY = ["wordle", "connections", "spelling-bee", "mini", "strands"];
+const deck = () => ev("window.yigExample.cards.map((f) => f.game + (f.community ? '*' : '')).join(',')");
+const want25 = (own, n) => ["chapter1", "opener", ...Array(n).fill(own), "bridge", ...COMMUNITY.filter((g) => g !== own).map((g) => g + "*"), "chapter3"].join(",");
 for (const order of ["wc", "cw"]) {
-  const [first, second] = order === "wc" ? ["wordle", "connections"] : ["connections", "wordle"];
+  const [own, other] = order === "wc" ? ["wordle", "connections"] : ["connections", "wordle"];
   const p = basePlayer(order);
-  p[first].solves = 7; // fewer than 10: the first game gets its community card
+  p[other].completed = 7; // fewer than 10: only one qualifying game
   await load(p);
+  const n = (await cardsPerGame())[own];
+  const got = await deck();
+  check(got === want25(own, n), `H  ${own} only: the cards are ${got} (want ${want25(own, n)})`);
+}
+{
+  await load(null, "?player=midi-only");
+  const got = await deck();
+  check(got === want25("midi", 1), `H  Midi only (example player): the cards are ${got}, with all five community cards (want ${want25("midi", 1)})`);
+  await load(basePlayer("wc"));
+  const two = await deck();
+  check(!two.includes("bridge") && !two.includes("*"), `H  two qualifying games: no bridge and no community cards (${two})`);
+  await load(null, "?player=several-games");
+  const many = await deck();
+  check(!many.includes("bridge") && !many.includes("*") && !many.includes("connections"), `H  several games (example player), Connections under 10: no bridge, no community cards, no Connections (${many})`);
+}
+{
+  const p = basePlayer("wc");
+  p.connections.completed = 7;
+  await load(p);
+  const n = (await cardsPerGame()).wordle;
   await ev(INSTALL);
+  const press = (id) => ev(`window.__mark('${id}'); document.getElementById('tap-${id}').click()`);
+  const wait = (s) => sleep(s * 1000);
   await openerStep();
+  await press("next"); await wait(INTRO + 0.6);
+  for (let i = 2; i <= n; i++) { await press("next"); await wait(0.4); }
+  await wait(0.6);
   await ev("window.__log.length = 0");
-  const frames = await ev("window.yigExample.cards.map((f) => f.game + (f.community ? '*' : ''))");
-  const ownSecond = frames.filter((f) => f === second).length;
-  check(frames[0] === "chapter1" && frames[frames.length - 1] === "chapter3" && frames.filter((f) => f.startsWith(first)).length === 1 && frames[2] === first + "*" && ownSecond > 1,
-        `H  ${first} community, ${second} own: the frames are ${frames.join(", ")}`);
-  await ev("window.__mark('tap'); document.getElementById('tap-next').click()");
-  await sleep(300);
+  await press("next"); await wait(PAN + 1.0);
+  let log = await ev("window.__log");
+  const tb = log.find((e) => e.label === "next").at;
+  const sceneB = await ev(`${VM}.enum('scene').value`);
+  const goneB = log.find((e) => !e.label && e.at >= tb && e.icon !== "wordle" && e.card !== "wordle#" + n);
+  const riseB = log.find((e) => e.card === "bridge#1" && e.cardRising);
+  const iconB = await ev(`[...document.querySelectorAll('.yig-icon')].filter((e) => !e.hidden).map((e) => e.dataset.iconGame).join(',')`);
+  check(sceneB === "bridge", `H  Wordle's last card to the bridge: Rive is on the bridge room (scene ${sceneB})`);
+  check(!!goneB && goneB.at - tb <= QUICK + TOL, `H  ...the Wordle card and icon are gone ${fmt(goneB ? goneB.at - tb : null)} after the tap`);
+  check(!!riseB && Math.abs(riseB.at - tb - PAN) <= TOL, `H  ...the bridge copy rises ${fmt(riseB ? riseB.at - tb : null)} after the tap (want ${PAN} s, the end of the pan)`);
+  check(iconB === "", `H  ...and no icon shows with it (${iconB || "none"})`);
+
+  await ev("window.__log.length = 0");
+  await press("next");
+  await wait(0.3);
   const flag = await ev(`${VM}.boolean('lockup').value`);
-  await sleep((INTRO + 1.2) * 1000);
-  const log = await ev("window.__log");
-  const t0 = log.find((e) => e.label === "tap").at;
-  const pop = log.find((e) => e.icon === first && e.iconPopping);
-  const rise = log.find((e) => e.card === first + "#-" && e.cardRising);
-  check(flag === false, `H  ${first} community card: the file's lockup is ${flag} after the tap (want false: a community card hides the lockup)`);
-  check(!!pop && Math.abs(pop.at - t0 - INTRO) <= TOL, `H  ${first} community card: the icon pops ${fmt(pop ? pop.at - t0 : null)} after the tap (want ${INTRO} s)`);
-  check(!!rise && Math.abs(rise.at - t0 - INTRO - STEP) <= TOL, `H  ${first} community card: its lines rise ${fmt(rise ? rise.at - t0 : null)} after the tap (want ${(INTRO + STEP).toFixed(2)} s)`);
-  await ev("document.getElementById('tap-next').click()");
-  await sleep(400);
-  const flag2 = await ev(`${VM}.boolean('lockup').value`);
-  check(flag2 === true, `H  then ${second}'s own cards: lockup is ${flag2} (want true)`);
+  await wait(INTRO + 0.9);
+  log = await ev("window.__log");
+  const t0 = log.find((e) => e.label === "next").at;
+  const sceneC = await ev(`${VM}.enum('scene').value`);
+  const pop = log.find((e) => e.icon === "connections" && e.iconPopping);
+  const rise = log.find((e) => e.card === "connections#-" && e.cardRising);
+  check(sceneC === "connections" && flag === false, `H  bridge to the first community card: scene ${sceneC}, lockup ${flag} (want connections, false)`);
+  check(!!pop && Math.abs(pop.at - t0 - INTRO) <= TOL, `H  ...its icon pops ${fmt(pop ? pop.at - t0 : null)} after the tap (want ${INTRO} s)`);
+  check(!!rise && Math.abs(rise.at - t0 - INTRO - STEP) <= TOL, `H  ...its lines rise ${fmt(rise ? rise.at - t0 : null)} after the tap (want ${(INTRO + STEP).toFixed(2)} s)`);
+
+  await ev("window.__log.length = 0");
+  await press("back"); await wait(PAN + 1.0);
+  log = await ev("window.__log");
+  const tk = log.find((e) => e.label === "back").at;
+  const sceneK = await ev(`${VM}.enum('scene').value`);
+  const back = log.find((e) => e.card === "bridge#1" && e.cardRising);
+  check(sceneK === "bridge" && !!back && Math.abs(back.at - tk - PAN) <= TOL, `H  Back to the bridge: scene ${sceneK}; its copy returns ${fmt(back ? back.at - tk : null)} after the tap (want ${PAN} s)`);
 }
 const WORDS = ["ADIEU", "BREAD", "MOUSE"];
 for (const n of [3, 2, 1, 0]) {
@@ -391,50 +439,53 @@ for (const n of [3, 2, 1, 0]) {
   check(shownK === lastCard, `J  ${lK}: the copy on screen is ${shownK || "none"} (want ${lastCard})`);
 }
 
-//   L  a card for a game that isn't built yet, tapped T s into the room's first-visit intro (cards: opener, Wordle
-//      community, strands). Rive stays on Wordle with community still on, the integration warns once, the Wordle
-//      card and icon leave at once, and the strands copy waits for the intro: it starts rising no earlier than 3.2 s
-//      after the first tap and no later than max(3.2, T + 0.34) s. Back: the Wordle card returns, scene still 1.
+//   L  a card for a game that isn't built yet, tapped T s into the room's first-visit intro, on a community card (the
+//      Midi-only example player's Chapter 2.5, with strands taken out of BUILT: ... spelling-bee*, mini*, strands*).
+//      Rive stays on The Mini with its lockup off, the integration warns once, The Mini's card and icon leave at once,
+//      and the strands copy waits for the intro: its icon pops no earlier than 3.2 s after The Mini's tap and no later
+//      than max(3.2, T + 0.34) s, and its lines follow one step (0.12 s) after the icon, as on any game's first card.
+//      Back: The Mini's card returns, and the scene is still mini.
 for (const T of [0.5, 1.5, 2.5]) {
-  const p = basePlayer("wc");
-  p.gameOrder = ["wordle"];
-  p.wordle.solves = 7;
   unbuilt = true;
-  await load(p);
-  await ev(ADD_STRANDS);
-  const games = await ev("window.yigExample.cards.map((c) => c.game + (c.community ? '*' : '')).join(',')");
+  await load(null, "?player=midi-only");
+  const cards = await ev("window.yigExample.cards.map((c) => c.game)");
+  const games = await deck();
   await ev(INSTALL);
   const press = (id) => ev(`window.__mark('${id}'); document.getElementById('tap-${id}').click()`);
   const wait = (s) => sleep(s * 1000);
   await openerStep();
+  for (let i = 2; i < cards.indexOf("mini"); i++) { await press("next"); await wait((cards[i] === "bridge" ? PAN : INTRO) + 0.6); }
   await ev("window.__log.length = 0");
   warnings.length = 0;
   await press("next"); await wait(T);
   await press("next");
-  const iconLeaving = await ev(`(() => { const i = document.querySelector('[data-icon-game="wordle"]'); return i.hidden || i.classList.contains('yig-out'); })()`);
+  const iconLeaving = await ev(`(() => { const i = document.querySelector('[data-icon-game="mini"]'); return i.hidden || i.classList.contains('yig-out'); })()`);
   await wait(Math.max(INTRO - T, QUICK) + 1.2);
   const log = await ev("window.__log");
   const [t1, t2] = log.filter((e) => e.label === "next").map((e) => e.at);
   const sceneL = await ev(`${VM}.enum('scene').value`);
   const lockupL = await ev(`${VM}.boolean('lockup').value`);
   const warned = warnings.filter((w) => w.includes("strands"));
-  const goneL = log.find((e) => !e.label && e.at >= t2 && e.card !== "wordle#-");
-  const riseL = log.find((e) => e.card === "strands#1" && e.cardRising);
+  const goneL = log.find((e) => !e.label && e.at >= t2 && e.card !== "mini#-");
+  const riseL = log.find((e) => e.card === "strands#-" && e.cardRising);
+  const popL = log.find((e) => e.icon === "strands" && e.iconPopping);
   const startedAt = riseL ? riseL.at - t1 : null;
+  const poppedAt = popL ? popL.at - t1 : null;
   const latest = Math.max(INTRO, T + QUICK);
-  const lL = `strands card (not built) ${T.toFixed(1)} s into Wordle's intro (${games})`;
-  check(sceneL === "wordle" && lockupL === false, `L  ${lL}: Rive stays on wordle with its lockup off (scene ${sceneL}, lockup ${lockupL})`);
+  const lL = `strands card (not built) ${T.toFixed(1)} s into The Mini's intro (${games})`;
+  check(sceneL === "mini" && lockupL === false, `L  ${lL}: Rive stays on mini with its lockup off (scene ${sceneL}, lockup ${lockupL})`);
   check(warned.length === 1, `L  ${lL}: one warning names strands (${warned.length}: ${warned[0] ?? "none"})`);
-  check(!!goneL && goneL.at - t2 <= 0.15, `L  ${lL}: the Wordle card is gone within ${fmt(goneL ? goneL.at - t2 : null)} of the tap`);
-  check(iconLeaving, `L  ${lL}: the Wordle icon leaves at once (${iconLeaving})`);
-  check(startedAt !== null && startedAt >= INTRO - TOL, `L  ${lL}: the strands copy starts rising ${fmt(startedAt)} after the first tap (not before ${INTRO} s)`);
-  check(startedAt !== null && startedAt <= latest + TOL, `L  ${lL}: ...and no later than ${latest.toFixed(2)} s (it was ${fmt(startedAt)})`);
+  check(!!goneL && goneL.at - t2 <= 0.15, `L  ${lL}: The Mini's card is gone within ${fmt(goneL ? goneL.at - t2 : null)} of the tap`);
+  check(iconLeaving, `L  ${lL}: The Mini's icon leaves at once (${iconLeaving})`);
+  check(poppedAt !== null && poppedAt >= INTRO - TOL, `L  ${lL}: the Strands icon pops ${fmt(poppedAt)} after The Mini's tap (not before ${INTRO} s)`);
+  check(poppedAt !== null && poppedAt <= latest + TOL, `L  ${lL}: ...and no later than ${latest.toFixed(2)} s (it was ${fmt(poppedAt)})`);
+  check(startedAt !== null && poppedAt !== null && Math.abs(startedAt - poppedAt - STEP) <= TOL, `L  ${lL}: its lines rise ${fmt(startedAt)} after the tap, one step after the icon (want ${poppedAt !== null ? (poppedAt + STEP).toFixed(2) + " s" : "the icon first"})`);
 
   await ev("window.__log.length = 0");
   await press("back"); await wait(1.4);
   const sceneB = await ev(`${VM}.enum('scene').value`);
   const shownB = await shownCopy();
-  check(sceneB === "wordle" && shownB === "wordle#-", `L  Back from it: the Wordle community card is back (${shownB || "none"}) and the scene is still 1 (${sceneB})`);
+  check(sceneB === "mini" && shownB === "mini#-", `L  Back from it: The Mini's community card is back (${shownB || "none"}) and the scene is still mini (${sceneB})`);
 }
 
 unbuilt = false;
@@ -478,10 +529,10 @@ unbuilt = false;
         `N  Back from the ending: scene ${sceneB} (want connections); Connections' icon arrives ${fmt(iconB ? iconB.at - tb : null)} and its last card ${fmt(cardB ? cardB.at - tb : null)} after the tap (want ${PAN} s and ${(PAN + STEP).toFixed(2)} s)`);
 }
 
-//   K  the page's own example player, no injection: Next to the last card, then Back to the opener, waiting for
-//      each arrival. After every tap the copy on screen is that card's, and the run ends on from-chapter-1.
-{
-  await load(null);
+//   K  each of the page's own example players, no injection: Next to the last card, then Back to the opener, waiting
+//      for each arrival. After every tap the copy on screen is that card's, and the run ends on from-chapter-1.
+for (const name of ["wordle-only", "midi-only", "several-games"]) {
+  await load(null, `?player=${name}`);
   const cards = await ev("window.yigExample.cards.map((c) => c.game)");
   const shown = () => ev(`[...document.querySelectorAll('.yig-text')].filter((e) => !e.hidden).map((e) => e.dataset.copyFrame).join(',')`);
   const want = (i) => (cards[i] === "chapter1" ? "" : String(i));    // the empty Chapter 1 room has no copy
@@ -497,9 +548,11 @@ unbuilt = false;
     const v = await shown(); if (v !== want(i)) bad.push(`Back to ${i}: ${v || "none"}`);
   }
   const sceneEnd = await ev(`${VM}.enum('scene').value`);
-  check(!bad.length, `K  example player (${cards.join(", ")}): the right copy after every tap, Next to the end and Back (${bad.join("; ") || "all " + (2 * cards.length - 2) + " taps"})`);
-  check(sceneEnd === "from-chapter-1", `K  example player: ends on the empty Chapter 1 room (scene ${sceneEnd})`);
-  check(cards[0] === "chapter1" && cards[cards.length - 1] === "chapter3", `K  example player: the cards start with chapter1 and end with chapter3 (${cards[0]} ... ${cards[cards.length - 1]})`);
+  const rooms = cards.filter((g, i) => g !== cards[i - 1]);
+  check(!bad.length, `K  ${name} (${cards.join(", ")}): the right copy after every tap, Next to the end and Back (${bad.join("; ") || "all " + (2 * cards.length - 2) + " taps"})`);
+  check(sceneEnd === "from-chapter-1", `K  ${name}: ends on the empty Chapter 1 room (scene ${sceneEnd})`);
+  check(cards[0] === "chapter1" && cards[cards.length - 1] === "chapter3", `K  ${name}: the cards start with chapter1 and end with chapter3 (${cards[0]} ... ${cards[cards.length - 1]})`);
+  check(new Set(rooms).size === rooms.length, `K  ${name}: no room is visited twice (${rooms.join(", ")})`);
 }
 
 proc.kill(); ws.close();

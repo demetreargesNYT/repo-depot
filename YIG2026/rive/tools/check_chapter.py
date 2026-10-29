@@ -84,6 +84,10 @@ def run(chapter):
     check((int(ab.get("width")), int(ab.get("height"))) == ARTBOARD, f'artboard is {ab.get("width")} x {ab.get("height")} (want {ARTBOARD[0]} x {ARTBOARD[1]})')
     check(ab.get("clip") == "true", "artboard clips its content")
     check(ab.get("includeInExport", "true") != "false", "artboard is included in the export (includeInExport is not false)")
+    # any later artboard is a working one (Bridge Art), where pieces are arranged in the Editor before they move into
+    # the main artboard; it must not ship as an artboard of its own
+    for extra in s.root.findall("Artboard")[1:]:
+        check(extra.get("includeInExport") == "false", f'artboard "{extra.get("name")}" is a working artboard, set never to export (includeInExport="false")')
 
     # state machine and view model
     sm = ab.find("StateMachine")

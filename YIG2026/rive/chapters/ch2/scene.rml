@@ -15701,6 +15701,20 @@
                 </KeyedProperty>
             </KeyedObject>
         </LinearAnimation>
+        <!-- Chapter 2.5's bridge card: an empty version of the opener's room, no room of its own; the shared backdrop
+             crossfades to it like any room's Colors pose (see "Backdrop" in the state machine, scene == bridge) -->
+        <LinearAnimation fps="60" duration="1" name="Bridge Colors" id="12:1">
+            <KeyedObject objectId="1:2304" id="12:2">
+                <KeyedProperty property="colorValue" id="12:3">
+                    <KeyFrameColor value="FFE7F1E1" frame="0" id="12:4"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="1:2297" id="12:5">
+                <KeyedProperty property="colorValue" id="12:6">
+                    <KeyFrameColor value="FFFEA0C9" frame="0" id="12:7"/>
+                </KeyedProperty>
+            </KeyedObject>
+        </LinearAnimation>
         <LinearAnimation fps="60" duration="1" name="The Crossword Lockup Shown" id="9:10334">
             <KeyedObject objectId="9:9630" id="9:10335">
                 <KeyedProperty property="opacity" id="9:10336">
@@ -16242,6 +16256,18 @@
                         </TransitionViewModelCondition>
                     </StateTransition>
 
+                                <StateTransition stateToId="12:16" duration="1450" interpolationType="cubic" enableEarlyExit="true" id="12:8">
+                        <CubicEaseInterpolator x1="0.45" y1="0" x2="0.55" y2="1" id="12:9"/>
+                        <TransitionViewModelCondition opValue="equal" id="12:10">
+                            <TransitionPropertyViewModelComparator id="12:11">
+                                <BindablePropertyEnum id="12:12">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="12:13"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9110" id="12:14"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
+
                 </AnyState>
                 <ExitState x="720" y="200" id="1:2833"/>
                 <EntryState x="0" y="0" id="1:2834">
@@ -16257,6 +16283,7 @@
                 <AnimationState animationId="9:10327" x="1840" y="0" id="9:10474"/>
                 <AnimationState animationId="9:10600" x="2080" y="0" id="9:10607"/>
                             <AnimationState animationId="9:10819" x="2320" y="0" id="9:10826"/>
+                <AnimationState animationId="12:1" x="2560" y="0" id="12:16"/>
             </StateMachineLayer>
             <StateMachineLayer name="Shelf Draw" id="1:3071">
                 <AnyState x="160" y="200" id="1:3084"/>
@@ -19651,6 +19678,76 @@
             </KeyedObject>
         </LinearAnimation>
     </Artboard>
+    <!-- Bridge Art: a working artboard for the bridge room's pieces, arranged in the Rive Editor and animated into the
+         bridge scene in the finesse round. Never exported. The ball is Spelling Bee's at its room scale, for size;
+         the room is the shared backdrop's shapes in the bridge's colours, with the floor line at 712. -->
+    <Artboard clip="true" width="1495" height="1067" x="1700" includeInExport="false" styleId="12:64" name="Bridge Art" id="12:20">
+        <Node name="Bridge Art Stage" id="12:21">
+                <Node name="Bridge Ball" id="12:40" x="748" y="756">
+                    <Node x="0.375" name="Ball_01" id="12:41" scaleY="1.35" scaleX="1.35">
+                        <Node x="-0.072021484" y="0.096008301" name="Ball_01_Scale" id="12:42">
+                            <Shape x="6.5" y="-19.5" rotation="-0.77726489" name="Ball_01_Highlight" id="12:43" scaleY="0.77" scaleX="0.77">
+                                <Ellipse width="7.5" height="9.6440001" id="12:44" x="0.5" scaleY="0.94" scaleX="0.94"/>
+                                <Fill id="12:45">
+                                    <SolidColor colorValue="FFFFFFFF" id="12:46"/>
+                                </Fill>
+                                <Stroke thickness="1.5" cap="round" join="round" transformAffectsStroke="false" id="12:47">
+                                    <SolidColor colorValue="FF1F1F1F" id="12:48"/>
+                                </Stroke>
+                            </Shape>
+                            <Shape y="-17.571991" name="Ball_01_Base" id="12:49">
+                                <PointsPath isClosed="true" name="Path" id="12:50">
+                                    <CubicDetachedVertex inRotation="3.1415927" inDistance="9.7632895" outDistance="9.7632895" y="-12.524048" id="12:51"/>
+                                    <CubicDetachedVertex inRotation="-1.5707964" inDistance="9.7632895" outRotation="1.5707964" outDistance="9.7632895" x="20.197021" id="12:52" y="5.4759521"/>
+                                    <CubicDetachedVertex inDistance="9.7632895" outRotation="3.1415927" outDistance="9.7632895" y="17.677999" id="12:53"/>
+                                    <CubicDetachedVertex inRotation="1.5707964" inDistance="9.7632895" outRotation="-1.5707964" outDistance="9.7632895" x="-19.802979" id="12:54" y="5.4759521"/>
+                                </PointsPath>
+                                <Fill id="12:55">
+                                    <SolidColor colorValue="FFFF5959" id="12:56"/>
+                                </Fill>
+                                <Stroke thickness="1.5" cap="round" join="round" transformAffectsStroke="false" id="12:57">
+                                    <SolidColor colorValue="FF1F1F1F" id="12:58"/>
+                                </Stroke>
+                            </Shape>
+                        </Node>
+                    </Node>
+                </Node>
+            <Node x="747.5" y="533.5" name="Bridge Room" id="12:22">
+                <Shape y="178.5" name="Floor-Line" id="12:23">
+                    <PointsPath id="12:24">
+                        <StraightVertex x="-747.5" id="12:25"/>
+                        <StraightVertex x="747.5" id="12:26"/>
+                    </PointsPath>
+                    <Stroke thickness="2" id="12:27">
+                        <SolidColor colorValue="FF1F1F1F" id="12:28"/>
+                    </Stroke>
+                </Shape>
+                <Shape y="356" name="Floor" id="12:29">
+                    <PointsPath isClosed="true" id="12:30">
+                        <StraightVertex x="-747.5" y="-177.5" id="12:31"/>
+                        <StraightVertex x="747.5" y="-177.5" id="12:32"/>
+                        <StraightVertex x="747.5" y="177.5" id="12:33"/>
+                        <StraightVertex x="-747.5" y="177.5" id="12:34"/>
+                    </PointsPath>
+                    <Fill id="12:35">
+                        <SolidColor colorValue="FFFEA0C9" id="12:36"/>
+                    </Fill>
+                </Shape>
+                <Shape name="Wall" id="12:37">
+                    <PointsPath isClosed="true" id="12:38">
+                        <StraightVertex x="-747.5" y="-533.5" id="12:39"/>
+                        <StraightVertex x="747.5" y="-533.5" id="12:59"/>
+                        <StraightVertex x="747.5" y="533.5" id="12:60"/>
+                        <StraightVertex x="-747.5" y="533.5" id="12:61"/>
+                    </PointsPath>
+                    <Fill id="12:62">
+                        <SolidColor colorValue="FFE7F1E1" id="12:63"/>
+                    </Fill>
+                </Shape>
+            </Node>
+        </Node>
+        <LayoutComponentStyle id="12:64"/>
+    </Artboard>
     <SVGAsset file="chapter-2-rive-import.svg" height="1067" width="1495" assetId="7187791" name="chapter-2-rive-import" id="1:16"/>
     <DataEnumCustom name="Scene" id="1:9001">
         <DataEnumValue key="intro" value="intro" id="1:9100"/>
@@ -19663,6 +19760,7 @@
         <DataEnumValue key="daily" value="daily" id="1:9107"/>
         <DataEnumValue key="to-chapter-3" value="to-chapter-3" id="1:9108"/>
         <DataEnumValue key="from-chapter-1" value="from-chapter-1" id="1:9109"/>
+        <DataEnumValue key="bridge" value="bridge" id="1:9110"/>
     </DataEnumCustom>
     <DataEnumCustom name="Direction" id="1:9002">
         <DataEnumValue key="forward" value="forward" id="1:9200"/>
