@@ -43,6 +43,27 @@ def slug(room):
     return re.sub(r"[^a-z0-9]+", "-", room.lower()).strip("-")
 
 
+def mute(project, artboard, animations=(), hide=()):
+    """In a throwaway copy: empty the named animations of `artboard` (they still play, but key nothing) and hide the named
+    nodes. Used to compare only what a room copied: a source's one-off ball journey, and the stand-in ball we put in its
+    place, are taken out of both sides."""
+    if not animations and not hide:
+        return
+    path = Path(project) / "scene.rml"
+    tree = ET.parse(path)
+    for ab in tree.getroot().findall("Artboard"):
+        if artboard and ab.get("name") != artboard:
+            continue
+        for a in ab.iter("LinearAnimation"):
+            if a.get("name") in animations:
+                for ko in a.findall("KeyedObject"):
+                    a.remove(ko)
+        for n in ab.iter():
+            if n.get("name") in hide:
+                n.set("hidden", "true")
+    tree.write(path, encoding="utf-8")
+
+
 def source_project(artboard):
     """A throwaway copy of the illustrator's pull whose main artboard is `artboard` (the pull itself is never edited)."""
     scene = import_room.ensure_illustrator()
@@ -75,10 +96,11 @@ def our_project(chapter):
     return d
 
 
-def render(project, out, frames, scene=None):
+def render(project, out, frames, scene=None, data=()):
     args = [RIVE, str(project), f"--screenshot={out}", f"--advance={frames}"]
     if scene is not None:
         args.insert(2, f"--data=scene={scene}")
+    args[2:2] = [f"--data={d}" for d in data]
     for _ in range(4):                                  # a render can fail when the machine is busy: try again
         Path(out).unlink(missing_ok=True)
         subprocess.run(args, capture_output=True)
@@ -101,6 +123,7 @@ def main(argv):
     ap.add_argument("config")
     ap.add_argument("--chapter", default="ch2")
     ap.add_argument("--workers", type=int, default=6)
+    ap.add_argument("--compare", help="one of the config's named comparisons (cfg compares), e.g. a Chapter 4 fireworks set")
     args = ap.parse_args(argv)
     cfg = json.loads(Path(args.config).read_text())
     ill = ET.parse(import_room.ensure_illustrator()).getroot()
@@ -113,12 +136,18 @@ def main(argv):
         if loop.get("enableWorkArea") == "true":   # the source plays only its work area
             n = int(loop.get("workEnd", n))
     w2, h2 = int((CROP[2] - CROP[0]) * SCALE), int((CROP[3] - CROP[1]) * SCALE)
-    src, ours = source_project(cfg["artboard"]), our_project(args.chapter)
+    # what to take out of both sides, and view model values to set on ours: the config's "compare", or one of its "compares"
+    ap_cmp = dict(cfg["compares"][args.compare], label=args.compare) if args.compare else cfg.get("compare", {})
+    artboard = ap_cmp.get("artboard", cfg["artboard"])
+    src, ours = source_project(artboard), our_project(args.chapter)
+    mute(src, artboard, ap_cmp.get("mute_source", []), ap_cmp.get("hide_source", []))
+    mute(ours, None, (), ap_cmp.get("hide_ours", []))
     scene = cfg["scene"]            # a scene name, or (in the older configs) its place in the Scene enum
     if isinstance(scene, int):
         scene = Scene(chapter_dir(args.chapter) / "scene.rml").scene_names()[scene]
-    out = REPO / "deliver" / "compare" / slug(cfg["room"])
-    work = CACHE / f"frames-{slug(cfg['room'])}"
+    label = cfg["room"] + (f" {ap_cmp['label']}" if ap_cmp.get("label") else "")
+    out = REPO / "deliver" / "compare" / slug(label)
+    work = CACHE / f"frames-{slug(label)}"
     for d in (out, work):
         if d.exists():
             shutil.rmtree(d)
@@ -126,7 +155,7 @@ def main(argv):
 
     def one(frame):
         a = render(src, work / f"s{frame}.png", frame)
-        b = render(ours, work / f"o{frame}.png", frame + INTRO_FRAMES, scene)
+        b = render(ours, work / f"o{frame}.png", frame + INTRO_FRAMES, scene, ap_cmp.get("data", []))
         d = differing(a, b)
         count = sum(1 for p in d.getdata() if p)
         faded = Image.blend(b, Image.new("RGB", b.size, "white"), 0.6)

@@ -132,6 +132,27 @@ def bezier_ease(x1, y1, x2, y2, t):
     return b((lo + hi) / 2, y1, y2)
 
 
+def split_ease(x1, y1, x2, y2, t):
+    """Split a cubic-bezier ease at time fraction t. Returns (eased fraction at t, (x1, y1, x2, y2) of the ease that plays
+    the first part, renormalized to 0..1), so a key at t with that ease reproduces the original curve exactly up to t."""
+    def bez(u, a, c):
+        return 3 * (1 - u) ** 2 * u * a + 3 * (1 - u) * u ** 2 * c + u ** 3
+    lo, hi = 0.0, 1.0
+    for _ in range(80):                                   # the curve parameter u where x(u) = t
+        mid = (lo + hi) / 2
+        lo, hi = (mid, hi) if bez(mid, x1, x2) < t else (lo, mid)
+    u = (lo + hi) / 2
+    # de Casteljau: the control points of the curve on [0, u]
+    p0, p1, p2, p3 = (0.0, 0.0), (x1, y1), (x2, y2), (1.0, 1.0)
+    lerp = lambda a, b: (a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u)
+    a, b_, c = lerp(p0, p1), lerp(p1, p2), lerp(p2, p3)
+    d, e = lerp(a, b_), lerp(b_, c)
+    end = lerp(d, e)
+    if end[0] <= 0 or abs(end[1]) < 1e-12:
+        return end[1], None
+    return end[1], (a[0] / end[0], a[1] / end[1], d[0] / end[0], d[1] / end[1])
+
+
 def read_keys(kp):
     """[(frame, value, interpolation, (x1, y1, x2, y2) or None)] for a KeyedProperty, in frame order."""
     out = []
@@ -300,7 +321,8 @@ def animation(name, duration, spec, ids, loop=False, one_frame=False):
     parts = []
     for oid, props in spec.items():
         kps = [f'<KeyedProperty property="{p}" id="{ids()}">'
-               + "".join(key_xml(t if isinstance(t, int) else round(t * 60), v, e, ids) for t, v, e in ks) + "</KeyedProperty>"
+               + "".join(f'<KeyFrameId value="{v}" frame="{t if isinstance(t, int) else round(t * 60)}" id="{ids()}"/>' if p.endswith("Id")
+                         else key_xml(t if isinstance(t, int) else round(t * 60), v, e, ids) for t, v, e in ks) + "</KeyedProperty>"
                for p, ks in props.items()]
         parts.append(f'<KeyedObject objectId="{oid}" id="{ids()}">' + "".join(kps) + "</KeyedObject>")
     attrs = (' loopValue="loop"' if loop else "") + (' fps="60"' if one_frame else "")
@@ -328,6 +350,11 @@ class Build:
         self.named = {n.get("name"): n for n in self.ab.iter() if n.get("name")}
         self.src = next(a for a in illustrator_root.findall("Artboard") if a.get("name") == cfg["artboard"])
         self.src_by_id = {e.get("id"): e for e in self.src.iter() if e.get("id")}
+        self.sources = {cfg["artboard"]: self.src}          # every artboard art comes from (ids are unique across the file)
+        for extra in cfg.get("extras", []):
+            ab = next(a for a in illustrator_root.findall("Artboard") if a.get("name") == extra["artboard"])
+            self.sources[extra["artboard"]] = ab
+            self.src_by_id.update({e.get("id"): e for e in ab.iter() if e.get("id")})
         # The room's mechanics (moves, draw rule, layers) are cloned from a template room in a finished chapter, not from
         # the destination, so a brand-new file needs no room of its own to copy from.
         self.T = cfg.get("template_room", "Wordle")
@@ -335,7 +362,8 @@ class Build:
         self.tnamed = {n.get("name"): n for n in tab.iter() if n.get("name")}
         self.tanims = {a.get("name"): a for a in tab.iter("LinearAnimation")}
         self.tlayers = {l.get("name"): l for l in tab.find("StateMachine").findall("StateMachineLayer")}
-        self.fixed_backdrop = "Backdrop" not in self.layers          # one picture behind every room: no colour poses
+        # no colour pose of the room's own: one picture behind every room (fixed), or the file's poses are in its manifest
+        self.fixed_backdrop = "Backdrop" not in self.layers or cfg.get("_backdrop_mode") == "poses"
         self.idmap = {}        # source id -> id in this file
         self.mine = {}         # id in this file -> element, for the art brought in
         self.fixes = []        # (what, was, now) where a loop did not close
@@ -422,9 +450,10 @@ class Build:
         spec["x"], pivoting on the floor so a squash lands where it should, and uses the same art as the other Chapter 1
         balls: red fill, dark outline, one white highlight."""
         r = 17.68
+        scale = f' scaleX="{fnum(spec["scale"])}" scaleY="{fnum(spec["scale"])}"' if spec.get("scale", 1) != 1 else ""
         ball = ET.fromstring(
-            f'<Node x="{fnum(spec["x"])}" y="{fnum(FLOOR_Y)}" name="{self.name} Ball" id="{self.ids()}">'
-            f'<Node y="{fnum(-r)}" name="{self.name} Ball Art" id="{self.ids()}">'
+            f'<Node x="{fnum(spec["x"])}" y="{fnum(spec.get("y", FLOOR_Y))}" name="{self.name} Ball" id="{self.ids()}">'
+            f'<Node y="{fnum(-r)}"{scale} name="{self.name} Ball Art" id="{self.ids()}">'
             f'<Shape x="6.39" y="-6.22" rotation="-0.777" name="Highlight" id="{self.ids()}"><Ellipse width="7.5" height="9.64" id="{self.ids()}"/>'
             f'<Fill id="{self.ids()}"><SolidColor colorValue="FFFFFFFF" id="{self.ids()}"/></Fill>'
             f'<Stroke thickness="1.5" cap="round" join="round" id="{self.ids()}"><SolidColor colorValue="FF1F1F1F" id="{self.ids()}"/></Stroke></Shape>'
@@ -436,12 +465,14 @@ class Build:
         return ball
 
     def stand_in_keys(self, ball, spec, total):
-        """The stand-in ball's loop: it rests on the floor and hops in place at the frames in spec["hops"] (a rise of
-        spec["rise"] px, then a small squash on landing). It starts and ends on one pose: at rest."""
+        """The stand-in ball's loop: it rests where spec says (on the floor unless spec["y"] puts it on a piece) and hops in
+        place at the frames in spec["hops"] (a rise of spec["rise"] px, then a small squash on landing). It starts and
+        ends on one pose: at rest."""
         rise, ids = spec.get("rise", 40), self.ids
-        y, sx, sy = [(0, FLOOR_Y, None)], [(0, 1, None)], [(0, 1, None)]
+        base = spec.get("y", FLOOR_Y)
+        y, sx, sy = [(0, base, None)], [(0, 1, None)], [(0, 1, None)]
         for h in spec["hops"]:
-            y += [(h, FLOOR_Y, "power2.out"), (h + 14, FLOOR_Y - rise, "power2.in"), (h + 28, FLOOR_Y, None)]
+            y += [(h, base, "power2.out"), (h + 14, base - rise, "power2.in"), (h + 28, base, None)]
             sx += [(h + 28, 1, "power2.out"), (h + 32, 1.15, "back.out"), (h + 44, 1, None)]
             sy += [(h + 28, 1, "power2.out"), (h + 32, 0.86, "back.out"), (h + 44, 1, None)]
         for series in (y, sx, sy):
@@ -484,8 +515,11 @@ class Build:
                 n = int(a.get("workEnd", n))
             return [{"anim": a, "a": 0, "b": n, "cycle": n, "tile": True, "legacy": not windowed}], n
         out = []
-        for spec in cfg["loops"]:
-            a = named(spec["anim"])
+        specs = [dict(x, artboard=cfg["artboard"]) for x in cfg["loops"]]
+        for extra in cfg.get("extras", []):
+            specs += [dict(x, artboard=extra["artboard"]) for x in extra.get("loops", [])]
+        for spec in specs:
+            a = next(x for x in self.sources[spec["artboard"]].findall("LinearAnimation") if x.get("name") == spec["anim"])
             lo, hi = spec.get("from", 0), spec.get("to", int(a.get("duration", 60)))
             pp = bool(spec.get("pingpong"))
             out.append({"anim": a, "a": lo, "b": hi, "cycle": (hi - lo) * (2 if pp else 1), "tile": spec.get("tile", True),
@@ -567,6 +601,10 @@ class Build:
                             for e in nk.iter():
                                 if e.get("id"):
                                     e.set("id", ids())
+                            if nk.tag == "KeyFrameId":              # a key that names another object (a Solo's active child)
+                                if nk.get("value") not in self.idmap:
+                                    raise SystemExit(f"{self.name}: a key in {src['anim'].get('name')} names {nk.get('value')}, which was not brought in")
+                                nk.set("value", self.idmap[nk.get("value")])
                             frame = rel + r * src["cycle"]
                             if frame:
                                 nk.set("frame", str(frame))
@@ -600,13 +638,16 @@ class Build:
         return anim
 
     def in_backdrop(self, src_id):
-        """True for objects inside the source's own floor or wall, which the chapter's shared backdrop replaces."""
-        parents = {c: p for p in self.src.iter() for c in p}
-        e = self.src_by_id.get(src_id)
-        while e is not None and e is not self.src:
-            if (e.get("name") or "").startswith(SKIP_TOP) and e in self.src:
-                return True
-            e = parents.get(e)
+        """True for objects inside a source's own floor or wall, which the chapter's shared backdrop replaces."""
+        for ab in self.sources.values():
+            parents = {c: p for p in ab.iter() for c in p}
+            e = self.src_by_id.get(src_id)
+            if e is None or e not in parents:
+                continue
+            while e is not None and e is not ab:
+                if (e.get("name") or "").startswith(SKIP_TOP) and e in ab:
+                    return True
+                e = parents.get(e)
         return False
 
     def close_all(self, entries, duration):
@@ -622,14 +663,52 @@ class Build:
             label = self.src_by_id[old_id].get("name") or self.src_by_id[old_id].tag
             for kp in ko.findall("KeyedProperty"):
                 keys = sorted(kp, key=lambda k: int(k.get("frame", 0)))
+                if len(keys) >= 2 and keys[0].tag == "KeyFrameId" and keys[0].get("value") != keys[-1].get("value"):
+                    attrs = {"value": keys[0].get("value"), "frame": str(last_frame), "id": self.ids()}
+                    ET.SubElement(kp, "KeyFrameId", attrs)
+                    self.fixes.append((f"{label} {kp.get('property')}: switches at frame {keys[-1].get('frame', 0)} and never back; switches back on frame {last_frame}", 0, 0))
+                    continue
                 if len(keys) < 2 or keys[0].tag != "KeyFrameDouble":
                     continue
                 first, last = float(keys[0].get("value", 0)), float(keys[-1].get("value", 0))
                 gap, at, prop = abs(first - last), int(keys[-1].get("frame", 0)), kp.get("property")
                 if gap <= TOL:
                     continue
+                if prop.endswith(("otation",)) and abs(gap / (2 * math.pi) - round(gap / (2 * math.pi))) < 1e-4:
+                    self.notes.append(f"{label} {prop}: ends a whole number of turns from its start ({gap:g} rad), which is the same angle; the loop closes")
+                    continue
                 if [label, prop] in self.cfg.get("leave_open", []):     # the illustrator's jump, kept on purpose
                     self.notes.append(f"{label} {prop}: ends {gap:g} from its start; left open as the illustrator made it (the loop jumps there)")
+                    continue
+                prev = keys[-2]
+                how = prev.get("interpolationType", "hold")
+                ease = prev.find("CubicEaseInterpolator")
+                if at >= duration and (how in ("linear", "hold") or (how == "cubic" and ease is not None)) and int(prev.get("frame", 0)) < last_frame:
+                    # the key sits on the wrap frame, which is never shown: keep the last shown frame exactly as it was (a key
+                    # with the value it had there) and close the loop only in the unseen step from it to the wrap. An eased
+                    # segment is split at that frame, so the part that shows keeps the illustrator's curve exactly.
+                    f0, v0 = int(prev.get("frame", 0)), float(prev.get("value", 0))
+                    t = (last_frame - f0) / (at - f0)
+                    if how == "hold":
+                        held = v0
+                    elif how == "linear":
+                        held = v0 + (last - v0) * t
+                    else:
+                        c = [float(ease.get(k, d)) for k, d in (("x1", .42), ("y1", 0), ("x2", .58), ("y2", 1))]
+                        frac, part = split_ease(*c, t)
+                        held = v0 + (last - v0) * frac
+                        if part is not None:
+                            for k, v in zip(("x1", "y1", "x2", "y2"), part):
+                                ease.set(k, fnum(v))
+                    attrs = {"frame": str(last_frame), "interpolationType": "linear", "id": self.ids()}
+                    if abs(held) > 1e-12:
+                        attrs["value"] = fnum(held)
+                    kp.insert(list(kp).index(keys[-1]), ET.Element("KeyFrameDouble", attrs))
+                    if abs(first) < 1e-12:
+                        keys[-1].attrib.pop("value", None)
+                    else:
+                        keys[-1].set("value", fnum(first))
+                    self.fixes.append((f"{label} {prop}: the key on the wrap frame ({at}) is {gap:g} from the first; frame {last_frame} is kept as it was and the loop closes in the unseen step to {at}", last, first))
                     continue
                 if gap <= CLOSE_SMALL.get(prop, CLOSE_SMALL_DEFAULT) or at >= last_frame:
                     self.fixes.append((f"{label} {prop}: last key (frame {at}) set to the first", last, first))
@@ -666,6 +745,11 @@ class Build:
                 prop = kp.get("property")
                 if keys[0].tag == "KeyFrameColor":
                     pose[(ko.get("objectId"), prop)] = keys[0].get("value")
+                    continue
+                if keys[0].tag == "KeyFrameId":
+                    pose[(ko.get("objectId"), prop)] = keys[0].get("value")
+                    if node is not None:
+                        node.set(prop, keys[0].get("value"))
                     continue
                 if keys[0].tag != "KeyFrameDouble":
                     continue
@@ -787,6 +871,11 @@ class Build:
         if ball is not None and rig is None:                   # a stand-in ball: it rolls in along the floor and stops at its rest spot
             roll0, roll1 = c["ball"]["roll"]
             spec[ball.get("id")] = {"x": [(roll0, c["ball"].get("from_x", -80), "power1.out"), (roll1, float(ball.get("x", 0)), None)]}
+            rest_y = float(ball.get("y", FLOOR_Y))
+            if rest_y < FLOOR_Y - 1:                       # it rests on a piece: roll in along the floor, then hop up there
+                land0, land1 = c["ball"]["land"]
+                spec[ball.get("id")]["y"] = [(roll0, FLOOR_Y, None), (land0, FLOOR_Y, "power2.out"), (land1, rest_y, None)]
+            # resting on the floor or the front of it, it rolls in at that height (its y is held by the loop's first key)
             for (nid, prop), v in pose.items():                # everything the loop keys is held at its first value
                 if prop not in spec.get(nid, {}):
                     spec.setdefault(nid, {})[prop] = [(0.0, v, None)]
@@ -855,8 +944,11 @@ class Build:
         everything = [c for c in self.src if c.tag in ("Node", "Shape", "Solo")]
         floor_at = next((i for i, c in enumerate(everything) if (c.get("name") or "").startswith("Floor")), None)
         below_floor = {c.get("id") for i, c in enumerate(everything) if floor_at is not None and i > floor_at}
-        order = [c for c in self.src if c.tag in ("Node", "Shape", "Solo") and not (c.get("name") or "").startswith(SKIP_TOP)]
-        ball_at = next(i for i, c in enumerate(order) if c is solo) if has_ball else len(order)
+        leave_out = set(cfg.get("leave_out", []))
+        order = [c for c in self.src if c.tag in ("Node", "Shape", "Solo") and not (c.get("name") or "").startswith(SKIP_TOP)
+                 and c.get("id") not in leave_out]
+        # the rig ball sits where the source lists it; a stand-in sits behind every piece unless it rests in front of them
+        ball_at = next(i for i, c in enumerate(order) if c is solo) if has_ball else (0 if stand_in and stand_in["stand_in"].get("front") else len(order))
         intro_cfg = cfg.get("intro")                    # None: the room the file opens on, which has no intro (Loading)
         drop_cfg = intro_cfg["drops"] if intro_cfg else []
         dropped = {i: d for d in drop_cfg for i in d["ids"]}
@@ -868,6 +960,7 @@ class Build:
             bucket = front if pos < ball_at else back
             d = dropped.get(c.get("id"))
             bucket.append(drops[d["name"]][0][d["ids"].index(c.get("id"))] if d else self.take(c.get("id")))
+        gates = self.make_gates((front, back)) if cfg.get("gates") else {}
         ball = self.make_ball(solo) if has_ball else self.make_stand_in(stand_in["stand_in"]) if stand_in else None
         self.apply_story_start()
 
@@ -904,7 +997,7 @@ class Build:
         self.rename(draw_rules)
         gate, made = self.lockup()
         clip = self.clip_below_floor(below_floor, solo, ball, planes)
-        for part in (draw_rules, gate, front_plane, ball, back_plane, wall_lag, clip):
+        for part in (draw_rules, gate, front_plane, ball, back_plane, *gates.values(), wall_lag, clip):
             if part is not None:
                 room.append(part)
 
@@ -932,6 +1025,7 @@ class Build:
                 f'<KeyedObject objectId="{floor_id}" id="{ids()}"><KeyedProperty property="colorValue" id="{ids()}">{key_xml(0, cfg["floor"], None, ids, True)}</KeyedProperty></KeyedObject>'
                 f'</LinearAnimation>')
         new.update(self.lockup_animations(made))
+        gate_layer = self.gate_layer_and_poses(gates, new) if gates else None
 
         amap = {self.tanims[f"{T} {m}"].get("id"): new[f"{name} {m}"].get("id")
                 for m in ("Waiting", "Intro", "Loop", "Outro", "Home", "Gone", "Back Out", "Right", "Return", "Forward In", "On Top", "Below")
@@ -950,6 +1044,8 @@ class Build:
             if ln == T and not intro_cfg:
                 self.start_in_loop(lay, new[f"{name} Loop"].get("id"))
             layers.append(lay)
+        if gate_layer is not None:
+            layers.append(gate_layer)
 
         tr = state = None
         if not self.fixed_backdrop:
@@ -962,6 +1058,59 @@ class Build:
 
         self.report_overhang(planes, ball, jsrc["anim"] if jsrc else sources[0]["anim"])
         return {"room": room, "animations": list(new.values()), "layers": layers, "backdrop_transition": tr, "backdrop_state": state}
+
+    def make_gates(self, buckets):
+        """cfg["gates"] = {"name": "Fireworks", "by": "topGame", "sets": {set name: {"artboard": ..., "ids": [...]}}}.
+        Each set's pieces come from its own artboard (or are taken out of the room's own pieces) and sit in a gate node
+        at 0, 0, so their own keys are untouched. One set shows at a time, chosen by a view model enum (see
+        gate_layer_and_poses). Returns {set name: gate node}."""
+        g = self.cfg["gates"]
+        out = {}
+        for set_name, spec in g["sets"].items():
+            gate = ET.fromstring(f'<Node name="{self.name} {g["name"]} {set_name} Gate" id="{self.ids()}"/>')
+            for sid in spec["ids"]:
+                mine = self.idmap.get(sid)
+                bucket = next((b for b in buckets if any(c.get("id") == mine for c in b)), None) if mine else None
+                if bucket is not None:                      # already brought in with the room: move it into the gate
+                    piece = next(c for c in bucket if c.get("id") == mine)
+                    bucket.remove(piece)
+                else:
+                    piece = self.take(sid)
+                gate.append(piece)
+            self.register(gate)
+            out[set_name] = gate
+        return out
+
+    def gate_layer_and_poses(self, gates, new):
+        """One one-frame pose per value of the enum (cfg["gates"]["show"]: value -> set name), each holding every gate's
+        opacity (1 for its set, 0 for the rest), and a layer that goes to a value's pose from AnyState whenever the enum
+        has that value. The poses key only the gates."""
+        g, ids = self.cfg["gates"], self.ids
+        enum = next(e for e in self.root.findall("DataEnumCustom") if e.get("name") == g["enum"])
+        values = {v.get("key"): v.get("id") for v in enum if v.tag == "DataEnumValue"}
+        prop = next(p.get("id") for p in self.root.find("ViewModel") if p.get("name") == g["by"])
+        layer = ET.fromstring(f'<StateMachineLayer name="{self.name} {g["name"]}" id="{ids()}"/>')
+        anyst = ET.SubElement(layer, "AnyState", {"x": "160", "y": "200", "id": ids()})
+        ET.SubElement(layer, "ExitState", {"x": "720", "y": "200", "id": ids()})
+        entry = ET.SubElement(layer, "EntryState", {"x": "0", "y": "0", "id": ids()})
+        states = {}
+        for i, (value, set_name) in enumerate(g["show"].items()):
+            pose = ET.fromstring(f'<LinearAnimation fps="60" duration="1" name="{self.name} {g["name"]} {value}" id="{ids()}"/>')
+            for other, gate in gates.items():
+                v = "" if other != set_name else ' value="1"'
+                pose.append(ET.fromstring(f'<KeyedObject objectId="{gate.get("id")}" id="{ids()}"><KeyedProperty property="opacity" id="{ids()}">'
+                                          f'<KeyFrameDouble{v} id="{ids()}"/></KeyedProperty></KeyedObject>'))
+            new[pose.get("name")] = pose
+            st = ET.SubElement(layer, "AnimationState", {"animationId": pose.get("id"), "x": str(160 + 240 * i), "y": "0", "id": ids()})
+            states[value] = st
+            tr = ET.SubElement(anyst, "StateTransition", {"stateToId": st.get("id"), "duration": "0", "id": ids()})
+            tr.append(ET.fromstring(
+                f'<TransitionViewModelCondition opValue="equal" id="{ids()}"><TransitionPropertyViewModelComparator id="{ids()}">'
+                f'<BindablePropertyEnum id="{ids()}"><DataBindContext sourcePathIds="1:14-{prop}" propertyKey="637" id="{ids()}"/></BindablePropertyEnum>'
+                f'</TransitionPropertyViewModelComparator><TransitionValueEnumComparator value="{values[value]}" id="{ids()}"/></TransitionViewModelCondition>'))
+        default = self.cfg["gates"].get("default", next(iter(g["show"])))
+        ET.SubElement(entry, "StateTransition", {"stateToId": states[default].get("id"), "id": ids()})
+        return layer
 
     def start_in_loop(self, layer, loop_id):
         """The room the file opens on has no intro: its layer starts in the Loop and the Waiting and Intro states go."""
@@ -1066,6 +1215,9 @@ def main(argv):
         src_dir = out
     scene = src_dir / "scene.rml"
     text = scene.read_text()
+    manifest = src_dir / "chapter.json"
+    if manifest.exists():
+        cfg["_backdrop_mode"] = json.loads(manifest.read_text()).get("backdrop", "crossfade")
     source = REPO / cfg["illustrator"] if cfg.get("illustrator") else args.illustrator      # a config may name its own art (the Loading placeholder)
     build = Build(cfg, text, ET.parse(ensure_illustrator(source)).getroot())
     pieces = build.build()

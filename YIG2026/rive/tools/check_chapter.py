@@ -4,6 +4,7 @@
 
 Exits 1 if anything fails. `npm run deliver` runs this first.
 """
+import math
 import sys
 from rml_read import Scene, chapter_dir
 
@@ -140,6 +141,41 @@ def run(chapter):
     base_wall = shapes["Wall"].find("Fill").find("SolidColor").get("colorValue") if "Wall" in shapes else None
     layer = next((l for l in sm.findall("StateMachineLayer") if l.get("name") == "Backdrop"), None)
     fixed = m is not None and m.get("backdrop") == "fixed"
+    posed = m is not None and m.get("backdrop") == "poses"
+    if posed:
+        # the manifest lists the colour poses; each is one frame of the Background's wall and floor, reached from AnyState
+        # over 1450 ms (power1.inOut, early exit) whenever the scene is one of its scenes and its "when" holds
+        props_by_id = {p.get("id"): p.get("name") for p in s.view_model if p.tag.startswith("ViewModelProperty")}
+        names_of = {pid: s.enum_names(next(e.get("name") for e in s.root.findall("DataEnumCustom") if e.get("id") == p.get("enumId")))
+                    for pid, p in ((p.get("id"), p) for p in s.view_model if p.tag == "ViewModelPropertyEnumCustom")}
+        check(layer is not None, 'the state machine has a "Backdrop" layer')
+        state_anim = {st.get("id"): s.names.get(st.get("animationId")) for st in layer.findall("AnimationState")} if layer is not None else {}
+        got = set()
+        for tr in (layer.find("AnyState").findall("StateTransition") if layer is not None else []):
+            conds = []
+            for c in tr.findall("TransitionViewModelCondition"):
+                pid = c.find(".//DataBindContext").get("sourcePathIds").split("-")[-1]
+                conds.append((props_by_id[pid], names_of[pid][s.cond_value(c)]))
+            ease = s.eases_of(tr.find("CubicEaseInterpolator")) if tr.find("CubicEaseInterpolator") is not None else None
+            check(tr.get("duration") == "1450" and ease == "power1.inOut" and tr.get("enableEarlyExit") == "true",
+                  f"Backdrop fade to {state_anim.get(tr.get('stateToId'))} blends over 1450 ms, power1.inOut, early exit")
+            got.add((state_anim.get(tr.get("stateToId")), tuple(sorted(conds))))
+        want = {(p["name"], tuple(sorted([("scene", sc)] + list(p.get("when", {}).items())))) for p in m["poses"] for sc in p["scenes"]}
+        check(got == want, "the Backdrop layer reaches each colour pose exactly when the manifest says"
+              + ("" if got == want else f"; extra {sorted(got - want)}, missing {sorted(want - got)}"))
+        for p in m["poses"]:
+            a = A.get(p["name"])
+            ks = s.keys(a) if a is not None else {}
+            check(a is not None and s.duration(a) == 1 and {k: v[0][1].upper() for k, v in ks.items()} ==
+                  {("Wall colour", "colorValue"): p["wall"].upper(), ("Floor colour", "colorValue"): p["floor"].upper()},
+                  f'{p["name"]} is one frame holding the wall {p["wall"]} and floor {p["floor"]}')
+        default = m["properties"]["scene"]["default"]
+        first = next(p for p in m["poses"] if default in p["scenes"])
+        entry = layer.find("EntryState/StateTransition") if layer is not None else None
+        check(entry is not None and state_anim.get(entry.get("stateToId")) == first["name"], f'Backdrop starts on {first["name"]}, the picture the file opens on')
+        base = {n: shapes[n].find("Fill").find("SolidColor").get("colorValue").upper() for n in ("Wall", "Floor") if n in shapes}
+        check(base == {"Wall": first["wall"].upper(), "Floor": first["floor"].upper()}, f"the Background's own colours are {first['name']}'s, so nothing flashes before the first frame ({base})")
+        targets = {}
     if fixed:
         # one picture behind every room: no colour poses and no crossfade, just the manifest's wall and floor
         check(layer is None, "a fixed backdrop has no Backdrop layer (the wall and floor never change colour)")
@@ -148,9 +184,9 @@ def run(chapter):
         check(got == want, f"the Background's wall and floor are the manifest's {want} (they are {got})")
         check(not any(n.endswith(" Colors") for n in A), "a fixed backdrop has no Colors timelines")
         targets = {}
-    else:
+    elif not posed:
         check(layer is not None, 'the state machine has a "Backdrop" layer')
-    if layer is not None and not fixed:
+    if layer is not None and not fixed and not posed:
         anys = layer.findall("AnyState")
         trs = anys[0].findall("StateTransition") if len(anys) == 1 else []
         state_anim = {st.get("id"): s.names.get(st.get("animationId")) for st in layer.findall("AnimationState")}
@@ -178,7 +214,7 @@ def run(chapter):
                   f"scene {n}'s {name} is a shared-backdrop-only scene (no {label} Room of its own)")
         entry = layer.find("EntryState/StateTransition")
         check(entry is not None and state_anim.get(entry.get("stateToId")) == START_COLORS, f"Backdrop starts on {START_COLORS}")
-    colors_names = [] if fixed else sorted(set(targets.values())) if layer is not None else [f"{room} Colors" for room in rooms]
+    colors_names = [] if (fixed or posed) else sorted(set(targets.values())) if layer is not None else [f"{room} Colors" for room in rooms]
     for name in colors_names:
         a = A.get(name)
         check(a is not None, f'"{name}" timeline exists')
@@ -189,7 +225,7 @@ def run(chapter):
               f"{name} is one frame holding only the Background's wall and floor colours")
     # the base colour on load is the start scene's (the empty Chapter 1 room), so nothing flashes before the Backdrop layer's first frame
     start = A.get(START_COLORS)
-    if start is not None and base_wall and not fixed:
+    if start is not None and base_wall and not fixed and not posed:
         held = s.keys(start)[("Wall colour", "colorValue")][0][1]
         check(held.upper() == base_wall.upper(), f"the Background's own wall colour ({base_wall}) is {START_COLORS}'s ({held})")
         want_start = {"Wall colour": "FFF1ECC0", "Floor colour": "FFFF811E"}
@@ -310,7 +346,13 @@ def run(chapter):
 
         # loops start and end on the intro's last frame
         l_keys = s.keys(loop)
-        seam = sorted(k for k, ks in l_keys.items() if not same(ks[0][1], ks[-1][1]) and list(k) not in (m or {}).get("openLoops", []))
+        def closes(k, ks):
+            a, b = ks[0][1], ks[-1][1]
+            if k[1].endswith("otation") and not isinstance(a, str):   # whole turns apart is the same angle
+                turns = (a - b) / (2 * math.pi)
+                return abs(turns - round(turns)) * 2 * math.pi <= TOL
+            return same(a, b)
+        seam = sorted(k for k, ks in l_keys.items() if not closes(k, ks) and list(k) not in (m or {}).get("openLoops", []))
         check(not seam, f"{room} Loop's first and last keys match on every property" + ("" if not seam else f": {seam}"))
         i_last = last_values(s, intro)
         off = sorted((k, l_keys[k][0][1], i_last[k]) for k in l_keys if k in i_last and not same(l_keys[k][0][1], i_last[k]))
@@ -360,6 +402,30 @@ def run(chapter):
                 (f"{room} Lockup Hidden", f"{room} Lockup Shown", tuple(sorted([(fid, "equal", "true"), (sid, "equal", n)], key=str)), "0")]
         check(gl is not None and sorted(got) == sorted(want) and start_of(s, gl) == f"{room} Lockup Shown",
               f'layer "{room} Lockup" starts Shown, and reads lockup only while scene == {n}: hides when it is false, shows when it is true, at once')
+
+    # gates (Chapter 4's fireworks): a layer per gated room shows exactly one set for each value of its enum
+    for room in rooms:
+        gates = [e for e in s.node(f"{room} Room") if e.tag == "Node" and e.get("name", "").endswith(" Gate") and " Lockup " not in e.get("name", "")]
+        if not gates:
+            continue
+        gl = next((l for l in sm.findall("StateMachineLayer") if l.get("name", "").startswith(f"{room} ") and l.get("name") not in (f"{room} Exit", f"{room} Draw", f"{room} Lockup")), None)
+        check(gl is not None, f"{room} has a layer that switches its gates")
+        if gl is None:
+            continue
+        gate_names = {g.get("name") for g in gates}
+        poses = [s.names.get(st.get("animationId")) for st in gl.findall("AnimationState")]
+        for pose in poses:
+            ks = s.keys(A[pose])
+            shown = sorted(o for (o, p), v in ks.items() if p == "opacity" and v[0][1] == 1)
+            check(set(o for o, _ in ks) == gate_names and len(shown) == 1 and s.duration(A[pose]) == 1,
+                  f"{pose} is one frame that shows exactly one of {room}'s gates ({shown})")
+        for name, an in A.items():
+            if name not in poses:
+                bad = sorted(o for (o, _p) in s.keys(an) if o in gate_names)
+                check(not bad, f"{name} does not key {room}'s gates" + ("" if not bad else f": {bad}"))
+        if m is not None and "topGame" in m["properties"]:
+            values = m["properties"]["topGame"]["values"]
+            check(len(gl.find("AnyState").findall("StateTransition")) == len(values), f"{room}'s gate layer has one transition per topGame value ({values})")
 
     # the opener's toy ball is keyed only by its own loop, and held on the loop's first pose by its Intro and Waiting
     for name, a in A.items():

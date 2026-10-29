@@ -16,7 +16,7 @@ import shutil
 import sys
 
 from rml_read import REPO, chapter_dir_for_new
-from viewmodel import enums_xml, view_model_xml
+from viewmodel import ENUM_ID, PROPERTY_ID, VALUE_BASE, enum_values, enums_xml, value_id, view_model_xml
 
 TOP_MARKER = """            <Shape x="-40" y="-40" name="Top Marker" id="1:2857">
                 <Rectangle width="1" height="1" name="Top Marker Rect" id="1:2858"/>
@@ -61,8 +61,70 @@ BACKGROUND = """            <Node x="747.5" y="533.5" name="Background" id="1:22
             </Node>"""
 
 
+POWER1_INOUT = 'x1="0.45" y1="0" x2="0.55" y2="1"'
+WALL_COLOUR, FLOOR_COLOUR = "1:2304", "1:2297"     # the Background's SolidColor ids, the same in every file
+
+
+class Ids:
+    """Ids for what the scaffold writes beyond the fixed skeleton, in the 2: namespace (rooms use 9:)."""
+
+    def __init__(self):
+        self.n = 0
+
+    def __call__(self):
+        self.n += 1
+        return f"2:{self.n}"
+
+
+def condition(m, prop, value, ids):
+    """`prop == value` for one of the view model's enums, as a transition condition."""
+    enum = m["properties"][prop]["enum"]
+    vid = value_id(VALUE_BASE[enum], enum_values(m, enum).index(value))
+    return (f'<TransitionViewModelCondition opValue="equal" id="{ids()}"><TransitionPropertyViewModelComparator id="{ids()}">'
+            f'<BindablePropertyEnum id="{ids()}"><DataBindContext sourcePathIds="1:14-{PROPERTY_ID[prop]}" propertyKey="637" id="{ids()}"/></BindablePropertyEnum>'
+            f'</TransitionPropertyViewModelComparator><TransitionValueEnumComparator value="{vid}" id="{ids()}"/></TransitionViewModelCondition>')
+
+
+def backdrop_xml(m):
+    """For a manifest with colour poses: one one-frame pose per entry in m["poses"] (the Background's wall and floor),
+    and the Backdrop layer that crossfades to a pose over 1450 ms (power1.inOut, early exit on) whenever the scene is
+    one of the pose's scenes (and every extra condition in "when" holds). Returns (animations, layer)."""
+    ids, anims, rows, states = Ids(), [], [], []
+    for i, pose in enumerate(m["poses"]):
+        aid = ids()
+        anims.append(f'        <LinearAnimation fps="60" duration="1" name="{pose["name"]}" id="{aid}">'
+                     f'<KeyedObject objectId="{WALL_COLOUR}" id="{ids()}"><KeyedProperty property="colorValue" id="{ids()}"><KeyFrameColor value="{pose["wall"]}" id="{ids()}"/></KeyedProperty></KeyedObject>'
+                     f'<KeyedObject objectId="{FLOOR_COLOUR}" id="{ids()}"><KeyedProperty property="colorValue" id="{ids()}"><KeyFrameColor value="{pose["floor"]}" id="{ids()}"/></KeyedProperty></KeyedObject>'
+                     f'</LinearAnimation>')
+        sid = ids()
+        states.append((pose, sid))
+        rows.append(f'                <AnimationState animationId="{aid}" x="{160 + 240 * i}" y="0" id="{sid}"/>')
+    trs = []
+    for pose, sid in states:
+        for scene in pose["scenes"]:
+            conds = condition(m, "scene", scene, ids) + "".join(condition(m, p, v, ids) for p, v in pose.get("when", {}).items())
+            trs.append(f'                    <StateTransition stateToId="{sid}" duration="1450" interpolationType="cubic" enableEarlyExit="true" id="{ids()}">'
+                       f'<CubicEaseInterpolator {POWER1_INOUT} id="{ids()}"/>{conds}</StateTransition>')
+    start = next(sid for pose, sid in states if m["properties"]["scene"]["default"] in pose["scenes"])
+    layer = (f'            <StateMachineLayer name="Backdrop" id="{ids()}">\n'
+             f'                <AnyState x="160" y="200" id="{ids()}">\n' + "\n".join(trs) + '\n                </AnyState>\n'
+             f'                <ExitState x="720" y="200" id="{ids()}"/>\n'
+             f'                <EntryState x="0" y="0" id="{ids()}">\n                    <StateTransition stateToId="{start}" id="{ids()}"/>\n                </EntryState>\n'
+             + "\n".join(rows) + '\n            </StateMachineLayer>\n')
+    return "\n".join(anims) + "\n", layer
+
+
+def base_colors(m):
+    """The Background's own colours: the pose the file opens on, so nothing flashes before the first frame."""
+    if m.get("poses"):
+        pose = next(p for p in m["poses"] if m["properties"]["scene"]["default"] in p["scenes"])
+        return {"wall": pose["wall"], "floor": pose["floor"]}
+    return m.get("colors", {"wall": "FFF1ECC0", "floor": "FFFF811E"})
+
+
 def scene_text(m):
-    colors = m.get("colors", {"wall": "FFF1ECC0", "floor": "FFFF811E"})
+    colors = base_colors(m)
+    anims, layer = backdrop_xml(m) if m.get("poses") else ("", "")
     return f"""<Rive version="1" kind="fragment">
     <Artboard defaultStateMachineId="1:7" viewModelId="1:14" viewModelInstanceId="1:15" clip="true" width="1495" height="1067" styleId="1:5" name="{m["artboard"]}" id="1:2">
         <Node name="{m["artboard"]} Stage" id="1:17">
@@ -71,8 +133,8 @@ def scene_text(m):
         </Node>
         <Fill fillRule="clockwise" id="1:3"/>
         <LayoutComponentStyle id="1:5"/>
-        <StateMachine name="{m["stateMachine"]}" id="1:7">
-        </StateMachine>
+{anims}        <StateMachine name="{m["stateMachine"]}" id="1:7">
+{layer}        </StateMachine>
     </Artboard>
 {enums_xml(m)}{view_model_xml(m)}</Rive>
 """

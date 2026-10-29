@@ -69,7 +69,11 @@ Both flows use the same files; only the card list and the HTML copy differ. Full
 
 ## How engineering's 2026 code is built
 
-From research into their repos (`docs/games-platforms.md`): the page is React and TypeScript in `games-phoenix`, under `src/games/year-in-games/`. The apps show the same web page inside a web view, so no native screens are needed. Their current draft mounts one Rive file per slide and plays it by state machine name only, with no view models. Our design keeps one Rive instance on screen per chapter file and changes scenes inside it, which is what makes the transitions between slides continuous. How the two fit together is being settled with engineering.
+- The page is React and TypeScript, in the Games web code (`games-phoenix`, under `src/games/year-in-games/`). The apps show the same web page inside a web view, so no native screens are needed.
+- Confirmed with engineering (Oct 29): the Rive animation sits behind all the slides and stays on screen, changing rooms as the player taps, instead of one Rive file per slide.
+- Engineering will write their own React code to drive the Rive files rather than use our integration file. We give them a written guide with every rule (what to set and in what order, timings, Back during a pan, switching between files) and a React reference example. Our integration file stays as a working reference.
+- Their page uses an older Rive runtime (2.27.3; our files are tested on 2.45.0). Engineering is looking into upgrading.
+- Because engineering builds the file switching from our guide, the move from Chapter 2 into Chapter 3 stays simple: Chapter 2 ends on the empty Chapter 3 room, then Chapter 3's room arrives. The single continuous motion is dropped.
 
 ## Not settled yet
 

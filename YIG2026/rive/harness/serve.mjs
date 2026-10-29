@@ -19,9 +19,10 @@ const projectDir = path.join(repo, "chapters", chapter);
 const rivs = {
   "/chapter-2.riv": path.join(repo, "chapters", "ch2"),
   "/start-chapter-1.riv": path.join(repo, "chapters", "ch1"),
+  "/chapters-3-4-end.riv": path.join(repo, "chapters", "ch3"),
 };
-// review pages beyond the engineering example: File 1 on its own, until the one integration exists
-const pages = { "/file1": "file1.html" };
+// review pages beyond the engineering example: one file at a time, until the one integration exists
+const pages = { "/file1": "file-review.html", "/file3": "file-review.html" };
 
 // the page's own relative URLs, mapped to where the files live in this repo
 const files = {

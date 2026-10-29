@@ -249,7 +249,7 @@ def flow_cases(flow):
     consecutive scenes, each reached by Next taps 4 s apart so every intro is over: Back and Next at 0.5, 1 and 2.5 s after
     a move, and several taps during one pan."""
     out, T = [], [0.5, 1.0, 2.5]
-    for i in sorted({0, 2, len(flow) - 3}):
+    for i in sorted({0, min(2, len(flow) - 3), len(flow) - 3}):
         p, a, b = flow[i], flow[i + 1], flow[i + 2]
         reach = [(0.2 + 4.0 * k, flow[k + 1], 1) for k in range(i)]
         t0 = 0.2 + 4.0 * i

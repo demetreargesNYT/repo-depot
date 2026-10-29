@@ -10,7 +10,7 @@
     "text": "node harness/text-test.mjs",
     "deliver": "python3 tools/deliver.py",
     "back": "python3 tools/back_test.py",
-    "file1": "node harness/file1-test.mjs",
-    "scaffold": "python3 tools/scaffold_chapter.py"
+    "scaffold": "python3 tools/scaffold_chapter.py",
+    "review": "node harness/file-review-test.mjs"
   }
 }

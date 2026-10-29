@@ -139,5 +139,75 @@ class Loops(unittest.TestCase):
         self.assertFalse(sources[0]["legacy"])
 
 
+class Closing(unittest.TestCase):
+    """close_all on hand-made keyed objects (the label comes from the source, so the test supplies one)."""
+
+    def build(self):
+        _, b, _ = placeholder_build()
+        b.src_by_id["0:x"] = ET.Element("Node", {"name": "Piece", "id": "0:x"})
+        return b
+
+    def ko(self, *kps):
+        ko = ET.Element("KeyedObject", {"objectId": "9:1"})
+        for prop, keys in kps:
+            kp = ET.SubElement(ko, "KeyedProperty", {"property": prop})
+            kp.extend(keys)
+        return ko
+
+    def test_a_whole_turn_is_the_same_angle(self):
+        b = self.build()
+        ko = self.ko(("inRotation", [key(0, -1.5707963), key(278, 4.712389)]))
+        b.close_all([(ko, "0:x")], 300)
+        self.assertEqual(len(ko.find("KeyedProperty")), 2, "no return was added")
+        self.assertFalse(b.fixes)
+
+    def test_a_switch_that_never_switches_back_does_on_the_last_frame(self):
+        b = self.build()
+        k0 = ET.Element("KeyFrameId", {"frame": "29", "value": "9:a"})
+        k1 = ET.Element("KeyFrameId", {"frame": "30", "value": "9:b"})
+        ko = self.ko(("activeComponentId", [k0, k1]))
+        b.close_all([(ko, "0:x")], 300)
+        last = list(ko.find("KeyedProperty"))[-1]
+        self.assertEqual((last.get("frame"), last.get("value")), ("299", "9:a"))
+
+    def test_leave_open_keeps_the_illustrators_jump(self):
+        _, b, _ = placeholder_build({"leave_open": [["Piece", "x"]]})
+        b.src_by_id["0:x"] = ET.Element("Node", {"name": "Piece", "id": "0:x"})
+        ko = self.ko(("x", [key(0, 618), key(91, 875.5)]))
+        b.close_all([(ko, "0:x")], 180)
+        self.assertEqual(len(ko.find("KeyedProperty")), 2)
+
+
+class SplitEase(unittest.TestCase):
+    def test_the_first_part_of_a_split_ease_is_the_original_curve(self):
+        for c in ((0.42, 0, 0.58, 1), (0.32, 0, 0.67, 0), (0.33, 1, 0.68, 1), (0.66, 0, 0.4, 1)):
+            for t in (0.3, 0.8, 0.98):
+                frac, part = I.split_ease(*c, t)
+                for i in range(1, 50):
+                    x = t * i / 50
+                    with self.subTest(ease=c, t=t, x=x):
+                        self.assertAlmostEqual(I.bezier_ease(*c, x), frac * I.bezier_ease(*part, x / t), 9)
+
+
+class Poses(unittest.TestCase):
+    """The scaffold of a file whose backdrop colours come from its manifest (File 3)."""
+
+    def test_each_pose_is_reached_exactly_when_the_manifest_says(self):
+        m = json.loads((REPO / "chapters" / "ch3" / "chapter.json").read_text())
+        root = ET.fromstring(S.scene_text(m))
+        layer = next(l for l in root.iter("StateMachineLayer") if l.get("name") == "Backdrop")
+        trs = layer.find("AnyState").findall("StateTransition")
+        self.assertEqual(len(trs), sum(len(p["scenes"]) for p in m["poses"]))
+        chapter4 = [t for t in trs if len(t.findall("TransitionViewModelCondition")) == 2]
+        self.assertEqual(len(chapter4), 7, "one Chapter 4 pose per top game, each also reading topGame")
+        names = {a.get("id"): a.get("name") for a in root.iter("LinearAnimation")}
+        states = {st.get("id"): names[st.get("animationId")] for st in layer.findall("AnimationState")}
+        self.assertEqual(states[layer.find("EntryState/StateTransition").get("stateToId")], "Chapter 3 Colors", "it opens on the picture File 2 ends on")
+
+    def test_the_base_colours_are_the_opening_pictures(self):
+        m = json.loads((REPO / "chapters" / "ch3" / "chapter.json").read_text())
+        self.assertEqual(S.base_colors(m), {"wall": "FFE1DBF5", "floor": "FF05CE7C"})
+
+
 if __name__ == "__main__":
     unittest.main()

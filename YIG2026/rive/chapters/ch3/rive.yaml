@@ -1,0 +1,5 @@
+name: yig-ch3
+logs:
+  file: build/rive.log
+  problems: build/problems.log
+main: "Chapters 3 and 4 and End"

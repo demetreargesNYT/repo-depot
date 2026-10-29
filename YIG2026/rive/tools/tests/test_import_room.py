@@ -179,11 +179,18 @@ class Build(unittest.TestCase):
             with self.subTest(frame=f):
                 self.assertAlmostEqual(I.value_at(keys["scaleX"], f), want, 6)
 
-    def test_a_small_gap_sets_the_last_key_and_a_wide_one_adds_a_return(self):
+    def test_a_key_on_the_wrap_frame_closes_without_changing_a_shown_frame_and_a_wide_gap_adds_a_return(self):
         fixes = {what.split(":")[0]: (what, was, now) for what, was, now in self.b.fixes}
+        # Piece x's last key sits on frame 120, the wrap frame (the loop is 120 frames): frame 119 keeps the value the
+        # illustrator's keys give it, and the loop closes only in the unseen step from 119 to 120
         what, was, now = fixes["Piece x"]
-        self.assertIn("set to the first", what)
+        self.assertIn("the key on the wrap frame (120)", what)
         self.assertEqual((was, now), (701.0, 700.0))
+        loop = self.anims["Test Room Loop"]
+        ko = next(k for k in loop.findall("KeyedObject") if k.get("objectId") == self.b.idmap["0:10"])
+        xs = I.read_keys(next(kp for kp in ko.findall("KeyedProperty") if kp.get("property") == "x"))
+        self.assertEqual(xs[-1][:2], (120, 700.0), "the wrap key now equals the first")
+        self.assertEqual(xs[-2][0], 119, "frame 119 has its own key")
         what, was, now = fixes["Overhang x"]
         self.assertIn("returns to it over frames 100 to 119", what)
         self.assertEqual((was, now), (1500.0, 1480.0))

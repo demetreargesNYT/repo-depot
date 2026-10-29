@@ -1,11 +1,12 @@
-// Smoke test for File 1's review page (file1.html), in headless Chrome with the real Rive web runtime.
+// Smoke test for the per-file review page (file-review.html), in headless Chrome with the real Rive web runtime.
 //
-//   node harness/file1-test.mjs [--url http://127.0.0.1:8765/file1]      needs the harness server (npm start) and Google Chrome
+//   node harness/file-review-test.mjs [--url http://127.0.0.1:8765/file1]      needs the harness server (npm start) and Chrome
+//   node harness/file-review-test.mjs --url http://127.0.0.1:8765/file3?top=connections
 //
-// Checks: the page loads without console errors; the file opens on "loading"; Next from there visits start, ad, card 1 to
-// card 5, and the last ad, with the scene the file reports after each tap; Back returns through every scene to Loading; a
-// Back tapped during a pan waits for the pan and still lands; each room's copy shows once its room has settled and goes when
-// the room does. Timing of motion and feel is for Demetre to judge in the page.
+// Checks: the page loads without console errors; the file opens on its first card's scene; Next visits every card, with the
+// scene the file reports after each tap; Back returns through every card to the first; a Back tapped during a pan waits for
+// the pan and still lands; each card's copy shows once its room has settled. Timing of motion and feel is for Demetre to
+// judge in the page.
 import { spawn } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
@@ -41,32 +42,35 @@ await sleep(800);
 const scene = () => ev("vm.enum('scene').value");
 const dir = () => ev("vm.enum('direction').value");
 const shown = () => ev("[...document.querySelectorAll('.yig-text')].filter((e) => !e.hidden).map((e) => e.textContent.trim().slice(0, 28)).join('|')");
-check((await scene()) === "loading", `the file opens on loading (${await scene()})`);
+const SCENES = await ev("FLOW.map((f) => f.scene)");
+const top = await ev("TOP");
+if (top) check((await ev("vm.enum('topGame').value")) === top, `the file's topGame is the page's choice (${top})`);
+check((await scene()) === SCENES[0], `the file opens on ${SCENES[0]} (${await scene()})`);
 
-const FLOW = ["start", "ad", "chapter-1-card-1", "chapter-1-card-2", "chapter-1-card-3", "chapter-1-card-4", "chapter-1-card-5", "ad"];
-for (const want of FLOW) {
+for (let i = 1; i < SCENES.length; i++) {
+  const want = SCENES[i], moves = want !== SCENES[i - 1];
   await ev("document.getElementById('tap-next').click()");
   await sleep(300);
-  check((await scene()) === want && (await dir()) === "forward", `Next: scene ${await scene()} (want ${want}), direction ${await dir()}`);
-  await sleep(3600);   // the pan and the intro are over
+  check((await scene()) === want && (!moves || (await dir()) === "forward"), `Next: scene ${await scene()} (want ${want})${moves ? ", direction " + (await dir()) : ", the room stays"}`);
+  await sleep(moves ? 3600 : 900);   // the pan and the intro are over, or the old copy has cleared
   check((await shown()) !== "", `its copy is on screen once the room has settled (${await shown()})`);
 }
 // Back all the way: each Back waits for the previous pan if one is running, so give each one the pan's time
-const BACK = ["chapter-1-card-5", "chapter-1-card-4", "chapter-1-card-3", "chapter-1-card-2", "chapter-1-card-1", "ad", "start", "loading"];
-for (const want of BACK) {
+for (let i = SCENES.length - 2; i >= 0; i--) {
+  const want = SCENES[i], moves = want !== SCENES[i + 1];
   await ev("document.getElementById('tap-back').click()");
   await sleep(300);
-  check((await scene()) === want && (await dir()) === "back", `Back: scene ${await scene()} (want ${want}), direction ${await dir()}`);
-  await sleep(2000);
+  check((await scene()) === want && (!moves || (await dir()) === "back"), `Back: scene ${await scene()} (want ${want})${moves ? ", direction " + (await dir()) : ", the room stays"}`);
+  await sleep(moves ? 2000 : 600);
 }
 // a Back during a Next pan waits for the pan to end, then lands
 await ev("document.getElementById('tap-next').click()");
 await sleep(500);
 await ev("document.getElementById('tap-back').click()");
 await sleep(200);
-check((await scene()) === "start", `a Back 0.5 s into a pan has not turned the room around yet (scene ${await scene()})`);
+check((await scene()) === SCENES[1], `a Back 0.5 s into a pan has not turned the room around yet (scene ${await scene()})`);
 await sleep(2200);
-check((await scene()) === "loading", `...and it lands once the pan is over (scene ${await scene()})`);
+check((await scene()) === SCENES[0], `...and it lands once the pan is over (scene ${await scene()})`);
 check(errors.length === 0, `no console errors${errors.length ? ": " + errors.slice(0, 3).join(" / ") : ""}`);
 console.log(`\n${results.filter(Boolean).length} of ${results.length} checks passed`);
 ws.close(); proc.kill();

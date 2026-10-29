@@ -3,13 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Year in Games 2026 · File 1 review (Start + Chapter 1)</title>
+<title>Year in Games 2026 · file review</title>
 <link rel="icon" href="data:,">
 <!--
-  OUR REVIEW PAGE for File 1 (Loading, Start, the empty room that Ads 1 and 2 play over, and Chapter 1's five rooms). It is
-  not the engineering example: the one integration (start, onTap, onBack across all files) is built later. Until then this page
-  drives the file directly, with the same rules the integration will have: a Back during a pan waits for the pan to end, and a
-  room's copy arrives 3.2 s after its first tap. All copy here is placeholder.
+  OUR REVIEW PAGE for one Rive file at a time: /file1 (Loading, Start, the empty room that Ads 1 and 2 play over, Chapter 1's
+  five rooms) and /file3 (the empty Chapter 3 backdrop where Ad 3 plays, Chapter 3, Chapter 4 by top game, the video card,
+  End). It is not the engineering example: the one integration (start, onTap, onBack across all files) is built later. Until
+  then this page drives each file directly, with the same rules the integration will have: a Back during a pan waits for the
+  pan to end, and a room's copy arrives 3.2 s after its first tap. All copy here is placeholder.
 -->
 <script src="https://cdn.jsdelivr.net/npm/@rive-app/canvas@2.45.0/rive.js"></script>
 <link rel="stylesheet" href="yig-text-motion.css">
@@ -32,6 +33,7 @@ button[aria-pressed="true"], .jump button.here { background: var(--ink); border-
 .jump { width: min(100%, 1100px); display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .jump span { color: #5C6759; margin-right: 4px; }
 .status { width: min(100%, 1100px); color: #5C6759; font-size: 12.5px; }
+.bar select { font: 500 13px var(--ui); border: 1px solid var(--line); border-radius: 8px; padding: 5px 8px; background: var(--surface); }
 
 .stage { position: relative; container-type: inline-size; overflow: hidden; background: #F1ECC0; border: 1px solid var(--line); }
 .stage.full { width: min(100%, 1100px); aspect-ratio: 1495 / 1067; border-radius: 12px; }
@@ -59,7 +61,8 @@ button[aria-pressed="true"], .jump button.here { background: var(--ink); border-
 <body>
 <div class="wrap">
   <div class="bar">
-    <h1>File 1 · Start + Chapter 1 (review)</h1>
+    <h1 id="title">File review</h1>
+    <label id="top-wrap" hidden>Top game <select id="top"></select></label>
     <button id="replay" title="Play the current room's intro again">Replay</button>
     <button id="restart">Restart</button>
     <span class="seg" role="group" aria-label="Size"><button id="v-full" aria-pressed="true">Desktop</button><button id="v-phone" aria-pressed="false">Phone</button></span>
@@ -75,23 +78,61 @@ button[aria-pressed="true"], .jump button.here { background: var(--ink); border-
 </div>
 
 <script>
-// The scenes, in the order Next visits them. "ad" is the empty Chapter 1 room: Ad 1 sits between Start and card 1, and
-// Ad 2 after card 5, where File 2 takes over on the identical picture. Copy is placeholder.
-const FLOW = [
-  { scene: "loading", label: "Loading", copy: null },
-  { scene: "start", label: "Start", copy: [["t-big", "Year in Games 2026"], ["btn", "Let’s go"], ["t-small", "Supported by T-Mobile · PLACEHOLDER COPY"]] },
-  { scene: "ad", label: "Ad 1", copy: [["t-ad", "AD 1 · PLAYS OVER THE EMPTY ROOM"]] },
-  { scene: "chapter-1-card-1", label: "Chapter 1 · card 1", copy: [["t-serif", "Chapter 1, card 1"], ["t-small", "PLACEHOLDER COPY"]] },
-  { scene: "chapter-1-card-2", label: "card 2", copy: [["t-serif", "Chapter 1, card 2"], ["t-small", "PLACEHOLDER COPY"]] },
-  { scene: "chapter-1-card-3", label: "card 3", copy: [["t-serif", "Chapter 1, card 3"], ["t-small", "PLACEHOLDER COPY"]] },
-  { scene: "chapter-1-card-4", label: "card 4", copy: [["t-serif", "Chapter 1, card 4"], ["t-small", "PLACEHOLDER COPY"]] },
-  { scene: "chapter-1-card-5", label: "card 5", copy: [["t-serif", "Chapter 1, card 5"], ["t-small", "PLACEHOLDER COPY"]] },
-  { scene: "ad", label: "Ad 2", copy: [["t-ad", "AD 2 · THE LAST PICTURE OF FILE 1 (FILE 2 OPENS ON IT)"]], second: true },
-];
+// The cards, in the order Next visits them, per file. A card names the scene it shows; cards in a row with the same scene
+// change only the copy (the room keeps looping). "ad" is an empty room: in File 1 Ad 1 sits between Start and card 1 and
+// Ad 2 after card 5 (File 2 opens on the identical picture); in File 3 it is the empty Chapter 3 backdrop File 2 ends on,
+// where Ad 3 plays for anonymous players. Copy is placeholder.
+const card = (title) => [["t-serif", title], ["t-small", "PLACEHOLDER COPY"]];
+const FILES = {
+  "/file1": {
+    title: "File 1 · Start + Chapter 1 (review)", riv: "/start-chapter-1.riv", background: "#F1ECC0",
+    flow: [
+      { scene: "loading", label: "Loading", copy: null },
+      { scene: "start", label: "Start", copy: [["t-big", "Year in Games 2026"], ["btn", "Let’s go"], ["t-small", "Supported by T-Mobile · PLACEHOLDER COPY"]] },
+      { scene: "ad", label: "Ad 1", copy: [["t-ad", "AD 1 · PLAYS OVER THE EMPTY ROOM"]] },
+      { scene: "chapter-1-card-1", label: "Chapter 1 · card 1", copy: card("Chapter 1, card 1") },
+      { scene: "chapter-1-card-2", label: "card 2", copy: card("Chapter 1, card 2") },
+      { scene: "chapter-1-card-3", label: "card 3", copy: card("Chapter 1, card 3") },
+      { scene: "chapter-1-card-4", label: "card 4", copy: card("Chapter 1, card 4") },
+      { scene: "chapter-1-card-5", label: "card 5", copy: card("Chapter 1, card 5") },
+      { scene: "ad", label: "Ad 2", copy: [["t-ad", "AD 2 · THE LAST PICTURE OF FILE 1 (FILE 2 OPENS ON IT)"]] },
+    ],
+  },
+  "/file3": {
+    title: "File 3 · Chapters 3, 4 + End (review)", riv: "/chapters-3-4-end.riv", background: "#E1DBF5",
+    // the top game picks Chapter 4's wall colour and fireworks; The Mini and The Midi use placeholders until their art arrives
+    topGames: [["wordle", "Wordle"], ["connections", "Connections"], ["strands", "Strands"], ["spelling-bee", "Spelling Bee"],
+               ["mini", "The Mini (placeholder)"], ["midi", "The Midi (placeholder)"], ["daily", "The Crossword"]],
+    flow: [
+      { scene: "ad", label: "Ad 3", copy: [["t-ad", "AD 3 · ANONS ONLY · THE PICTURE FILE 2 ENDS ON"]] },
+      { scene: "chapter-3", label: "Chapter 3 · card 1", copy: card("Chapter 3, card 1") },
+      { scene: "chapter-3", label: "card 2", copy: card("Chapter 3, card 2") },
+      { scene: "chapter-4", label: "Chapter 4 · card 1", copy: card("Chapter 4, card 1") },
+      { scene: "chapter-4", label: "card 2 (top game)", copy: [["t-serif", "Your top game of the year"], ["t-big", "TOP_GAME"], ["t-small", "PLACEHOLDER COPY"]] },
+      { scene: "chapter-4", label: "Video", copy: [["t-ad", "TOP-GAME VIDEO (HTML) · THE STAGE HOLDS CHAPTER 4"]] },
+      { scene: "end", label: "End", copy: card("Thanks for playing") },
+    ],
+  },
+};
+const FILE = FILES[location.pathname] ?? FILES["/file1"];
+const FLOW = FILE.flow;
+document.getElementById("title").textContent = FILE.title;
+document.title = `Year in Games 2026 · ${FILE.title}`;
+document.getElementById("stage").style.background = FILE.background;
+const params = new URLSearchParams(location.search);
+const TOP = params.get("top") || (FILE.topGames ? FILE.topGames[0][0] : null);
+if (FILE.topGames) {
+  const sel = document.getElementById("top");
+  for (const [value, label] of FILE.topGames) sel.add(new Option(label, value, false, value === TOP));
+  document.getElementById("top-wrap").hidden = false;
+  sel.onchange = () => { params.set("top", sel.value); location.search = params.toString(); };
+  const name = FILE.topGames.find(([v]) => v === TOP)[1];
+  FLOW.forEach((f) => f.copy && f.copy.forEach((line) => { line[1] = line[1].replace("TOP_GAME", name); }));
+}
 const INTRO_MS = 3200, PAN_MS = 1650;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 let r, vm, at = 0, pan = { dir: 0, endsAt: 0 }, held = 0;
-const visited = new Set(["loading"]);   // rooms whose intro has played (a room comes back already built)
+const visited = new Set([FLOW[0].scene]);   // rooms whose intro has played (a room comes back already built); the first is the file's default
 const overlay = document.getElementById("overlay");
 const status = document.getElementById("status");
 
@@ -100,7 +141,7 @@ FLOW.forEach((f, i) => {
   overlay.insertAdjacentHTML("beforeend", `<div class="yig-text blk" data-i="${i}" hidden>${lines}</div>`);
 });
 const jump = document.getElementById("jump");
-FLOW.forEach((f, i) => { const b = document.createElement("button"); b.textContent = f.label; b.dataset.i = i; b.onclick = () => (location.hash = `#${i}`, location.reload()); jump.append(b); });
+FLOW.forEach((f, i) => { const b = document.createElement("button"); b.textContent = f.label; b.dataset.i = i; b.onclick = () => { location.hash = `#${i}`; location.reload(); }; jump.append(b); });
 
 function setScene(name, step) {
   vm.enum("direction").value = step < 0 ? "back" : "forward";
@@ -123,7 +164,7 @@ function move(step, quiet = false) {
   // the file cannot turn a room around part-way through a pan: a Back (or a Next after a Back) waits for the pan to end
   if (sceneChange && pan.endsAt > now && (step < 0 || pan.dir < 0)) { held = setTimeout(() => move(step, quiet), pan.endsAt - now); return; }
   const f = FLOW[target];
-  const first = step > 0 && sceneChange && !visited.has(f.scene) && f.scene !== "ad";
+  const first = step > 0 && sceneChange && !visited.has(f.scene) && f.scene !== "ad";   // an empty room has no intro
   at = target;
   if (sceneChange) { setScene(f.scene, step); pan = { dir: step, endsAt: now + PAN_MS }; }
   if (first) visited.add(f.scene);
@@ -142,9 +183,11 @@ async function jumpTo(i, thenPlay) {
 }
 
 r = new rive.Rive({
-  src: "/start-chapter-1.riv", canvas: document.getElementById("yig-stage"), stateMachines: "Backdrop", autoplay: true, autoBind: true,
+  src: FILE.riv, canvas: document.getElementById("yig-stage"), stateMachines: "Backdrop", autoplay: true, autoBind: true,
   onLoad: () => {
-    r.resizeDrawingSurfaceToCanvas(); vm = r.viewModelInstance; say();
+    r.resizeDrawingSurfaceToCanvas(); vm = r.viewModelInstance;
+    if (TOP) vm.enum("topGame").value = TOP;   // the integration sets it before Chapter 4; here it is set once, on load
+    say();
     const want = location.hash ? Number(location.hash.slice(1)) : 0;
     const replay = sessionStorage.getItem("f1Replay") === "1"; sessionStorage.removeItem("f1Replay");
     if (want > 0) jumpTo(want, replay);
@@ -153,7 +196,7 @@ r = new rive.Rive({
 document.getElementById("tap-next").onclick = () => move(1);
 document.getElementById("tap-back").onclick = () => move(-1);
 addEventListener("keydown", (e) => { if (e.key === "ArrowRight") { e.preventDefault(); move(1); } if (e.key === "ArrowLeft") { e.preventDefault(); move(-1); } });
-document.getElementById("restart").onclick = () => { history.replaceState(null, "", location.pathname); location.reload(); };
+document.getElementById("restart").onclick = () => { history.replaceState(null, "", location.pathname + location.search); location.reload(); };
 document.getElementById("replay").onclick = () => { sessionStorage.setItem("f1Replay", "1"); location.hash = `#${at}`; location.reload(); };
 function setSize(size) {
   document.getElementById("stage").className = `stage ${size}`;

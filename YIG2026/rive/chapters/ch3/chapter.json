@@ -1,0 +1,214 @@
+{
+  "_about": "Source of truth for this file's names, enums and rooms. See chapters/ch2/chapter.json for the full note. Scene order is the enum order: the index in this list is the value Rive stores.",
+  "file": "File 3 · Chapters 3, 4 + End",
+  "artboard": "Chapters 3 and 4 and End",
+  "stateMachine": "Backdrop",
+  "viewModel": "Backdrop",
+  "riv": "chapters-3-4-end.riv",
+  "backdrop": "poses",
+  "properties": {
+    "scene": {
+      "type": "enum",
+      "enum": "Scene",
+      "default": "ad",
+      "setBy": "engineering",
+      "about": "Which room the stage shows. Setting the same value again does nothing."
+    },
+    "direction": {
+      "type": "enum",
+      "enum": "Direction",
+      "values": [
+        "forward",
+        "back"
+      ],
+      "default": "forward",
+      "setBy": "engineering",
+      "about": "forward for Next, back for Back. Set before scene."
+    },
+    "topGame": {
+      "type": "enum",
+      "enum": "TopGame",
+      "values": [
+        "wordle",
+        "connections",
+        "strands",
+        "spelling-bee",
+        "mini",
+        "midi",
+        "daily"
+      ],
+      "default": "wordle",
+      "setBy": "engineering",
+      "about": "The player's top game of the year. Picks Chapter 4's wall colour and fireworks. Set it before entering Chapter 4 (anonymous players: wordle)."
+    }
+  },
+  "scenes": [
+    {
+      "name": "ad",
+      "kind": "picture",
+      "about": "The empty Chapter 3 backdrop: lavender wall, green floor, no props, no ball. This file's default and File 2's last picture (File 2's to-chapter-3). Ad 3 plays here for anonymous players; subscribers pass through it."
+    },
+    {
+      "name": "chapter-3",
+      "kind": "room",
+      "room": "Chapter 3",
+      "title": "Chapter 3 (c3s1)"
+    },
+    {
+      "name": "chapter-4",
+      "kind": "room",
+      "room": "Chapter 4",
+      "title": "Chapter 4 (c4s1, the shared stack)"
+    },
+    {
+      "name": "end",
+      "kind": "room",
+      "room": "End",
+      "title": "End (c5s1)"
+    }
+  ],
+  "poses": [
+    {
+      "name": "Chapter 3 Colors",
+      "scenes": [
+        "ad",
+        "chapter-3"
+      ],
+      "wall": "FFE1DBF5",
+      "floor": "FF05CE7C"
+    },
+    {
+      "name": "Chapter 4 Wordle Colors",
+      "scenes": [
+        "chapter-4"
+      ],
+      "when": {
+        "topGame": "wordle"
+      },
+      "wall": "FFC3E2C0",
+      "floor": "FFFFBC45"
+    },
+    {
+      "name": "Chapter 4 Connections Colors",
+      "scenes": [
+        "chapter-4"
+      ],
+      "when": {
+        "topGame": "connections"
+      },
+      "wall": "FFE1DBF5",
+      "floor": "FFFFBC45"
+    },
+    {
+      "name": "Chapter 4 Strands Colors",
+      "scenes": [
+        "chapter-4"
+      ],
+      "when": {
+        "topGame": "strands"
+      },
+      "wall": "FFDFF3F0",
+      "floor": "FFFFBC45"
+    },
+    {
+      "name": "Chapter 4 Spelling Bee Colors",
+      "scenes": [
+        "chapter-4"
+      ],
+      "when": {
+        "topGame": "spelling-bee"
+      },
+      "wall": "FFFFFDEF",
+      "floor": "FFFFBC45"
+    },
+    {
+      "name": "Chapter 4 The Mini Colors",
+      "scenes": [
+        "chapter-4"
+      ],
+      "when": {
+        "topGame": "mini"
+      },
+      "wall": "FF95BEFA",
+      "floor": "FFFFBC45"
+    },
+    {
+      "name": "Chapter 4 The Midi Colors",
+      "scenes": [
+        "chapter-4"
+      ],
+      "when": {
+        "topGame": "midi"
+      },
+      "wall": "FF7EAAF1",
+      "floor": "FFFFBC45"
+    },
+    {
+      "name": "Chapter 4 The Crossword Colors",
+      "scenes": [
+        "chapter-4"
+      ],
+      "when": {
+        "topGame": "daily"
+      },
+      "wall": "FFC0D8F8",
+      "floor": "FFFFBC45"
+    },
+    {
+      "name": "End Colors",
+      "scenes": [
+        "end"
+      ],
+      "wall": "FFDFF3F0",
+      "floor": "FFFF811E"
+    }
+  ],
+  "fireworks": {
+    "wordle": [
+      "wordle"
+    ],
+    "connections": [
+      "connections"
+    ],
+    "strands": [
+      "strands"
+    ],
+    "spelling-bee": [
+      "spelling-bee"
+    ],
+    "daily": [
+      "daily",
+      "mini",
+      "midi"
+    ]
+  },
+  "roomsSheet": "docs/rooms-ch3.md",
+  "tests": {
+    "flow": [
+      "ad",
+      "chapter-3",
+      "chapter-4",
+      "end"
+    ],
+    "tapOrders": {
+      "34": [
+        "chapter-3",
+        "chapter-4"
+      ],
+      "4e": [
+        "chapter-4",
+        "end"
+      ]
+    }
+  },
+  "tuneLater": [
+    "**Chapter 3 (c3s1): the illustrator's 7 s ball journey is not in.** In their file the ball starts inside the picture frame, hops out onto the ring box (the lid opens), bounces in the crib, swings past the mobile and the disco ball (it bursts), and lands on the front floor at x 1030, y 729. It plays once and does not loop. Our Chapter 3 has a stand-in ball instead: it rolls in during the intro and rests where the journey ends (x 1030, y 729, in front of the gift box), hopping in place at 1 s and 3.5 s of the 5 s loop. The opening pose of the journey (the picture frame, the ring box) is set on the art. Source: `Ball` in NYT_YIG_c3s1; config `tools/rooms/ch3-chapter-3.json`.",
+    "**Chapter 3: the loop is the bird's.** The source's `Loop` (300 frames) keys only the bird and is set to play once; we play it as a loop (it closes; one eye-handle rotation ends a whole turn from its start, which is the same angle).",
+    "**Chapters 3 and 4: the stand-in ball sits outside the phone's view.** The phone shows the centre 375 of the artboard (x 560 to 935). Chapter 3's ball rests at x 1030 (where the illustrator's journey ends), right of it; Chapter 4's rests at x 577 on the yellow Spelling Bee block, so with its 17.7 px radius it reaches past the left edge. Noted by Demetre on 2026-10-29; to fix during finesse, not now.",
+    "**Chapter 4: the ball's journey is saved for when card 1 and the video hand-off are decided.** The illustrator's ball hops up the stack (Spelling Bee, Connections, the crosswords) and ends leaping toward the viewer at 5.2 times its size. Our stand-in ball rolls in, hops up onto the yellow Spelling Bee block (x 577, y 630, where the illustrator's ball first rests) and hops in place there at 1 s and 3.5 s of the 5 s loop.",
+    "**Chapter 4: The Mini and The Midi are placeholders.** Their walls are 95BEFA and 7EAAF1 (their Chapter 2 colours) and they show The Crossword's fireworks until their own art arrives.",
+    "**Chapter 4: the fireworks are the illustrator's, all five sets, behind one gate each (`topGame` picks the set), but three sets do not yet match the source at the end of the 5 s loop.** Compared frame by frame with the illustrator's ball journey and our stand-in ball taken out of both sides (`python3 tools/compare_room.py tools/rooms/ch3-chapter-4.json --chapter ch3 --compare <set>`, viewers in `deliver/compare/chapter-4-<set>/`): **Connections** differs on frames 258 to 299 (up to about 3,300 px; the rounded-rectangle burst at the lower left of the stack: its rings are spaced and turned slightly differently); **Spelling Bee** on frames 273 to 299 (up to about 2,700 px; the hexagon burst above the stack); **Wordle** on single frames 31, 93, 118 and 133 (a tile pane flips one frame late) and on 295 to 299. Strands and The Crossword match to within a few pixels. What is known about the cause: every key before frame 293 is the illustrator's, unchanged. The differences come from how the importer closes loops whose pieces do not end where they start. Many firework pieces have their last key exactly on frame 300, the wrap frame that is never shown; the old closing rule replaced that key's value, which reshaped the whole segment leading into it, so motion changed from that segment's start (frames 245 to 273). A fix keeps the last shown frame (299) exactly as the illustrator's keys give it and closes the loop only in the unseen step to 300; it handles linear, held and eased segments (an eased segment is split exactly at frame 299). It is in this build, but the comparison was not rerun after the eased-segment part, so how much of the Connections and Spelling Bee difference remains is not known. Segments with the illustrator's elastic curves (most of Wordle's set) still use the old rule, which is the likely cause of Wordle's 295 to 299. The one-frame-late pane flips are Solo switch keys: they jump instead of blending, so a sub-frame offset where the loop starts shows as one frame. Next step when tuning: rerun the three comparisons above; if a difference remains, compare the room's keys with the source including the wrap-frame keys.",
+    "**Chapter 4: the stack rides in with the floor; nothing drops.** Every piece of the stack has a front and a back half drawn at different depths, so a drop would need the two halves timed together. Worth designing during finesse.",
+    "**End (c5s1) has no ball of its own.** The room is full of red balls (the two piles and the big one the bird stands on), so there is no single ball to roll in. The pieces ride in with the floor."
+  ]
+}

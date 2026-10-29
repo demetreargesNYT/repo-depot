@@ -1,0 +1,227 @@
+{
+  "room": "Chapter 4",
+  "scene": "chapter-4",
+  "artboard": "NYT_YIG_c4s1_Wordle",
+  "leave_out": [
+    "1:86856"
+  ],
+  "ball": {
+    "stand_in": {
+      "x": 577,
+      "y": 630,
+      "hops": [
+        60,
+        210
+      ],
+      "rise": 36,
+      "front": true
+    }
+  },
+  "loops": [
+    {
+      "anim": "Fireworks_Strands",
+      "from": 0,
+      "to": 300
+    }
+  ],
+  "extras": [
+    {
+      "artboard": "NYT_YIG_c4s1_Connections",
+      "loops": [
+        {
+          "anim": "Fireworks_Connections",
+          "from": 0,
+          "to": 300
+        }
+      ]
+    },
+    {
+      "artboard": "NYT_YIG_c4s1_Strands",
+      "loops": [
+        {
+          "anim": "Fireworks_Strands",
+          "from": 0,
+          "to": 300
+        }
+      ]
+    },
+    {
+      "artboard": "NYT_YIG_c4s1_SpellineBee",
+      "loops": [
+        {
+          "anim": "Fireworks_Strands",
+          "from": 0,
+          "to": 300
+        }
+      ]
+    },
+    {
+      "artboard": "NYT_YIG_c4s1_Crossword",
+      "loops": [
+        {
+          "anim": "Fireworks_Strands",
+          "from": 0,
+          "to": 300
+        }
+      ]
+    }
+  ],
+  "loop_frames": 300,
+  "gates": {
+    "name": "Fireworks",
+    "by": "topGame",
+    "enum": "TopGame",
+    "default": "wordle",
+    "sets": {
+      "Wordle": {
+        "artboard": "NYT_YIG_c4s1_Wordle",
+        "ids": [
+          "1:133582",
+          "1:127306"
+        ]
+      },
+      "Connections": {
+        "artboard": "NYT_YIG_c4s1_Connections",
+        "ids": [
+          "1:121674",
+          "1:120877"
+        ]
+      },
+      "Strands": {
+        "artboard": "NYT_YIG_c4s1_Strands",
+        "ids": [
+          "1:54419",
+          "1:54139",
+          "1:53676",
+          "1:53640",
+          "1:53097",
+          "1:54932",
+          "1:54994",
+          "1:54901",
+          "1:54870",
+          "1:54839",
+          "1:54808",
+          "1:54771",
+          "1:54732",
+          "1:54694"
+        ]
+      },
+      "Spelling Bee": {
+        "artboard": "NYT_YIG_c4s1_SpellineBee",
+        "ids": [
+          "1:92029"
+        ]
+      },
+      "Crossword": {
+        "artboard": "NYT_YIG_c4s1_Crossword",
+        "ids": [
+          "1:125518",
+          "1:125125"
+        ]
+      }
+    },
+    "show": {
+      "wordle": "Wordle",
+      "connections": "Connections",
+      "strands": "Strands",
+      "spelling-bee": "Spelling Bee",
+      "mini": "Crossword",
+      "midi": "Crossword",
+      "daily": "Crossword"
+    }
+  },
+  "intro": {
+    "plane": [
+      0.05,
+      1.55
+    ],
+    "drops": [],
+    "ball": {
+      "roll": [
+        1.15,
+        1.9
+      ],
+      "land": [
+        1.9,
+        2.15
+      ]
+    }
+  },
+  "compares": {
+    "wordle": {
+      "artboard": "NYT_YIG_c4s1_Wordle",
+      "mute_source": [
+        "Ball"
+      ],
+      "hide_source": [
+        "Ball_Move"
+      ],
+      "hide_ours": [
+        "Chapter 4 Ball"
+      ],
+      "data": [
+        "topGame=wordle"
+      ]
+    },
+    "connections": {
+      "artboard": "NYT_YIG_c4s1_Connections",
+      "mute_source": [
+        "Ball"
+      ],
+      "hide_source": [
+        "Ball_Move"
+      ],
+      "hide_ours": [
+        "Chapter 4 Ball"
+      ],
+      "data": [
+        "topGame=connections"
+      ]
+    },
+    "strands": {
+      "artboard": "NYT_YIG_c4s1_Strands",
+      "mute_source": [
+        "Ball"
+      ],
+      "hide_source": [
+        "Ball_Move"
+      ],
+      "hide_ours": [
+        "Chapter 4 Ball"
+      ],
+      "data": [
+        "topGame=strands"
+      ]
+    },
+    "spelling-bee": {
+      "artboard": "NYT_YIG_c4s1_SpellineBee",
+      "mute_source": [
+        "Ball"
+      ],
+      "hide_source": [
+        "Ball_Move"
+      ],
+      "hide_ours": [
+        "Chapter 4 Ball"
+      ],
+      "data": [
+        "topGame=spelling-bee"
+      ]
+    },
+    "daily": {
+      "artboard": "NYT_YIG_c4s1_Crossword",
+      "mute_source": [
+        "Ball"
+      ],
+      "hide_source": [
+        "Ball_Move"
+      ],
+      "hide_ours": [
+        "Chapter 4 Ball"
+      ],
+      "data": [
+        "topGame=daily"
+      ]
+    }
+  }
+}
