@@ -4,12 +4,12 @@ How the whole recap flows, for both audiences, and how it maps to the Rive files
 
 ## Basics
 
-- **Format.** A tap-through story, like a Wrapped recap. Tap the right half of the screen for Next, the left half for Back.
+- **Format.** A tap-through story, like a Wrapped recap. On mobile, tap the right half of the screen for Next and the left half for Back. On desktop, arrow buttons at the left and right edges of the window do Back and Next (HTML, not part of the Rive files).
 - **One stage for every device.** Each Rive file uses one 1495 × 1067 artboard for desktop and mobile. Phones show the centre 375 wide. The stats, copy and icons are HTML, layered over the Rive stage.
 - **Data.** While Loading shows, the site loads the player's stats from the Games API. The stats fill every variable, decide which cards the player sees and in what order, and pick card variants.
 - **Two audiences.** Subscribers and registered players get a personalized experience. Anonymous players get the same structure with all-player (aggregate) stats.
 - **Ads.** Ads (sponsor: T-Mobile) play between some chapters, over an empty Rive room: the props leave, and the wall and floor stay.
-- **How-to overlay.** Explains tap right for Next and tap left for Back. It shows if the player is idle on Chapter 1's first card. It's two small Rive files, mobile and desktop, served by breakpoint over the stage.
+- **How-to overlay (mobile only).** Explains tap right for Next and tap left for Back. It shows if the player is idle on Chapter 1's first card. It's one small Rive file, `how-to-mobile.riv`, shown over the stage below the mobile breakpoint. Desktop has no How-to file: the arrow buttons explain themselves.
 
 ## Subscriber and registered flow
 
@@ -66,7 +66,7 @@ Both flows use the same files; only the card list and the HTML copy differ. Full
 | File 1 | Loading, Start, Ad 1, Chapter 1, Ad 2 |
 | File 2 | Chapter 2, ending on the empty Chapter 3 room |
 | File 3 | Ad 3 (anons), Chapter 3, Chapter 4 with all seven top-game versions, End |
-| How-to | `how-to-mobile.riv` and `how-to-desktop.riv` |
+| How-to | `how-to-mobile.riv` (mobile only; desktop uses the arrow buttons) |
 
 **Engineering's side.** They build one card list from the stats, tag each card with what it shows (`game: "wordle"`, `community: true`, an ad, `topGame`), call `start(cards)`, then `onTap()` and `onBack()`. Our integration handles Rive, file loading and swapping, and text timing.
 
@@ -87,4 +87,4 @@ Both flows use the same files; only the card list and the HTML copy differ. Full
 - Chapter 3: which 2 of the 4 cards show, by badge.
 - Chapter 4: card 1, and when the video takes over and gives the stage back.
 - The full card list and variants for each game other than Wordle and Connections (they're in Figma).
-- Art still to come: Loading, the How-to overlays, and Chapter 4 versions for The Mini and The Midi.
+- Art still to come: Loading, the mobile How-to overlay, and Chapter 4 versions for The Mini and The Midi.
