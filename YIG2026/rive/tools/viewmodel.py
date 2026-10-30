@@ -10,8 +10,8 @@ layer copied from one file points at the right property in another, and the Dire
     through    1:3301   boolean          (only our integration sets it)
 """
 
-PROPERTY_ID = {"scene": "1:2713", "direction": "1:2855", "lockup": "1:3260", "topGame": "1:3300", "through": "1:3301"}
-INSTANCE_ID = {"scene": "1:2816", "direction": "1:2856", "lockup": "1:3261", "topGame": "1:3302", "through": "1:3303"}
+PROPERTY_ID = {"scene": "1:2713", "direction": "1:2855", "lockup": "1:3260", "topGame": "1:3300", "through": "1:3301", "reveal": "1:3310"}
+INSTANCE_ID = {"scene": "1:2816", "direction": "1:2856", "lockup": "1:3261", "topGame": "1:3302", "through": "1:3303", "reveal": "1:3311"}
 ENUM_ID = {"Scene": "1:9001", "Direction": "1:9002", "TopGame": "1:9003"}
 VALUE_BASE = {"Scene": 9100, "Direction": 9200, "TopGame": 9300}
 SCENE_ID, DIRECTION_ID, LOCKUP_ID = PROPERTY_ID["scene"], PROPERTY_ID["direction"], PROPERTY_ID["lockup"]

@@ -7,6 +7,7 @@ Exits 1 if anything fails. `npm run deliver` runs this first.
 import math
 import sys
 from rml_read import Scene, chapter_dir
+from delay_ball_rollin import ball_name
 
 INTRO_FRAMES = 192    # 3.2 s at 60 fps; the text CSS waits exactly this long
 OUTRO_FRAMES = 96     # 1.6 s
@@ -16,6 +17,9 @@ START_COLORS = "Chapter 1 Colors"
 TOL = 1e-4
 
 results = []
+
+
+SMALL_HOLD_FRAMES = 99
 
 
 def check(ok, text):
@@ -159,12 +163,12 @@ def run(chapter):
             conds = []
             for c in tr.findall("TransitionViewModelCondition"):
                 pid = c.find(".//DataBindContext").get("sourcePathIds").split("-")[-1]
-                conds.append((props_by_id[pid], names_of[pid][s.cond_value(c)]))
+                conds.append((props_by_id[pid], names_of[pid][s.cond_value(c)] if pid in names_of else s.cond_value(c) == "true"))   # an enum's name, or a boolean
             ease = s.eases_of(tr.find("CubicEaseInterpolator")) if tr.find("CubicEaseInterpolator") is not None else None
             check(tr.get("duration") == "1450" and ease == "power1.inOut" and tr.get("enableEarlyExit") == "true",
                   f"Backdrop fade to {state_anim.get(tr.get('stateToId'))} blends over 1450 ms, power1.inOut, early exit")
-            got.add((state_anim.get(tr.get("stateToId")), tuple(sorted(conds))))
-        want = {(p["name"], tuple(sorted([("scene", sc)] + list(p.get("when", {}).items())))) for p in m["poses"] for sc in p["scenes"]}
+            got.add((state_anim.get(tr.get("stateToId")), tuple(sorted(conds, key=str))))
+        want = {(p["name"], tuple(sorted([("scene", sc)] + list(p.get("when", {}).items()), key=str))) for p in m["poses"] for sc in p["scenes"]}
         check(got == want, "the Backdrop layer reaches each colour pose exactly when the manifest says"
               + ("" if got == want else f"; extra {sorted(got - want)}, missing {sorted(want - got)}"))
         for p in m["poses"]:
@@ -364,6 +368,51 @@ def run(chapter):
         unknown = sorted(k for k in l_keys if k not in i_last)
         check(not unknown, f"every property {room} Loop keys is also set by {room} Intro" + ("" if not unknown else f": {unknown}"))
 
+    # a room's small loops (decor that runs on its own) start as soon as its pan ends, in their own layer, "<Room> Small":
+    # Small Waiting (their opening pose) -> Small Hold (the same pose, to the end of the pan) -> Small Loop. The room's own
+    # Intro and Waiting no longer hold them
+    for room in [r for r in rooms if f"{r} Small Loop" in A]:
+        sw, sh, sl = A[f"{room} Small Waiting"], A[f"{room} Small Hold"], A[f"{room} Small Loop"]
+        check(f"{room} Small" in layers, f'layer "{room} Small" exists')
+        check(s.duration(sw) == 1 and s.duration(sh) == SMALL_HOLD_FRAMES, f"{room} Small Waiting is one frame and Small Hold is {SMALL_HOLD_FRAMES} frames (1.65 s, the end of the pan)")
+        check(sl.get("loopValue") == "loop", f"{room} Small Loop loops")
+        check(s.duration(sl) == s.duration(A[f"{room} Loop"]), f"{room} Small Loop is as long as the Loop, so the two stay in step")
+        w_first, h_first = first_values(s, sw), first_values(s, sh)
+        check(w_first == h_first or all(same(w_first[k], h_first[k]) for k in w_first) and set(w_first) == set(h_first), f"{room} Small Waiting equals Small Hold's keys")
+        sl_keys = s.keys(sl)
+        seam = sorted(k for k, ks in sl_keys.items() if not (same(ks[0][1], ks[-1][1]) or (k[1].endswith("otation") and not isinstance(ks[0][1], str)
+                      and abs(((ks[0][1] - ks[-1][1]) / (2 * math.pi)) - round((ks[0][1] - ks[-1][1]) / (2 * math.pi))) * 2 * math.pi <= TOL)))
+        check(not seam, f"{room} Small Loop's first and last keys match on every property" + ("" if not seam else f": {seam}"))
+        off = sorted(k for k, ks in sl_keys.items() if k in w_first and not same(ks[0][1], w_first[k]))
+        check(not off, f"{room} Small Loop starts on the pose Small Hold holds" + ("" if not off else f": {off}"))
+        unknown = sorted(k for k in sl_keys if k not in w_first)
+        check(not unknown, f"every property {room} Small Loop keys is also held by {room} Small Waiting" + ("" if not unknown else f": {unknown}"))
+        both = sorted(set(sl_keys) & set(s.keys(A[f"{room} Loop"])))
+        check(not both, f"{room}'s Loop and Small Loop key different pieces" + ("" if not both else f": {both}"))
+
+    # a room's pieces leave with the room: the room pans 1600 left (Gone) or sits 1600 right (Right), so a piece that
+    # a loop takes further than 1585 right of the artboard's left edge would show on the stage again once the room
+    # has gone, floating in another room; and one further than 100 left of it would show while the room waits on the
+    # right. Positions are the origin of each node a loop moves in x, with the parents' own x added (Chapter 1 card 1's
+    # first story ball parked at x 1685 and floated in card 3)
+    for room in [r for r in rooms if f"{r} Loop" in A]:
+        stray = []
+        for ko in A[f"{room} Loop"].findall("KeyedObject") + (A[f"{room} Small Loop"].findall("KeyedObject") if f"{room} Small Loop" in A else []):
+            e = s.by_id.get(ko.get("objectId"))
+            kp = next((p for p in ko.findall("KeyedProperty") if p.get("property") == "x"), None)
+            if e is None or kp is None or e.tag not in ("Node", "Shape", "Solo"):
+                continue
+            base, anc = 0.0, s.parent.get(e)
+            while anc is not None and anc.tag != "Artboard":
+                base += float(anc.get("x", 0))
+                anc = s.parent.get(anc)
+            vals = [float(k.get("value", 0)) for k in kp]
+            lo, hi = base + min(vals), base + max(vals)
+            if hi > 1585 or lo < -100:
+                stray.append((s.label(ko.get("objectId")), round(lo), round(hi)))
+        check(not stray, f"{room} Loop keeps every moving piece within x -100 to 1585, so nothing of it shows once the room has left"
+              + ("" if not stray else f": {stray}"))
+
     # lockup: a boolean shows or hides each game's lockup through a gate (anon slides and community cards turn it off), and nothing else changes
     flag = next((p for p in s.view_model if p.tag == "ViewModelPropertyBoolean" and p.get("name") == "lockup"), None)
     has_lockups = m is None or "lockup" in m["properties"]
@@ -421,22 +470,59 @@ def run(chapter):
         for pose in poses:
             ks = s.keys(A[pose])
             shown = sorted(o for (o, p), v in ks.items() if p == "opacity" and v[0][1] == 1)
-            check(set(o for o, _ in ks) == gate_names and len(shown) == 1 and s.duration(A[pose]) == 1,
-                  f"{pose} is one frame that shows exactly one of {room}'s gates ({shown})")
+            none = pose.endswith(" none")            # before the top game is revealed, no set shows
+            check(set(o for o, _ in ks) == gate_names and len(shown) == (0 if none else 1) and s.duration(A[pose]) == 1,
+                  f"{pose} is one frame that shows " + ("none of" if none else "exactly one of") + f" {room}'s gates ({shown})")
         for name, an in A.items():
             if name not in poses:
                 bad = sorted(o for (o, _p) in s.keys(an) if o in gate_names)
                 check(not bad, f"{name} does not key {room}'s gates" + ("" if not bad else f": {bad}"))
         if m is not None and "topGame" in m["properties"]:
             values = m["properties"]["topGame"]["values"]
-            check(len(gl.find("AnyState").findall("StateTransition")) == len(values), f"{room}'s gate layer has one transition per topGame value ({values})")
+            extra = 1 if "reveal" in m["properties"] else 0       # and one that shows none until the top game is revealed
+            check(len(gl.find("AnyState").findall("StateTransition")) == len(values) + extra, f"{room}'s gate layer has one transition per topGame value ({values})" + (" and one for reveal == false" if extra else ""))
 
     # the opener's toy ball is keyed only by its own loop, and held on the loop's first pose by its Intro and Waiting
     for name, a in A.items():
         if name not in ("Shelf Loop", "Shelf Intro", "Shelf Waiting"):
             bad = [o for (o, _p) in s.keys(a) if o in ("Shelf Ball", "Shelf Ball Spin")]
             check(not bad, f"{name} does not key the Shelf Ball or its Spin")
+
+    # a community card has no lockup, so its copy arrives when the room's intro has settled rather than at 3.2 s. The
+    # manifest records that moment per game (communityCopyMs, for the integration and the engineering guide); it must
+    # be the last frame at which anything but the lockup still moves in the room's intro, so tuning an intro in the
+    # finesse round flags a stale value here
+    for x in (m or {}).get("scenes", []):
+        if x.get("kind") != "game" or f'{x["room"]} Intro' not in A:
+            continue
+        settles = intro_settle_frame(s, A[f'{x["room"]} Intro'], s.node(f'{x["room"]} Lockup'))
+        want = math.ceil(settles * 1000 / s.fps(A[f'{x["room"]} Intro']))
+        check(x.get("communityCopyMs") == want,
+              f'{x["room"]}: a community card\'s copy arrives at {x.get("communityCopyMs")} ms, when its pieces have landed (the ball and the lockup left out) ({want} ms, frame {settles})')
     return results
+
+
+def intro_settle_frame(s, anim, lockup):
+    """The last frame at which a key in this intro still changes a value, leaving out everything inside the lockup and
+    the ball: a community card's copy comes in when the room's pieces have landed, even while the ball still rolls in
+    (Demetre, 2026-10-29)."""
+    parent = s.parent
+    by_id = {e.get("id"): e for e in s.artboard.iter() if e.get("id")}
+
+    def in_lockup(oid):
+        e = by_id.get(oid)
+        while e is not None and e is not lockup:
+            e = parent.get(e)
+        return e is lockup
+
+    last = 0
+    for ko in anim.findall("KeyedObject"):
+        if in_lockup(ko.get("objectId")) or ball_name(s, ko.get("objectId")):
+            continue
+        for kp in ko.findall("KeyedProperty"):
+            ks = sorted(kp, key=lambda k: int(k.get("frame", 0)))
+            last = max([last] + [int(k.get("frame", 0)) for p, k in zip(ks, ks[1:]) if p.get("value", "0") != k.get("value", "0")])
+    return last
 
 
 if __name__ == "__main__":

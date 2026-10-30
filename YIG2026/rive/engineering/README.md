@@ -23,7 +23,7 @@ cd chapter-2
 python3 -m http.server 8000      # or any static server; opening index.html from disk won't load the .riv
 ```
 
-Open http://localhost:8000/. Tap the right half of the stage (or →) for Next, the left half (or ←) for Back.
+Open http://localhost:8000/. Tap the right 75% of the stage (or →) for Next, the left 25% (or ←) for Back.
 **Restart** reloads; **Desktop / Phone** switches between the full 1495 × 1067 artboard and the
 centre 375-wide phone crop. The page loads the Rive runtime from jsDelivr, so it needs the network.
 

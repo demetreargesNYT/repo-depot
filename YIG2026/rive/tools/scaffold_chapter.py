@@ -78,6 +78,10 @@ class Ids:
 
 def condition(m, prop, value, ids):
     """`prop == value` for one of the view model's enums, as a transition condition."""
+    if m["properties"][prop]["type"] == "boolean":        # reveal (Chapter 4): a pose may be reached only while it is true or false
+        return (f'<TransitionViewModelCondition opValue="equal" id="{ids()}"><TransitionPropertyViewModelComparator id="{ids()}">'
+                f'<BindablePropertyBoolean id="{ids()}"><DataBindContext sourcePathIds="1:14-{PROPERTY_ID[prop]}" propertyKey="634" id="{ids()}"/></BindablePropertyBoolean>'
+                f'</TransitionPropertyViewModelComparator><TransitionValueBooleanComparator value="{str(value).lower()}" id="{ids()}"/></TransitionViewModelCondition>')
     enum = m["properties"][prop]["enum"]
     vid = value_id(VALUE_BASE[enum], enum_values(m, enum).index(value))
     return (f'<TransitionViewModelCondition opValue="equal" id="{ids()}"><TransitionPropertyViewModelComparator id="{ids()}">'

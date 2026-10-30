@@ -29,6 +29,9 @@ const flag = (n, d) => (args.includes(n) ? args[args.indexOf(n) + 1] : d);
 const TIMES = flag("--times", "0.5,1.5,2.5,3.0").split(",").map(Number);
 const BASE = flag("--url", "http://127.0.0.1:8765/");
 const INTRO = 3.2, QUICK = 0.34, STEP = 0.12, TOL = 0.12;   // seconds; TOL covers the 40 ms sampling and page scheduling
+// A community card's copy arrives when its room's intro settles (no lockup to wait for): per game, from the manifest.
+const MANIFEST = JSON.parse(fs.readFileSync(new URL("../chapters/ch2/chapter.json", import.meta.url), "utf8"));
+const COPY_AT = Object.fromEntries(MANIFEST.scenes.filter((x) => x.kind === "game").map((x) => [x.name, x.communityCopyMs / 1000]));
 
 const chrome = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const port = 9800 + Math.floor(Math.random() * 150);
@@ -291,8 +294,9 @@ for (const order of ["wc", "cw"]) {
 //      Strands (never the player's own), then the ending. A player with two or more qualifying games gets no bridge and
 //      no community cards, and a game under 10 completed puzzles is left out. Timing: the tap after the game's last
 //      card pans to the empty bridge room; the old card and icon leave at once and the bridge copy rises when the pan
-//      ends (1.65 s), with no icon. The first community card: lockup false, its icon pops 3.2 s after the tap and its
-//      lines one step later. Back from it to the bridge: the bridge copy returns when the pan ends.
+//      ends (1.65 s), with no icon. The first community card: lockup false, and as it has no lockup its icon pops as
+//      soon as the room's intro settles (communityCopyMs in chapter.json, not 3.2 s) and its lines one step later.
+//      Back from it to the bridge: the bridge copy returns when the pan ends.
 //   I  the starting-words card: one line per word, singular label for one word, and left out when none repeated.
 const COMMUNITY = ["wordle", "connections", "spelling-bee", "mini", "strands"];
 const deck = () => ev("window.yigExample.cards.map((f) => f.game + (f.community ? '*' : '')).join(',')");
@@ -353,8 +357,8 @@ for (const order of ["wc", "cw"]) {
   const pop = log.find((e) => e.icon === "connections" && e.iconPopping);
   const rise = log.find((e) => e.card === "connections#-" && e.cardRising);
   check(sceneC === "connections" && flag === false, `H  bridge to the first community card: scene ${sceneC}, lockup ${flag} (want connections, false)`);
-  check(!!pop && Math.abs(pop.at - t0 - INTRO) <= TOL, `H  ...its icon pops ${fmt(pop ? pop.at - t0 : null)} after the tap (want ${INTRO} s)`);
-  check(!!rise && Math.abs(rise.at - t0 - INTRO - STEP) <= TOL, `H  ...its lines rise ${fmt(rise ? rise.at - t0 : null)} after the tap (want ${(INTRO + STEP).toFixed(2)} s)`);
+  check(!!pop && Math.abs(pop.at - t0 - COPY_AT.connections) <= TOL, `H  ...its icon pops ${fmt(pop ? pop.at - t0 : null)} after the tap (want ${COPY_AT.connections} s, when the room settles; no lockup)`);
+  check(!!rise && Math.abs(rise.at - t0 - COPY_AT.connections - STEP) <= TOL, `H  ...its lines rise ${fmt(rise ? rise.at - t0 : null)} after the tap (want ${(COPY_AT.connections + STEP).toFixed(2)} s)`);
 
   await ev("window.__log.length = 0");
   await press("back"); await wait(PAN + 1.0);
@@ -442,8 +446,9 @@ for (const n of [3, 2, 1, 0]) {
 //   L  a card for a game that isn't built yet, tapped T s into the room's first-visit intro, on a community card (the
 //      Midi-only example player's Chapter 2.5, with strands taken out of BUILT: ... spelling-bee*, mini*, strands*).
 //      Rive stays on The Mini with its lockup off, the integration warns once, The Mini's card and icon leave at once,
-//      and the strands copy waits for the intro: its icon pops no earlier than 3.2 s after The Mini's tap and no later
-//      than max(3.2, T + 0.34) s, and its lines follow one step (0.12 s) after the icon, as on any game's first card.
+//      and the strands copy waits for The Mini's room to settle (a community card has no lockup to wait for): its icon
+//      pops no earlier than The Mini's communityCopyMs after The Mini's tap and no later than max(that, T + 0.34) s,
+//      and its lines follow one step (0.12 s) after the icon, as on any game's first card.
 //      Back: The Mini's card returns, and the scene is still mini.
 for (const T of [0.5, 1.5, 2.5]) {
   unbuilt = true;
@@ -471,13 +476,13 @@ for (const T of [0.5, 1.5, 2.5]) {
   const popL = log.find((e) => e.icon === "strands" && e.iconPopping);
   const startedAt = riseL ? riseL.at - t1 : null;
   const poppedAt = popL ? popL.at - t1 : null;
-  const latest = Math.max(INTRO, T + QUICK);
+  const latest = Math.max(COPY_AT.mini, T + QUICK);
   const lL = `strands card (not built) ${T.toFixed(1)} s into The Mini's intro (${games})`;
   check(sceneL === "mini" && lockupL === false, `L  ${lL}: Rive stays on mini with its lockup off (scene ${sceneL}, lockup ${lockupL})`);
   check(warned.length === 1, `L  ${lL}: one warning names strands (${warned.length}: ${warned[0] ?? "none"})`);
   check(!!goneL && goneL.at - t2 <= 0.15, `L  ${lL}: The Mini's card is gone within ${fmt(goneL ? goneL.at - t2 : null)} of the tap`);
   check(iconLeaving, `L  ${lL}: The Mini's icon leaves at once (${iconLeaving})`);
-  check(poppedAt !== null && poppedAt >= INTRO - TOL, `L  ${lL}: the Strands icon pops ${fmt(poppedAt)} after The Mini's tap (not before ${INTRO} s)`);
+  check(poppedAt !== null && poppedAt >= COPY_AT.mini - TOL, `L  ${lL}: the Strands icon pops ${fmt(poppedAt)} after The Mini's tap (not before ${COPY_AT.mini} s, when The Mini settles)`);
   check(poppedAt !== null && poppedAt <= latest + TOL, `L  ${lL}: ...and no later than ${latest.toFixed(2)} s (it was ${fmt(poppedAt)})`);
   check(startedAt !== null && poppedAt !== null && Math.abs(startedAt - poppedAt - STEP) <= TOL, `L  ${lL}: its lines rise ${fmt(startedAt)} after the tap, one step after the icon (want ${poppedAt !== null ? (poppedAt + STEP).toFixed(2) + " s" : "the icon first"})`);
 
@@ -527,6 +532,35 @@ unbuilt = false;
   const sceneB = await ev(`${VM}.enum('scene').value`);
   check(sceneB === "connections" && !!iconB && Math.abs(iconB.at - tb - PAN) <= TOL && !!cardB && Math.abs(cardB.at - tb - PAN - STEP) <= TOL,
         `N  Back from the ending: scene ${sceneB} (want connections); Connections' icon arrives ${fmt(iconB ? iconB.at - tb : null)} and its last card ${fmt(cardB ? cardB.at - tb : null)} after the tap (want ${PAN} s and ${(PAN + STEP).toFixed(2)} s)`);
+}
+
+//   P  community card copy timing, room by room: the Midi-only example player's Chapter 2.5 has a community card in
+//      each of the five community rooms. Each card's icon pops when its room's intro settles (communityCopyMs in
+//      chapter.json, not the 3.2 s a lockup needs) and its lines one step later. The integration's table matches.
+{
+  const src = fs.readFileSync(new URL("../engineering/chapter-2-integration.js", import.meta.url), "utf8");
+  const table = JSON.parse(src.match(/const COMMUNITY_COPY_MS = (\{[^}]*\})/)[1].replace(/([\w-]+|"[^"]+"):/g, (k) => (k.startsWith('"') ? k : `"${k.slice(0, -1)}":`)));
+  const want = Object.fromEntries(Object.entries(COPY_AT).map(([g, v]) => [g, Math.round(v * 1000)]));
+  check(JSON.stringify(table) === JSON.stringify(want), `P  the integration's COMMUNITY_COPY_MS matches chapter.json (${JSON.stringify(table)})`);
+  await load(null, "?player=midi-only");
+  const cards = await ev("window.yigExample.cards.map((c) => c.game + (c.community ? '*' : ''))");
+  await ev(INSTALL);
+  const press = (id) => ev(`window.__mark('${id}'); document.getElementById('tap-${id}').click()`);
+  const wait = (s) => sleep(s * 1000);
+  await openerStep();
+  await press("next"); await wait(INTRO + 0.6);   // The Midi
+  await press("next"); await wait(PAN + 0.6);     // the bridge
+  for (const card of cards.filter((c) => c.endsWith("*"))) {
+    const game = card.slice(0, -1);
+    await ev("window.__log.length = 0");
+    await press("next"); await wait(INTRO + 1.0);
+    const log = await ev("window.__log");
+    const t0 = log.find((e) => e.label === "next").at;
+    const pop = log.find((e) => e.icon === game && e.iconPopping);
+    const rise = log.find((e) => e.card === game + "#-" && e.cardRising);
+    check(!!pop && Math.abs(pop.at - t0 - COPY_AT[game]) <= TOL && !!rise && Math.abs(rise.at - t0 - COPY_AT[game] - STEP) <= TOL,
+          `P  ${game} community card: icon ${fmt(pop ? pop.at - t0 : null)}, lines ${fmt(rise ? rise.at - t0 : null)} after the tap (want ${COPY_AT[game]} s and ${(COPY_AT[game] + STEP).toFixed(2)} s)`);
+  }
 }
 
 //   K  each of the page's own example players, no injection: Next to the last card, then Back to the opener, waiting

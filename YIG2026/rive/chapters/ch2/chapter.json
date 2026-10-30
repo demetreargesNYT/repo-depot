@@ -1,5 +1,5 @@
 {
-  "_about": "Source of truth for this file's names, enums and rooms. The tools read it; `npm run check` verifies the .rml against it. `setBy: engineering` properties are the ones engineering may set if they ever drive Rive directly; `setBy: integration` ones only our integration sets. Scene order is the enum order: the index in this list is the value Rive stores.",
+  "_about": "Source of truth for this file's names, enums and rooms. The tools read it; `npm run check` verifies the .rml against it. `setBy: engineering` properties are the ones engineering may set if they ever drive Rive directly; `setBy: integration` ones only our integration sets. Scene order is the enum order: the index in this list is the value Rive stores. communityCopyMs (games): when a community card's copy arrives, the moment the room's pieces have landed, with the lockup and the ball left out (the ball may still be rolling in); npm run check measures it from the intro.",
   "file": "File 2 · Chapter 2",
   "artboard": "Chapter 2",
   "stateMachine": "Backdrop",
@@ -42,43 +42,50 @@
       "name": "wordle",
       "kind": "game",
       "room": "Wordle",
-      "title": "Wordle"
+      "title": "Wordle",
+      "communityCopyMs": 2334
     },
     {
       "name": "connections",
       "kind": "game",
       "room": "Connections",
-      "title": "Connections"
+      "title": "Connections",
+      "communityCopyMs": 2367
     },
     {
       "name": "strands",
       "kind": "game",
       "room": "Strands",
-      "title": "Strands"
+      "title": "Strands",
+      "communityCopyMs": 1967
     },
     {
       "name": "spelling-bee",
       "kind": "game",
       "room": "Spelling Bee",
-      "title": "Spelling Bee"
+      "title": "Spelling Bee",
+      "communityCopyMs": 2017
     },
     {
       "name": "mini",
       "kind": "game",
       "room": "The Mini",
-      "title": "The Mini"
+      "title": "The Mini",
+      "communityCopyMs": 2084
     },
     {
       "name": "midi",
       "kind": "game",
       "room": "The Midi",
-      "title": "The Midi"
+      "title": "The Midi",
+      "communityCopyMs": 1950
     },
     {
       "name": "daily",
       "kind": "game",
       "room": "The Crossword",
-      "title": "The Crossword"
+      "title": "The Crossword",
+      "communityCopyMs": 1950
     },
     {
       "name": "to-chapter-3",

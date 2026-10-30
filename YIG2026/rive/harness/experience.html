@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Year in Games 2026 · the full experience (review)</title>
+<link rel="icon" href="data:,">
+<!--
+  Our review page for the whole experience. It shows experience-stage.html in a frame the size of the chosen screen,
+  so the frame's own viewport is that screen: engineering's framing (yig-framing.css), its portrait crop and its
+  desktop breakpoint all respond as they would on the device. "Window" makes the frame fill the window, so resizing
+  the browser resizes the experience. Not an engineering file.
+-->
+<style>
+:root { --paper: #F1F3EE; --surface: #FFFFFF; --ink: #1F1F1F; --muted: #5C6759; --line: #D3DACF; --ui: "NYT Franklin", "Helvetica Neue", Arial, sans-serif; }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { background: var(--paper); color: var(--ink); font: 500 13px/1.3 var(--ui); display: flex; flex-direction: column; overflow: hidden; }
+.bar { flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; padding: 8px 12px; border-bottom: 1px solid var(--line); background: var(--surface); }
+.bar h1 { font: 700 15px/1.2 "NYT Karnak", Georgia, serif; margin: 0 6px 0 0; }
+.bar label { display: inline-flex; align-items: center; gap: 5px; color: var(--muted); }
+.bar select, .bar button { font: 500 13px var(--ui); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 7px; padding: 4px 8px; cursor: pointer; }
+.bar select:hover, .bar button:hover { border-color: var(--ink); }
+.status { flex: none; padding: 5px 12px; font: 500 12px var(--ui); color: var(--muted); border-bottom: 1px solid var(--line); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.area { flex: 1; position: relative; overflow: hidden; display: grid; place-items: start center; }
+.area.device { padding: 12px; }
+.frame { border: 0; display: block; background: #FFF; transform-origin: top center; }
+.area.device .frame { box-shadow: 0 0 0 1px var(--line), 0 6px 24px rgba(0, 0, 0, .12); border-radius: 18px; }
+.area.window .frame { width: 100%; height: 100%; }
+</style>
+</head>
+<body>
+<div class="bar">
+  <h1>Year in Games 2026 · full experience</h1>
+  <label>Flow <select id="flow"><option value="sub">Subscriber / registered</option><option value="anon">Anon</option></select></label>
+  <label id="player-wrap">Player <select id="player">
+    <option value="wordle-only">Wordle only (Chapter 2.5; both badge cards)</option>
+    <option value="midi-only">Midi only (all five community cards; event badges only)</option>
+    <option value="several-games">Several games (no 2.5; achievement badges only)</option>
+    <option value="all-seven">All seven games (no badge cards)</option>
+  </select></label>
+  <label id="top-wrap">Top game <select id="top">
+    <option value="">The player's first game</option>
+    <option value="wordle">Wordle</option><option value="connections">Connections</option><option value="strands">Strands</option>
+    <option value="spelling-bee">Spelling Bee</option><option value="mini">The Mini (placeholder)</option><option value="midi">The Midi (placeholder)</option>
+    <option value="daily">The Crossword</option>
+  </select></label>
+  <label>Screen <select id="size">
+    <option value="window">Window (resize the browser)</option>
+    <option value="375x667">iPhone SE · 375 × 667</option>
+    <option value="375x812">Phone · 375 × 812 (the Figma frame)</option>
+    <option value="430x932">iPhone 15 Pro Max · 430 × 932</option>
+    <option value="820x1180">iPad portrait · 820 × 1180</option>
+    <option value="1440x900">Desktop · 1440 × 900</option>
+  </select></label>
+  <label>Jump to <select id="jump"></select></label>
+  <button id="restart">Restart</button>
+</div>
+<div class="status" id="status">Loading…</div>
+<div class="area window" id="area"><iframe class="frame" id="frame" title="The experience"></iframe></div>
+
+<script>
+const q = new URLSearchParams(location.search);
+const $ = (id) => document.getElementById(id);
+const fields = ["flow", "player", "top", "size"];
+for (const f of fields) if (q.get(f) !== null) $(f).value = q.get(f);
+
+function stageUrl(jump, goto) {
+  const p = new URLSearchParams({ flow: $("flow").value, player: $("player").value });
+  if ($("top").value) p.set("top", $("top").value);
+  if (goto) p.set("goto", goto);
+  else if (jump) p.set("jump", jump);
+  return `/experience-stage?${p}`;
+}
+function remember() {
+  const p = new URLSearchParams();
+  for (const f of fields) p.set(f, $(f).value);
+  history.replaceState(null, "", `?${p}`);
+}
+function layout() {
+  const area = $("area"), frame = $("frame");
+  const size = $("size").value;
+  const subs = $("flow").value === "sub";
+  $("player-wrap").hidden = !subs;
+  $("top-wrap").hidden = !subs;
+  if (size === "window") {
+    area.className = "area window";
+    frame.style.width = frame.style.height = frame.style.transform = "";
+    return;
+  }
+  const [w, h] = size.split("x").map(Number);
+  area.className = "area device";
+  frame.style.width = `${w}px`;
+  frame.style.height = `${h}px`;
+  const scale = Math.min(1, (area.clientWidth - 24) / w, (area.clientHeight - 24) / h);
+  frame.style.transform = `scale(${scale})`;
+}
+let started = false;
+function load(jump = 0, goto = "") {
+  started = true;
+  remember();
+  layout();
+  $("frame").src = stageUrl(jump, goto);
+}
+for (const f of fields) $(f).addEventListener("change", () => (f === "size" ? (remember(), layout()) : load()));
+$("restart").addEventListener("click", () => load());
+$("jump").addEventListener("change", () => {
+  const entry = SCENES[Number($("jump").value)];
+  $("jump").selectedIndex = 0;
+  if (!entry) return;
+  // a scene the current flow or player doesn't have switches them to ones that do
+  if (entry.flow) $("flow").value = entry.flow;
+  if (entry.top) $("top").value = entry.top;
+  if (entry.game && $("flow").value === "sub" && !QUALIFYING[$("player").value].includes(entry.game)) $("player").value = entry.player || "all-seven";
+  if (entry.player && !entry.game) $("player").value = entry.player;
+  load(0, entry.goto);
+});
+addEventListener("resize", layout);
+// keys pressed outside the frame still move the experience
+addEventListener("keydown", (e) => {
+  const x = $("frame").contentWindow?.yigExperience;
+  if (!x) return;
+  if (e.key === "ArrowRight") { e.preventDefault(); x.onTap(); }
+  if (e.key === "ArrowLeft") { e.preventDefault(); x.onBack(); }
+});
+
+// the status line and the Jump menu read the experience in the frame
+const GAMES = [["wordle", "Wordle"], ["connections", "Connections"], ["strands", "Strands"], ["spelling-bee", "Spelling Bee"], ["mini", "The Mini"], ["midi", "The Midi"], ["daily", "The Crossword"]];
+// the games each example player has 10 or more completed puzzles in (the stage's PLAYERS table says the same)
+const QUALIFYING = { "wordle-only": ["wordle"], "midi-only": ["midi"], "several-games": ["wordle", "strands", "spelling-bee", "mini", "midi", "daily"], "all-seven": GAMES.map((g) => g[0]) };
+// every scene in every file, grouped by chapter. goto = file:scene[:community]; flow/player/top say what the scene needs
+const SCENES = [
+  { group: "Start (File 1)", label: "Loading", goto: "1:loading" },
+  { group: "Start (File 1)", label: "Start", goto: "1:start" },
+  { group: "Start (File 1)", label: "Ad 1 · the empty Chapter 1 room", goto: "1:ad" },
+  ...[1, 2, 3, 4, 5].map((n) => ({ group: "Chapter 1 (File 1)", label: `Card ${n}`, goto: `1:chapter-1-card-${n}` })),
+  { group: "Chapter 1 (File 1)", label: "Ad 2 · the empty Chapter 1 room again", goto: "1:ad:2" },
+  { group: "Chapter 2 (File 2)", label: "Opener (the shelves)", goto: "2:intro", flow: "sub" },
+  ...GAMES.map(([g, name]) => ({ group: "Chapter 2 (File 2)", label: name, goto: `2:${g}`, flow: "sub", game: g })),
+  { group: "Chapter 2 (File 2)", label: "Ad 3 · the empty Chapter 3 room (anon)", goto: "2:to-chapter-3", flow: "anon" },
+  { group: "Chapter 2.5 (File 2)", label: "Bridge", goto: "2:bridge", flow: "sub", player: "wordle-only" },
+  ...[["wordle", "Wordle"], ["connections", "Connections"], ["spelling-bee", "Spelling Bee"], ["mini", "The Mini"], ["strands", "Strands"]]
+    .map(([g, name]) => ({ group: "Chapter 2.5 (File 2)", label: `Community card · ${name}`, goto: `2:${g}:community`, flow: "sub", player: "midi-only" })),
+  { group: "Chapter 3 (File 3)", label: "Card 1 · the room", goto: "3:chapter-3" },
+  { group: "Chapter 3 (File 3)", label: "Card 2 · the ball with the bird on top", goto: "3:chapter-3-bird", flow: "sub" },
+  { group: "Chapter 3 (File 3)", label: "Card 3 · event badges (empty room)", goto: "3:ad", flow: "sub", player: "wordle-only" },
+  { group: "Chapter 3 (File 3)", label: "Card 4 · achievement badges (empty room)", goto: "3:ad:2", flow: "sub", player: "wordle-only" },
+  { group: "Chapter 4 (File 3)", label: "Card 1 · the stack and the ball, no fireworks", goto: "3:chapter-4", flow: "sub" },
+  ...GAMES.map(([g, name]) => ({ group: "Chapter 4 (File 3)", label: `Card 2 · top game · ${name}`, goto: "3:chapter-4:2", flow: "sub", top: g })),
+  { group: "End (File 3)", label: "End", goto: "3:end" },
+];
+{
+  const groups = new Map();
+  let html = '<option value="">a scene…</option>';
+  SCENES.forEach((s, i) => { if (!groups.has(s.group)) groups.set(s.group, []); groups.get(s.group).push(`<option value="${i}">${s.label}</option>`); });
+  for (const [g, opts] of groups) html += `<optgroup label="${g}">${opts.join("")}</optgroup>`;
+  $("jump").innerHTML = html;
+}
+
+// the status line reads the experience in the frame
+setInterval(() => {
+  const x = $("frame").contentWindow?.yigExperience;
+  if (!x) return;
+  const s = x.state();
+  const k = x.cards[s.frame];
+  const fw = $("frame").contentWindow;
+  $("status").textContent = `Card ${s.frame + 1} of ${x.cards.length} · File ${s.shown} · scene "${s.scenes[s.shown - 1] ?? "…"}"`
+    + `${k.community ? " · community card" : ""} · viewport ${fw.innerWidth} × ${fw.innerHeight}`
+    + ` · ${fw.innerWidth >= 1025 ? "desktop: arrows" : "tap zones"} · ${x.flow === "anon" ? "anon" : "subscriber"}, top game ${x.top}`;
+}, 250);
+
+// always the current build: the server rebuilds a file when its scene.rml changes, and says when each was last built;
+// when one is newer than the one the frame loaded, the frame reloads on the card it was on
+let builds = null;
+setInterval(async () => {
+  try {
+    const now = JSON.stringify(await (await fetch("/builds", { cache: "no-store" })).json());
+    if (builds && now !== builds) {
+      const x = $("frame").contentWindow?.yigExperience;
+      const at = x ? x.state().frame : 0;
+      builds = now;
+      $("status").textContent = "A newer build is in: reloading…";
+      load(at > 1 ? at : 0);
+    }
+    builds = builds ?? now;
+  } catch { /* the server is restarting: try again next time */ }
+}, 2000);
+
+// the builds are asked for first, so the frame always loads the current ones
+fetch("/builds", { cache: "no-store" }).then((r) => r.json()).then((j) => { builds = JSON.stringify(j); }).catch(() => {}).finally(() => { if (!started) load(); });
+</script>
+</body>
+</html>

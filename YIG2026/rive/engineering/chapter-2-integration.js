@@ -44,12 +44,17 @@ function setScene(name, step = 1, community = false) {
 }
 
 const INTRO_MS = 3200; // every intro is exactly this long
+// A community card has no lockup, so its copy doesn't wait out the 3.2 s intro: it arrives when the room has settled
+// (the pieces have landed; the ball may still be rolling in). Measured per room from the file, in milliseconds after the tap; chapter.json
+// records the same numbers as communityCopyMs and our checks keep them in step with the intros.
+const COMMUNITY_COPY_MS = { wordle: 2334, connections: 2367, strands: 1967, "spelling-bee": 2017, mini: 2084, midi: 1950, daily: 1950 };
 const PAN_MS = 1650;   // a room change: the rooms' moves run 1.6 s (the pan itself is 0.05 to 1.55 s), plus a few frames
                        // so a held tap never lands on the frame a move hands over to its resting pose
 let cards = [];        // set by start()
 let frame = 0;
 let room = "chapter1";   // the room Rive is showing; a card for a game that isn't built yet leaves it where it is
-let introEndsAt = {};  // per game: when its first-visit intro (and its lockup) finishes, in performance.now() time
+let introEndsAt = {};  // per game: when its first-visit copy may arrive (the intro and lockup finish, or for a community
+                       // card the room settles), in performance.now() time
 let pan = { dir: 0, endsAt: 0 }; // the room change on screen: which way the camera is moving, and when it stops
 let heldTimer = 0;     // a tap waiting for a pan to end
 
@@ -106,7 +111,7 @@ function move(step) {
   frame = target;
   const firstVisit = roomChange && step > 0 && !(game in introEndsAt) && !NO_INTRO.has(game);
   if (roomChange) pan = { dir: step, endsAt: now + PAN_MS };
-  if (firstVisit) introEndsAt[game] = now + INTRO_MS; // a first visit plays the game's intro
+  if (firstVisit) introEndsAt[game] = now + copyDelay(cards[target]); // a first visit plays the game's intro
   if (built) {
     setScene(SCENE[game], step, !!cards[frame].community); // the same scene again does nothing, so Rive keeps looping
     room = game;
@@ -118,7 +123,8 @@ function move(step) {
 
 // What changes on a tap:
 //  - the room changes: the old game's icon and text leave at once, and the new game's text and icon arrive when
-//    the room has settled: 3.2 s after the tap on a game's first visit (the intro and its lockup), at the end of
+//    the room has settled: 3.2 s after the tap on a game's first visit (the intro and its lockup; on a community card,
+//    which has no lockup, as soon as the room's intro settles, COMMUNITY_COPY_MS), at the end of
 //    the move (1.65 s) when the game comes back already built (or the room has no intro, like the bridge), or when
 //    that game's interrupted intro ends, if later.
 //  - the game changes but the room doesn't (a game that isn't built yet, or back from one): the old icon and text
@@ -139,12 +145,17 @@ function showCopy(n, gameChange, roomChange, firstVisit, step) {
   const introLeft = Math.max(0, (introEndsAt[room] ?? 0) - now); // the intro of the room on screen, not the card's game
   if (gameChange) {
     let wait = Math.max(clearMs(), introLeft);
-    if (roomChange) wait = firstVisit ? null : Math.max(PAN_MS, introLeft); // null: the CSS default, the 3.2 s intro
+    if (roomChange) wait = firstVisit ? (cards[n].community ? copyDelay(cards[n]) : null) : Math.max(PAN_MS, introLeft); // null: the CSS default, the 3.2 s intro
     if (icon) enter(icon, { delay: wait, back });
     if (next) enter(next, { delay: wait, afterIcon: !!icon, back });
   } else if (next) {
     enter(next, introLeft > 0 ? { delay: introLeft, back } : { quick: true, back });
   }
+}
+
+// How long a first visit's copy waits after the tap: the whole intro, or for a community card until the room settles.
+function copyDelay(card) {
+  return card.community && card.game in COMMUNITY_COPY_MS ? COMMUNITY_COPY_MS[card.game] : INTRO_MS;
 }
 
 // Copy that has finished arriving leaves (up on Next, down on Back); copy that is still arriving, or still

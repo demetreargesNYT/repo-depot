@@ -49,12 +49,12 @@ h1 { font: 700 18px/1.2 var(--display); margin: 0; margin-right: auto; }
 .stage.full .phonebox { left: calc(100cqw * 560 / 1495); top: 0; width: calc(100cqw * 375 / 1495); height: calc(100cqw * 812 / 1495); outline: 1px dashed rgba(31, 31, 31, .5); }
 .stage.phone .phonebox { inset: 0; }
 .phonebox .overlay { overflow: hidden; }
-/* tap the right half for Next, the left half for Back */
+/* tap the right 75% for Next, the left 25% for Back (engineering's TapZones) */
 .tap { position: absolute; top: 0; bottom: 0; width: 50%; z-index: 1; margin: 0; padding: 0; border: 0; background: transparent; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .tap:focus { outline: none; }
 .tap:focus-visible { outline: 2px solid var(--ink); outline-offset: -4px; }
-#tap-back { left: 0; }
-#tap-next { right: 0; }
+#tap-back { left: 0; width: 25%; }
+#tap-next { right: 0; width: 75%; }
 
 /* The text layer. Sizes are in units of the 375-wide phone frame (--u), so the copy scales with the stage. */
 .overlay { --u: calc(100cqw / 375); position: absolute; inset: 0; color: #1F1F1F; pointer-events: none; }

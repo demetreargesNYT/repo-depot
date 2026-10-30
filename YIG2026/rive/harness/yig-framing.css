@@ -1,0 +1,82 @@
+/* Engineering's framing of the Rive stage, copied so our review page crops and scales exactly like their staging page.
+   Source: nytimes/games-phoenix, src/games/year-in-games/components/RiveBackground.module.scss (main, and unchanged in
+   draft PR #11222 "Animated YIG slide backdrops"), read 2026-10-29. Breakpoint and tap zones: PR #11223 "YIG slide
+   navigation UX improvements" (TapZones.module.scss, SlideControls.module.scss, and shared/scss-helpers/mixins.scss).
+   Keep every value here, and update it from those files when engineering changes the crop; their comment says the
+   portrait values are placeholders until design confirms the crop. */
+
+:root {
+  --yig-artboard-w: 1495;
+  --yig-artboard-h: 1067;
+  /* Landscape: no zoom, the artboard's centre on the window's centre. */
+  --yig-landscape-focal-y: 50%;
+  --yig-landscape-zoom: 1;
+  /* Portrait: zoomed in 1.3x, with the artboard's top 1% lined up with the window's top 1%. */
+  --yig-portrait-focal-y: 1%;
+  --yig-portrait-zoom: 1.3;
+  /* Engineering's slide column (YearInGames.module.scss .root): the copy sits in it. */
+  --yig-column-max: 500px;
+  --yig-column-pad: 0.5rem;
+  /* Tap zones below the desktop breakpoint: engineering's TapZones, 25% for Back and 75% for Next (Demetre,
+     2026-10-29; he had first asked for halves). */
+  --yig-tap-back-share: 25%;
+}
+
+/* Viewport-fixed layer that the full-bleed artboard sits in (their .background). */
+.yig-background {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
+/* Behaves like object-fit: cover (their .artboard): always fills the window on both axes, cropping whichever side
+   overflows. --yig-focal-y works like the y part of object-position. */
+.yig-artboard {
+  --yig-focal-y: var(--yig-landscape-focal-y);
+  --yig-zoom: var(--yig-landscape-zoom);
+  position: absolute;
+  top: var(--yig-focal-y);
+  left: 50%;
+  aspect-ratio: 1495 / 1067;
+  transform: translate(-50%, calc(var(--yig-focal-y) * -1));
+  width: calc(max(100vw, 100vh * var(--yig-artboard-w) / var(--yig-artboard-h)) * var(--yig-zoom));
+  width: calc(max(100vw, 100dvh * var(--yig-artboard-w) / var(--yig-artboard-h)) * var(--yig-zoom));
+}
+@media (orientation: portrait) {
+  .yig-artboard {
+    --yig-focal-y: var(--yig-portrait-focal-y);
+    --yig-zoom: var(--yig-portrait-zoom);
+  }
+}
+/* Each Rive file has its own canvas, stacked in the box; the integration shows one at a time. */
+.yig-artboard .yig-file { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+/* The desktop breakpoint: engineering's `desktop` mixin, min-width 1025px (phone-and-tablet is max-width 1024px).
+   Media queries can't read custom properties, so the number is written out here and in the rules below only. */
+.yig-tap { display: block; }
+.yig-arrow { display: none; }
+@media (min-width: 1025px) {
+  .yig-tap { display: none; }    /* desktop doesn't use tap zones */
+  .yig-arrow { display: block; }
+}
+
+/* The header and the copy position, from design: Figma "Year in Games 2026" (file 9kgGqMlvJXa4jUolapkp89), frames
+   "Ch1 01 - Intro" 12288:54594 (mobile, 375 x 812) and 12288:54847 (desktop, 1495 x 1067), read 2026-10-29. Both put
+   the same 375-wide column at the top centre, at the same pixel sizes: the Global Nav (134 tall: a 56 px device bar,
+   then the 78 px Year in Games bar with the logo at its top and the progress bar 16 px up from its bottom), then the
+   copy ("Text Lockups"), 32 px below the nav with 20 px at each side. */
+:root {
+  --yig-nav-column: 375px;
+  --yig-logo-top: 56px;            /* the device bar's height: the logo sits right under it */
+  --yig-logo-gap: 6px;             /* between the NYT wordmark (110.136 x 15.114) and "Year in Games" (170.215 x 18.549) */
+  --yig-progress-top: 116px;       /* 56 + 78 - 16 - 2: the bar's 2 px track box, 16 px up from the nav bar's bottom */
+  --yig-progress-w: 180px;
+  --yig-progress-h: 3px;
+  --yig-progress-radius: 1.93px;
+  --yig-progress-track: rgba(0, 0, 0, 0.2);
+  --yig-progress-fill: #000000;
+  --yig-copy-top: 166px;           /* the nav's 134 plus the copy block's 32 px top padding */
+  --yig-copy-side: 20px;
+  --yig-copy-ink: #121212;         /* Headline: NYT Karnak Medium, 24 / 1.2 */
+}

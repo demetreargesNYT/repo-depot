@@ -872,7 +872,7 @@ class Build:
             roll0, roll1 = c["ball"]["roll"]
             spec[ball.get("id")] = {"x": [(roll0, c["ball"].get("from_x", -80), "power1.out"), (roll1, float(ball.get("x", 0)), None)]}
             rest_y = float(ball.get("y", FLOOR_Y))
-            if rest_y < FLOOR_Y - 1:                       # it rests on a piece: roll in along the floor, then hop up there
+            if rest_y < FLOOR_Y - 1 and not c["ball"].get("rolls_at_rest_height"):                       # it rests on a piece: roll in along the floor, then hop up there
                 land0, land1 = c["ball"]["land"]
                 spec[ball.get("id")]["y"] = [(roll0, FLOOR_Y, None), (land0, FLOOR_Y, "power2.out"), (land1, rest_y, None)]
             # resting on the floor or the front of it, it rolls in at that height (its y is held by the loop's first key)
@@ -945,8 +945,9 @@ class Build:
         floor_at = next((i for i, c in enumerate(everything) if (c.get("name") or "").startswith("Floor")), None)
         below_floor = {c.get("id") for i, c in enumerate(everything) if floor_at is not None and i > floor_at}
         leave_out = set(cfg.get("leave_out", []))
+        keep_only = set(cfg.get("keep_only", []))             # a room built from a few of the source's groups (Chapter 3's bird and ball)
         order = [c for c in self.src if c.tag in ("Node", "Shape", "Solo") and not (c.get("name") or "").startswith(SKIP_TOP)
-                 and c.get("id") not in leave_out]
+                 and c.get("id") not in leave_out and (not keep_only or c.get("id") in keep_only)]
         # the rig ball sits where the source lists it; a stand-in sits behind every piece unless it rests in front of them
         ball_at = next(i for i, c in enumerate(order) if c is solo) if has_ball else (0 if stand_in and stand_in["stand_in"].get("front") else len(order))
         intro_cfg = cfg.get("intro")                    # None: the room the file opens on, which has no intro (Loading)
@@ -962,6 +963,13 @@ class Build:
             bucket.append(drops[d["name"]][0][d["ids"].index(c.get("id"))] if d else self.take(c.get("id")))
         gates = self.make_gates((front, back)) if cfg.get("gates") else {}
         ball = self.make_ball(solo) if has_ball else self.make_stand_in(stand_in["stand_in"]) if stand_in else None
+        riders = (stand_in or {}).get("stand_in", {}).get("ride")     # source groups that ride on the ball (the bird on top of it)
+        if riders:
+            for c in [c for c in list(front) + list(back) if c.get("id") in {self.idmap[i] for i in riders["ids"] if i in self.idmap}]:
+                (front if c in list(front) else back).remove(c)
+                c.set("x", fnum(riders["x"]))
+                c.set("y", fnum(riders["y"]))
+                ball.insert(0, c)                                 # first child: drawn on top of the ball's art
         self.apply_story_start()
 
         jsrc = series = None

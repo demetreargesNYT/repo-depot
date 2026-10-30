@@ -2,7 +2,7 @@
 
 ## To tune later
 
-- **Card 1 (c1s1): the illustrator's 7 s ball story is not in.** In their file the ball comes out of the cuckoo clock, bounces across the window (the panes flip to Wordle tiles as it passes), drops to the floor, squashes the chair cushion and runs into the mouse hole. It plays once and does not loop. Our card 1 has a stand-in ball instead: it rolls in during the intro, rests on the floor at x 1000 (between the dog and the mouse hole) and hops in place twice in the 10 s loop (at 2 s and 7 s). The panes and the clock show how the story opens. To fit the story in during finesse: the source animation is `Ball` in NYT_YIG_c1s1 (420 frames, 57 objects), and the importer config is `tools/rooms/ch1-card-1.json` (`start_pose_from` sets the opening pose).
+- **Card 1 (c1s1): the ball story is the old YIG Test file's (Rive file 2666044), not the illustrator's 7 s one, and it is this scene's loop (Demetre, 2026-10-30).** Its keys are copied onto the illustrator's pieces (`tools/card1_story.py`, one time). The story starts the moment the intro ends: the ball slides out of the cuckoo clock's door, bounces on the chair and onto the window, the nine panes flip to tiles and back (the ball is knocked off), and it rolls off the right edge. Once it is out of sight it is removed (put back behind the clock door, also out of sight); 3 s later it slides out again, and the loop repeats (762 frames, 12.7 s). The ball never parks beyond x 1560, so it always leaves with its room. The small loops keep running and are fitted to the loop: the minute hand turns twice (24 ticks, a touch slower than the old file's), the pendulum swings 12 times, the dog's tail wags 3 times (a cycle 15% shorter than the illustrator's 5 s), the mouse runs once and waits in its hole, and the dog's eye follows the mouse (closes as the mouse passes to its left, opens once it has passed back to its right, blinks while open). Changes from the old file, on purpose: positions shifted 7 to 8 px right onto the illustrator's art (the shift eases between the clock, chair, window and floor); the old file's 41 frames of hiding before the slide are left out; the exit is cut where the ball is out of sight; no clouds in the window; the pull cord, plant and the rest stay still. To tune: the shift per contact, the pause (3.03 s), the eye's timing against the mouse, the dog's tail speed.
 
 - **Card 1: the dog's eye.** `Dog_Eye` plays once in the source and ends on a different shape. In the loop it plays at the start of the 10 s and returns to its first shape over frames 300 to 599 (a slow drift). Worth looking at.
 
@@ -25,46 +25,27 @@ ball and loop are keyed only on its own pieces, so a change in one room never re
 illustrator's shape keys and are not listed here.
 
 
-## Loading (placeholder) · scene `loading`
+## Start (c0) and Loading · scene `start`
 
-**Loop:** 1.00 s (60 frames at 60/s), repeats. First and last frames are the same pose.
-
-No intro of its own (the file opens on this room, already built).
-
-
-### Ball · loop
-
-- **Move 1**: 0.00 s to 0.27 s (0.27 s): 72 px up
-- **Move 2**: 0.33 s to 0.60 s (0.27 s): 72 px down
-- Waits: 0.27–0.33 s
-
-## Start (c0) · scene `start`
-
-**Loop:** 5.00 s (300 frames at 60/s), repeats. First and last frames are the same pose.
+**Loop:** 4.50 s (270 frames at 60/s), repeats. First and last frames are the same pose.
 
 ### Intro · exactly 3.2 s
 
-- **Floor and front slide in** (Start Floor Plane): moves left 1600 px (x 1600 → 0), starts 0.05 s, takes 1.50 s, power2.inOut (slow, fast, slow)
 
 ### Ball · intro
 
-- **Start Ball**: moves right 703 px (x -80 → 623), starts 1.15 s, takes 0.75 s, power1.out (fast, then a soft stop)
-- **Start Ball**: rises 44 px (y 756 → 712), starts 1.90 s, takes 0.15 s, power2.out (fast, then eases to a stop)
-- Highlight and shape ease into the landing pose, 1.15 s to 2.05 s.
+- **Start Ball Squash**: squash on landing: 1.12 wide × 0.86 tall at 1.47 s (reached over 0.07 s, power2.out); back to 1 by 1.80 s (back.out)
+- Highlight and shape ease into the landing pose, 0.00 s to 3.20 s.
 
 ### Ball · loop
 
-- **Move 1**: 0.02 s to 0.42 s (0.40 s): 39 px up
-- **Move 2**: 0.60 s to 1.42 s (0.82 s): ends where it began
-- **Move 3**: 1.60 s to 2.42 s (0.82 s): ends where it began
-- **Move 4**: 2.60 s to 3.42 s (0.82 s): ends where it began
-- **Move 5**: 3.60 s to 4.42 s (0.82 s): ends where it began
-- **Move 6**: 4.60 s to 4.98 s (0.38 s): 39 px down
-- Waits: 0.42–0.60 s, 1.42–1.60 s, 2.42–2.60 s, 3.42–3.60 s, 4.42–4.60 s
+- **Move 1**: 1.00 s to 1.33 s (0.33 s): 58 px up
+- **Move 2**: 1.47 s to 1.80 s (0.33 s): 58 px down
+- Waits: 1.33–1.47 s
 
 ## Chapter 1, card 1 (c1s1) · scene `chapter-1-card-1`
 
-**Loop:** 10.00 s (600 frames at 60/s), repeats. First and last frames are the same pose.
+**Loop:** 12.70 s (762 frames at 60/s), repeats. First and last frames are the same pose.
 
 ### Intro · exactly 3.2 s
 
@@ -77,15 +58,14 @@ No intro of its own (the file opens on this room, already built).
 
 ### Ball · intro
 
-- **Chapter 1 Card 1 Ball**: moves right 1080 px (x -80 → 1000), starts 1.15 s, takes 0.75 s, power1.out (fast, then a soft stop)
+- **Chapter 1 Card 1 Ball**: drops 800 px (y -357 → 443), starts 1.00 s, takes 0.50 s, power2.in (starts slow, speeds up)
 
 ### Ball · loop
 
-- **Move 1**: 2.00 s to 2.20 s (0.20 s): 40 px up
-- **Move 2**: 2.27 s to 2.47 s (0.20 s): 40 px down
-- **Move 3**: 7.00 s to 7.20 s (0.20 s): 40 px up
-- **Move 4**: 7.27 s to 7.47 s (0.20 s): 40 px down
-- Waits: 2.20–2.27 s, 2.47–7.00 s, 7.20–7.27 s
+- **Move 1**: 0.07 s to 1.87 s (1.80 s): 149 px right and 19 px down, rising 16 px above its start/finish height
+- **Move 2**: 2.32 s to 4.50 s (2.18 s): 103 px left and 191 px down, rising 25 px above its start/finish height
+- **Move 3**: 4.95 s to 9.67 s (4.72 s): 46 px left and 210 px up
+- Waits: 1.87–2.32 s, 4.50–4.95 s
 
 ## Chapter 1, card 2 (c1s2) · scene `chapter-1-card-2`
 
@@ -102,8 +82,8 @@ No intro of its own (the file opens on this room, already built).
 
 ### Ball · intro
 
-- **Chapter 1 Card 2 Ball**: moves right 762 px (x -80 → 682), starts 1.15 s, takes 0.75 s, power1.out (fast, then a soft stop)
-- **Chapter 1 Card 2 Ball**: rises 258 px (y 756 → 498), starts 1.90 s, takes 0.15 s, power2.out (fast, then eases to a stop)
+- **Chapter 1 Card 2 Ball**: moves right 762 px (x -80 → 682), starts 2.30 s, takes 0.75 s, power1.out (fast, then a soft stop)
+- **Chapter 1 Card 2 Ball**: rises 258 px (y 756 → 498), starts 3.05 s, takes 0.15 s, power2.out (fast, then eases to a stop)
 
 ### Ball · loop
 
@@ -125,9 +105,9 @@ No intro of its own (the file opens on this room, already built).
 
 ### Ball · intro
 
-- **Chapter 1 Card 3 Ball**: moves right 908 px (x -80 → 828), starts 1.15 s, takes 0.75 s, power1.out (fast, then a soft stop)
-- **Chapter 1 Card 3 Ball**: rises 272 px (y 756 → 484), starts 1.90 s, takes 0.15 s, power2.out (fast, then eases to a stop)
-- Highlight and shape ease into the landing pose, 1.15 s to 2.05 s.
+- **Chapter 1 Card 3 Ball**: moves right 908 px (x -80 → 828), starts 2.30 s, takes 0.75 s, power1.out (fast, then a soft stop)
+- **Chapter 1 Card 3 Ball**: rises 272 px (y 756 → 484), starts 3.05 s, takes 0.15 s, power2.out (fast, then eases to a stop)
+- Highlight and shape ease into the landing pose, 2.30 s to 3.20 s.
 
 ### Ball · loop
 
@@ -146,9 +126,9 @@ No intro of its own (the file opens on this room, already built).
 
 ### Ball · intro
 
-- **Chapter 1 Card 4 Ball**: moves right 801 px (x -80 → 721), starts 1.15 s, takes 0.75 s, power1.out (fast, then a soft stop)
-- **Chapter 1 Card 4 Ball**: rises 245 px (y 756 → 511), starts 1.90 s, takes 0.15 s, power2.out (fast, then eases to a stop)
-- Highlight and shape ease into the landing pose, 1.15 s to 2.05 s.
+- **Chapter 1 Card 4 Ball**: moves right 801 px (x -80 → 721), starts 2.30 s, takes 0.75 s, power1.out (fast, then a soft stop)
+- **Chapter 1 Card 4 Ball**: rises 245 px (y 756 → 511), starts 3.05 s, takes 0.15 s, power2.out (fast, then eases to a stop)
+- Highlight and shape ease into the landing pose, 2.30 s to 3.20 s.
 
 ### Ball · loop
 
@@ -171,8 +151,8 @@ No intro of its own (the file opens on this room, already built).
 
 ### Ball · intro
 
-- **Chapter 1 Card 5 Ball**: moves right 698 px (x -80 → 618), starts 1.15 s, takes 0.75 s, power1.out (fast, then a soft stop)
-- **Chapter 1 Card 5 Ball**: rises 80 px (y 754 → 674), starts 1.90 s, takes 0.15 s, power2.out (fast, then eases to a stop)
+- **Chapter 1 Card 5 Ball**: moves right 698 px (x -80 → 618), starts 2.30 s, takes 0.75 s, power1.out (fast, then a soft stop)
+- **Chapter 1 Card 5 Ball**: rises 80 px (y 754 → 674), starts 3.05 s, takes 0.15 s, power2.out (fast, then eases to a stop)
 
 ### Ball · loop
 

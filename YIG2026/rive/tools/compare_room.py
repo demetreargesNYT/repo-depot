@@ -86,7 +86,9 @@ def our_project(chapter):
     # a room the file opens on (Loading) starts looping at once, so with the scene set from outside it would show under
     # every frame; the comparison is of one room at a time
     manifest = Scene(d / "scene.rml").manifest
-    opening = {x["room"] + " Room" for x in manifest["scenes"] if x.get("kind") == "loading"}
+    opening = {x["room"] + " Room" for x in manifest["scenes"] if x.get("kind") == "loading" and "room" in x}
+    if any(x.get("kind") == "loading" and "room" not in x for x in manifest["scenes"]):
+        opening.add("Start Room")                     # Loading is drawn by the Start room
     if opening:
         tree = ET.parse(d / "scene.rml")
         for n in tree.getroot().iter("Node"):

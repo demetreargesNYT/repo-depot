@@ -40,6 +40,12 @@
       "default": "wordle",
       "setBy": "engineering",
       "about": "The player's top game of the year. Picks Chapter 4's wall colour and fireworks. Set it before entering Chapter 4 (anonymous players: wordle)."
+    },
+    "reveal": {
+      "type": "boolean",
+      "default": false,
+      "setBy": "engineering",
+      "about": "False on Chapter 4's first card: the lighter blue wall, the stack and the ball, no fireworks. True from the top-game card on: the wall fades to topGame's colour and that game's fireworks start looping. Set it with the scene; false again when going back to the first card."
     }
   },
   "scenes": [
@@ -65,6 +71,12 @@
       "kind": "room",
       "room": "End",
       "title": "End (c5s1)"
+    },
+    {
+      "name": "chapter-3-bird",
+      "kind": "room",
+      "room": "Bird on Ball",
+      "title": "Chapter 3, card 2 (the ball with the bird on top, a stand-in idea)"
     }
   ],
   "poses": [
@@ -72,10 +84,22 @@
       "name": "Chapter 3 Colors",
       "scenes": [
         "ad",
-        "chapter-3"
+        "chapter-3",
+        "chapter-3-bird"
       ],
       "wall": "FFE1DBF5",
       "floor": "FF05CE7C"
+    },
+    {
+      "name": "Chapter 4 Light Colors",
+      "scenes": [
+        "chapter-4"
+      ],
+      "when": {
+        "reveal": false
+      },
+      "wall": "FFDFF3F0",
+      "floor": "FFFFBC45"
     },
     {
       "name": "Chapter 4 Wordle Colors",
@@ -83,7 +107,8 @@
         "chapter-4"
       ],
       "when": {
-        "topGame": "wordle"
+        "topGame": "wordle",
+        "reveal": true
       },
       "wall": "FFC3E2C0",
       "floor": "FFFFBC45"
@@ -94,7 +119,8 @@
         "chapter-4"
       ],
       "when": {
-        "topGame": "connections"
+        "topGame": "connections",
+        "reveal": true
       },
       "wall": "FFE1DBF5",
       "floor": "FFFFBC45"
@@ -105,7 +131,8 @@
         "chapter-4"
       ],
       "when": {
-        "topGame": "strands"
+        "topGame": "strands",
+        "reveal": true
       },
       "wall": "FFDFF3F0",
       "floor": "FFFFBC45"
@@ -116,7 +143,8 @@
         "chapter-4"
       ],
       "when": {
-        "topGame": "spelling-bee"
+        "topGame": "spelling-bee",
+        "reveal": true
       },
       "wall": "FFFFFDEF",
       "floor": "FFFFBC45"
@@ -127,7 +155,8 @@
         "chapter-4"
       ],
       "when": {
-        "topGame": "mini"
+        "topGame": "mini",
+        "reveal": true
       },
       "wall": "FF95BEFA",
       "floor": "FFFFBC45"
@@ -138,7 +167,8 @@
         "chapter-4"
       ],
       "when": {
-        "topGame": "midi"
+        "topGame": "midi",
+        "reveal": true
       },
       "wall": "FF7EAAF1",
       "floor": "FFFFBC45"
@@ -149,7 +179,8 @@
         "chapter-4"
       ],
       "when": {
-        "topGame": "daily"
+        "topGame": "daily",
+        "reveal": true
       },
       "wall": "FFC0D8F8",
       "floor": "FFFFBC45"

@@ -198,8 +198,10 @@ class Poses(unittest.TestCase):
         layer = next(l for l in root.iter("StateMachineLayer") if l.get("name") == "Backdrop")
         trs = layer.find("AnyState").findall("StateTransition")
         self.assertEqual(len(trs), sum(len(p["scenes"]) for p in m["poses"]))
-        chapter4 = [t for t in trs if len(t.findall("TransitionViewModelCondition")) == 2]
-        self.assertEqual(len(chapter4), 7, "one Chapter 4 pose per top game, each also reading topGame")
+        chapter4 = [t for t in trs if len(t.findall("TransitionViewModelCondition")) == 3]
+        self.assertEqual(len(chapter4), 7, "one Chapter 4 pose per top game, each also reading topGame and reveal (true)")
+        light = [t for t in trs if len(t.findall("TransitionViewModelCondition")) == 2]
+        self.assertEqual(len(light), 1, "the lighter blue wall: the scene and reveal (false)")
         names = {a.get("id"): a.get("name") for a in root.iter("LinearAnimation")}
         states = {st.get("id"): names[st.get("animationId")] for st in layer.findall("AnimationState")}
         self.assertEqual(states[layer.find("EntryState/StateTransition").get("stateToId")], "Chapter 3 Colors", "it opens on the picture File 2 ends on")

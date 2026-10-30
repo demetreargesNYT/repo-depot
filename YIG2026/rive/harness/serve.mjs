@@ -21,16 +21,20 @@ const rivs = {
   "/start-chapter-1.riv": path.join(repo, "chapters", "ch1"),
   "/chapters-3-4-end.riv": path.join(repo, "chapters", "ch3"),
 };
-// review pages beyond the engineering example: one file at a time, until the one integration exists
-const pages = { "/file1": "file-review.html", "/file3": "file-review.html" };
+// the review page: the whole experience across all three files (/experience wraps /experience-stage in a screen-size frame).
+// It is the only review page; the per-file pages were retired.
+const pages = { "/experience": "experience.html", "/experience-stage": "experience-stage.html" };
 
 // the page's own relative URLs, mapped to where the files live in this repo
 const files = {
   "/chapter-2-integration.js": path.join(repo, "engineering", "chapter-2-integration.js"),
   "/yig-text-motion.css": path.join(repo, "engineering", "yig-text-motion.css"),
   "/review.js": path.join(here, "review.js"),
+  "/yig-integration.js": path.join(repo, "engineering", "yig-integration.js"),
+  "/yig-framing.css": path.join(here, "yig-framing.css"),
 };
 const fontsRoot = path.join(here, "fonts");
+const artRoot = path.join(repo, "art", "global");   // the game icons and the desktop arrow
 
 const types = {
   ".html": "text/html; charset=utf-8", ".js": "text/javascript", ".mjs": "text/javascript",
@@ -88,6 +92,15 @@ http.createServer(async (req, res) => {
     if (p === "/" || p === "/index.html") return sendPage(res);
     if (p in pages) return sendPage(res, pages[p]);
     if (p in files) return sendFile(res, files[p]);
+    if (p === "/builds") {   // when each file was last built, so /experience can reload itself on a newer build
+      const out = {};
+      for (const [name, dir] of Object.entries(rivs)) {
+        const { built } = await ensureBuilt(dir);
+        out[name] = `${fs.statSync(built).mtimeMs}-${fs.statSync(built).size}`;
+      }
+      res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" });
+      return res.end(JSON.stringify(out));
+    }
     if (p in rivs) {
       const { built } = await ensureBuilt(rivs[p]);
       return sendFile(res, built);
@@ -95,6 +108,14 @@ http.createServer(async (req, res) => {
     if (p.startsWith("/fonts/")) {
       const file = path.resolve(fontsRoot, p.slice("/fonts/".length));
       if (file.startsWith(fontsRoot + path.sep)) return sendFile(res, file); // no path traversal
+    }
+    if (p.startsWith("/assets/") && p.endsWith(".svg")) {   // the review pages' own art (the Figma logo)
+      const root = path.join(here, "assets"), file = path.resolve(root, p.slice("/assets/".length));
+      if (file.startsWith(root + path.sep)) return sendFile(res, file); // no path traversal
+    }
+    if (p.startsWith("/art/global/") && p.endsWith(".svg")) {
+      const file = path.resolve(artRoot, p.slice("/art/global/".length));
+      if (file.startsWith(artRoot + path.sep)) return sendFile(res, file); // no path traversal
     }
     res.writeHead(404).end("not found");
   } catch (e) {

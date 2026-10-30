@@ -34,15 +34,13 @@
     {
       "name": "loading",
       "kind": "loading",
-      "room": "Loading",
-      "title": "Loading (placeholder)",
-      "about": "The file's default: a placeholder loop until the art arrives. Not a card; our integration leaves it when start(cards) is called."
+      "about": "The file's default and the Start room before its bird arrives: the empty cream-and-orange room with the standard ball bouncing in the centre. It has no room of its own; the Start room draws it. Not a card; when scene becomes start the ball finishes its bounce, then the bird drops in (no pan, no colour change)."
     },
     {
       "name": "start",
       "kind": "start",
       "room": "Start",
-      "title": "Start (c0)"
+      "title": "Start (c0) and Loading"
     },
     {
       "name": "ad",
@@ -118,7 +116,7 @@
     ]
   ],
   "tuneLater": [
-    "**Card 1 (c1s1): the illustrator's 7 s ball story is not in.** In their file the ball comes out of the cuckoo clock, bounces across the window (the panes flip to Wordle tiles as it passes), drops to the floor, squashes the chair cushion and runs into the mouse hole. It plays once and does not loop. Our card 1 has a stand-in ball instead: it rolls in during the intro, rests on the floor at x 1000 (between the dog and the mouse hole) and hops in place twice in the 10 s loop (at 2 s and 7 s). The panes and the clock show how the story opens. To fit the story in during finesse: the source animation is `Ball` in NYT_YIG_c1s1 (420 frames, 57 objects), and the importer config is `tools/rooms/ch1-card-1.json` (`start_pose_from` sets the opening pose).",
+    "**Card 1 (c1s1): the ball story is the old YIG Test file's (Rive file 2666044), not the illustrator's 7 s one, and it is this scene's loop (Demetre, 2026-10-30).** Its keys are copied onto the illustrator's pieces (`tools/card1_story.py`, one time). The story starts the moment the intro ends: the ball slides out of the cuckoo clock's door, bounces on the chair and onto the window, the nine panes flip to tiles and back (the ball is knocked off), and it rolls off the right edge. Once it is out of sight it is removed (put back behind the clock door, also out of sight); 3 s later it slides out again, and the loop repeats (762 frames, 12.7 s). The ball never parks beyond x 1560, so it always leaves with its room. The small loops keep running and are fitted to the loop: the minute hand turns twice (24 ticks, a touch slower than the old file's), the pendulum swings 12 times, the dog's tail wags 3 times (a cycle 15% shorter than the illustrator's 5 s), the mouse runs once and waits in its hole, and the dog's eye follows the mouse (closes as the mouse passes to its left, opens once it has passed back to its right, blinks while open). Changes from the old file, on purpose: positions shifted 7 to 8 px right onto the illustrator's art (the shift eases between the clock, chair, window and floor); the old file's 41 frames of hiding before the slide are left out; the exit is cut where the ball is out of sight; no clouds in the window; the pull cord, plant and the rest stay still. To tune: the shift per contact, the pause (3.03 s), the eye's timing against the mouse, the dog's tail speed.",
     "**Card 1: the dog's eye.** `Dog_Eye` plays once in the source and ends on a different shape. In the loop it plays at the start of the 10 s and returns to its first shape over frames 300 to 599 (a slow drift). Worth looking at.",
     "**Card 5 (c1s5): the ball's 257-unit jump is the illustrator's.** The ball jumps between the two tile tops inside the loop (x 877 to 745 at frames 60 to 61, and 617 to 875 at frames 90 to 91) and again where the loop wraps (875 to 618). We left it exactly as made, with no return. The loop therefore does not start and end on one pose for this one property; `chapters/ch1/chapter.json` lists it under `openLoops` so the check allows it."
   ]

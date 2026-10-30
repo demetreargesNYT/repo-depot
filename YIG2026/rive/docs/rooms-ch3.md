@@ -42,8 +42,6 @@ illustrator's shape keys and are not listed here.
 ### Intro · exactly 3.2 s
 
 - **Floor and front slide in** (Chapter 3 Floor Plane): moves left 1600 px (x 1600 → 0), starts 0.05 s, takes 1.50 s, power2.inOut (slow, fast, slow)
-- **Chapter 3 Disco Ball**: drops 800 px (y -258 → 542), starts 1.00 s, takes 0.50 s, power2.in (starts slow, speeds up)
-- **Chapter 3 Disco Ball**: squash on landing: 1.03 wide × 0.93 tall at 1.57 s (reached over 0.07 s, power2.out); back to 1 by 1.82 s (back.out)
 - **Chapter 3 Picture 1**: drops 800 px (y -219 → 581), starts 1.13 s, takes 0.50 s, power2.in (starts slow, speeds up)
 - **Chapter 3 Picture 1**: squash on landing: 1.03 wide × 0.93 tall at 1.70 s (reached over 0.07 s, power2.out); back to 1 by 1.95 s (back.out)
 - **Chapter 3 Picture 2**: drops 800 px (y -219 → 581), starts 1.13 s, takes 0.50 s, power2.in (starts slow, speeds up)
@@ -62,10 +60,12 @@ illustrator's shape keys and are not listed here.
 - **Chapter 3 Frames 2**: squash on landing: 1.03 wide × 0.93 tall at 1.83 s (reached over 0.07 s, power2.out); back to 1 by 2.08 s (back.out)
 - **Chapter 3 Mobile**: drops 800 px (y -188 → 612), starts 1.27 s, takes 0.50 s, power2.in (starts slow, speeds up)
 - **Chapter 3 Mobile**: squash on landing: 1.03 wide × 0.93 tall at 1.83 s (reached over 0.07 s, power2.out); back to 1 by 2.08 s (back.out)
+- **Chapter 3 Disco Ball**: drops 800 px (y -258 → 542), starts 2.30 s, takes 0.50 s, power2.in (starts slow, speeds up)
+- **Chapter 3 Disco Ball**: squash on landing: 1.03 wide × 0.93 tall at 2.87 s (reached over 0.07 s, power2.out); back to 1 by 3.12 s (back.out)
 
 ### Ball · intro
 
-- **Chapter 3 Ball**: moves right 1110 px (x -80 → 1030), starts 1.15 s, takes 0.75 s, power1.out (fast, then a soft stop)
+- **Chapter 3 Ball**: moves right 1110 px (x -80 → 1030), starts 2.45 s, takes 0.75 s, power1.out (fast, then a soft stop)
 
 ### Ball · loop
 
@@ -85,8 +85,8 @@ illustrator's shape keys and are not listed here.
 
 ### Ball · intro
 
-- **Chapter 4 Ball**: moves right 657 px (x -80 → 577), starts 1.15 s, takes 0.75 s, power1.out (fast, then a soft stop)
-- **Chapter 4 Ball**: rises 82 px (y 712 → 630), starts 1.90 s, takes 0.25 s, power2.out (fast, then eases to a stop)
+- **Chapter 4 Ball**: moves right 657 px (x -80 → 577), starts 2.20 s, takes 0.75 s, power1.out (fast, then a soft stop)
+- **Chapter 4 Ball**: rises 82 px (y 712 → 630), starts 2.95 s, takes 0.25 s, power2.out (fast, then eases to a stop)
 
 ### Ball · loop
 
@@ -107,6 +107,22 @@ illustrator's shape keys and are not listed here.
 
 ### Ball · intro
 
+
+### Ball · loop
+
+- The ball stays put.
+
+## Chapter 3, card 2 (the ball with the bird on top, a stand-in idea) · scene `chapter-3-bird`
+
+**Loop:** 5.00 s (300 frames at 60/s), repeats. First and last frames are the same pose.
+
+### Intro · exactly 3.2 s
+
+- **Floor and front slide in** (Bird on Ball Floor Plane): moves left 1600 px (x 1600 → 0), starts 0.05 s, takes 1.50 s, power2.inOut (slow, fast, slow)
+
+### Ball · intro
+
+- **Bird on Ball Ball**: moves right 828 px (x -80 → 748), starts 2.30 s, takes 0.90 s, power1.out (fast, then a soft stop)
 
 ### Ball · loop
 

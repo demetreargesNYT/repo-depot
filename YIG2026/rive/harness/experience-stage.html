@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Year in Games 2026 · the full experience (stage)</title>
+<link rel="icon" href="data:,">
+<!--
+  The whole experience, Loading through End, on one stage, framed like engineering's staging page (yig-framing.css).
+  Our review page, not an engineering file: /experience wraps it in a frame per screen size. It runs on its own too, at
+  the window's size: /experience-stage?flow=anon. All copy is placeholder. Query: flow (sub | anon), player
+  (wordle-only | midi-only | several-games | all-seven), top (a game), jump (a card index), goto (file:scene).
+-->
+<!-- the Rive runtime: engineering's version -->
+<script src="https://cdn.jsdelivr.net/npm/@rive-app/canvas@2.27.3/rive.js"></script>
+<script type="importmap">
+{ "imports": { "@rive-app/canvas": "data:text/javascript,const r = window.rive; export const { Rive, EventType, Layout, Fit, Alignment, RuntimeLoader } = r; export default r;" } }
+</script>
+<link rel="stylesheet" href="yig-text-motion.css">
+<link rel="stylesheet" href="yig-framing.css">
+<style>
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; height: 100%; overflow: hidden; overscroll-behavior: none; background: #F1ECC0; color: #1F1F1F; }
+body { font: 500 14px/1.4 "NYT Franklin", "Helvetica Neue", Arial, sans-serif; }
+
+/* the header and the copy: design's 375-wide column, top centre, at fixed pixel sizes (values in yig-framing.css) */
+.yig-column { position: fixed; z-index: 1; top: 0; bottom: 0; left: 50%; transform: translateX(-50%); width: min(100vw, var(--yig-nav-column)); pointer-events: none; }
+.overlay { --u: 1px; position: absolute; inset: 0; color: var(--yig-copy-ink); }
+.nav-logo { position: absolute; top: var(--yig-logo-top); left: 50%; transform: translateX(-50%); display: grid; justify-items: center; gap: var(--yig-logo-gap); }
+.nav-logo img { display: block; }
+.nav-progress { position: absolute; top: var(--yig-progress-top); left: 50%; transform: translateX(-50%); width: var(--yig-progress-w); height: var(--yig-progress-h);
+  border-radius: var(--yig-progress-radius); background: var(--yig-progress-track); overflow: hidden; }
+.nav-progress > span { display: block; height: 100%; width: 0; border-radius: var(--yig-progress-radius); background: var(--yig-progress-fill); transition: width .3s ease; }
+.blk { position: absolute; left: var(--yig-copy-side); right: var(--yig-copy-side); text-align: center; display: grid; justify-items: center; }
+.blk-icon { top: var(--yig-copy-top); }
+.blk-copy { top: var(--yig-copy-top); }
+/* a card with a game icon: its copy starts below the icon (50 x 49) and a 22 px gap */
+.blk-copy.after-icon-slot { top: calc(var(--yig-copy-top) + 71px); }
+.t-serif { font: 500 24px / 1.2 "NYT Karnak", Georgia, serif; }
+.t-big { font: 700 25px / 1.3 "NYT Karnak", Georgia, serif; margin-top: 10px; }
+.t-small { font: 500 14px / 1.42 "NYT Franklin", Arial, sans-serif; margin-top: 8px; }
+.t-tag { font: 700 11px / 1.2 "NYT Franklin", Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; color: #5C6759; margin-bottom: 10px; }
+.t-icon img { width: 50px; height: auto; display: block; }
+.btn { display: inline-grid; place-items: center; margin-top: 18px; width: 196px; height: 48px; border-radius: 999px; background: #000; color: #FFF;
+  font: 600 16px / 1 "NYT Franklin", Arial, sans-serif; }
+/* Loading and Start (Figma "Loader" 12418:37648 and "Start" 12418:37604, 375 x 812): the lockup (The New York Times, Year in Games, the 2026
+   tiles) and "Supported by T-Mobile" stay put under both screens; only the middle changes, from a progress bar to the Let's go button.
+   They replace the small nav while these two cards show. Positions are the frames' own, from the window's top. */
+.splash { position: absolute; inset: 0; opacity: 0; transition: opacity .45s ease; pointer-events: none; }
+body.on-splash .splash { opacity: 1; }
+body.on-splash .nav-logo, body.on-splash .nav-progress { opacity: 0; }
+.nav-logo, .nav-progress { transition: opacity .45s ease; }
+.splash-lockup { position: absolute; top: 197px; left: 50%; width: 294px; height: 166px; transform: translateX(-50%); }
+.splash-lockup > img { position: absolute; display: block; }
+.splash-tiles { position: absolute; top: 90px; left: 0; width: 294px; height: 76px; }
+/* the four white squares and their digits, at the mock's own offsets (Figma "2026-live-type": squares 76 and 75.06 wide, each 2 px over the last) */
+.splash-tiles span { position: absolute; top: 0; height: 76px; display: block; background: #FFF; border: 1.5px solid #121212; box-sizing: border-box; padding-top: 20px;
+  text-align: center; font: 900 40px / 39.58px "NYT Franklin", "Arial Black", Arial, sans-serif; color: #121212; }
+.splash-tiles span:nth-child(1) { left: 0; width: 76px; }
+.splash-tiles span:nth-child(2) { left: 74px; width: 75.06px; }
+.splash-tiles span:nth-child(3) { left: 147.06px; width: 75.06px; }
+.splash-tiles span:nth-child(4) { left: 220.13px; width: 75.06px; }
+/* "Supported by" container: a 16 px label box, then a 130 x 40 logo slot with the 118 x 24 logo centred in it; 471 px from the top (block 197 + 274) */
+.splash-support { position: absolute; top: 471px; left: 50%; transform: translateX(-50%); width: 130px; height: 56px; display: grid; grid-template-rows: 16px 40px; justify-items: center; align-items: center;
+  font: 500 11px / 14px "NYT Franklin", Arial, sans-serif; color: #121212; }
+.splash-support > span { align-self: start; }
+.splash-support img { display: block; width: 118px; height: 24px; }
+.blk-start { top: 403px; }
+.blk-start .btn { margin-top: 0; }
+.blk-loader { top: 413px; }
+.loader { display: block; width: 150px; height: 8px; border-radius: 4px; background: rgba(18, 18, 18, .28); overflow: hidden; }
+.loader > span { display: block; height: 100%; width: 12%; border-radius: 4px; background: #121212; transition: width .6s ease; }
+/* placeholder screens for the ads, the video and the share card */
+.panel { display: grid; place-items: center; text-align: center; width: calc(300 * var(--u)); height: calc(250 * var(--u)); margin-top: calc(6 * var(--u));
+  border: calc(2 * var(--u)) dashed #1F1F1F; border-radius: calc(10 * var(--u)); background: rgba(255, 255, 255, .78);
+  font: 700 calc(16 * var(--u)) / 1.3 "NYT Franklin", Arial, sans-serif; padding: calc(16 * var(--u)); }
+.panel-video { height: calc(420 * var(--u)); width: calc(240 * var(--u)); background: rgba(31, 31, 31, .82); color: #FFF; border-color: #FFF; }
+
+/* tap zones below the desktop breakpoint: Back on the left, Next on the right (shares in yig-framing.css) */
+.yig-tap { position: fixed; top: 0; bottom: 0; z-index: 2; margin: 0; padding: 0; border: 0; background: transparent; cursor: pointer;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; }
+.yig-tap[data-zone="back"] { left: 0; width: var(--yig-tap-back-share); }
+.yig-tap[data-zone="next"] { right: 0; width: calc(100% - var(--yig-tap-back-share)); }
+/* desktop arrows: 20 px in from the window's edges, centred vertically, over the animation and the copy. The art's
+   chevron points left, so Back uses it as drawn and Next mirrors it. Harness only: never part of the Rive files. */
+.yig-arrow { position: fixed; top: 50%; z-index: 3; width: 56px; height: 56px; margin: 0; padding: 0; border: 0; border-radius: 50%;
+  background: none; cursor: pointer; transform: translateY(-50%); }
+.yig-arrow img { width: 56px; height: 56px; display: block; }
+.yig-arrow[data-dir="back"] { left: 20px; }
+.yig-arrow[data-dir="next"] { right: 20px; }
+.yig-arrow[data-dir="next"] img { transform: scaleX(-1); }
+.yig-arrow:focus-visible { outline: 2px solid #1F1F1F; outline-offset: 3px; }
+/* the video card: the top game's colour, flat, over the stage (the Figma frame shows no stack or floor behind the video) */
+.video-bg { position: fixed; inset: 0; z-index: 0; opacity: 0; pointer-events: none; transition: opacity .6s ease; }
+.curtain { position: fixed; inset: 0; z-index: 9; background: #F1ECC0; display: grid; place-items: center; font: 600 14px "NYT Franklin", Arial, sans-serif; }
+</style>
+</head>
+<body class="on-splash">
+<div class="yig-background"><div class="yig-artboard" id="artboard"></div></div>
+<div class="video-bg" id="video-bg"></div>
+<main class="yig-column"><div class="overlay" id="overlay" aria-live="polite">
+  <div class="nav-logo" aria-label="The New York Times Year in Games" role="img">
+    <img src="/assets/yig-nyt-small.svg" width="110.136" height="15.1138" alt="">
+    <img src="/assets/yig-year-in-games.svg" width="170.215" height="18.5492" alt="">
+  </div>
+  <div class="nav-progress" aria-hidden="true"><span id="progress"></span></div>
+  <div class="splash" aria-hidden="true">
+    <div class="splash-lockup">
+      <img src="/assets/yig-start-nyt.svg" width="188.405" height="24.7193" style="left: 52.8px; top: 0.64px" alt="">
+      <img src="/assets/yig-start-year-in-games.svg" width="293.646" height="32" style="left: 0.18px; top: 38px" alt="">
+      <div class="splash-tiles"><span>2</span><span>0</span><span>2</span><span>6</span></div>
+    </div>
+    <div class="splash-support"><span>Supported by</span><img src="/assets/t-mobile.svg" alt="T-Mobile"></div>
+  </div>
+</div></main>
+<button class="yig-tap" data-zone="back" id="tap-back" aria-label="Back"></button>
+<button class="yig-tap" data-zone="next" id="tap-next" aria-label="Next"></button>
+<button class="yig-arrow" data-dir="back" id="arrow-back" aria-label="Back"><img src="/art/global/ui-desktop-button.svg" alt=""></button>
+<button class="yig-arrow" data-dir="next" id="arrow-next" aria-label="Next"><img src="/art/global/ui-desktop-button.svg" alt=""></button>
+<div class="curtain" id="curtain" hidden>Skipping ahead…</div>
+
+<script type="module">
+import { start, onTap, onBack, ready, resize, state } from "./yig-integration.js";
+
+const q = new URLSearchParams(location.search);
+const FLOW = q.get("flow") === "anon" ? "anon" : "sub";
+
+// ---------------------------------------------------------------------------------------------------------------
+// EXAMPLE PLAYERS (subscriber flow): the same three as the Chapter 2 example. A game qualifies with 10 or more
+// completed puzzles. The cards per game match the Chapter 2 example; all copy here is placeholder.
+// ---------------------------------------------------------------------------------------------------------------
+// events / achievements: how many event badges and achievement badges the player earned. Chapter 3's last two cards show
+// them, and each card is skipped when the player has none (so these four cover both, one of each, and neither).
+const PLAYERS = {
+  "wordle-only": { gameOrder: ["wordle", "connections", "mini"], completed: { wordle: 212, connections: 7, mini: 3 }, events: 5, achievements: 9 },
+  "midi-only": { gameOrder: ["midi", "daily"], completed: { midi: 40, daily: 4 }, events: 3, achievements: 0 },
+  "all-seven": { gameOrder: ["wordle", "connections", "strands", "spelling-bee", "mini", "midi", "daily"],
+    completed: { wordle: 212, connections: 140, strands: 30, "spelling-bee": 64, mini: 50, midi: 40, daily: 90 }, events: 0, achievements: 0 },
+  "several-games": { gameOrder: ["wordle", "connections", "strands", "spelling-bee", "mini", "midi", "daily"],
+    completed: { wordle: 212, connections: 7, strands: 30, "spelling-bee": 64, mini: 50, midi: 40, daily: 90 }, events: 0, achievements: 14 },
+};
+// each game's wall colour in Chapter 4, which the video card shows flat behind the video
+const WALL = { wordle: "#C3E2C0", connections: "#E1DBF5", strands: "#DFF3F0", "spelling-bee": "#FFFDEF", mini: "#95BEFA", midi: "#7EAAF1", daily: "#C0D8F8" };
+const PLAYER = PLAYERS[q.get("player")] ?? PLAYERS["wordle-only"];
+const CARDS_PER_GAME = { wordle: 4, connections: 5, "spelling-bee": 2, strands: 1, mini: 1, midi: 1, daily: 1 };
+const NAME = { wordle: "Wordle", connections: "Connections", strands: "Strands", "spelling-bee": "Spelling Bee", mini: "The Mini", midi: "The Midi", daily: "The Crossword" };
+const ICON = { wordle: "wordle", connections: "connections", strands: "strands", "spelling-bee": "spelling-bee", mini: "mini", midi: "midi", daily: "crossword" };
+const QUALIFIES = 10;
+const COMMUNITY_ORDER = ["wordle", "connections", "spelling-bee", "mini", "strands"];  // Chapter 2.5
+const ANON_COMMUNITY = ["connections", "spelling-bee", "mini", "strands"];             // the anon mock's Chapter 2
+const own = PLAYER.gameOrder.filter((g) => (PLAYER.completed[g] ?? 0) >= QUALIFIES);
+const TOP = FLOW === "anon" ? "wordle" : (q.get("top") || own[0] || "wordle");
+
+// The card list for the whole experience. Each card: file and scene (for Rive), community and icon (for the
+// integration), and this page's own fields: chapter (for the review's Jump menu), and the placeholder copy.
+const c = (file, scene, chapter, copy, extra = {}) => ({ file, scene, chapter, copy, ...extra });
+function buildCards() {
+  const anon = FLOW === "anon";
+  const out = [
+    c(1, "loading", "Loading", [["loader", ""]], { slot: "loader" }),      // the lockup and Supported by are the page's own (.splash); the stats load from the Games API
+    c(1, "start", "Start", [["btn", "Let’s go"]], { slot: "start" }),
+    c(1, "ad", "Ad 1", [["panel", "AD 1 · T-MOBILE · PLACEHOLDER"], ["t-small", "Plays over the empty Chapter 1 room"]], { kind: "ad" }),
+  ];
+  const ch1 = anon
+    ? ["Together, you all completed X million puzzles", "All-player card 2", "All-player card 3", "All-player card 4", "All-player card 5"]
+    : ["Your first puzzle of the year", "Your longest streak", "Puzzles you completed", "Games you played", "Chapter 1, card 5"];
+  ch1.forEach((t, i) => out.push(c(1, `chapter-1-card-${i + 1}`, i ? "" : "Chapter 1", [["t-tag", `Chapter 1 · card ${i + 1}`], ["t-serif", t], ["t-big", "Placeholder"]])));
+  out.push(c(1, "ad", "Ad 2", [["panel", "AD 2 · T-MOBILE · PLACEHOLDER"], ["t-small", "The last picture of File 1; File 2 opens on it"]], { kind: "ad" }));
+  out.push(c(2, "intro", "Chapter 2", [["t-serif", "But that’s not all"], ["t-small", "PLACEHOLDER · the Chapter 2 opener"]]));
+  const community = (g, why) => c(2, g, "", [["t-tag", why], ["t-serif", `In ${NAME[g]}, all players…`], ["t-big", "Community stat"]], { community: true, icon: g });
+  if (anon) {
+    ANON_COMMUNITY.forEach((g) => out.push(community(g, "Community card · no lockup")));
+    out.push(c(2, "to-chapter-3", "Ad 3", [["panel", "AD 3 · T-MOBILE · PLACEHOLDER"], ["t-small", "Anons only: plays over the empty Chapter 3 room"]], { kind: "ad" }));
+  } else {
+    for (const g of own) {
+      for (let i = 1; i <= CARDS_PER_GAME[g]; i++) {
+        out.push(c(2, g, "", [["t-tag", `${NAME[g]} · card ${i} of ${CARDS_PER_GAME[g]}`], ["t-serif", "Your stat"], ["t-big", "Placeholder"]], { icon: g }));
+      }
+    }
+    if (own.length === 1) {
+      out.push(c(2, "bridge", "Chapter 2.5", [["t-serif", "The rest of the world"], ["t-serif", "also came to play."]]));
+      COMMUNITY_ORDER.filter((g) => g !== own[0]).forEach((g) => out.push(community(g, "Chapter 2.5 · community card")));
+    }
+    // no Ad 3 for subscribers: the tap on the last card plays both moves (out to the empty Chapter 3 room, then Chapter 3's room)
+  }
+  if (anon) {
+    ["Connections’ 1000th puzzle", "Wordle turned 5"].forEach((txt, i) => out.push(c(3, "chapter-3", i ? "" : "Chapter 3", [["t-tag", `Chapter 3 · card ${i + 1}`], ["t-serif", txt], ["t-big", "Placeholder"]])));
+  } else {
+    // Chapter 3 for subscribers and registered players: the room, the ball with the bird on top, then the badge cards on the
+    // empty Chapter 3 room (HTML only), each skipped when the player has none
+    out.push(c(3, "chapter-3", "Chapter 3", [["t-serif", "There’s plenty more to celebrate, too."]]));
+    out.push(c(3, "chapter-3-bird", "", [["t-serif", "Crossplay, the Midi and bonus puzzles gave you new ways to play."]]));
+    if (PLAYER.events > 0) out.push(c(3, "ad", "", [["t-serif", "You also earned new badges"], ["panel", `${PLAYER.events} EVENT BADGES · HTML · PLACEHOLDER`]]));
+    if (PLAYER.achievements > 0) out.push(c(3, "ad", "", [["t-serif", "…and bragging rights."], ["panel", `${PLAYER.achievements} ACHIEVEMENT BADGES · HTML · PLACEHOLDER`]]));
+  }
+  // Chapter 4: the first card is the stack and the ball on the lighter blue wall (reveal false); the top-game card tints the
+  // wall to the game's colour and starts its fireworks (reveal true); the video card keeps that colour
+  out.push(c(3, "chapter-4", "Chapter 4", [["t-serif", anon ? "But through it all, it’s clear everyone plays favorites." : "But through it all, it’s clear you play favorites."]], { topGame: TOP, reveal: false }));
+  out.push(c(3, "chapter-4", "", [["t-serif", anon ? "In 2026, everyone’s top game was…" : "In 2026, your top game was…"], ["t-big", NAME[TOP]]], { icon: TOP, reveal: true }));
+  out.push(c(3, "chapter-4", "Video", [["panel panel-video", anon ? "VIDEO FROM ALL THE EDITORS · PLACEHOLDER" : `${NAME[TOP].toUpperCase()} VIDEO · PLACEHOLDER`], ["t-serif", "Tracey Bennett"], ["t-small", `Editor of ${NAME[TOP]} · PLACEHOLDER`]], { kind: "video", reveal: true, bg: WALL[TOP] }));
+  out.push(c(3, "end", "End", anon
+    ? [["t-serif", "Thanks for playing"], ["t-small", "Register for a personalized Year in Games next year. PLACEHOLDER"]]
+    : [["t-serif", "Thanks for playing"], ["t-small", "PLACEHOLDER"]]));
+  if (!anon) out.push(c(3, "end", "Share", [["panel", "SHARE CARD (HTML) · PLACEHOLDER"]]));
+  return out;
+}
+const cards = buildCards();
+
+// The copy: one block per card (data-copy-frame), one icon per game (data-icon-game), all hidden until the integration shows them.
+const esc = (v) => String(v).replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch]);
+function lineHtml([cls, text]) {
+  if (cls.startsWith("panel")) return `<span class="yig-pop ${esc(cls)}">${esc(text)}</span>`;
+  if (cls === "btn") return `<span class="yig-pop btn">${esc(text)}</span>`;   // pops like a panel: a text mask would clip the pill
+  if (cls === "loader") return `<span class="yig-pop loader"><span id="loader-fill"></span></span>`;
+  return `<span class="yig-mask"><span class="yig-line ${esc(cls)}">${esc(text)}</span></span>`;
+}
+let html = "";
+for (const g of new Set(cards.map((k) => k.icon).filter(Boolean))) {
+  html += `<div class="yig-icon blk blk-icon" data-icon-game="${esc(g)}" hidden><span class="yig-pop t-icon"><img src="/art/global/${ICON[g]}-icon.svg" alt=""></span></div>`;
+}
+cards.forEach((k, i) => {
+  html += `<div class="yig-text blk blk-copy${k.icon ? " after-icon-slot" : ""}${k.slot ? ` blk-${k.slot}` : ""}" data-copy-frame="${i}" hidden>${k.copy.map(lineHtml).join("")}</div>`;
+});
+document.getElementById("overlay").insertAdjacentHTML("beforeend", html);
+
+start(document.getElementById("artboard"), cards);
+
+// Loading: the site waits for the stats while File 1 loads; here the stats "arrive" 1.2 s after File 1 is ready.
+// ?jump=i skips ahead to card i behind a curtain, then taps once so its room plays.
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+// ?goto=<file>:<scene>[:community][:2] skips to the first (or second) card on that scene; ?jump=<card index> is the same by number
+function cardFor(goto) {
+  const [file, scene, ...flags] = goto.split(":");
+  const hits = cards.map((k, i) => i).filter((i) => cards[i].file === Number(file) && cards[i].scene === scene && !!cards[i].community === flags.includes("community"));
+  return hits[flags.includes("2") ? 1 : 0] ?? 0;
+}
+const jump = q.get("goto") ? cardFor(q.get("goto")) : Number(q.get("jump") || 0);
+// the loader creeps along while File 1 loads, fills when it is in, then the page moves on to Start
+const fill = () => document.getElementById("loader-fill");
+let creep = 12;
+const creeper = setInterval(() => { creep = Math.min(85, creep + 6); if (fill()) fill().style.width = `${creep}%`; }, 500);
+ready(1).then(async () => {
+  clearInterval(creeper);
+  if (fill()) fill().style.width = "100%";
+  if (jump > 1) {
+    document.getElementById("curtain").hidden = false;
+    for (let i = 0; i < jump - 1; i++) { onTap(); await sleep(90); }
+    await sleep(3800);
+    document.getElementById("curtain").hidden = true;
+    onTap();
+  } else {
+    await sleep(1300);       // the stats "arrive"; the bar has had time to fill
+    onTap();
+  }
+});
+
+for (const id of ["tap-next", "arrow-next"]) document.getElementById(id).addEventListener("click", () => onTap());
+for (const id of ["tap-back", "arrow-back"]) document.getElementById(id).addEventListener("click", () => onBack());
+addEventListener("keydown", (e) => {
+  if (e.key === "ArrowRight") { e.preventDefault(); onTap(); }
+  if (e.key === "ArrowLeft") { e.preventDefault(); onBack(); }
+});
+addEventListener("resize", () => resize());
+
+// for the review frame and the browser test
+// the progress bar: how far through the cards the player is
+const progress = document.getElementById("progress");
+const videoBg = document.getElementById("video-bg");
+setInterval(() => {
+  document.body.classList.toggle("on-splash", state().frame <= 1);
+  progress.style.width = `${(100 * state().frame) / (cards.length - 1)}%`;
+  const k = cards[state().frame];
+  if (k.bg) videoBg.style.background = k.bg;
+  videoBg.style.opacity = k.kind === "video" ? 1 : 0;
+}, 100);
+
+window.yigExperience = { cards, onTap, onBack, state, flow: FLOW, top: TOP };
+</script>
+</body>
+</html>

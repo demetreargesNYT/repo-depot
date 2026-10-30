@@ -1,0 +1,20 @@
+{
+  "name": "yig-react-example",
+  "private": true,
+  "version": "0.0.0",
+  "description": "A small React example that drives the three Year in Games Rive files, following engineering-guide.md",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@rive-app/react-canvas": "4.20.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "typescript": "^5.6.3"
+  }
+}

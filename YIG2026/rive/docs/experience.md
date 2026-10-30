@@ -4,7 +4,7 @@ How the whole recap flows, for both audiences, and how it maps to the Rive files
 
 ## Basics
 
-- **Format.** A tap-through story, like a Wrapped recap. On mobile, tap the right half of the screen for Next and the left half for Back. On desktop, arrow buttons at the left and right edges of the window do Back and Next (HTML, not part of the Rive files).
+- **Format.** A tap-through story, like a Wrapped recap. On mobile, tap the right 75% of the screen for Next and the left 25% for Back (engineering's tap zones). On desktop, arrow buttons at the left and right edges of the window do Back and Next (HTML, not part of the Rive files).
 - **One stage for every device.** Each Rive file uses one 1495 × 1067 artboard for desktop and mobile. Phones show the centre 375 wide. The stats, copy and icons are HTML, layered over the Rive stage.
 - **Data.** While Loading shows, the site loads the player's stats from the Games API. The stats fill every variable, decide which cards the player sees and in what order, and pick card variants.
 - **Two audiences.** Subscribers and registered players get a personalized experience. Anonymous players get the same structure with all-player (aggregate) stats.
@@ -21,8 +21,8 @@ How the whole recap flows, for both audiences, and how it maps to the Rive files
 | 4 | Chapter 1 | Up to five cards with personal copy: the first puzzle of the year, longest streak, total puzzles, number of games played. Some have thresholds (for example the streak card shows only above 10 days), so Chapter 1 cards can be skipped too. Five rooms on the same cream wall and orange floor. How-to overlay on card 1. |
 | 5 | Ad 2 | Over the empty Chapter 1 room. |
 | 6 | Chapter 2 | The longest chapter. An opener ("But that's not all"), then each qualifying game in the player's order, then Chapter 2.5 for players with only one qualifying game. See "Chapter 2 rules". Pink floor; the wall color changes with each game. |
-| 7 | Chapter 3 | Short: badges and launches. Slots: the Midi (and Crossplay) launch card, Wordle turned 5, Connections' 1000th puzzle, and skill badges. The player sees the cards their badges and play allow. Badges are HTML. Lavender wall, green floor. |
-| 8 | Chapter 4 | The player's top game of the year: card 2 shows that game's icon and text, with that game's Rive version. Then that game's video plays (HTML). Mustard floor. |
+| 7 | Chapter 3 | Short. Subscribers and registered players see up to four cards ("Chapter 3 and Chapter 4 cards" below): the intro (the Chapter 3 room), the ball with the bird on top, event badges and achievement badges (HTML on the empty Chapter 3 room), the last two skipped when the player has none. Lavender wall, green floor. |
+| 8 | Chapter 4 | The player's top game of the year, in three cards: the stack and the ball on a lighter blue wall; the wall tints to the top game's colour and that game's fireworks start; that game's video (HTML) on that game's colour. Mustard floor. |
 | 9 | End | A looping Rive room, thanking the player. Orange floor. |
 | 10 | Share | HTML. |
 
@@ -76,7 +76,7 @@ Both flows use the same files; only the card list and the HTML copy differ. Full
 - Confirmed with engineering (Oct 29): the Rive animation sits behind all the slides and stays on screen, changing rooms as the player taps, instead of one Rive file per slide.
 - Engineering will write their own React code to drive the Rive files rather than use our integration file. We give them a written guide with every rule (what to set and in what order, timings, Back during a pan, switching between files) and a React reference example. Our integration file stays as a working reference.
 - Their page uses Rive runtime 2.27.3 (via @rive-app/react-canvas 4.20.1). All three of our files were tested on it and work: no upgrade needed. The file must be started with the plural option `stateMachines: "Backdrop"`; the singular is ignored on 2.27.3.
-- Because engineering builds the file switching from our guide, the move from Chapter 2 into Chapter 3 stays simple: Chapter 2 ends on the empty Chapter 3 room, then Chapter 3's room arrives. The single continuous motion is dropped.
+- Because engineering builds the file switching from our guide, the move from Chapter 2 into Chapter 3 stays simple: Chapter 2 ends on the empty Chapter 3 room, then Chapter 3's room arrives. The single continuous motion is dropped. **Subscribers have no card on the empty Chapter 3 room** (Demetre, 2026-10-29): the tap on their last Chapter 2 card plays both moves itself (the room pans out to the empty Chapter 3 room, File 3 takes over, and Chapter 3's room arrives right after, with no extra tap), and Back from Chapter 3 returns to that last Chapter 2 card. Anons keep Ad 3 as a card on the empty room.
 
 ## Not settled yet
 
@@ -84,7 +84,32 @@ Both flows use the same files; only the card list and the HTML copy differ. Full
 
 
 - Chapter 1's card copy for each flow, and how Start moves into Chapter 1.
-- Chapter 3: which 2 of the 4 cards show, by badge.
-- Chapter 4: card 1, and when the video takes over and gives the stage back.
+- Chapter 3: the real copy and the badge art (the badges are HTML), and the second card's ball with the bird (a stand-in idea for now).
+- Chapter 4: the video, and how the page takes over from the stage behind it.
 - The full card list and variants for each game other than Wordle and Connections (they're in Figma).
 - Art still to come: Loading, the mobile How-to overlay, and Chapter 4 versions for The Mini and The Midi.
+
+## Chapter 3 and Chapter 4 cards (Figma frames, 2026-10-30)
+
+Subscribers and registered players (frames: 10406:87455, 10500:106385, 10406:87479, 10406:87502 for Chapter 3; 10522:108393, 11729:47076, 10406:84746 for Chapter 4).
+
+**Chapter 3** (File 3; the tap on their last Chapter 2 card plays the pan out to the empty Chapter 3 room and Chapter 3's room arrives):
+
+| # | Card | Rive scene | Notes |
+|---|---|---|---|
+| 1 | Intro: "There's plenty more to celebrate, too." | `chapter-3` | The Chapter 3 room (disco ball, picture, frames, mobile with the bird, crib, gifts). |
+| 2 | "Crossplay, the Midi and bonus puzzles gave you new ways to play." | `chapter-3-bird` | The room gives way to just the ball (twice the size, centred) with the bird sitting on top; the bird's own loop keeps running. A stand-in idea for now. |
+| 3 | Event badges: "You also earned new badges" | `ad` (the empty room on the Chapter 3 colours) | The badges are HTML. Skipped if the player has no event badges. |
+| 4 | Achievement badges: "...and bragging rights." | `ad` | The badges are HTML. Skipped if the player has no achievement badges. |
+
+The example players in the review page cover every case: Wordle only has both badge cards, Midi only has event badges only, Several games has achievement badges only, All seven games has neither. Anons keep two cards in the Chapter 3 room.
+
+**Chapter 4** (File 3, scene `chapter-4`; the property `reveal` says which card):
+
+| # | Card | `reveal` | What the stage does |
+|---|---|---|---|
+| 1 | "But through it all, it's clear you play favorites." | false | The stack and the ball on the lighter blue wall (DFF3F0), mustard floor, no fireworks. |
+| 2 | "In 2026, your top game was..." with the game's icon and name | true | The wall fades (1.45 s) to the top game's colour and that game's fireworks start looping from their opening. |
+| 3 | The game's video and the editor's name | true | The stage stays on card 2's picture; the page covers it with the game's wall colour, flat, behind the video (the Figma frame has no stack or floor there). |
+
+Going back to card 1 sets `reveal` back to false: the wall returns to the lighter blue and the fireworks stop. Anons: the top game is always Wordle, so after the first card it shifts to Wordle's colour (C3E2C0) and Wordle's fireworks; their video is the special one from all the editors. Wall colours: Wordle C3E2C0, Connections E1DBF5, Strands DFF3F0, Spelling Bee FFFDEF, The Mini 95BEFA and The Midi 7EAAF1 (placeholders until their art arrives), The Crossword C0D8F8.

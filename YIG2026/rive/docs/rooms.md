@@ -84,17 +84,17 @@ illustrator's shape keys and are not listed here.
 
 ### Ball · intro
 
-- **Wordle Ball**: moves right 636 px (x -80 → 556), starts 1.15 s, takes 0.60 s, power1.out (fast, then a soft stop)
-- **Wordle Ball**: moves right 95 px (x 556 → 651), starts 1.75 s, takes 0.37 s, linear (constant speed)
-- **Wordle Ball**: moves right 56 px (x 651 → 707), starts 2.17 s, takes 0.37 s, linear (constant speed)
-- **Wordle Ball**: rises 102 px (y 712 → 610), starts 1.75 s, takes 0.17 s, power2.out (fast, then eases to a stop)
-- **Wordle Ball**: drops 45 px (y 610 → 655), starts 1.92 s, takes 0.20 s, power2.in (starts slow, speeds up)
-- **Wordle Ball**: rises 96 px (y 655 → 559), starts 2.17 s, takes 0.17 s, power2.out (fast, then eases to a stop)
-- **Wordle Ball**: drops 45 px (y 559 → 604), starts 2.33 s, takes 0.20 s, power2.in (starts slow, speeds up)
-- **Wordle Ball**: rises 12 px (y 604 → 592), starts 2.62 s, takes 0.12 s, power2.out (fast, then eases to a stop)
-- **Wordle Ball**: drops 12 px (y 592 → 604), starts 2.73 s, takes 0.12 s, power2.in (starts slow, speeds up)
-- **Wordle Ball**: squash on landing: 1.16 wide × 0.84 tall at 2.18 s (reached over 0.07 s, power2.out); back to 1 by 3.17 s (back.out)
-- **Wordle Ball Spin**: turns -1080° → 0°, starts 1.15 s, takes 1.38 s, power1.out (fast, then a soft stop)
+- **Wordle Ball**: moves right 636 px (x -80 → 556), starts 1.18 s, takes 0.60 s, power1.out (fast, then a soft stop)
+- **Wordle Ball**: moves right 95 px (x 556 → 651), starts 1.78 s, takes 0.37 s, linear (constant speed)
+- **Wordle Ball**: moves right 56 px (x 651 → 707), starts 2.20 s, takes 0.37 s, linear (constant speed)
+- **Wordle Ball**: rises 102 px (y 712 → 610), starts 1.78 s, takes 0.17 s, power2.out (fast, then eases to a stop)
+- **Wordle Ball**: drops 45 px (y 610 → 655), starts 1.95 s, takes 0.20 s, power2.in (starts slow, speeds up)
+- **Wordle Ball**: rises 96 px (y 655 → 559), starts 2.20 s, takes 0.17 s, power2.out (fast, then eases to a stop)
+- **Wordle Ball**: drops 45 px (y 559 → 604), starts 2.37 s, takes 0.20 s, power2.in (starts slow, speeds up)
+- **Wordle Ball**: rises 12 px (y 604 → 592), starts 2.65 s, takes 0.12 s, power2.out (fast, then eases to a stop)
+- **Wordle Ball**: drops 12 px (y 592 → 604), starts 2.77 s, takes 0.12 s, power2.in (starts slow, speeds up)
+- **Wordle Ball**: squash on landing: 1.16 wide × 0.84 tall at 2.22 s (reached over 0.07 s, power2.out); back to 1 by 3.20 s (back.out)
+- **Wordle Ball Spin**: turns -1080° → 0°, starts 1.18 s, takes 1.38 s, power1.out (fast, then a soft stop)
 
 ### Ball · loop
 
@@ -151,14 +151,14 @@ illustrator's shape keys and are not listed here.
 
 ### Ball · intro
 
-- **Connections Ball**: moves right 550 px (x -80 → 470), starts 1.15 s, takes 0.60 s, power1.out (fast, then a soft stop)
-- **Connections Ball**: moves right 146 px (x 470 → 616), starts 1.75 s, takes 0.50 s, linear (constant speed)
-- **Connections Ball**: rises 148 px (y 712 → 564), starts 1.75 s, takes 0.23 s, power2.out (fast, then eases to a stop)
-- **Connections Ball**: drops 60 px (y 564 → 624), starts 1.98 s, takes 0.27 s, power2.in (starts slow, speeds up)
-- **Connections Ball**: rises 12 px (y 624 → 612), starts 2.33 s, takes 0.12 s, power2.out (fast, then eases to a stop)
-- **Connections Ball**: drops 12 px (y 612 → 624), starts 2.45 s, takes 0.12 s, power2.in (starts slow, speeds up)
-- **Connections Ball**: squash on landing: 1.22 wide × 0.78 tall at 2.33 s (reached over 0.08 s, power2.out); back to 1 by 2.88 s (back.out)
-- **Connections Ball Spin**: turns -1080° → 0°, starts 1.15 s, takes 1.10 s, power1.out (fast, then a soft stop)
+- **Connections Ball**: moves right 550 px (x -80 → 470), starts 1.47 s, takes 0.60 s, power1.out (fast, then a soft stop)
+- **Connections Ball**: moves right 146 px (x 470 → 616), starts 2.07 s, takes 0.50 s, linear (constant speed)
+- **Connections Ball**: rises 148 px (y 712 → 564), starts 2.07 s, takes 0.23 s, power2.out (fast, then eases to a stop)
+- **Connections Ball**: drops 60 px (y 564 → 624), starts 2.30 s, takes 0.27 s, power2.in (starts slow, speeds up)
+- **Connections Ball**: rises 12 px (y 624 → 612), starts 2.65 s, takes 0.12 s, power2.out (fast, then eases to a stop)
+- **Connections Ball**: drops 12 px (y 612 → 624), starts 2.77 s, takes 0.12 s, power2.in (starts slow, speeds up)
+- **Connections Ball**: squash on landing: 1.22 wide × 0.78 tall at 2.65 s (reached over 0.08 s, power2.out); back to 1 by 3.20 s (back.out)
+- **Connections Ball Spin**: turns -1080° → 0°, starts 1.47 s, takes 1.10 s, power1.out (fast, then a soft stop)
 
 ### Ball · loop
 
@@ -190,9 +190,9 @@ illustrator's shape keys and are not listed here.
 
 ### Ball · intro
 
-- **Strands Ball**: moves right 909 px (x -80 → 829), starts 1.15 s, takes 0.75 s, power1.out (fast, then a soft stop)
-- **Strands Ball**: rises 76 px (y 756 → 680), starts 1.90 s, takes 0.15 s, power2.out (fast, then eases to a stop)
-- Highlight and shape ease into the landing pose, 1.15 s to 2.05 s.
+- **Strands Ball**: moves right 909 px (x -80 → 829), starts 2.30 s, takes 0.75 s, power1.out (fast, then a soft stop)
+- **Strands Ball**: rises 76 px (y 756 → 680), starts 3.05 s, takes 0.15 s, power2.out (fast, then eases to a stop)
+- Highlight and shape ease into the landing pose, 2.30 s to 3.20 s.
 
 ### Ball · loop
 
@@ -220,8 +220,8 @@ illustrator's shape keys and are not listed here.
 
 ### Ball · intro
 
-- **Spelling Bee Ball**: moves right 785 px (x -80 → 705), starts 1.15 s, takes 0.75 s, power1.out (fast, then a soft stop)
-- Highlight and shape ease into the landing pose, 1.15 s to 2.05 s.
+- **Spelling Bee Ball**: moves right 785 px (x -80 → 705), starts 2.30 s, takes 0.75 s, power1.out (fast, then a soft stop)
+- Highlight and shape ease into the landing pose, 2.30 s to 3.20 s.
 
 ### Ball · loop
 
@@ -247,7 +247,7 @@ illustrator's shape keys and are not listed here.
 
 ### Ball · intro
 
-- **The Mini Ball**: moves right 746 px (x -80 → 666), starts 1.15 s, takes 0.75 s, power1.out (fast, then a soft stop)
+- **The Mini Ball**: moves right 746 px (x -80 → 666), starts 2.30 s, takes 0.75 s, power1.out (fast, then a soft stop)
 
 ### Ball · loop
 
@@ -271,8 +271,8 @@ illustrator's shape keys and are not listed here.
 
 ### Ball · intro
 
-- **The Midi Ball**: moves right 939 px (x -259 → 680), starts 1.15 s, takes 0.75 s, power1.out (fast, then a soft stop)
-- **The Midi Ball**: rises 139 px (y 792 → 652), starts 1.90 s, takes 0.15 s, power2.out (fast, then eases to a stop)
+- **The Midi Ball**: moves right 939 px (x -259 → 680), starts 2.30 s, takes 0.75 s, power1.out (fast, then a soft stop)
+- **The Midi Ball**: rises 139 px (y 792 → 652), starts 3.05 s, takes 0.15 s, power2.out (fast, then eases to a stop)
 
 ### Ball · loop
 
@@ -297,8 +297,8 @@ illustrator's shape keys and are not listed here.
 
 ### Ball · intro
 
-- **The Crossword Ball**: moves right 704 px (x -40 → 664), starts 1.15 s, takes 0.75 s, power1.out (fast, then a soft stop)
-- **The Crossword Ball**: rises 128 px (y 821 → 692), starts 1.90 s, takes 0.15 s, power2.out (fast, then eases to a stop)
+- **The Crossword Ball**: moves right 704 px (x -40 → 664), starts 2.30 s, takes 0.75 s, power1.out (fast, then a soft stop)
+- **The Crossword Ball**: rises 128 px (y 821 → 692), starts 3.05 s, takes 0.15 s, power2.out (fast, then eases to a stop)
 
 ### Ball · loop
 

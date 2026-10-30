@@ -11,6 +11,6 @@
     "deliver": "python3 tools/deliver.py",
     "back": "python3 tools/back_test.py",
     "scaffold": "python3 tools/scaffold_chapter.py",
-    "review": "node harness/file-review-test.mjs"
+    "experience": "node harness/experience-test.mjs"
   }
 }

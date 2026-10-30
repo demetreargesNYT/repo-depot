@@ -1,0 +1,24 @@
+{
+  "room": "Bird on Ball",
+  "scene": "chapter-3-bird",
+  "artboard": "NYT_YIG_c3s1",
+  "keep_only": ["1:23095", "1:98238"],
+  "ball": {
+    "stand_in": {
+      "x": 748,
+      "y": 694.32,
+      "scale": 2,
+      "hops": [],
+      "ride": {"ids": ["1:23095", "1:98238"], "x": 6, "y": -58}
+    }
+  },
+  "loops": [
+    {"anim": "Loop", "from": 0, "to": 300}
+  ],
+  "loop_frames": 300,
+  "intro": {
+    "plane": [0.05, 1.55],
+    "drops": [],
+    "ball": {"roll": [2.3, 3.2], "rolls_at_rest_height": true}
+  }
+}
