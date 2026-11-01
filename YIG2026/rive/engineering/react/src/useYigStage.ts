@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRive } from '@rive-app/react-canvas'
 import type { Rive } from '@rive-app/react-canvas'
 import { FILES, FILE_NUMBERS } from './files'
-import { CLEAR_MS, COMMUNITY_COPY_MS, INTRO_MS, PAN_MS, RISE_SETTLED_MS } from './timing'
+import { CLEAR_MS, COMMUNITY_COPY_MS, INTRO_MS, PAN_MS, REVEAL_FADE_MS, RISE_SETTLED_MS } from './timing'
 import type { Card, CopyLayer, FileNumber, Game } from './types'
 
 type Step = 1 | -1
@@ -105,6 +105,17 @@ export function useYigStage(cards: Card[]) {
     if (sceneProp) sceneProp.value = scene
   }
 
+  // ---- reveal, for a move that stays in the room (Chapter 4's cards): true when the value changed, so the wall is about to
+  // fade, forward or back. A move that changes room sets reveal inside setScene instead.
+  const applyReveal = (card: Card): boolean => {
+    if (card.reveal === undefined) return false
+    const prop = rives.current[card.file - 1]?.viewModelInstance?.boolean('reveal')
+    if (!prop) return false
+    const changed = prop.value !== card.reveal
+    prop.value = card.reveal
+    return changed
+  }
+
   // ---- show file i on top of the one on screen, playing; the old one hides and rests once the new one has drawn
   const show = (i: number) => {
     const mut = m.current
@@ -181,6 +192,7 @@ export function useYigStage(cards: Card[]) {
     if (roomChange && mut.hopRun) { window.clearTimeout(mut.hopTimer); mut.hopRun() } // and cuts a Next's two moves short
     mut.frame = target
     setFrame(target)
+    const fading = !roomChange && applyReveal(to)
     const key = roomKey(to)
     const firstVisit = roomChange && step > 0 && !mut.visited.has(key) && !FILES[to.file].noIntro.includes(to.scene)
     if (roomChange) {
@@ -216,7 +228,7 @@ export function useYigStage(cards: Card[]) {
     const iconChange = to.icon !== from.icon
     const settleLeft = Math.max(0, (mut.copyFrom[key] ?? 0) - now) // an interrupted first visit still waits for its room
     let delay: number | null
-    if (!roomChange) delay = settleLeft > 0 ? settleLeft : null // null: the quick swap after the old copy clears
+    if (!roomChange) delay = fading ? Math.max(settleLeft, REVEAL_FADE_MS) : settleLeft > 0 ? settleLeft : null // null: the quick swap after the old copy clears; a reveal waits for the wall's fade
     else if (firstVisit) delay = (mut.copyFrom[key] ?? now) - now
     else delay = Math.max(PAN_MS * legs, settleLeft)
     showCopy(target, { changed: roomChange || iconChange, delay, back: step < 0 })

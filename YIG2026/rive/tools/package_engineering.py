@@ -8,9 +8,10 @@ anywhere. In order:
   2. each file is built from a scratch copy of its project; File 2's working artboard, Bridge Art, is taken out of the
      scratch copy first, so the delivered .riv has only the main artboard. The built files are checked: the artboard,
      the state machine and the view model are there by name, and no working artboard is
-  3. the package is assembled: the three .riv files, the engineering guide, the React example, our integration file as a
-     working reference, the text CSS, and a standalone page that plays the whole experience
-  4. the README says how to run it; it carries no internal version numbers and no git references (checked)
+  3. the package is assembled in two folders: core/ (the three .riv files, the engineering guide, the text CSS: everything
+     engineering needs) and reference/ (optional: the React example, our integration file and a standalone page that plays
+     the whole experience), plus a five-line README at the root
+  4. the guide and the README carry no internal version numbers, git references or names only we would understand (checked)
 """
 import json
 import os
@@ -73,12 +74,13 @@ def example_page():
     """The harness's experience page, made standalone: its paths point at the package's folders."""
     page = (REPO / "harness" / "experience-stage.html").read_text()
     page = page.replace('src="/assets/', 'src="assets/').replace('/art/global/', 'assets/icons/')
-    page = page.replace('from "./yig-integration.js"', 'from "../reference/yig-integration.js"')
-    page = page.replace('href="yig-text-motion.css"', 'href="../yig-text-motion.css"')
+    page = page.replace('from "./yig-integration.js"', 'from "../yig-integration.js"')       # reference/yig-integration.js
+    page = page.replace('href="yig-text-motion.css"', 'href="../../core/yig-text-motion.css"')
     page = re.sub(r"<!--\n  The whole experience, Loading through End.*?-->", """<!--
   The whole experience, Loading through End, on one stage, playing the three Rive files back to back with the example
-  player data below. Serve the package folder with any static server and open /example/ (see the README). Query:
-  flow (subscriber is the default, or anon), player (wordle-only | midi-only | several-games | all-seven), top (a game),
+  player data below. Serve the package folder with any static server and open /reference/example/ (engineering-guide.md,
+  section 13). Query:
+  flow (subscriber is the default, or anon), player (wordle-only | midi-only | connections-only | several-games | all-seven | none), top (a game),
   goto (file:scene, for example 3:chapter-4), jump (a card index). All copy is placeholder.
 -->""", page, count=1, flags=re.S)
     page = re.sub(r"<!-- the Rive runtime: engineering's version -->", "<!-- the Rive runtime, pinned -->", page)
@@ -98,86 +100,37 @@ def framing_css():
 
 def reference_integration():
     js = (REPO / "engineering" / "yig-integration.js").read_text()
-    # the example page lives in example/, so the files are one folder up
+    # the example page is reference/example/index.html, and the files are in core/
     for name in RIVS.values():
-        js = js.replace(f'src: "{name}"', f'src: "../riv/{name}"')
-    js = js.replace("// The three files, in order,", "// The three files, in order (paths are relative to the example page, example/index.html),")
+        js = js.replace(f'src: "{name}"', f'src: "../../core/{name}"')
+    js = js.replace("// The three files, in order,", "// The three files, in order (paths are relative to the example page, reference/example/index.html),")
     return js
 
 
 def readme():
-    return f"""# Year in Games 2026: Rive files and examples for engineering
+    return """# Year in Games 2026: Rive files and guide for engineering
 
-This package has the three Rive files, a guide that says how to drive them from your own React code, a small React example
-that follows the guide, and a page that plays the whole experience so you can see what the files do.
-
-## What is here
-
-| Path | What it is |
-|---|---|
-| `engineering-guide.md` | Start here. Every rule: the state machine and view model, the properties and the order to set them in, every scene of every file, the card logic, when each card's copy may appear, Back during a move, switching between the files, the text CSS. |
-| `riv/start-chapter-1.riv` | File 1: Loading, Start, Ad 1, Chapter 1, Ad 2 |
-| `riv/chapter-2.riv` | File 2: Chapter 2, ending on the empty Chapter 3 room |
-| `riv/chapters-3-4-end.riv` | File 3: Ad 3, Chapter 3, Chapter 4, End |
-| `react/` | A small React 18 + TypeScript example (`@rive-app/react-canvas` 4.20.1, CSS Modules) that does what the guide says |
-| `reference/yig-integration.js` | The same rules as plain JavaScript: a working reference |
-| `yig-text-motion.css` | The text motion for the copy (see the guide, section 11) |
-| `example/` | A standalone page that plays the whole experience |
-
-The state machine and the view model are named `Backdrop` in all three files. Start every file with the plural option
-`stateMachines: 'Backdrop'`; the Rive runtime in your page ({RUNTIME}) ignores the singular.
-
-## Run the example page
-
-Any static server will do; opening `example/index.html` straight from disk will not load the `.riv` files. From this folder:
-
-```
-python3 -m http.server 8000
-```
-
-Then open <http://localhost:8000/example/>. It needs an internet connection, because the page loads the Rive runtime
-({RUNTIME}) from a CDN. Tap or click the right side to go forward and the left side to go back; at a desktop width use the
-arrow buttons, or the arrow keys. All copy on the page is placeholder.
-
-Things to try (add them to the address):
-
-- `?flow=anon` plays the anonymous flow.
-- `?player=midi-only`, `several-games` or `all-seven` changes the subscriber's games (the default is `wordle-only`).
-- `?goto=3:chapter-4` jumps to the first card on a scene (`file:scene`), and `?jump=12` jumps to a card by number.
-
-## Read the React example
-
-The `react/` folder is source to read and copy from, not an app with its own bundler. `src/useYigStage.ts` is the whole
-rule set in one hook, `src/cards.ts` builds the card list for a player, and `src/YigStage.tsx` draws the stage, the copy
-and the controls. Put the three `.riv` files where your app can fetch them (the example expects `/yig/<file>.riv`; change
-`src/files.ts`), and import `yig-text-motion.css` once. To check it compiles on its own:
-
-```
-cd react
-npm install
-npx tsc --noEmit
-```
-
-## Coming later
-
-- `how-to-mobile.riv`: the short tutorial overlay for mobile ("tap right for Next, tap left for Back"). It is not in this
-  package; it will come on its own. Desktop has no tutorial file; the arrow buttons explain themselves.
-- Final art for Chapter 4's Mini and Midi, and some placeholder pieces named in the guide.
+Start here. You need the three things in `core/`: the three Rive files, the guide and the text CSS.
+Read `core/engineering-guide.md` first.
+Everything in `reference/` is optional, a working example of the guide.
 """
 
 
 def assemble(files):
     if OUT.exists():
         shutil.rmtree(OUT)
-    (OUT / "riv").mkdir(parents=True)
+    core, ref = OUT / "core", OUT / "reference"
+    core.mkdir(parents=True)
+    ref.mkdir()
     for chapter, data in files.items():
-        (OUT / "riv" / RIVS[chapter]).write_bytes(data)
-    shutil.copy(REPO / "docs" / "engineering-guide.md", OUT / "engineering-guide.md")
-    shutil.copy(REPO / "engineering" / "yig-text-motion.css", OUT / "yig-text-motion.css")
-    (OUT / "reference").mkdir()
-    (OUT / "reference" / "yig-integration.js").write_text(reference_integration())
-    shutil.copytree(REPO / "engineering" / "react", OUT / "react", ignore=shutil.ignore_patterns("node_modules", "dist"))
-    ex = OUT / "example"
+        (core / RIVS[chapter]).write_bytes(data)
+    shutil.copy(REPO / "docs" / "engineering-guide.md", core / "engineering-guide.md")
+    shutil.copy(REPO / "engineering" / "yig-text-motion.css", core / "yig-text-motion.css")
+    (ref / "yig-integration.js").write_text(reference_integration())
+    shutil.copytree(REPO / "engineering" / "react", ref / "react", ignore=shutil.ignore_patterns("node_modules", "dist"))
+    main = ref / "react" / "src" / "main.tsx"
+    main.write_text(main.read_text().replace("'../../yig-text-motion.css'", "'../../../core/yig-text-motion.css'"))
+    ex = ref / "example"
     (ex / "assets" / "icons").mkdir(parents=True)
     (ex / "index.html").write_text(example_page())
     (ex / "yig-framing.css").write_text(framing_css())
@@ -191,11 +144,12 @@ def assemble(files):
 def scrub():
     """The package carries no internal version numbers, git references or names."""
     bad = re.compile(r"handoff|hand-off-\d|revision \d|rive/ch\d|\bPR #|games-phoenix|Demetre|git ", re.I)
+    ours = re.compile(r"harness|experience-stage|yigExperience|/experience\b|Figma|for review|what changed from|framework for engineering|Bridge Art|rive-plan|illustrator", re.I)
     problems = []
     for path in OUT.rglob("*"):
         if path.is_file() and path.suffix in {".md", ".js", ".ts", ".tsx", ".css", ".html", ".json"}:
             for n, line in enumerate(path.read_text().splitlines(), 1):
-                if bad.search(line):
+                if bad.search(line) or (path.suffix == ".md" and ours.search(line)):
                     problems.append(f"{path.relative_to(OUT)}:{n}: {line.strip()[:100]}")
     return problems
 

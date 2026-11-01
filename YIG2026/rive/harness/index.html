@@ -166,18 +166,15 @@ const WORDLE = {
 };
 const EXAMPLE_PLAYERS = {
   "wordle-only": {
-    gameOrder: ["wordle", "connections", "mini"],
     wordle: WORDLE,
     connections: { completed: 7 }, // fewer than 10: not a qualifying game
     mini: { completed: 3 },
   },
   "midi-only": {
-    gameOrder: ["midi", "daily"],
     midi: { completed: 40 }, // PLACEHOLDER stats: The Midi has one placeholder card for now
     daily: { completed: 4 },
   },
   "several-games": {
-    gameOrder: ["wordle", "connections", "strands", "spelling-bee", "mini", "midi", "daily"],
     wordle: WORDLE,
     connections: {
       completed: 7, // fewer than 10: Connections doesn't appear in Chapter 2
@@ -217,18 +214,21 @@ const EXAMPLE_COMMUNITY = {
 };
 
 // An example of the logic you'll write: the chapter's cards in order, from the player's stats. The opener comes
-// first, then each qualifying game (10 or more completed puzzles) in the player's order, with the player's own cards
+// first, then each qualifying game (10 or more completed puzzles) in GAME_ORDER, with the player's own cards
 // in design order, leaving out a card that has no stat to show. Games that don't qualify don't appear. A player with
 // exactly one qualifying game then gets Chapter 2.5: the bridge card, then a community card for each other community
 // game, in COMMUNITY_ORDER. (A player with no qualifying game gets the anon flow, which this example doesn't build.)
 // Each card's game and community are what chapter-2-integration.js reads; card and variant are only for this page's copy.
 const QUALIFIES = 10;
-const COMMUNITY_ORDER = ["wordle", "connections", "spelling-bee", "mini", "strands"]; // The Midi and The Crossword have none
+// The order of the games (and of the community cards) is one constant, ours by default and yours to change. Rive plays any
+// order, because each move just sets the next scene.
+const GAME_ORDER = window.__yigTestPlayer?.gameOrder ?? ["wordle", "connections", "spelling-bee", "mini", "midi", "daily", "strands"]; // (the text test overrides it, to check that any order plays)
+const COMMUNITY_ORDER = GAME_ORDER.filter((game) => ["wordle", "connections", "spelling-bee", "mini", "strands"].includes(game)); // The Midi and The Crossword have none
 function buildCards(p) {
   // The file opens on the empty Chapter 1 room (where File 1 ends and Ad 2 plays): always the first card, with no copy.
   // The first tap pans from it into the opener.
   const cards = [{ game: "chapter1" }, { game: "opener" }];
-  const own = p.gameOrder.filter((game) => (p[game]?.completed ?? 0) >= QUALIFIES);
+  const own = GAME_ORDER.filter((game) => (p[game]?.completed ?? 0) >= QUALIFIES);
   for (const game of own) {
     const s = p[game];
     if (game === "wordle") {

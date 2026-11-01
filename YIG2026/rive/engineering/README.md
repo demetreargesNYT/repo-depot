@@ -62,7 +62,7 @@ Each card names its game:
   then sets Rive's `lockup` to false, which leaves out that game's lockup; everything else plays the same.
 - Any other fields (the example uses `card` and `variant`) are yours, for choosing the copy.
 - **The list always starts with `{ game: "chapter1" }` and ends with `{ game: "chapter3" }`** (see "The first and last cards" below).
-  Between them: the opener, then each game's cards together, in the player's order.
+  Between them: the opener, then each game's cards together, in the fixed game order (Wordle, Connections, Spelling Bee, The Mini, The Midi, The Crossword, Strands).
 - An unknown name throws. A game that isn't built in the `.riv` yet keeps the current room on screen, still changes
   the copy, and logs a console warning, so you can wire up later games before their art ships.
 

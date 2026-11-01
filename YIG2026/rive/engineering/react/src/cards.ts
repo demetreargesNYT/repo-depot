@@ -1,45 +1,56 @@
 import type { Card, Game, Stats } from './types'
 
-// Chapter 2.5's community cards go in this order, leaving out the player's own game
-const COMMUNITY_ORDER: Game[] = ['wordle', 'connections', 'spelling-bee', 'mini', 'strands']
-// the anonymous flow's Chapter 2 mock shows these four
-const ANONYMOUS_COMMUNITY: Game[] = ['connections', 'spelling-bee', 'mini', 'strands']
+// The order of the games in Chapter 2, and of Chapter 2.5's community cards. This is our default: change it here. Rive plays
+// any order, because each move just sets the next scene.
+export const GAME_ORDER: Game[] = ['wordle', 'connections', 'spelling-bee', 'mini', 'midi', 'daily', 'strands']
 
-// The whole card list for one player, in order. This is the logic of engineering-guide.md, section 6.
+// The games that have community cards (The Midi and The Crossword have none)
+export const COMMUNITY_GAMES: Game[] = ['wordle', 'connections', 'spelling-bee', 'mini', 'strands']
+
+// Chapter 2.5's community cards: the community games in GAME_ORDER, leaving out the player's own game
+const communityGames = (own?: Game): Game[] => GAME_ORDER.filter((game) => COMMUNITY_GAMES.includes(game) && game !== own)
+
+// The whole card list for one player, in order. This is the logic of engineering-guide.md, section 6. A card that does not
+// qualify is never added, so nothing is skipped when the player taps.
 export function buildCards(stats: Stats): Card[] {
-  const anonymous = stats.flow === 'anonymous'
+  // a subscriber with no qualifying game gets the anonymous flow
+  const own = GAME_ORDER.filter((game) => stats.games.includes(game))
+  const anonymous = stats.flow === 'anonymous' || own.length === 0
   const cards: Card[] = [
     { file: 1, scene: 'loading' },
     { file: 1, scene: 'start' },
     { file: 1, scene: 'ad' }, // Ad 1, on the empty Chapter 1 room
   ]
 
-  for (let n = 1; n <= stats.chapter1Cards; n += 1) cards.push({ file: 1, scene: `chapter-1-card-${n}` })
+  // Chapter 1: always five cards, in both flows
+  for (let n = 1; n <= 5; n += 1) cards.push({ file: 1, scene: `chapter-1-card-${n}` })
   cards.push({ file: 1, scene: 'ad' }) // Ad 2
 
   // Chapter 2
   cards.push({ file: 2, scene: 'intro' })
   if (anonymous) {
-    for (const game of ANONYMOUS_COMMUNITY) cards.push({ file: 2, scene: game, community: true, icon: game })
+    // community cards for every community game but Wordle: Chapter 1 already covers Wordle (ADIEU and PSHAW)
+    for (const game of communityGames('wordle')) cards.push({ file: 2, scene: game, community: true, icon: game })
     cards.push({ file: 2, scene: 'to-chapter-3' }) // Ad 3, on the empty Chapter 3 room
   } else {
-    for (const game of stats.games) {
+    for (const game of own) {
       for (let n = 0; n < (stats.cardsPerGame[game] ?? 0); n += 1) cards.push({ file: 2, scene: game, icon: game })
     }
-    if (stats.games.length === 1) {
+    if (own.length === 1) {
+      // Chapter 2.5: the bridge, then a community card for each other community game
       cards.push({ file: 2, scene: 'bridge' })
-      for (const game of COMMUNITY_ORDER.filter((g) => g !== stats.games[0])) {
-        cards.push({ file: 2, scene: game, community: true, icon: game })
-      }
+      for (const game of communityGames(own[0])) cards.push({ file: 2, scene: game, community: true, icon: game })
     }
     // no card on the empty Chapter 3 room: the tap on the last Chapter 2 card plays both moves
   }
 
   // Chapter 3
+  cards.push({ file: 3, scene: 'chapter-3' }, { file: 3, scene: 'chapter-3-bird' })
   if (anonymous) {
-    cards.push({ file: 3, scene: 'chapter-3' }, { file: 3, scene: 'chapter-3' })
+    // four cards, never skipped: the last two are on the empty Chapter 3 room
+    cards.push({ file: 3, scene: 'ad' }, { file: 3, scene: 'ad' })
   } else {
-    cards.push({ file: 3, scene: 'chapter-3' }, { file: 3, scene: 'chapter-3-bird' })
+    // the badge cards are added only when the player has some
     if (stats.eventBadges > 0) cards.push({ file: 3, scene: 'ad' })
     if (stats.achievementBadges > 0) cards.push({ file: 3, scene: 'ad' })
   }

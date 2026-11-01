@@ -1,43 +1,19 @@
 /*
-  Year in Games text motion, v3. CSS only, no JavaScript required.
+  Year in Games text motion. CSS only, no JavaScript needed to animate.
 
-  Two moves for page text, both on fixed timing:
-    Rise in  - each line glides up out of its own mask while it fades in, top to bottom, clearly staggered.
-    Lift out - each line drifts up a short way and dissolves, almost together, so the old copy clears fast.
-  An icon or image in the block uses Pop on the way in: a soft settle with a small overshoot.
+  Copy rises in from behind a mask, one line after another, and lifts out and dissolves when it leaves. An icon or image
+  pops in instead. Everything is timed from the variables below.
 
-  What changed from v2, for review:
-    - Every move now carries opacity. Lines fade in over the first half of the rise, so the mask edge
-      softens what's already appearing instead of revealing a fully solid line.
-    - Rise travel is 90% of the line (was 120%), longer (720 ms, was 560 ms) and on a gentler ease-out,
-      so lines settle rather than snap.
-    - The stagger is 120 ms (was 70 ms), so each line reads as its own beat.
-    - Lift out is a short 40% drift plus a fade (240 ms, 20 ms apart), so the old copy dissolves instead of
-      being pulled out of view. All of it is gone within --yig-clear (340 ms).
-    - yig-quick waits --yig-clear, so a new card starts as the old one finishes dissolving.
-
-  How to use it:
-    1. When the player taps, render the next frame's copy with class "yig-in".
-       It waits --yig-delay (the length of the Rive transition), then rises in on its own.
-    2. If the tap stays inside the same game (no Rive transition), also add class "yig-quick": the copy then
-       rises in right after the old copy clears instead of waiting for the scene.
-    3. Optional: give the old copy class "yig-out" and hide it --yig-clear (340 ms) later. Only do this for
-       copy that has finished rising; copy that is still rising (or waiting to) should simply be hidden.
-
-  On Back, the integration file also adds class "yig-back": the copy moves down instead of up.
-
-  The game icon is its own block, one per game, outside the cards: <div class="yig-icon"><span class="yig-pop">...</span></div>.
-  It pops in with the game's first card and stays while the game's later cards change; it leaves with the last
-  card's text when the next game starts.
-
-  Markup, one .yig-mask per designed line:
-    <div class="yig-text yig-in">
-      <img class="yig-pop" src="wordle.svg" alt="Wordle">
-      <span class="yig-mask"><span class="yig-line">On average, you solved</span></span>
-      <span class="yig-mask"><span class="yig-line">Wordle puzzles in</span></span>
-    </div>
-  No time to split lines? Put the text straight into <div class="yig-text yig-in"> and the
-  whole block rises as one piece.
+  Classes (engineering-guide.md, section 12, has the three levels of markup and when to add each class):
+    yig-text         a card's copy block
+    yig-icon         a game's icon block, with the icon inside yig-pop
+    yig-mask > yig-line   one line (or one piece of copy); each rises inside its own mask
+    yig-pop          an image or icon: pops in, takes its place in the stagger
+    yig-in           bring the block in; it waits --yig-delay first
+    yig-quick        the tap stayed in the same room: wait only for the old copy to clear (--yig-clear)
+    yig-after-icon   a game's first card: its lines start one step after the icon
+    yig-out          the old copy leaves
+    yig-back         Back: the same moves, mirrored (copy comes down instead of up)
 */
 :root {
   --yig-delay: 3.2s;        /* Rive transition length. Every intro is 3.2 s */

@@ -2,6 +2,8 @@
 
 export const INTRO_MS = 3200 // a room's first visit with Next: every intro is exactly this long
 export const PAN_MS = 1650 // a room change: the moves run 1.6 s, plus a few frames
+// Chapter 4: the wall fades to the top game's colour (or back to the lighter blue) this long after `reveal` changes; the copy waits for it
+export const REVEAL_FADE_MS = 1450
 export const CLEAR_MS = 340 // the old copy dissolves within this long; the next copy inside the same room waits for it
 
 // A community card has no lockup, so its copy arrives when the room's pieces have landed

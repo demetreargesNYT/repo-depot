@@ -14,7 +14,8 @@
 //   - A Back during a pan, or a Next during a Back pan, waits for the pan to end (the file can't turn a room around part-way).
 //   - Copy arrives when the room has settled: 3.2 s on a room's first visit (its intro), at the end of the pan (1.65 s)
 //     when the room comes back already built or is an empty room, 0.34 s within a room, and on a community card as soon
-//     as its room's intro settles (no lockup to wait for). A two-move crossing adds the first move's 1.65 s.
+//     as its room's intro settles (no lockup to wait for), and 1.45 s when Chapter 4's `reveal` changes (the wall fades first).
+//     A two-move crossing adds the first move's 1.65 s.
 
 import { Rive } from "@rive-app/canvas"; // pin the version you ship; 2.27.3 and later work, with `stateMachines` (plural)
 
@@ -24,7 +25,13 @@ const FILES = [
   { src: "chapter-2.riv", opens: "from-chapter-1", ends: "to-chapter-3", noIntro: ["from-chapter-1", "to-chapter-3", "bridge"], lockup: true },
   { src: "chapters-3-4-end.riv", opens: "ad", ends: "end", noIntro: ["ad"] },
 ];
+// The order of the games in Chapter 2, and of Chapter 2.5's community cards, is ours by default and yours to change: the
+// page that builds the card list reads these two constants. Rive plays any order, because each move just sets the next
+// scene. COMMUNITY_GAMES are the games that have community cards (The Midi and The Crossword have none).
+const GAME_ORDER = ["wordle", "connections", "spelling-bee", "mini", "midi", "daily", "strands"];
+const COMMUNITY_GAMES = ["wordle", "connections", "spelling-bee", "mini", "strands"];
 const INTRO_MS = 3200; // every intro is exactly this long
+const REVEAL_FADE_MS = 1450; // Chapter 4: the wall fades to the top game's colour (or back to the lighter blue) this long after `reveal` changes
 const PAN_MS = 1650;   // a room change: the moves run 1.6 s (the pan itself 0.05 to 1.55 s), plus a few frames
 // File 2's community cards: copy arrives when the room's pieces have landed, without waiting for the ball or the lockup (chapters/ch2/chapter.json,
 // communityCopyMs, measured from the file by our checks).
@@ -104,10 +111,13 @@ function load(i) {
 
 // File 3's `reveal`: set with the move to a card that names it, so the wall fades as the player taps
 function applyReveal(card) {
-  if (card.reveal === undefined) return;
+  if (card.reveal === undefined) return false;
   const f = files[card.file - 1];
   const prop = f?.loaded && f.rive.viewModelInstance.boolean("reveal");
-  if (prop) prop.value = !!card.reveal;
+  if (!prop) return false;
+  const changed = prop.value !== !!card.reveal;
+  prop.value = !!card.reveal;
+  return changed; // the wall is about to fade (1.45 s), forward or back
 }
 
 function setScene(i, scene, step, community) {
@@ -168,7 +178,7 @@ function move(step) {
   if (roomChange) clearTimeout(swapTimer); // a new room change takes over from a Back's hand-back still to come
   if (roomChange && hopRun) { clearTimeout(hopTimer); hopRun(); } // and cuts a Next's two moves short: the next file takes over now
   frame = target;
-  applyReveal(to);
+  const fading = applyReveal(to);
   const key = `${to.file}:${to.scene}`;
   const firstVisit = roomChange && step > 0 && !visited.has(key) && !FILES[fi].noIntro.includes(to.scene);
   if (roomChange) {
@@ -200,7 +210,7 @@ function move(step) {
   const iconChange = to.icon !== from.icon;
   const settleLeft = Math.max(0, (copyFrom[key] ?? 0) - now); // an interrupted first visit still waits for its room
   let delay;
-  if (!roomChange) delay = settleLeft > 0 ? settleLeft : null;        // null: the quick swap after the old copy clears
+  if (!roomChange) delay = fading ? Math.max(settleLeft, REVEAL_FADE_MS) : settleLeft > 0 ? settleLeft : null; // null: the quick swap after the old copy clears; a reveal waits for the wall's fade
   else if (firstVisit) delay = copyFrom[key] - now;
   else delay = Math.max(PAN_MS * legs, settleLeft);
   showCopy(frame, { changed: roomChange || iconChange, delay, back: step < 0 });
@@ -261,4 +271,4 @@ function resize() {
 // for debugging and the review page
 const state = () => ({ frame, shown: shown + 1, card: cards[frame], scenes: files.map((f) => f?.loaded ? f.rive.viewModelInstance.enum("scene").value : null) });
 
-export { start, onTap, onBack, ready, resize, state, FILES };
+export { start, onTap, onBack, ready, resize, state, FILES, GAME_ORDER, COMMUNITY_GAMES };

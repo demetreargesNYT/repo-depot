@@ -17,6 +17,10 @@ import path from "node:path";
 const args = process.argv.slice(2);
 const flag = (n, d) => (args.includes(n) ? args[args.indexOf(n) + 1] : d);
 const BASE = flag("--url", "http://127.0.0.1:8765");
+const PATH = flag("--path", "/experience-stage");                                    // /reference/example/ for the unzipped package
+const FLOWS = flag("--flows", "sub,anon").split(",");
+const SIZES = flag("--sizes", "phone,desktop").split(",");
+const PLAYERS = flag("--players", "wordle-only").split(",");                         // subscriber players to walk
 const INTRO = 3.2, PAN = 1.65;
 const chrome = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -48,14 +52,46 @@ async function browser(width, height) {
 
 const shownCopy = "[...document.querySelectorAll('.yig-text')].filter((e) => !e.hidden).map((e) => e.dataset.copyFrame).join(',')";
 
-for (const flow of ["sub", "anon"]) {
-  for (const [w, h, label] of [[430, 932, "phone"], [1440, 900, "desktop"]]) {
+// What each flow's card list must be, written out from the rules in the engineering guide (not read from the page)
+const ORDER = ["wordle", "connections", "spelling-bee", "mini", "midi", "daily", "strands"];
+const PER_GAME = { wordle: 4, connections: 5, "spelling-bee": 2, mini: 1, midi: 1, daily: 1, strands: 1 };
+const COMMUNITY = ["wordle", "connections", "spelling-bee", "mini", "strands"];
+const COMPLETED = {
+  "wordle-only": { wordle: 212, connections: 7, mini: 3 }, "midi-only": { midi: 40, daily: 4 }, "connections-only": { wordle: 4, connections: 120, strands: 2 },
+  "all-seven": Object.fromEntries(ORDER.map((g) => [g, 50])), "several-games": { wordle: 212, connections: 7, strands: 30, "spelling-bee": 64, mini: 50, midi: 40, daily: 90 }, none: { wordle: 3, connections: 2 },
+};
+const BADGES = { "wordle-only": [5, 9], "midi-only": [3, 0], "connections-only": [0, 3], "all-seven": [0, 0], "several-games": [0, 14], none: [0, 0] };
+function expectedCards(flow, player) {
+  const own = ORDER.filter((g) => (COMPLETED[player][g] ?? 0) >= 10);
+  const anon = flow === "anon" || own.length === 0;
+  const out = ["1:loading", "1:start", "1:ad", ...[1, 2, 3, 4, 5].map((n) => `1:chapter-1-card-${n}`), "1:ad", "2:intro"];
+  if (anon) {
+    out.push(...COMMUNITY.filter((g) => g !== "wordle").map((g) => `2:${g}`), "2:to-chapter-3", "3:chapter-3", "3:chapter-3-bird", "3:ad", "3:ad");
+  } else {
+    for (const g of own) for (let i = 0; i < PER_GAME[g]; i++) out.push(`2:${g}`);
+    if (own.length === 1) out.push("2:bridge", ...COMMUNITY.filter((g) => g !== own[0]).map((g) => `2:${g}`));
+    out.push("3:chapter-3", "3:chapter-3-bird");
+    if (BADGES[player][0] > 0) out.push("3:ad");
+    if (BADGES[player][1] > 0) out.push("3:ad");
+  }
+  out.push("3:chapter-4", "3:chapter-4", "3:chapter-4", "3:end");
+  if (!anon) out.push("3:end");
+  return out;
+}
+
+const runs = [];
+for (const flow of FLOWS) for (const player of flow === "sub" ? PLAYERS : ["wordle-only"]) for (const size of SIZES) runs.push([flow, player, size]);
+for (const [flow, player, size] of runs) {
+  for (const [w, h, label] of [size === "phone" ? [430, 932, "phone"] : [1440, 900, "desktop"]]) {
     const b = await browser(w, h);
-    await b.nav(`${BASE}/experience-stage?flow=${flow}&player=wordle-only`);
+    await b.nav(`${BASE}${PATH}?flow=${flow}&player=${player}`);
     for (let i = 0; i < 150 && !(await b.ev("!!window.yigExperience")); i++) await sleep(100);
-    const cards = await b.ev("window.yigExperience.cards.map((c) => ({ file: c.file, scene: c.scene }))");
+    const cards = await b.ev("window.yigExperience.cards.map((c) => ({ file: c.file, scene: c.scene, reveal: c.reveal, icon: c.icon }))");
     const st = () => b.ev("window.yigExperience.state()");
-    const tag = `${flow} · ${label} ${w}x${h}`;
+    const tag = `${flow}${flow === "sub" ? " " + player : ""} · ${label} ${w}x${h}`;
+    const want = expectedCards(flow, player);
+    const got = cards.map((c) => `${c.file}:${c.scene}`);
+    check(JSON.stringify(got) === JSON.stringify(want), `${tag}: the card list is the guide's (${got.length} cards)` + (JSON.stringify(got) === JSON.stringify(want) ? "" : `; got ${got.join(" ")} / want ${want.join(" ")}`));
     // Loading hands over to Start by itself once File 1 is in
     for (let i = 0; i < 80 && (await st()).frame === 0; i++) await sleep(100);
     await sleep(INTRO * 1000 + 500);
@@ -85,17 +121,34 @@ for (const flow of ["sub", "anon"]) {
         bad.push(`${how} to ${i} (${cards[i].file}:${cards[i].scene}): card ${x.frame}, file ${x.shown}, scene ${x.scenes[x.shown - 1]}, copy ${copy || "none"}`);
       }
     };
+    const delayOf = (i) => b.ev(`(() => { const e = document.querySelector('[data-copy-frame="${i}"]'); return e ? { delay: e.style.getPropertyValue('--yig-delay'), quick: e.classList.contains('yig-quick') } : null; })()`);
+    const revealBad = [];
+    // no fade: the copy swaps quickly, or, when the game icon changes, waits the 340 ms the old icon takes to lift (never the 1.45 s)
+    const okNoFade = (d, iconChanges) => !!d && (d.quick || (iconChanges && d.delay === "340ms"));
     for (let i = 2; i < cards.length; i++) {
       await b.ev(`document.getElementById('${next}').click()`);
+      if (cards[i].reveal !== undefined && cards[i - 1].reveal !== undefined && cards[i].scene === "chapter-4" && cards[i - 1].scene === "chapter-4") {
+        await sleep(60);
+        const d = await delayOf(i);
+        const fades = cards[i].reveal !== cards[i - 1].reveal;
+        if (fades ? d?.delay !== "1450ms" : !okNoFade(d, cards[i].icon !== cards[i - 1].icon)) revealBad.push(`Next to ${i}: ${JSON.stringify(d)} (${fades ? "wants 1450ms" : "wants the quick swap, or 340ms when the icon changes"})`);
+      }
       await sleep(settle(i, i - 1, true));
       await verify(i, "Next");
     }
     check(!bad.length, `${tag}: Next through all ${cards.length} cards: the right file, scene and copy each time${bad.length ? ": " + bad.slice(0, 3).join(" / ") : ""}`);
+    check(!revealBad.length, `${tag}: Chapter 4's reveal card waits 1.45 s for the wall's fade, forward and back; the video card does not${revealBad.length ? ": " + revealBad.join(" / ") : ""}`);
     check(JSON.stringify([...b.rivs].sort()) === JSON.stringify(["chapter-2.riv", "chapters-3-4-end.riv", "start-chapter-1.riv"]),
       `${tag}: each .riv was fetched once, the next ones ahead of time (${b.rivs.join(", ")})`);
     bad.length = 0;
     for (let i = cards.length - 2; i >= 1; i--) {
       await b.ev(`document.getElementById('${back}').click()`);
+      if (cards[i].scene === "chapter-4" && cards[i + 1].scene === "chapter-4") {
+        await sleep(60);
+        const d = await delayOf(i);
+        const fades = cards[i].reveal !== cards[i + 1].reveal;
+        if (fades ? d?.delay !== "1450ms" : !okNoFade(d, cards[i].icon !== cards[i + 1].icon)) revealBad.push(`Back to ${i}: ${JSON.stringify(d)} (${fades ? "wants 1450ms" : "wants the quick swap, or 340ms when the icon changes"})`);
+      }
       await sleep(settle(i, i + 1, false));
       await verify(i, "Back");
     }

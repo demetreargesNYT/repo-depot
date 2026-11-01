@@ -8,7 +8,6 @@ const STATS: Stats = {
   flow: 'subscriber',
   games: ['wordle', 'connections'],
   cardsPerGame: { wordle: 4, connections: 5 },
-  chapter1Cards: 5,
   eventBadges: 5,
   achievementBadges: 9,
   topGame: 'wordle',

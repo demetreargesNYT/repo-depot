@@ -22,11 +22,10 @@ export type Flow = 'subscriber' | 'anonymous'
 
 export type Stats = {
   flow: Flow
-  // the player's qualifying games (10 or more completed puzzles), in the player's order
+  // the games the player has 10 or more completed puzzles in (their order here does not matter: GAME_ORDER decides it)
   games: Game[]
-  // how many cards each of those games has for this player
+  // how many cards each of those games has for this player (from the ranked list and thresholds in the stats requirements)
   cardsPerGame: Partial<Record<Game, number>>
-  chapter1Cards: number // 0 to 5, after the thresholds
   eventBadges: number
   achievementBadges: number
   topGame: Game
