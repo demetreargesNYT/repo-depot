@@ -222,13 +222,13 @@ const EXAMPLE_COMMUNITY = {
 const QUALIFIES = 10;
 // The order of the games (and of the community cards) is one constant, ours by default and yours to change. Rive plays any
 // order, because each move just sets the next scene.
-const GAME_ORDER = window.__yigTestPlayer?.gameOrder ?? ["wordle", "connections", "spelling-bee", "mini", "midi", "daily", "strands"]; // (the text test overrides it, to check that any order plays)
+const GAME_ORDER = ["wordle", "connections", "spelling-bee", "mini", "midi", "daily", "strands"];
 const COMMUNITY_ORDER = GAME_ORDER.filter((game) => ["wordle", "connections", "spelling-bee", "mini", "strands"].includes(game)); // The Midi and The Crossword have none
 function buildCards(p) {
   // The file opens on the empty Chapter 1 room (where File 1 ends and Ad 2 plays): always the first card, with no copy.
   // The first tap pans from it into the opener.
   const cards = [{ game: "chapter1" }, { game: "opener" }];
-  const own = GAME_ORDER.filter((game) => (p[game]?.completed ?? 0) >= QUALIFIES);
+  const own = (p.gameOrder ?? GAME_ORDER).filter((game) => (p[game]?.completed ?? 0) >= QUALIFIES); // (p.gameOrder is only the text test's hook, to check that any order plays)
   for (const game of own) {
     const s = p[game];
     if (game === "wordle") {
