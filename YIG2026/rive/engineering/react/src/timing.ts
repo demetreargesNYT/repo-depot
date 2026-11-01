@@ -6,15 +6,13 @@ export const PAN_MS = 1650 // a room change: the moves run 1.6 s, plus a few fra
 export const REVEAL_FADE_MS = 1450
 export const CLEAR_MS = 340 // the old copy dissolves within this long; the next copy inside the same room waits for it
 
-// A community card has no lockup, so its copy arrives when the room's pieces have landed
+// A community card has no lockup, so its copy arrives when the room's pieces have landed (The Midi and The Crossword have no community cards)
 export const COMMUNITY_COPY_MS: Record<string, number> = {
   wordle: 2334,
   connections: 2367,
   strands: 1967,
   'spelling-bee': 2017,
   mini: 2084,
-  midi: 1950,
-  daily: 1950,
 }
 
 // a copy block has finished rising this long after its delay (the 720 ms rise plus the stagger of a few lines)

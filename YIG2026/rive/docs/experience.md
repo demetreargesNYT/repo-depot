@@ -58,7 +58,7 @@ There's no ad between Chapters 2, 3 and 4 in this flow, so those handoffs betwee
 | 7 | Ad 3 | New for anons. It plays over the empty Chapter 3 room. |
 | 8 | Chapter 3 | Four cards, never skipped, in the same rooms as the subscribers': the room, the ball with the bird (with a "Download Crossplay app" button and the Connections, Crossword and Midi icons), "Connections hit 1000 puzzles." with the 1000th badge, and "And Wordle turned 5 and fabulous." with the Wordle 5 icon, the last two on the empty Chapter 3 room. See "Chapter 3 and Chapter 4 cards". |
 | 9 | Chapter 4 | The top game for everyone is Wordle. The video is a special one from all the editors. |
-| 10 | End | Thanks the player and invites them to register for a personalized experience next year. |
+| 10 | End | Thanks the player and invites them to register for a personalized experience next year. There is no Share card in this flow. |
 
 ## How it maps to Rive
 

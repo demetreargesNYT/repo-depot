@@ -33,9 +33,9 @@ const COMMUNITY_GAMES = ["wordle", "connections", "spelling-bee", "mini", "stran
 const INTRO_MS = 3200; // every intro is exactly this long
 const REVEAL_FADE_MS = 1450; // Chapter 4: the wall fades to the top game's colour (or back to the lighter blue) this long after `reveal` changes
 const PAN_MS = 1650;   // a room change: the moves run 1.6 s (the pan itself 0.05 to 1.55 s), plus a few frames
-// File 2's community cards: copy arrives when the room's pieces have landed, without waiting for the ball or the lockup (chapters/ch2/chapter.json,
+// File 2's community cards (The Midi and The Crossword have none): copy arrives when the room's pieces have landed, without waiting for the ball or the lockup (chapters/ch2/chapter.json,
 // communityCopyMs, measured from the file by our checks).
-const COMMUNITY_COPY_MS = { wordle: 2334, connections: 2367, strands: 1967, "spelling-bee": 2017, mini: 2084, midi: 1950, daily: 1950 };
+const COMMUNITY_COPY_MS = { wordle: 2334, connections: 2367, strands: 1967, "spelling-bee": 2017, mini: 2084 };
 
 let stage = null;   // the element the canvases go in (engineering's full-bleed artboard box)
 let files = [];     // per file: { rive, canvas, ready (a promise), loaded }

@@ -2,7 +2,7 @@
 
 This guide has everything you need to drive our three Rive files from your React code: what to load, how to build the card list, what to set and in what order, when each card's copy may appear, and what to do when the player taps Back in the middle of a move. It is written for the page you are building in the Games web code (Rive runtime 2.27.3, through `@rive-app/react-canvas` 4.20.1). Everything in it was tested on that runtime.
 
-You need the three things in this folder (`core/`): the three `.riv` files, this guide, and `yig-text-motion.css`. The `reference/` folder next to it has a working example of the guide (section 13). It is optional.
+You need the four things in this folder (`core/`): the three `.riv` files, this guide, `yig-text-motion.css` and the desktop arrow art (`ui-desktop-button.svg`). The `reference/` folder next to it has a working example of the guide (section 13). It is optional.
 
 ## 1. What is Rive and what is HTML
 
@@ -27,7 +27,7 @@ The How-to overlay (mobile only) will be a separate small Rive file, coming late
 ## 2. The big picture
 
 - **One stage behind every slide.** The Rive animation sits behind all the slides and stays on screen. When the player taps, the stage changes rooms (the camera pans), and the page shows the next card's copy on top.
-- **Three Rive files, played back to back.** The player never sees a file change, because each file starts and ends on a picture of an empty room, and the file before or after shows exactly the same picture.
+- **Three Rive files, played back to back.** The player never sees a file change, because each file ends on a picture of an empty room and the next file starts on exactly the same picture.
 
   | File | `.riv` | Covers |
   |---|---|---|
@@ -37,7 +37,7 @@ The How-to overlay (mobile only) will be a separate small Rive file, coming late
 
 - **One artboard per file, 1495 × 1067, the same on every device.** Your page decides the crop and scaling.
 - **Every file has the same names.** The state machine is named `Backdrop` and the view model is named `Backdrop`, in all three files.
-- **You set a few view model properties, and nothing else.** There are no Rive events to listen to and no timing to write in JavaScript: the Rive side moves on its own after a property changes, and the copy timings in section 8 are fixed numbers.
+- **You set a few view model properties, and nothing else.** There are no Rive events to listen to. Every timing is a fixed number, listed in section 8, that your code uses; the Rive side moves on its own after a property changes.
 
 ## 3. Starting a file
 
@@ -81,7 +81,7 @@ Rules of thumb:
 
 ## 5. The scenes in each file
 
-A **room** has an intro that plays the first time the player arrives (always exactly 3.2 s), then loops until the player taps. A **picture** is an empty room: no intro, nothing in it, only the wall and floor colours; it is what a file starts and ends on, and where ads play. Every room comes back already built when the player returns to it with Back.
+A **room** has an intro that plays the first time the player arrives (always exactly 3.2 s), then loops until the player taps. A **picture** is an empty room: no intro, nothing in it, only the wall and floor colours; it is where ads play. Files 2 and 3 start on a picture, and every file ends on one. Every room comes back already built when the player returns to it with Back.
 
 ### File 1: `start-chapter-1.riv`
 
@@ -90,7 +90,7 @@ The wall is cream `#F1ECC0` and the floor orange `#FF811E` in every File 1 scene
 | `scene` | Kind | What the stage shows |
 |---|---|---|
 | `loading` | its own scene (the file's default) | The ball bouncing on the floor in the middle of the room. Plays while the stats load. |
-| `start` | room | The same picture; the bird drops in and lands on the ball, then the two keep playing. No pan, no colour change. |
+| `start` | room | The same room as `loading`; the bird drops in and lands on the ball, then the two keep playing. No pan, no colour change. |
 | `ad` | picture | The empty Chapter 1 room. Ad 1 and Ad 2 play here, and File 2 opens on this same picture. |
 | `chapter-1-card-1` … `chapter-1-card-5` | room | Chapter 1's five rooms, one per card. |
 
@@ -118,7 +118,7 @@ The wall colour changes with each game; the floor is pink.
 
 ## 6. Loading and Start (File 1)
 
-1. **Load File 1 at once.** It opens on `loading`: the ball bounces in the middle of the room. Your page puts the logo, the progress bar and "Supported by T-Mobile" over it. File 2 and File 3 load behind it, one after the other (section 9).
+1. **Load File 1 at once.** It opens on `loading`: the ball bounces in the middle of the room. The Rive side is only that bouncing ball; what your page shows over Loading is up to you, and it isn't designed yet. File 2 and File 3 load behind it, one after the other (section 9).
 2. **Switch to Start when both are ready**: when the stats have arrived and File 1 has loaded, set `direction = forward` and then `scene = 'start'`. The ball finishes the bounce it is on (it never jumps, so this can take up to one second), then the bird drops in and lands on the ball. There is no pan and no colour change. Start is a room: its intro takes 3.2 s from the moment you set `scene`, and Start's HTML ("Let's go" and the rest) arrives at 3.2 s.
 3. **"Let's go" is an ordinary Next.** It sets `direction = forward` and `scene = 'ad'`. The ball and the bird pan out to the left, leaving the empty room. Show Ad 1 when the pan ends (1.65 s). The next ball the player sees is the one coming out of the cuckoo clock in Chapter 1's first card.
 4. **Back never returns to Loading.** Back on Start does nothing. Back from Ad 1 returns to Start, which comes back already built (its HTML arrives when the pan ends, 1.65 s).
@@ -172,7 +172,7 @@ A card carries what the Rive side needs and what the HTML side needs.
 | Loading, Start, Ad 1 | all three | `loading`, `start`, `ad` |
 | Chapter 1 | five cards (never skipped) | `chapter-1-card-1` … `chapter-1-card-5` |
 | Ad 2 | the ad | `ad` |
-| Chapter 2 | the opener, then community cards (`lockup = false`) for **Connections, Spelling Bee, The Mini, Strands**. There is no Wordle card, because anonymous Chapter 1 already covers Wordle (ADIEU and PSHAW). | `intro`, `connections`, `spelling-bee`, `mini`, `strands` (File 2) |
+| Chapter 2 | the opener, then community cards (`lockup = false`) for **Connections, Spelling Bee, The Mini, Strands**. There is no Wordle card, because the anonymous Chapter 1 copy already covers Wordle. | `intro`, `connections`, `spelling-bee`, `mini`, `strands` (File 2) |
 | Ad 3 | the ad, on the empty Chapter 3 room | `to-chapter-3` (File 2) |
 | Chapter 3 | four cards, never skipped, in the same rooms as the subscribers' | `chapter-3`, `chapter-3-bird`, `ad`, `ad` (File 3). The third and fourth cards share the empty room (the fourth is the next card in that room). |
 | Chapter 4 | three cards; the top game is always Wordle (`topGame = 'wordle'`); the video is the special one from all the editors | `chapter-4` ×3 |
@@ -182,7 +182,7 @@ Anonymous Chapter 3's cards, in order: (1) "There's plenty more to celebrate, to
 
 ### Worked example 1: several games
 
-A subscriber qualifies in Wordle (212 completed puzzles), Spelling Bee (64) and Strands (30), and has played a little Connections (7, which does not qualify). They have no event badges and 14 achievement badges, and their top game is Wordle. The stats requirements give Wordle 4 cards, Spelling Bee 2 and Strands 1.
+A subscriber qualifies in Wordle (212 completed puzzles), Spelling Bee (64) and Strands (30), and has played a little Connections (7, which does not qualify). They have no event badges and 14 achievement badges, and their top game is Wordle. Say, for this example, that Wordle has 4 cards, Spelling Bee 2 and Strands 1; the real cards come from the stats requirements.
 
 | # | Card | File | Scene | Tags |
 |---|---|---|---|---|
@@ -208,7 +208,7 @@ There is no Chapter 2.5 (three qualifying games), and no card on the empty Chapt
 
 ### Worked example 2: one game (Chapter 2.5)
 
-A subscriber qualifies only in Connections (120 completed puzzles; the rest under 10). They have no event badges and 3 achievement badges, and their top game is Connections. Connections has 5 cards.
+A subscriber qualifies only in Connections (120 completed puzzles; the rest under 10). They have no event badges and 3 achievement badges, and their top game is Connections. Say, for this example, that Connections has 5 cards; the real count comes from the stats requirements.
 
 | # | Card | File | Scene | Tags |
 |---|---|---|---|---|
@@ -252,7 +252,7 @@ The HTML of a card must not appear before its room has settled. These numbers ar
 | Situation | HTML appears |
 |---|---|
 | A room's first visit with Next (it has an intro): Start, a Chapter 1 card, a game with its lockup, `intro`, `chapter-3`, `chapter-3-bird`, `chapter-4`, `end` | **3.2 s** after you set `scene` |
-| A **community card** (no lockup), first visit | When the room's pieces have landed, per game: Wordle 2334 ms, Connections 2367 ms, Strands 1967 ms, Spelling Bee 2017 ms, The Mini 2084 ms, The Midi 1950 ms, The Crossword 1950 ms |
+| A **community card** (no lockup), first visit | When the room's pieces have landed, per game: Wordle 2334 ms, Connections 2367 ms, Strands 1967 ms, Spelling Bee 2017 ms, The Mini 2084 ms. (The Midi and The Crossword have no community cards.) |
 | Coming back to a room with **Back** (it slides in already built), or any picture (`ad`, `from-chapter-1`, `to-chapter-3`, `bridge`). Show an ad when the pan ends. | **1.65 s**: when the pan ends |
 | Another card **inside the same room** (the next Wordle card) | **0.34 s**: right after the old copy has cleared (it clears in 340 ms). Nothing changes in Rive. |
 | Chapter 4's **reveal card** (the second card, `reveal` becomes `true`) | **1.45 s**: the copy waits until the wall has finished fading to the game's colour. Back to the first card replays the fade (`reveal` becomes `false`), so the same 1.45 s applies; the third card (the video, `reveal` stays `true`) uses the normal 0.34 s. |
@@ -279,7 +279,7 @@ The files cannot turn a room around in the middle of a pan. So:
 
 ### Switching between the three files
 
-Every file starts and ends on an empty picture, and the neighbouring file shows the same picture:
+Files 2 and 3 start on an empty picture, and every file ends on one. The neighbouring file shows the same picture:
 
 | End of one file | Start of the next |
 |---|---|
@@ -295,7 +295,7 @@ Every file starts and ends on an empty picture, and the neighbouring file shows 
 ## 10. Controls
 
 - **Phones and tablets** (below 1025 px): tap zones. The left 25% of the screen is Back and the right 75% is Next.
-- **Desktop** (1025 px and wider): no tap zones. Arrow buttons at the left and right edges of the window, 20 px in, centred vertically, do Back and Next. The art is `reference/example/assets/icons/ui-desktop-button.svg`.
+- **Desktop** (1025 px and wider): no tap zones. Arrow buttons at the left and right edges of the window, 20 px in, centred vertically, do Back and Next. The art is `core/ui-desktop-button.svg`.
 - Back on the first card, Next on the last card, or a tap before everything is ready, does nothing.
 
 ## 11. The How-to overlay (mobile only, coming later)

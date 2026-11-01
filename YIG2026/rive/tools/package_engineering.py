@@ -8,8 +8,8 @@ anywhere. In order:
   2. each file is built from a scratch copy of its project; File 2's working artboard, Bridge Art, is taken out of the
      scratch copy first, so the delivered .riv has only the main artboard. The built files are checked: the artboard,
      the state machine and the view model are there by name, and no working artboard is
-  3. the package is assembled in two folders: core/ (the three .riv files, the engineering guide, the text CSS: everything
-     engineering needs) and reference/ (optional: the React example, our integration file and a standalone page that plays
+  3. the package is assembled in two folders: core/ (the three .riv files, the engineering guide, the text CSS and the desktop arrow art:
+     everything engineering needs) and reference/ (optional: the React example, our integration file and a standalone page that plays
      the whole experience), plus a five-line README at the root
   4. the guide and the README carry no internal version numbers, git references or names only we would understand (checked)
 """
@@ -110,7 +110,7 @@ def reference_integration():
 def readme():
     return """# Year in Games 2026: Rive files and guide for engineering
 
-Start here. You need the three things in `core/`: the three Rive files, the guide and the text CSS.
+Start here. You need the four things in `core/`: the three Rive files, the guide, the text CSS and the desktop arrow art.
 Read `core/engineering-guide.md` first.
 Everything in `reference/` is optional, a working example of the guide.
 """
@@ -126,6 +126,8 @@ def assemble(files):
         (core / RIVS[chapter]).write_bytes(data)
     shutil.copy(REPO / "docs" / "engineering-guide.md", core / "engineering-guide.md")
     shutil.copy(REPO / "engineering" / "yig-text-motion.css", core / "yig-text-motion.css")
+    shutil.copy(REPO / "art" / "global" / "ui-desktop-button.svg", core / "ui-desktop-button.svg")      # the desktop arrow art: engineering needs it, so it is in core/ (the demo page keeps its own copy)
+    (core / "ui-desktop-button.svg").chmod(0o644)
     (ref / "yig-integration.js").write_text(reference_integration())
     shutil.copytree(REPO / "engineering" / "react", ref / "react", ignore=shutil.ignore_patterns("node_modules", "dist"))
     main = ref / "react" / "src" / "main.tsx"

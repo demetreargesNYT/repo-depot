@@ -6,12 +6,12 @@
 <title>Year in Games 2026 · Chapter 2 example</title>
 <link rel="icon" href="data:,"> <!-- no favicon request, so a plain static server logs no 404 -->
 <!--
-  The integration file does `import { Rive } from "@rive-app/canvas"`. In your app, `npm install @rive-app/canvas@2.45.0`
+  The integration file does `import { Rive } from "@rive-app/canvas"`. In your app, `npm install @rive-app/canvas@2.27.3`
   and your bundler resolves that import; the next two tags are only so this page runs as-is, with no build step.
   rive.js is the runtime's UMD build: it sets window.rive and fetches its own .wasm (same version) from unpkg.
   The import map then hands that name a one-line module that re-exports window.rive.
 -->
-<script src="https://cdn.jsdelivr.net/npm/@rive-app/canvas@2.45.0/rive.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@rive-app/canvas@2.27.3/rive.js"></script>
 <script type="importmap">
 { "imports": { "@rive-app/canvas": "data:text/javascript,const r = window.rive; export const { Rive, EventType, Layout, Fit, Alignment, RuntimeLoader } = r; export default r;" } }
 </script>

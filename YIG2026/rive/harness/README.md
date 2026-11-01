@@ -1,6 +1,6 @@
 # Harness
 
-One page, `index.html`, that is both our review harness and the example engineering receives. It plays the chapter's real built `.riv` with the Rive web runtime (2.45.0, pinned, from jsDelivr), driven by `engineering/chapter-2-integration.js` and `engineering/yig-text-motion.css` exactly as engineering will use them. `npm run deliver ch2` copies this page into the handoff unchanged.
+One page, `index.html`, that is both our review harness and the example engineering receives. It plays the chapter's real built `.riv` with the Rive web runtime (2.27.3, pinned, from jsDelivr), driven by `engineering/chapter-2-integration.js` and `engineering/yig-text-motion.css` exactly as engineering will use them. `npm run deliver ch2` copies this page into the handoff unchanged.
 
 ```bash
 cd harness

@@ -150,7 +150,7 @@ uses them, so a card list never names them as scenes.
 
 ## Rive runtime
 
-`@rive-app/canvas` **2.45.0**. Pin that version. In your app, `npm install @rive-app/canvas@2.45.0` and the
+`@rive-app/canvas` **2.27.3**. Pin that version. In your app, `npm install @rive-app/canvas@2.27.3` and the
 integration's `import { Rive } from "@rive-app/canvas"` resolves as usual. The example page maps that import to the
 same version on a CDN only so it runs without a build step.
 
