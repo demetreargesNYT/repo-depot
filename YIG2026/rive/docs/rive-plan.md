@@ -28,24 +28,30 @@
 
 - **The engineering package is final** (commit `158faed`, `deliver/yig-engineering-package.zip`, built with `python3 tools/package_engineering.py`) and goes to engineering from Demetre. Nothing is sent without him.
 - **Done:** the engineering guide and React example; the test cleanup (the three tiers, one entry point `window.__yigTest` for the Chapter 2 page's text test); the Finesse panel on `/experience`. Nothing from the package rework onward has been pushed to GitHub (local commits on `main`).
-- **Latest Rive revisions** (all pushed 2026-10-30 as "Framework for engineering", tags `rive/ch1-framework-for-engineering`, `rive/ch2-framework-for-engineering`, `rive/ch3-framework-for-engineering`; no Rive file has changed since):
+- **Latest Rive revisions** (all pushed 2026-11-02 as "Ads once, polish", tags `rive/ch1-ads-once-polish`, `rive/ch2-ads-once-polish`, `rive/ch3-ads-once-polish`; the earlier push, 2026-10-30, is tagged `rive/chN-framework-for-engineering`):
 
 | File | Rive file | Revision |
 |---|---|---|
-| File 1 · `chapters/ch1` · "yig-ch1" | 2692475 | 49235075 |
-| File 2 · `chapters/ch2` · "yig-ch2" | 2677803 | 49235086 |
-| File 3 · `chapters/ch3` · "yig-ch3" | 2693093 | 49235090 |
+| File 1 · `chapters/ch1` · "yig-ch1" | 2692475 | 49362750 |
+| File 2 · `chapters/ch2` · "yig-ch2" | 2677803 | 49362756 |
+| File 3 · `chapters/ch3` · "yig-ch3" | 2693093 | 49362763 |
 
 - **Next:** review of the global pass, then rooms in the Finesse order. Then the mobile How-to file (`how-to-mobile.riv`, placeholder art until Demetre's arrives).
 
 ## Changes since the last delivery
 
-The last package went out as `158faed`. Keep this list current; the next note to engineering is made from it. Add a line whenever something changes that engineering would notice, in the code (the card list, the guide) or in the Rive files.
+The last delivery went out on 2026-11-02 (below). Keep this list current; the next note to engineering is made from it. Add a line whenever something changes that engineering would notice, in the code (the card list, the guide) or in the Rive files.
+
+- (nothing yet)
+
+### Delivered 2026-11-02 ("Ads once, polish")
+
+Rive revisions: File 1 (2692475) 49362750, File 2 (2677803) 49362756, File 3 (2693093) 49362763, all named "Ads once, polish"; git tags `rive/ch1-ads-once-polish`, `rive/ch2-ads-once-polish`, `rive/ch3-ads-once-polish`. The package is `deliver/yig-engineering-package.zip` (sent by Demetre). The guide gained the opening sections "How the animation works, in plain English" and "What's new in this delivery".
 
 - **Ads are skipped once seen** (2026-11-02; engineering's rule, card navigation only, no Rive change). Ad 1, Ad 2 and the anonymous Ad 3 show the first time the player reaches them with Next; after that Back and Next skip them, so the cards need an `ad: true` tag. New moves this creates: Chapter 1 card 1 ⇄ Start (one move); Chapter 1 card 5 ⇄ the Chapter 2 opener (two moves across files); anonymous Chapter 3 card 1 ⇄ the last Chapter 2 community card (two moves across files). The guide (sections 6, 7, 8, 9 and the checklist), the reference code (`yig-integration.js`, the React example) and the example page are updated.
 - **The Mini and The Midi in Chapter 4 use The Crossword's fireworks on their own wall colours, final** (no longer placeholders). Their walls, 95BEFA and 7EAAF1, are exactly their Chapter 2 walls. The guide's "Coming later" list no longer has them.
 - **The Crossword's Chapter 4 wall is now 6493E6** (was C0D8F8), its Chapter 2 colour, so every game's Chapter 4 wall matches its Chapter 2 room (2026-11-02; a Rive file change in File 3, no property or code change). The example page's video background uses it too.
-- **Rive files changed in the global pass** (new `.riv` files, no property or code change): Start no longer stops when tapped in its first second (its intro now starts on the tap, blending from the Loading bounce over 0.25 s); the returns that close the loops in The Mini and The Crossword ease; The Midi's and The Crossword's first move starts from rest; Chapter 1 card 5's loop closes behind the tiles; the Chapter 3 and Chapter 4 stand-in balls, Connections' ball and The Mini's ball path moved inside the safe area. None has been pushed to Rive.
+- **Rive files changed in the global pass** (new `.riv` files, no property or code change): Start no longer stops when tapped in its first second (its intro now starts on the tap, blending from the Loading bounce over 0.25 s); the returns that close the loops in The Mini and The Crossword ease; The Midi's and The Crossword's first move starts from rest; Chapter 1 card 5's loop closes behind the tiles; the Chapter 3 and Chapter 4 stand-in balls, Connections' ball and The Mini's ball path moved inside the safe area. Pushed to Rive with this delivery.
 
 ## Global pass (decided and done 2026-11-02, for Demetre's review)
 
