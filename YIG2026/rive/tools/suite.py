@@ -60,6 +60,7 @@ def pieces():
             out.append(piece(f"experience harness {flow} {size}", experience(None, None, flow, size, "wordle-only"), needs="harness"))
     out.append(piece("experience harness sub phone", experience(None, None, "sub", "phone", "connections-only"), tier="smoke", needs="harness"))
     out.append(piece("experience harness anon phone", experience(None, None, "anon", "phone", "wordle-only"), tier="smoke", needs="harness"))
+    out.append(piece("Finesse panel", ["node", "harness/finesse-test.mjs"], needs="harness"))
     out.append(piece("build the package", ["python3", "tools/package_engineering.py"]))
     for player in PLAYERS:
         out.append(piece(f"package demo sub phone {player}", experience(PACKAGE, "/reference/example/", "sub", "phone", player), needs="package"))

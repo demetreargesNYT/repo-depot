@@ -259,7 +259,7 @@ function buildCards(p) {
     for (const game of COMMUNITY_ORDER) if (game !== own[0]) cards.push({ game, community: true });
   }
   // The Chapter 2 ending: after the last card above, this card's own tap leaves that room for the empty Chapter 3
-  // backdrop. Copy and timing are placeholder; the card itself (and chapter-2-integration.js's SCENE/BUILT entries
+  // backdrop. Copy and timing are placeholder; the card itself (and chapter-2-integration.js's SCENE entry
   // for "chapter3") are the framework piece.
   cards.push({ game: "chapter3", card: "end" });
   return cards;

@@ -32,6 +32,7 @@ const files = {
   "/review.js": path.join(here, "review.js"),
   "/yig-integration.js": path.join(repo, "engineering", "yig-integration.js"),
   "/yig-framing.css": path.join(here, "yig-framing.css"),
+  "/finesse-clock.js": path.join(here, "finesse-clock.js"),   // the Finesse panel's clock; added to the stage page only with ?finesse=1
 };
 const fontsRoot = path.join(here, "fonts");
 const artRoot = path.join(repo, "art", "global");   // the game icons and the desktop arrow
@@ -75,13 +76,29 @@ function sendFile(res, file) {
   });
 }
 
-function sendPage(res, name = "index.html") {
+// each room's intro and loop lengths, read from the three scene.rml files (tools/room_timing.py), for the Finesse panel
+let timingCache = { key: "", json: "{}" };
+function roomTiming() {
+  const key = Object.values(rivs).map((dir) => fs.statSync(path.join(dir, "scene.rml")).mtimeMs).join("-");
+  if (key === timingCache.key) return Promise.resolve(timingCache.json);
+  return new Promise((resolve, reject) => {
+    execFile("python3", [path.join(repo, "tools", "room_timing.py")], (err, stdout, stderr) => {
+      if (err) return reject(new Error(`room_timing.py failed:\n${stderr}`));
+      timingCache = { key, json: stdout };
+      resolve(stdout);
+    });
+  });
+}
+
+function sendPage(res, name = "index.html", finesse = false) {
   fs.readFile(path.join(here, name), "utf8", (err, html) => {
     if (err) { res.writeHead(500).end(String(err.message)); return; }
     res.writeHead(200, { "content-type": types[".html"], "cache-control": "no-store" });
     // review.js (hash jump, Replay) is ours alone: it is injected here and is not in index.html, so it never ships
     const withFonts = html.replace("</head>", '<link rel="stylesheet" href="/fonts/fonts.css">\n</head>');
-    res.end(name === "index.html" ? withFonts.replace("</body>", '<script type="module" src="/review.js"></script>\n</body>') : withFonts);
+    // the Finesse clock goes in before the Rive runtime, and only when the panel asked for it (?finesse=1)
+    const stage = finesse && name === "experience-stage.html" ? withFonts.replace("<head>", '<head>\n<script src="/finesse-clock.js"></script>') : withFonts;
+    res.end(name === "index.html" ? withFonts.replace("</body>", '<script type="module" src="/review.js"></script>\n</body>') : stage);
   });
 }
 
@@ -90,7 +107,11 @@ http.createServer(async (req, res) => {
   const p = decodeURIComponent(url.pathname);
   try {
     if (p === "/" || p === "/index.html") return sendPage(res);
-    if (p in pages) return sendPage(res, pages[p]);
+    if (p in pages) return sendPage(res, pages[p], url.searchParams.get("finesse") === "1");
+    if (p === "/room-timing") {
+      res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" });
+      return res.end(await roomTiming());
+    }
     if (p in files) return sendFile(res, files[p]);
     if (p === "/builds") {   // when each file was last built, so /experience can reload itself on a newer build
       const out = {};

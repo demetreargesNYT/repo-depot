@@ -11,10 +11,6 @@ const SCENE = {
   mini: "mini", midi: "midi", daily: "daily", chapter3: "to-chapter-3", chapter1: "from-chapter-1", bridge: "bridge",
 };
 
-// The rooms chapter-2.riv has so far. Add a game here when its room ships in the .riv. A card for a game that isn't
-// built yet still shows its copy, but Rive stays on the room already on screen, so the page never pans to nothing.
-const BUILT = new Set(["chapter1", "opener", "wordle", "connections", "strands", "spelling-bee", "mini", "midi", "daily", "chapter3", "bridge"]);
-
 // Rooms with nothing to build, so no intro: their copy arrives when the pan ends (1.65 s), even on the first visit.
 const NO_INTRO = new Set(["bridge"]);
 
@@ -52,7 +48,7 @@ const PAN_MS = 1650;   // a room change: the rooms' moves run 1.6 s (the pan its
                        // so a held tap never lands on the frame a move hands over to its resting pose
 let cards = [];        // set by start()
 let frame = 0;
-let room = "chapter1";   // the room Rive is showing; a card for a game that isn't built yet leaves it where it is
+let room = "chapter1";   // the room Rive is showing
 let introEndsAt = {};  // per game: when its first-visit copy may arrive (the intro and lockup finish, or for a community
                        // card the room settles), in performance.now() time
 let pan = { dir: 0, endsAt: 0 }; // the room change on screen: which way the camera is moving, and when it stops
@@ -98,10 +94,7 @@ function move(step) {
   if (target < 0 || target > cards.length - 1) return;
   const game = cards[target].game;
   if (!(game in SCENE)) throw new Error(`Unknown game "${game}" in cards`);
-  const built = BUILT.has(game);
-  // Only a built game in a different room moves Rive. The text can change game without the room changing, when
-  // the card is for a game that isn't built yet, or comes back from one to the room still on screen.
-  const roomChange = built && game !== room;
+  const roomChange = game !== room; // every game has its own room, so a new game is a new room
   const gameChange = game !== cards[frame].game;
   const now = performance.now();
   if (roomChange && pan.endsAt > now && (step < 0 || pan.dir < 0)) {
@@ -112,13 +105,9 @@ function move(step) {
   const firstVisit = roomChange && step > 0 && !(game in introEndsAt) && !NO_INTRO.has(game);
   if (roomChange) pan = { dir: step, endsAt: now + PAN_MS };
   if (firstVisit) introEndsAt[game] = now + copyDelay(cards[target]); // a first visit plays the game's intro
-  if (built) {
-    setScene(SCENE[game], step, !!cards[frame].community); // the same scene again does nothing, so Rive keeps looping
-    room = game;
-  } else {
-    console.warn(`chapter-2: "${game}" isn't built in chapter-2.riv yet; staying on the ${room} room and changing only the copy`);
-  }
-  showCopy(frame, gameChange, roomChange, firstVisit, step);
+  setScene(SCENE[game], step, !!cards[frame].community); // the same scene again does nothing, so Rive keeps looping
+  room = game;
+  showCopy(frame, gameChange, firstVisit, step);
 }
 
 // What changes on a tap:
@@ -127,13 +116,10 @@ function move(step) {
 //    which has no lockup, as soon as the room's intro settles, COMMUNITY_COPY_MS), at the end of
 //    the move (1.65 s) when the game comes back already built (or the room has no intro, like the bridge), or when
 //    that game's interrupted intro ends, if later.
-//  - the game changes but the room doesn't (a game that isn't built yet, or back from one): the old icon and text
-//    leave at once as above, and the new ones arrive once the old text has cleared, or when the room's intro ends,
-//    if later. The delay is explicit because yig-quick only applies to the text, not the icon.
 //  - the room stays (the game's next or previous card): only the text changes, and the icon stays put. The new
 //    card arrives right after the old one leaves (yig-quick), or, if the game's intro is still running, when the
 //    intro ends, so it never overlaps the lockup. Back moves the text down instead of up (yig-back).
-function showCopy(n, gameChange, roomChange, firstVisit, step) {
+function showCopy(n, gameChange, firstVisit, step) {
   const game = cards[n].game;
   const back = step < 0;
   const visible = [...document.querySelectorAll(".yig-text:not([hidden]), .yig-icon:not([hidden])")];
@@ -144,8 +130,7 @@ function showCopy(n, gameChange, roomChange, firstVisit, step) {
   const now = performance.now();
   const introLeft = Math.max(0, (introEndsAt[room] ?? 0) - now); // the intro of the room on screen, not the card's game
   if (gameChange) {
-    let wait = Math.max(clearMs(), introLeft);
-    if (roomChange) wait = firstVisit ? (cards[n].community ? copyDelay(cards[n]) : null) : Math.max(PAN_MS, introLeft); // null: the CSS default, the 3.2 s intro
+    const wait = firstVisit ? (cards[n].community ? copyDelay(cards[n]) : null) : Math.max(PAN_MS, introLeft); // null: the CSS default, the 3.2 s intro
     if (icon) enter(icon, { delay: wait, back });
     if (next) enter(next, { delay: wait, afterIcon: !!icon, back });
   } else if (next) {

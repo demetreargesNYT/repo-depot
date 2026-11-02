@@ -2,6 +2,71 @@
 
 Status (end of 2026-10-29): Files 1, 2 and 3 are in Rive; Chapter 2.5 (the `bridge` scene) is approved and pushed (revision 49171643). Step 1 of "Order of work" (the full experience in one harness page) is built and Demetre reviewed it; his decisions are applied (see "Review decisions" just below) and waiting for his second look; none of it is committed yet except `art/global/`. Everything a new session needs is in "Current round" below.
 
+## Finesse round (started 2026-11-02)
+
+### Testing tiers (the same as `CLAUDE.md`)
+
+| Tier | Command | Covers | Takes |
+|---|---|---|---|
+| While iterating | `npm run check <ch>` | The rule checks for one file: Waiting poses, intros of exactly 3.2 s, loops that close, nothing left on the stage. | 1 to 5 seconds |
+| After a meaningful change | `npm run smoke` | The rule checks for all three files, the unit tests, the Chapter 2 page's text timing in its short form, and the experience harness for one subscriber player and the anonymous flow on phone. | about 10 minutes (9 min 51 s measured) |
+| Before a Rive push or an engineering handoff | `npm run suite` | Everything, in short pieces one at a time: rule checks, unit tests, tap and back for each file, the full text test, the experience harness (subscriber and anon, phone and desktop), the Finesse panel, and the package demo for every example player. | about 1 hour (58 min measured before the Finesse piece was added) |
+
+Both run under `caffeinate -i`, give each piece a 15 minute limit, stop at the first failure and name the piece, the reason and its log in `test-logs/` (git-ignored, overwritten each run).
+
+### The Finesse panel (on `/experience`)
+
+Off by default. The **Finesse** button, or the **F** key, docks a panel at the right and reloads the stage on the same card with a clock the panel controls (`harness/finesse-clock.js`, added to the stage page only when the address has `?finesse=1`; with the panel off the stage page is unchanged). The existing **Screen** menu picks the phone crop; the panel is not part of the stage.
+
+- **Replay room:** reloads on the room's first card (the way Jump to does), so its intro plays as on a first visit, then its loop.
+- **Timecode:** seconds to one decimal, 0 at the moment the scene is set, plus the 60 fps frame number. A strip shows the intro, an orange mark where each loop restarts and a blue mark where each small loop restarts, and the playhead. Times come from the scene files (`tools/room_timing.py`, served as `/room-timing`).
+- **Pause / play, step:** `◀|` and `|▶` (or `,` and `.`) step one frame; Space pauses and plays. Stepping forward runs exactly 1/60 s of the real animation. The Rive runtime cannot run backwards, so every frame drawn is also copied (reduced in size) into a buffer of the last 2 s, and stepping back walks through those copies over the live canvas.
+- **Speed:** 1× or 0.5×. The copy's CSS animations follow; the integration's timers (copy delays, held taps) keep real time, so tap on the stage only when a pan has ended at 0.5× or while paused.
+- **Loop seam:** each time a loop restarts, a bar at the top of the stage flashes orange (blue for a small loop) and the panel counts the seams passed. Seams are tracked on a first visit only; a room that comes back already built keeps its first-visit phase, so use Replay room for a clean run.
+- Tested by `harness/finesse-test.mjs` (20 checks; in `npm run suite`).
+
+### Global pass (proposal only; nothing is changed yet)
+
+Issues that repeat across rooms, from the "To tune later" lists, the room sheets (`docs/rooms*.md`) and `CLAUDE.md`. Data is read from the sheets: the roll-in runs 2.30 s to 3.05 s in Chapter 1 cards 2 to 5, Strands, Spelling Bee, The Mini, The Midi and The Crossword (Wordle's and Connections' ball land earlier, see item 5), and pans end at 1.65 s.
+
+1. **The ball is absent for about 0.65 s after each pan, then arrives the same way every time.** Rooms: Chapter 1 cards 2 to 5, Strands, Spelling Bee, The Mini, The Midi, The Crossword. The outgoing ball leaves with its room; the incoming one starts rolling at 2.30 s, so from 1.65 to 2.30 s the room has no ball; then every room uses the same roll (from x -80, 0.75 s, `power1.out`, a soft stop). Change: let each room's reveal fit the room (out of something, dropping in, rolling in from a different side or speed), keep the "lands as the intro ends" rule, and shorten the empty gap by starting the reveal earlier where the room allows. Risk: Demetre's fix for the ball pauses (decision 3 above) set these landing times on purpose; moving a roll-in earlier brings the pause back unless the hop that follows is also stretched. Touches only each room's intro ball keys, Waiting pose (rebuild from the intro) and the check that the last intro key equals the loop start.
+2. **The 0.15 s "pop" at 3.05 s.** Rooms: Chapter 1 cards 2 (258 px), 3 (272 px), 4 (245 px), 5 (80 px), Strands (76), The Midi (139), The Crossword (128). After the roll stops, the ball rises 76 to 272 px in nine frames (`power2.out`, up to about 1,800 px/s) onto the loop's first pose, then the loop's first move starts on the same frame (stop, pop, go, with no anticipation or landing). Change: replace the pop with a real hop (a crouch, an arc about 0.4 to 0.5 s, a landing squash) that ends on the loop start pose; where the ball must end up on a prop, roll in earlier or land lower. Risk: the same as item 1 (intro length fixed at 3.2 s; Waiting pose; copy time for community cards is measured without the ball, so unaffected). The Crossword's 128 px in 0.15 s is the "crossword-ball easing" you flagged.
+3. **Ball weight is not one language.** Only Wordle and Connections have a landing squash (1.16 × 0.84 and 1.22 × 0.78) and a spin (-1080° to 0°); the other rooms' balls arrive with neither. Rooms: Wordle and Connections versus Chapter 1 cards 2 to 5, Strands, Spelling Bee, The Mini, The Midi, The Crossword (and the stand-ins in Chapter 1 card 1, Chapters 3 and 4). Change: pick one set (squash on landing, an optional spin on the roll) and give every roll-in the same, or take them out of the first two. Risk: anything that rotates or squashes needs its group's own position on the pivot with an inner Art group (the build rule); more keys per ball; the safe area (the squash widens the ball).
+4. **Ball easing in The Mini, The Midi and The Crossword.** Already in the room sheet: the baked rig (sampled one key per frame, thinned where a straight line was "exact"), squash and pivots read differently, two position nodes (`Ball_Move` plus `Ball_01`), what the frame comparison cannot see (speed, the intro hand-off, the loop wrap), the returns we added (The Midi's 20-frame return) and the intro hand-off. Change: compare ball speed per frame against the source (not just position), re-bake with finer sampling or keep the source's eased segments, check the half-frame keys, try the room with the ball un-thinned. Risk: low outside the three rooms; the loop must still start and end on one pose and equal the illustrator's frame by frame (`tools/compare_room.py`).
+5. **About 0.6 s of stillness at the start of the Wordle and Connections loops.** Rooms: Wordle (first move at 0.63 s) and Connections (0.65 s); every other loop starts moving at 0 to 0.07 s. Change: either rotate the loop so it begins at its first move (the intro must then end on that pose) or fill the stillness with a settle (a small rock or blink). Risk: rotating the loop changes the start pose and the Waiting pose, and the intro's last frame must equal it; the 3.2 s copy timing is unaffected.
+6. **Loop seams: the returns we added, and stop-then-go.** Rooms: The Mini, The Midi, The Crossword (returns/closings we added), Strands (the second move ends 0.02 s before the loop restarts), Chapter 1 card 5 (the illustrator's 257-unit jump left open, listed in `openLoops`). Change: use the Finesse panel's seam flash on each loop and fix seams that jump or stop dead; where we added a return, ease it like the rest of the loop. Risk: the build rule says close a loop only by setting a property's last key to its first, so a nicer return is a deliberate exception to list in the docs.
+7. **Stand-in balls and the phone's safe area (x 560 to 935, y 0 to 812).** Rooms: Chapter 1 card 1 (as it was recorded: resting at x 1000), Chapter 3 (x 1030), Chapter 4 (x 577, reaching past the left edge), and parts of Connections and The Mini on the largest phone. Change: put each ball's resting place and path inside the safe area, or hand the room its real journey (the Chapter 3 and 4 journeys are saved, see their lists). Risk: Chapter 3 and 4 depend on the illustrator's journeys and the video hand-off being decided.
+8. **Only Chapter 1 card 1 follows the scene loop guideline.** The ball's journey is the loop, the reveal fits the room, the ball never visibly disappears, the gap is set per scene. Every other room loops a short hop in place. Change: decide room by room (the finesse round) which rooms get a journey, which keep a hop, and the gap. Risk: the build rule says a room's loop is the illustrator's, copied exactly, so this changes that rule for the rooms you choose.
+
+### Finesse order
+
+Each room starts with its current "To tune later" items (source: `docs/rooms-ch1.md`, `docs/rooms.md`, `docs/rooms-ch3.md`, this file). "Global" means an item of the proposal above.
+
+1. **Loading / Start (File 1).** The bird's bounce, third version, is awaiting your review; the stage crop puts the floor line at about 702, not the mock's 712, so the ball sits a little high against the HTML. Global 3.
+2. **Chapter 1 rooms 1 to 5 (File 1).**
+   - Card 1: the shift per contact, the 3 s pause (3.03 s), the dog's eye against the mouse (a bigger "asleep" cue: head dips, a small z), the dog's tail speed, the clouds (retimed, twice the old speed), where the ball rests against the safe area (global 7), and the dog's eye note (it ends on a different shape in the source).
+   - Cards 2 to 4: the 0.15 s pop (258, 272, 245 px; global 2), the shared roll-in (global 1), ball weight (global 3).
+   - Card 5: the illustrator's 257-unit ball jump left open (`openLoops`; global 6); the pop (80 px).
+3. **Chapter 2 opener (Shelf, File 2).** None recorded; the opener's ball loop is three small moves (0.15 s, 0.30 s, 0.15 s). Globals 3 and 6.
+4. **Chapter 3 and the bird room (File 3).**
+   - Chapter 3: the illustrator's 7 s ball journey is not in (a stand-in ball rests at x 1030, y 729 and hops in place); the loop is the bird's; the stand-in sits outside the phone's view (global 7).
+   - Bird on Ball (`chapter-3-bird`): the stand-in bird-on-ball is a placeholder (also on the guide's Coming later list); same loop notes as Chapter 3.
+5. **Chapter 4 with the reveal (File 3).**
+   - The ball's journey is saved for when card 1 and the video hand-off are decided; the stand-in rests at x 577 and reaches past the left edge (global 7).
+   - Three fireworks sets differ from the source near the end of the 5 s loop (Connections frames 258 to 299, Spelling Bee 273 to 299, Wordle single frames and 295 to 299), probably the importer's loop closing; rerun the three comparisons first.
+   - The Mini and The Midi are placeholders (walls and The Crossword's fireworks); the stack rides in with the floor (a drop needs the two halves timed together); the video background is page HTML.
+   - The reveal itself (`reveal`): the wall fade is 1.45 s and the copy waits for it.
+6. **End (File 3).** No ball of its own (two piles of red balls and the big one under the bird); the pieces ride in with the floor.
+7. **Game rooms, in this order.**
+   1. Wordle: about 0.6 s of stillness at the start of its loop (global 5); squash and spin that the other rooms lack (global 3).
+   2. Connections: the same stillness (global 5); partly outside the largest phone's view (global 7).
+   3. Spelling Bee: one 3.93 s hop; the outer side pieces fall outside the largest phone's view; the lockup icon stays as drawn until you say.
+   4. The Mini: the ball's easing (global 4); it reaches its place at 3.05 s; the front cube sits below y 823.
+   5. Strands: the 76 px pop (global 2); the second move ends 0.02 s before the loop restarts (global 6); the lockup icon stays as drawn until you say.
+   6. The Midi: the ball's easing and the 20-frame return we added (globals 4 and 6); the 139 px pop (global 2).
+   7. The Crossword: the ball's easing (global 4); the 128 px pop in 0.15 s (global 2); its loop is 2.5 s inside a 3 s animation.
+8. **The bridge room, last, once your art is in.** The art is an empty version of the opener's room for now (also on the guide's Coming later list).
+
 ## Current round (for the next session; 2026-10-29)
 
 ### Final fixes before the package goes to engineering (2026-10-31): done locally, waiting for Demetre's review
