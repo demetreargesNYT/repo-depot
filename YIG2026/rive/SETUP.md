@@ -10,7 +10,7 @@ Do all the Rive work in **Claude Code in VS Code, in `repo-depot/YIG2026/rive`**
 - **Rive MCP as the second tool.** Connect it for the times the Editor is open and you want Claude Code to work on the live file.
 - **A local harness page instead of the GSAP prototype.** It plays the real `.riv` with Rive's web runtime and the real text CSS, with example player data and tap halves, no menus. That way you're tuning the actual file engineering will ship, and the same page is what you show them.
 - **Git, alongside Rive's own revision history.** Rive keeps revisions per file. Git keeps the RML diffs, the specs and the engineering files together, and lets you tag what you handed off.
-- **Engineering gets finished files only.** `npm run deliver ch2` builds `deliver/ch2/`; hand that folder over at each milestone.
+- **Engineering gets finished files only.** `python3 tools/package_engineering.py` builds `deliver/yig-engineering-package/` and its zip; Demetre sends it.
 
 Use this chat and the Claude project only for thinking, writing and reviews, if you want them at all. Nothing that has to stay current should live here.
 
@@ -56,4 +56,4 @@ in the harness.
 
 - **Adjusting motion:** ask Claude Code for the change ("make the pan 1.3 s and keep the intro at 3.2 s"), then look at it in the harness. Or tweak it by hand in the Editor, then ask Claude Code to `rive pull` and commit.
 - **A new game or chapter:** import its art in the Editor, pull, write its section of the spec, then build in stages.
-- **Handing off:** push a named revision, run `npm run deliver ch2`, send `deliver/yig-chapter-2-handoff.zip`, and tag the commit `rive/ch2-handoff-N`.
+- **Handing off:** push a named revision, run `python3 tools/package_engineering.py`, and tell Demetre; he sends `deliver/yig-engineering-package.zip`.

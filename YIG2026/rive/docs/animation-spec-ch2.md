@@ -15,7 +15,7 @@ npm run check ch2                                  # the fast check: build, rule
 
 ## Conventions
 
-- **Artboard** "Chapter 2": 1495 × 1067, clipping on, `includeInExport` true. Coordinates are artboard units, origin top left, y down. The phone shows the centre 375 wide.
+- **Artboard** "Chapter 2": 1495 × 1067, clipping on, `includeInExport` true. Coordinates are artboard units, origin top left, y down. Balls and key pieces stay inside the safe area, x 560 to 935 and y 0 to 812 (the Figma phone frame); engineering's framing decides the actual crop.
 - **Time** is seconds in this spec; the file keys frames at 60 fps (3.2 s = frame 192). Transition durations in the state machine are milliseconds.
 - **Rotation** is degrees here, positive clockwise; the file stores radians.
 - **Colours** are #RRGGBB here; the file stores ARGB hex.

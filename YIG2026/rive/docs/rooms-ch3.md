@@ -6,7 +6,7 @@
 
 - **Chapter 3: the loop is the bird's.** The 5 s loop keys the bird (it closes; one eye-handle rotation ends a whole turn from its start, which is the same angle).
 
-- **Chapters 3 and 4: the stand-in ball sits outside the phone's view** (global pass item 4, the safe area). The phone shows the centre 375 of the artboard (x 560 to 935). Chapter 3's ball rests at x 1030, right of it; Chapter 4's rests at x 577 on the yellow Spelling Bee block, so with its 17.7 px radius it reaches past the left edge.
+- **Chapters 3 and 4: the stand-in ball sits outside the safe area** (global pass item 4). The safe area is x 560 to 935 and y 0 to 812 (the Figma phone frame); engineering's framing decides the actual crop. Chapter 3's ball rests at x 1030, right of it; Chapter 4's rests at x 577 on the yellow Spelling Bee block, so with its 17.7 px radius it reaches past the left edge.
 
 - **Chapter 4: the ball is a stand-in until its journey is decided** with card 1 and the video hand-off. A fuller journey would hop up the stack (Spelling Bee, Connections, the crosswords) and end leaping toward the viewer at 5.2 times its size. The stand-in rolls in, hops up onto the yellow Spelling Bee block (x 577, y 630) and hops in place there at 1 s and 3.5 s of the 5 s loop.
 

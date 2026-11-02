@@ -2,7 +2,7 @@
 
     python3 tools/check_chapter.py ch2
 
-Exits 1 if anything fails. `npm run deliver` runs this first.
+Exits 1 if anything fails. `tools/package_engineering.py` runs it first.
 """
 import math
 import sys
