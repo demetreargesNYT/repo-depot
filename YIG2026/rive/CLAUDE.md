@@ -58,7 +58,7 @@ Full plan and detail: `docs/rive-plan.md` (start with its "Start here"). In shor
   - Everything that leaves clears the full artboard, and everything that arrives starts outside it.
 - The red ball is the persistent device:
   - The outgoing room's ball is never keyed by a transition. It keeps its loop and leaves with its room.
-  - How the incoming ball enters is a room-by-room call, not a rule (today's default in most rooms is a roll in from beyond the left edge that lands as the intro ends; finesse may change it per room), and it ends on the room's **loop start pose**.
+  - In Chapter 1, the ball arrives with its room: it is already sitting at its home spot in the room and slides in with the room's pan, so it never rolls in separately or pops up. Other chapters decide room by room.
   - Every loop starts and ends on that pose. The ball may change scale between rooms.
 - **Every intro is exactly 3.2 s**, because the text CSS waits that long. A room only plays its intro on its first visit; coming back (Back, or the Next after one) it slides in already built.
 - **A move never reverses part-way.** Rive can't turn a room around mid-move without a snap (about a quarter of the move in one frame), so a Back during any pan, and a Next during a Back pan, wait in the integration file until the pan ends; only the last held tap counts. Next during a Next pan stays immediate.
@@ -78,7 +78,7 @@ This is the intent for every scene. **The details are set per scene, by Demetre,
 - **The room's small loops** (eyes, hands, pendulums, mice and so on) **keep running the whole time**, and their timing fits the full scene loop, with no jumps at the loop point.
 - A ball must never wait where its room's exit would leave it on the stage: `npm run check` fails a loop that takes a piece beyond x 1585 (or before x -100), because the room pans 1600 away and the piece would float in the next room.
 
-**The ball's role.** The ball is a continuous device, a quiet metaphor for the player's Year in Games, carried from room to room. Its job is to keep each frame alive while the viewer reads their stats, never to steal the show. It has weight and plays with the room it's in, but its motion supports the copy: no big, attention-grabbing moves while the copy is arriving or being read. The details are set room by room.
+**The ball's role.** The ball is a continuous device, a quiet metaphor for the player's Year in Games, carried from room to room. Its job is to keep each frame alive while the viewer reads their stats, never to steal the show. It has weight and plays with the room it's in: loops start as soon as the room has arrived, with no waiting for the copy, and play while the copy animates in; the ball keeps the frame alive without pulling focus. Pieces the ball touches react a little (a small dip, tilt or wobble that settles), in proportion to the impact, as in Wordle. Not every piece on every contact: choose the moments that add interest, and leave the rest still, so it never feels busy. The ball and its arcs never reach the copy. On the phone frame, keep the top of the ball's highest point well clear of the lowest line of the card's HTML copy. The details are set room by room.
 
 ## State machine pattern (per chapter)
 
