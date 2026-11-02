@@ -12247,7 +12247,7 @@
                     <KeyFrameDouble value="649" interpolationType="cubicValue" frame="139" id="9:8071">
                         <CubicValueInterpolator x1="0.16796301" y1="659.01569" x2="0.93470079" y2="775.74255" id="9:8072"/>
                     </KeyFrameDouble>
-                    <KeyFrameDouble value="775.51801" interpolationType="linear" frame="180" id="9:8073"/>
+                    <KeyFrameDouble value="775.51801" interpolationType="cubic" frame="180" id="9:8073"><CubicEaseInterpolator x1="0.65" y1="0" x2="0.35" y2="1" id="9:14505"/></KeyFrameDouble>
                     <KeyFrameDouble frame="239" id="9:8132" value="682"/>
                 </KeyedProperty>
                 <KeyedProperty property="y" id="9:8074">
@@ -12272,7 +12272,7 @@
                     <KeyFrameDouble value="572.5" interpolationType="cubicValue" frame="139" id="9:8087">
                         <CubicValueInterpolator x1="0.25462967" y1="485.60928" x2="0.84803414" y2="493.30707" id="9:8088"/>
                     </KeyFrameDouble>
-                    <KeyFrameDouble value="688.01801" interpolationType="linear" frame="180" id="9:8089"/>
+                    <KeyFrameDouble value="688.01801" interpolationType="cubic" frame="180" id="9:8089"><CubicEaseInterpolator x1="0.65" y1="0" x2="0.35" y2="1" id="9:14506"/></KeyFrameDouble>
                     <KeyFrameDouble frame="239" id="9:8133" value="498.5"/>
                 </KeyedProperty>
             </KeyedObject>
@@ -15902,6 +15902,8 @@
                     </KeyFrameDouble>
                     <KeyFrameDouble value="617.5" interpolationType="linear" frame="90" id="9:12354"/>
                     <KeyFrameDouble value="875.5" interpolationType="linear" frame="91" id="9:12355"/>
+                    <KeyFrameDouble value="875.5" interpolationType="linear" frame="177" id="9:14507"/>
+                    <KeyFrameDouble value="618.30444" interpolationType="linear" frame="179" id="9:14508"/>
                 </KeyedProperty>
                 <KeyedProperty property="y" id="9:12356">
                     <KeyFrameDouble value="674" interpolationType="cubicValue" id="9:12357">

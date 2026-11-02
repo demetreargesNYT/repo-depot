@@ -6,7 +6,7 @@
 
 - **Card 1: the dog's eye.** It is asleep while the mouse is in front of it. If it still doesn't read as asleep, the next step is a bigger cue (the head dipping, or a small z).
 
-- **Card 5: the ball jumps 257 units.** The ball jumps between the two tile tops inside the loop (x 877 to 745 at frames 60 to 61, and 617 to 875 at frames 90 to 91) and again where the loop wraps (875 to 618), with no return. The loop therefore does not start and end on one pose for this one property; `chapters/ch1/chapter.json` lists it under `openLoops` so the check allows it. A finesse call (global pass item 3, the loop seams).
+- **Card 5: the ball moves between the tile tops while hidden.** Inside the loop the ball goes from one tile top to the next in a single frame (x 877 to 745 at frames 60 to 61, and 617 to 875 at frames 90 to 91) and the wrap now closes: the ball slides from x 875 back to 618 over frames 177 to 179, behind the letter tiles (global pass 3, 2026-11-02; it was a 257-unit jump at the wrap before). All three moves happen with the ball out of sight behind the tiles, so none shows. If the ball should visibly travel between the tops, that is a finesse call.
 
 
 Generated from `chapters/ch1/scene.rml` by `python3 tools/rooms_sheet.py ch1`. Do not edit by hand: change the room, then run the
@@ -87,7 +87,7 @@ the ball's shape keys and are not listed here.
 
 ### Ball · loop
 
-- **Move 1**: 0.03 s to 3.98 s (3.95 s): ends where it began
+- **Move 1**: 0.03 s to 3.95 s (3.92 s): ends where it began
 
 ## Chapter 1, card 3 · scene `chapter-1-card-3`
 
@@ -112,7 +112,7 @@ the ball's shape keys and are not listed here.
 ### Ball · loop
 
 - **Move 1**: 0.00 s to 0.23 s (0.23 s): 34 px up
-- **Move 2**: 0.30 s to 2.98 s (2.68 s): 5 px left and 21 px down, rising 37 px above its start/finish height
+- **Move 2**: 0.30 s to 3.00 s (2.70 s): 34 px down, rising 37 px above its start/finish height
 - Waits: 0.23–0.30 s
 
 ## Chapter 1, card 4 · scene `chapter-1-card-4`
@@ -156,4 +156,4 @@ the ball's shape keys and are not listed here.
 
 ### Ball · loop
 
-- **Move 1**: 0.00 s to 2.98 s (2.98 s): 257 px right, rising 133 px above its start/finish height
+- **Move 1**: 0.00 s to 2.98 s (2.98 s): ends where it began, rising 133 px above its start/finish height

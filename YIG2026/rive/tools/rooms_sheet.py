@@ -227,11 +227,12 @@ class Sheet:
                 i += 1
         out = []
         for a, b in runs:
-            b = min(b, n - 1)
+            # a move that runs into the wrap ends on frame n, which is frame 0 again (the loop is n frames long)
+            b = min(b, n)
             if b <= a:
                 continue
             x0, y0 = pos[a]
-            x1, y1 = pos[min(b, n - 1)]
+            x1, y1 = pos[b % n]
             top = min(p[1] for p in pos[a:b + 1])
             lift = min(y0, y1) - top
             out.append((a, b, x1 - x0, y1 - y0, lift))

@@ -188,7 +188,7 @@ the ball's shape keys and are not listed here.
 ### Ball · loop
 
 - **Move 1**: 0.00 s to 1.25 s (1.25 s): 182 px left and 58 px down, rising 156 px above its start/finish height
-- **Move 2**: 1.50 s to 2.98 s (1.48 s): 177 px right and 72 px up, rising 137 px above its start/finish height
+- **Move 2**: 1.50 s to 3.00 s (1.50 s): 182 px right and 58 px up, rising 152 px above its start/finish height
 - Waits: 1.25–1.50 s
 
 ## Spelling Bee · scene `spelling-bee`
