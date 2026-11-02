@@ -3,6 +3,7 @@
     npm run suite       every test, once, before a Rive push or an engineering handoff
     npm run smoke       the short set to run after a meaningful change
     python3 tools/suite.py --list [--smoke]     print the pieces and stop
+    python3 tools/suite.py --from 19            start at piece 19 (resume a run that stopped there)
 
 Both npm scripts run under `caffeinate -i`, so the Mac cannot sleep mid-run. Each piece runs alone with a 15 minute limit;
 the browser tests also fail on their own, with a message, when Chrome closes or stops answering for 60 seconds. Before every
@@ -169,6 +170,7 @@ def fmt(seconds):
 def main():
     smoke = "--smoke" in sys.argv
     chosen = [p for p in pieces() if p["tier"] in ("both", "smoke" if smoke else "full")]
+    first = int(sys.argv[sys.argv.index("--from") + 1]) if "--from" in sys.argv else 1     # resume a run that stopped: the pieces before it are skipped
     if "--list" in sys.argv:
         for i, p in enumerate(chosen, 1):
             print(f"{i:2}. {p['name']}   {' '.join(p['cmd'])}")
@@ -181,6 +183,8 @@ def main():
     done = []
     started = time.time()
     for n, p in enumerate(chosen, 1):
+        if n < first:
+            continue
         kill_leftovers()
         log_path = LOGS / f"{n:02d}-{re.sub(r'[^a-z0-9]+', '-', p['name'].lower()).strip('-')}.log"
         print(f"[{n}/{len(chosen)}] {p['name']} ...", end=" ", flush=True)
@@ -196,10 +200,10 @@ def main():
     print("\nSummary")
     for name, ok, dt in done:
         print(f"  {'pass' if ok else 'FAIL'}  {fmt(dt):>10}  {name}")
-    for p in chosen[len(done):]:
+    for p in chosen[first - 1 + len(done):]:
         print(f"  not run             {p['name']}")
-    print(f"\n{label}: {'all ' + str(len(done)) + ' pieces passed' if all(ok for _, ok, _ in done) and len(done) == len(chosen) else 'FAILED'} in {fmt(time.time() - started)}")
-    sys.exit(0 if all(ok for _, ok, _ in done) and len(done) == len(chosen) else 1)
+    print(f"\n{label}: {'all ' + str(len(done)) + ' pieces passed' if all(ok for _, ok, _ in done) and first - 1 + len(done) == len(chosen) else 'FAILED'} in {fmt(time.time() - started)}")
+    sys.exit(0 if all(ok for _, ok, _ in done) and first - 1 + len(done) == len(chosen) else 1)
 
 
 if __name__ == "__main__":

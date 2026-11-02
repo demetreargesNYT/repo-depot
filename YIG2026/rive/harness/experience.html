@@ -164,11 +164,13 @@ let started = false;
 function load(jump = 0, goto = "") {
   started = true;
   fin.key = ""; fin.visited.clear(); fin.paused = false;     // a fresh stage: its clock starts again, unpaused
+  fin.loading = true;                                        // the old stage is still alive until the new one loads: the panel ignores it, so it cannot mark rooms visited again
   if (fin.on) loadTiming();
   remember();
   layout();
   $("frame").src = stageUrl(jump, goto);
 }
+$("frame").addEventListener("load", () => { fin.key = ""; fin.visited.clear(); fin.loading = false; });   // the new stage is in: the panel starts clean
 for (const f of fields) $(f).addEventListener("change", () => (f === "size" ? (remember(), layout()) : load()));
 $("restart").addEventListener("click", () => load());
 $("jump").addEventListener("change", () => {
@@ -337,7 +339,7 @@ function flash(kind) {
 const fmt1 = (v) => v.toFixed(1);
 function panelTick() {
   requestAnimationFrame(panelTick);
-  if (!fin.on) return;
+  if (!fin.on || fin.loading) return;
   const fw = $("frame").contentWindow, x = fw?.yigExperience, clk = fw?.__yigClock;
   if (!x || !clk) return;
   if (clk.speed !== fin.speed) clk.setSpeed(fin.speed);

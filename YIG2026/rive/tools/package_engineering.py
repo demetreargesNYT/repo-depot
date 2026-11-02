@@ -111,7 +111,7 @@ def readme():
     return """# Year in Games 2026: Rive files and guide for engineering
 
 Start here. You need the four things in `core/`: the three Rive files, the guide, the text CSS and the desktop arrow art.
-Read `core/engineering-guide.md` first.
+Read `core/engineering-guide.md` first: its opening section, "How the animation works, in plain English", is a one-page summary of the rules, and "What's new in this delivery" follows it.
 Everything in `reference/` is optional, a working example of the guide.
 """
 
