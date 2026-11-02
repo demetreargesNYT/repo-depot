@@ -49,6 +49,8 @@ def pieces():
         out.append(piece(f"rule checks {ch}", ["python3", "tools/check.py", ch], tier="both"))
     out.append(piece("unit tests", ["python3", "-m", "unittest", "discover", "-s", "tools/tests"], tier="both"))
     for ch in ("ch1", "ch2", "ch3"):
+        out.append(piece(f"loop motion {ch}", ["python3", "tools/loop_motion.py", ch], tier="both"))
+    for ch in ("ch1", "ch2", "ch3"):
         out.append(piece(f"tap {ch}", ["python3", "tools/tap_test.py", ch]))
     for ch in ("ch1", "ch2", "ch3"):
         out.append(piece(f"back {ch}", ["python3", "tools/back_test.py", ch]))

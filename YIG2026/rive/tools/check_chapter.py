@@ -390,6 +390,34 @@ def run(chapter):
         both = sorted(set(sl_keys) & set(s.keys(A[f"{room} Loop"])))
         check(not both, f"{room}'s Loop and Small Loop key different pieces" + ("" if not both else f": {both}"))
 
+    # a room's loop never stops because the scene changed: on its own layers ("<Room>" and "<Room> Small") only the first
+    # state (Waiting) may wait on the scene. Everything after it (Intro, Hold, Loop) moves on by its own clock, so a Next
+    # that pans the room out, or a Back that pans it in, never freezes it. Start's Loading Loop is the one other source:
+    # it may go to Start Hidden (a review jump straight from Loading to a later scene) and to the Intro, but the Intro
+    # transition must not wait for the end of the bounce, or a second tap in that wait would send the room to Hidden
+    # with the bird still above the stage (Start stopped dead for any tap in the first second)
+    scene_id = props["scene"].get("id") if "scene" in props else None
+    for lay in sm.findall("StateMachineLayer"):
+        room = next((r for r in rooms if lay.get("name") in (r, f"{r} Small")), None)
+        if room is None or scene_id is None:
+            continue
+        anim_of = {st.get("id"): s.names.get(st.get("animationId")) for st in lay.findall("AnimationState")}
+        first = lay.find("EntryState/StateTransition").get("stateToId")
+        bad = []
+        for st in lay.findall("AnimationState"):
+            for tr in st.findall("StateTransition"):
+                conds = tr.findall("TransitionViewModelCondition")
+                if not any(c.find(".//DataBindContext").get("sourcePathIds").split("-")[-1] == scene_id for c in conds):
+                    continue
+                src = anim_of[st.get("id")]
+                loading = src.endswith("Loading Loop")
+                if st.get("id") == first or src.endswith(" Hidden") or loading:
+                    if loading and anim_of.get(tr.get("stateToId"), "").endswith("Intro") and tr.get("enableExitTime") == "true":
+                        bad.append(f"{src} -> Intro waits for the end of the bounce")
+                    continue
+                bad.append(f"{src} -> {anim_of.get(tr.get('stateToId'))}")
+        check(not bad, f'layer "{lay.get("name")}" never leaves Intro, Hold or Loop on a scene change, so the room keeps moving as it pans out' + ("" if not bad else f": {bad}"))
+
     # a room's pieces leave with the room: the room pans 1600 left (Gone) or sits 1600 right (Right), so a piece that
     # a loop takes further than 1585 right of the artboard's left edge would show on the stage again once the room
     # has gone, floating in another room; and one further than 100 left of it would show while the room waits on the

@@ -16448,7 +16448,8 @@
                             <TransitionValueEnumComparator value="1:9101" id="9:13906"/>
                         </TransitionViewModelCondition>
                     </StateTransition>
-                    <StateTransition stateToId="9:13884" duration="0" id="9:13890" enableExitTime="true" exitTimeIsPercetange="true" exitTime="100">
+                    <StateTransition stateToId="9:13884" duration="250" interpolationType="cubic" id="9:13890">
+                        <CubicEaseInterpolator x1="0.65" y1="0" x2="0.35" y2="1" id="9:14090"/>
                         <TransitionViewModelCondition opValue="equal" id="9:13891">
                             <TransitionPropertyViewModelComparator id="9:13892">
                                 <BindablePropertyEnum id="9:13893">
@@ -16479,7 +16480,8 @@
                             <TransitionValueEnumComparator value="1:9101" id="9:13924"/>
                         </TransitionViewModelCondition>
                     </StateTransition>
-                    <StateTransition stateToId="9:13884" duration="0" id="9:13908" enableExitTime="true" exitTimeIsPercetange="true" exitTime="100">
+                    <StateTransition stateToId="9:13884" duration="250" interpolationType="cubic" id="9:13908">
+                        <CubicEaseInterpolator x1="0.65" y1="0" x2="0.35" y2="1" id="9:14091"/>
                         <TransitionViewModelCondition opValue="equal" id="9:13909">
                             <TransitionPropertyViewModelComparator id="9:13910">
                                 <BindablePropertyEnum id="9:13911">
