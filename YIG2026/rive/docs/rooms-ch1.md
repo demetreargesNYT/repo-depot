@@ -8,6 +8,8 @@
 
 - **Card 5: the ball moves between the tile tops while hidden.** Inside the loop the ball goes from one tile top to the next in a single frame (x 877 to 745 at frames 60 to 61, and 617 to 875 at frames 90 to 91) and the wrap now closes: the ball slides from x 875 back to 618 over frames 177 to 179, behind the letter tiles (global pass 3, 2026-11-02; it was a 257-unit jump at the wrap before). All three moves happen with the ball out of sight behind the tiles, so none shows. If the ball should visibly travel between the tops, that is a finesse call.
 
+- **Card 1: pieces outside the safe area** (x 560 to 935, y 0 to 812; found in the global pass, nothing moved, a room-by-room call): the Mouse and its Mouse Hole Clip (x 958 to 984, y 697 to 711), the Mouse Hole (x 1069 to 1090, y 692 to 712) and the Outlet (x 930 to 944, y 681 to 703), all past the right line. They are the pieces the ball passes as it rolls off the right edge, which is part of its story.
+
 
 Generated from `chapters/ch1/scene.rml` by `python3 tools/rooms_sheet.py ch1`. Do not edit by hand: change the room, then run the
 script (it also runs `--check` in `npm run check`). Use it to ask for changes in these terms, for example

@@ -305,6 +305,22 @@ TUNE_LATER = """## To tune later
 
 **The ball's easing in The Mini, The Midi and The Crossword (global pass 2, 2026-11-02).** The speed of the ball was compared frame by frame (`python3 tools/ball_speed.py ch2 "<room>"`; the model agrees with the Rive runtime to 0.06 units). Done: the returns that close the loops in The Mini (frames 129 to 149) and The Crossword (158 to 179) were straight lines at constant speed and now ease in and out like The Midi's; The Midi's and The Crossword's first move now starts from rest (6 frames) instead of leaving the intro's pose at full speed; The Crossword's speed step at frame 93 is smoothed. Left as drawn, each a call for the room's own finesse: the cuts where the ball is hidden inside a box (The Mini 73 to 74, The Midi 97 to 98, The Crossword 128 to 129), the contacts where a bounce changes speed on purpose, The Mini's launch from under the floor, and the roll-in and pop. Still open: squash and stretch (drawn into the ball's shape keys) were not touched. Safe area (global pass 4): The Mini's ball path was squeezed in x from 580..921 to 596..899 so the whole ball stays between x 560 and 935 (it still leaves the left box, lands on the same block and drops into the right cube); Connections' ball now rolls 616 to 578.5, not 616 to 550.
 
+**Game rooms: where the ball comes from (Demetre, 2026-11-02).** Every game room except possibly Connections: the ball should appear from a hidden place in the room as part of the loop, the way it does in Wordle (the mug in Spelling Bee, the shoe in Strands, the cubes or boxes in The Mini, The Midi and The Crossword). Connections may be the exception.
+
+**The Mini: the loop needs work in general** (Demetre, 2026-11-02), beyond the ball's easing and path above.
+
+**Shelf: pieces outside the safe area** (x 560 to 935, y 0 to 812; found in the global pass, nothing moved, a room-by-room call): Plant (Floor Plane) (x 531-554, y 656-712, left); Yarn Bowl (Floor Plane) (x 854-983, y 651-712, right); Outlet (Wall Plane) (x 505-519, y 681-703, left); Shelf Cat Shelf (Wall Plane) (x 555-694, y 463-551, left). Pieces named `a` are unnamed groups.
+
+**Connections: pieces outside the safe area** (x 560 to 935, y 0 to 812; found in the global pass, nothing moved, a room-by-room call): Right Middle Blue (Floor Plane) (x 858-976, y 673-694, right); Right Bottom Lilac (Floor Plane) (x 841-958, y 692-711, right); Right Bottom Black (Floor Plane) (x 954-992, y 692-711, right); Left Slab Lilac (Floor Plane) (x 525-659, y 608-656, left); Left Bottom Green (Floor Plane) (x 552-669, y 693-711, left); Left Top Lime (Floor Plane) (x 538-656, y 654-675, left); Left Bottom Black (Floor Plane) (x 503-557, y 692-711, left); Left Middle Black (Floor Plane) (x 523-575, y 673-692, left). Pieces named `a` are unnamed groups.
+
+**Spelling Bee: pieces outside the safe area** (x 560 to 935, y 0 to 812; found in the global pass, nothing moved, a room-by-room call): a (Floor Plane) (x 503-996, y 676-711, left, right). Pieces named `a` are unnamed groups.
+
+**The Mini: pieces outside the safe area** (x 560 to 935, y 0 to 812; found in the global pass, nothing moved, a room-by-room call): a (Front Plane) (x 506-893, y 524-853, left, below); The Mini Cubes 2 (Front Plane) (x 892-988, y 620-664, right); The Mini Cubes 3 (Front Plane) (x 891-988, y 665-761, right); The Mini Cubes 4 (Floor Plane) (x 949-988, y 619-664, right). Pieces named `a` are unnamed groups.
+
+**The Midi: pieces outside the safe area** (x 560 to 935, y 0 to 812; found in the global pass, nothing moved, a room-by-room call): The Midi Boxes 2 (Front Plane) (x 558-886, y 532-660, left); Base_Back (Floor Plane) (x 671-937, y 486-749, right). Pieces named `a` are unnamed groups.
+
+**The Crossword: pieces outside the safe area** (x 560 to 935, y 0 to 812; found in the global pass, nothing moved, a room-by-room call): Base (Floor Plane) (x 504-995, y 580-733, left, right). Pieces named `a` are unnamed groups.
+
 """
 
 HEADER = """
