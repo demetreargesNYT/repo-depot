@@ -19,8 +19,11 @@ from rml_read import chapter_dir
 
 LEFT = 660.0
 INSET = 1.41           # 1 px measured across the 45 degree roof, as a vertical drop
-POINTS = [(LEFT, 500.0), (LEFT, round(434.17 - (LEFT - 655.22) + INSET, 2)), (662.54, round(426.85 + INSET, 2)),
-          (700.0, round(426.85 + INSET - (700.0 - 662.54), 2)), (700.0, -400.0), (3600.0, -400.0), (3600.0, 1600.0), (700.0, 1600.0), (700.0, 500.0)]
+# the clip is everything except a slot: the doorway's area to the left of x 660 (y 380 to 500, open to the left edge) and the wedge
+# above the roofline up to x 700. Anywhere else on the stage the ball is not clipped at all.
+POINTS = [(-1000.0, -1000.0), (3600.0, -1000.0), (3600.0, 2000.0), (-1000.0, 2000.0), (-1000.0, 500.0), (LEFT, 500.0),
+          (LEFT, round(434.17 - (LEFT - 655.22) + INSET, 2)), (662.54, round(426.85 + INSET, 2)),
+          (700.0, round(426.85 + INSET - (700.0 - 662.54), 2)), (700.0, 380.0), (-1000.0, 380.0)]
 
 
 def main(argv):

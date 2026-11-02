@@ -195,15 +195,17 @@
                     <!-- where the ball comes out of the cuckoo clock: everything right of the door's left edge -->
                     <Shape name="Chapter 1 Card 1 Ball Doorway Clip" id="15:3978">
                         <PointsPath isClosed="true" name="Path" id="15:3980">
-                            <StraightVertex x="660.0" y="500.0" id="9:14601"/>
-                            <StraightVertex x="660.0" y="430.8" id="9:14602"/>
-                            <StraightVertex x="662.54" y="428.26" id="9:14603"/>
-                            <StraightVertex x="700.0" y="390.8" id="9:14604"/>
-                            <StraightVertex x="700.0" y="-400.0" id="9:14605"/>
-                            <StraightVertex x="3600.0" y="-400.0" id="9:14606"/>
-                            <StraightVertex x="3600.0" y="1600.0" id="9:14607"/>
-                            <StraightVertex x="700.0" y="1600.0" id="9:14608"/>
-                            <StraightVertex x="700.0" y="500.0" id="9:14609"/>
+                            <StraightVertex x="-1000.0" y="-1000.0" id="9:14611"/>
+                            <StraightVertex x="3600.0" y="-1000.0" id="9:14612"/>
+                            <StraightVertex x="3600.0" y="2000.0" id="9:14613"/>
+                            <StraightVertex x="-1000.0" y="2000.0" id="9:14614"/>
+                            <StraightVertex x="-1000.0" y="500.0" id="9:14615"/>
+                            <StraightVertex x="660.0" y="500.0" id="9:14616"/>
+                            <StraightVertex x="660.0" y="430.8" id="9:14617"/>
+                            <StraightVertex x="662.54" y="428.26" id="9:14618"/>
+                            <StraightVertex x="700.0" y="390.8" id="9:14619"/>
+                            <StraightVertex x="700.0" y="380.0" id="9:14620"/>
+                            <StraightVertex x="-1000.0" y="380.0" id="9:14621"/>
                         </PointsPath>
                     </Shape>
                     <!-- where the mouse shows: everything left of the mouse hole's right edge (it disappears into the hole) -->
