@@ -192,8 +192,11 @@ const EXAMPLE_PLAYERS = {
     daily: { completed: 90 },
   },
 };
-// The text test (harness/text-test.mjs) swaps in other players here, through window.__yigTestPlayer.
-const EXAMPLE_PLAYER = window.__yigTestPlayer
+// THE ONE TEST ENTRY POINT. The text test (harness/text-test.mjs) sets window.__yigTest before this script runs:
+//   { player }        the stats the copy is rendered from (and, with no `cards`, the stats the cards are built from)
+//   { player, cards } the exact card list to play, used as given. Nothing else in this page reads a test value.
+const TEST = window.__yigTest;
+const EXAMPLE_PLAYER = TEST?.player
   ?? EXAMPLE_PLAYERS[new URLSearchParams(location.search).get("player")]
   ?? EXAMPLE_PLAYERS["wordle-only"];
 
@@ -228,7 +231,7 @@ function buildCards(p) {
   // The file opens on the empty Chapter 1 room (where File 1 ends and Ad 2 plays): always the first card, with no copy.
   // The first tap pans from it into the opener.
   const cards = [{ game: "chapter1" }, { game: "opener" }];
-  const own = (p.gameOrder ?? GAME_ORDER).filter((game) => (p[game]?.completed ?? 0) >= QUALIFIES); // (p.gameOrder is only the text test's hook, to check that any order plays)
+  const own = GAME_ORDER.filter((game) => (p[game]?.completed ?? 0) >= QUALIFIES);
   for (const game of own) {
     const s = p[game];
     if (game === "wordle") {
@@ -466,9 +469,8 @@ const opener = [
 
 // Every card's copy is rendered up front, hidden. The integration file finds a card's copy by data-copy-frame (its
 // index in the cards) and a game's icon by data-icon-game. data-copy-game and data-copy-card are for the text test.
-// buildCards gives the same list for the same player, so the indexes here match the cards passed to start().
-function renderCopy(player, community) {
-  const cards = buildCards(player);
+// `cards` is the same list that is passed to start(), so the indexes here match.
+function renderCopy(player, community, cards) {
   let html = "";
   // chapter3 (the ending) and the bridge have no lockup and no small icon of their own, so they're left out here, not just "opener".
   const games = [...new Set(cards.map((c) => c.game).filter((g) => g !== "opener" && ICON[g]))];
@@ -491,8 +493,9 @@ function renderCopy(player, community) {
 }
 
 // The whole integration: render the copy, hand the cards to start(), then send it taps.
-renderCopy(EXAMPLE_PLAYER, EXAMPLE_COMMUNITY);
-const cards = buildCards(EXAMPLE_PLAYER); start(cards);
+const cards = TEST?.cards ?? buildCards(EXAMPLE_PLAYER);
+renderCopy(EXAMPLE_PLAYER, EXAMPLE_COMMUNITY, cards);
+start(cards);
 
 document.getElementById("tap-next").addEventListener("click", () => onTap());
 document.getElementById("tap-back").addEventListener("click", () => onBack());

@@ -47,7 +47,7 @@ const INTRO_MS = 3200; // every intro is exactly this long
 // A community card has no lockup, so its copy doesn't wait out the 3.2 s intro: it arrives when the room has settled
 // (the pieces have landed; the ball may still be rolling in). Measured per room from the file, in milliseconds after the tap; chapter.json
 // records the same numbers as communityCopyMs and our checks keep them in step with the intros.
-const COMMUNITY_COPY_MS = { wordle: 2334, connections: 2367, strands: 1967, "spelling-bee": 2017, mini: 2084, midi: 1950, daily: 1950 };
+const COMMUNITY_COPY_MS = { wordle: 2334, connections: 2367, strands: 1967, "spelling-bee": 2017, mini: 2084 }; // The Midi and The Crossword have no community cards
 const PAN_MS = 1650;   // a room change: the rooms' moves run 1.6 s (the pan itself is 0.05 to 1.55 s), plus a few frames
                        // so a held tap never lands on the frame a move hands over to its resting pose
 let cards = [];        // set by start()

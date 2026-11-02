@@ -11,6 +11,8 @@
     "deliver": "python3 tools/deliver.py",
     "back": "python3 tools/back_test.py",
     "scaffold": "python3 tools/scaffold_chapter.py",
-    "experience": "node harness/experience-test.mjs"
+    "experience": "node harness/experience-test.mjs",
+    "suite": "caffeinate -i python3 tools/suite.py",
+    "smoke": "caffeinate -i python3 tools/suite.py --smoke"
   }
 }
