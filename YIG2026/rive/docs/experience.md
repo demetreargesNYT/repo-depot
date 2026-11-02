@@ -18,8 +18,8 @@ How the whole recap flows, for both audiences, and how it maps to the Rive files
 
 | # | Part | What happens |
 |---|---|---|
-| 1 | Loading | Stats load from the Games API. |
-| 2 | Start | "Year in Games 2026", a "Let's go" button, "Supported by T-Mobile". Same room as Chapter 1. |
+| 1 | Loading | Stats load from the Games API. In Rive: the empty cream-and-orange room with the ball bouncing. What the page shows over it is up to engineering and isn't designed yet. |
+| 2 | Start | "Year in Games 2026", a "Let's go" button, "Supported by T-Mobile" (HTML). In Rive: the same room as Loading, and the bird drops onto the ball. Same colours as Chapter 1. |
 | 3 | Ad 1 | Over the empty Chapter 1 room. |
 | 4 | Chapter 1 | Five cards, never skipped, in both flows. Subscriber and registered copy: "This year, you turned downtime into playtime." / "You played a total of X puzzles. Cheers, super solver." / "Your first puzzle was [game icon + name], [date, time]." / "And your longest streak was in [game] at X days. Keep the wins coming." / the "Did you know" robot card. Five rooms on the same cream wall and orange floor. How-to overlay on card 1. |
 | 5 | Ad 2 | Over the empty Chapter 1 room. |
@@ -71,7 +71,7 @@ Both flows use the same files; only the card list and the HTML copy differ. Full
 | File 3 | Ad 3 (anons), Chapter 3, Chapter 4 with all seven top-game versions, End |
 | How-to | `how-to-mobile.riv` (mobile only; desktop uses the arrow buttons) |
 
-**Engineering's side.** They build one card list from the stats, tag each card with what it shows (`game: "wordle"`, `community: true`, an ad, `topGame`), call `start(cards)`, then `onTap()` and `onBack()`. Our integration handles Rive, file loading and swapping, and text timing.
+**Engineering's side.** They build one card list from the stats, each card naming the file and scene it shows plus the tags its HTML needs, and drive the three files from `docs/engineering-guide.md` (what to set and in what order, the copy timings, Back during a pan, switching files). `engineering/yig-integration.js` and the React example are working references.
 
 ## How engineering's 2026 code is built
 
@@ -84,12 +84,11 @@ Both flows use the same files; only the card list and the HTML copy differ. Full
 ## Not settled yet
 
 - The bridge room's art (pieces and ball), to come on the "Bridge Art" artboard.
-
-
-- Chapter 3: the badge art (the badges are HTML), and the second card's ball with the bird (a stand-in idea for now).
+- Chapter 3: the badge art (the badges are HTML), and the second card's ball with the bird (a stand-in for now).
 - Chapter 4: the video, and how the page takes over from the stage behind it.
 - The full card list and variants for each game other than Wordle and Connections (they're in Figma).
-- Art still to come: Loading, the mobile How-to overlay, and Chapter 4 versions for The Mini and The Midi.
+- What the page shows over Loading (not designed yet).
+- Art still to come: the mobile How-to overlay, and Chapter 4 versions for The Mini and The Midi.
 
 ## Chapter 3 and Chapter 4 cards (Figma frames, 2026-10-30)
 
@@ -114,4 +113,4 @@ The example players in the review page cover every case: Wordle only has both ba
 | 2 | "In 2026, your top game was..." with the game's icon and name | true | The wall fades (1.45 s) to the top game's colour and that game's fireworks start looping from their opening. The card's copy waits for the fade to finish (1.45 s after the tap, instead of the usual 0.34 s). |
 | 3 | The game's video and the editor's name | true | The stage stays on card 2's picture; the page covers it with the game's wall colour, flat, behind the video (the Figma frame has no stack or floor there). |
 
-Going back to card 1 sets `reveal` back to false: the wall fades back to the lighter blue (the same 1.45 s wait for the copy applies) and the fireworks stop. The wall returns to the lighter blue and the fireworks stop. Anons: the top game is always Wordle, so after the first card it shifts to Wordle's colour (C3E2C0) and Wordle's fireworks; their video is the special one from all the editors. Wall colours: Wordle C3E2C0, Connections E1DBF5, Strands DFF3F0, Spelling Bee FFFDEF, The Mini 95BEFA and The Midi 7EAAF1 (placeholders until their art arrives), The Crossword C0D8F8.
+Going back to card 1 sets `reveal` back to false: the wall fades back to the lighter blue (the same 1.45 s wait for the copy applies) and the fireworks stop. Anons: the top game is always Wordle, so after the first card it shifts to Wordle's colour (C3E2C0) and Wordle's fireworks; their video is the special one from all the editors. Wall colours: Wordle C3E2C0, Connections E1DBF5, Strands DFF3F0, Spelling Bee FFFDEF, The Mini 95BEFA and The Midi 7EAAF1 (placeholders until their art arrives), The Crossword C0D8F8.

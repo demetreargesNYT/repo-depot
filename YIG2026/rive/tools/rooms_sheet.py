@@ -22,7 +22,7 @@ EASE_WORDS = {
     "linear": "constant speed", "hold": "stays put", "power1.out": "fast, then a soft stop", "power2.in": "starts slow, speeds up",
     "power2.out": "fast, then eases to a stop", "power2.inOut": "slow, fast, slow", "power1.inOut": "slow, fast, slow (softer)",
     "sine.inOut": "gentle slow, fast, slow", "expo.out": "very fast, then a long settle", "power3.in": "starts very slow, speeds up",
-    "back.out": "overshoots a little, then settles", "cubicValue": "the illustrator's own curve", "elastic": "elastic (illustrator's)",
+    "back.out": "overshoots a little, then settles", "cubicValue": "a custom curve", "elastic": "elastic",
 }
 PROP_WORDS = {"scaleX": "width", "scaleY": "height", "opacity": "opacity"}
 
@@ -302,16 +302,16 @@ def render(chapter):
 
 TUNE_LATER = """## To tune later
 
-**The ball in The Mini, The Midi and The Crossword does not look quite right, and its easing does not feel like the illustrator's original, even though `tools/compare_room.py` says the loops match.** Known, not fixed. Look into it when the finesse work starts. Best guesses at the cause, most likely first:
+**The ball's easing in The Mini, The Midi and The Crossword does not feel right yet** (item 2 of the global pass in `docs/rive-plan.md`). Known, not fixed; what is in Rive is the current version, and the finesse work changes it from here. Best guesses at the cause, most likely first:
 
-1. **The baked rig.** The illustrator's ball is driven by a joystick, a `Ball_Move` solo and the `Ball_Squash` / `Ball_Scale` helper animations. We sampled that rig into direct keys, one per frame where a value moves, thinned where a straight line was "exact" (tolerance 1e-4). Squash and stretch then play as straight lines between whole frames, where the rig mixed several animations with their own easing and could change between frames. Timing that lives between frames, and the overlap of two eases, are flattened.
+1. **How the ball's keys were made.** They were sampled from a joystick rig (a `Ball_Move` solo and the `Ball_Squash` / `Ball_Scale` helper animations) into direct keys, one per frame where a value moves, thinned where a straight line was "exact" (tolerance 1e-4). Squash and stretch then play as straight lines between whole frames, where the rig mixed several animations with their own easing and could change between frames. Timing that lives between frames, and the overlap of two eases, are flattened.
 2. **Squash, stretch and pivots.** The squash is drawn into the ball's shape keys (vertex x/y, in and out handles) and the highlight. Baking turned a rig that scaled around its own origin into keys on the shape. If a pivot, handle rotation or the Solo's active child is read slightly differently, the ball changes shape the wrong way around the floor line even when each frame is close.
-3. **Two position nodes.** The Midi (and the other two) place the ball with `Ball_Move` plus a `Ball_01` offset, each with its own curves (some `cubicValue`). We copy both untouched, but our sheet and the Rive runtime may read `cubicValue` or `elastic` keys differently from the Editor's preview, and any ease the Editor shows is the sum of the two.
-4. **What the frame comparison cannot see.** It compares whole frames at whole-frame times, ignores differences of 12 colour levels or less, the 30 px border and the floor-line rows (709 to 715), which is exactly where the ball lands and squashes. It also never compares speed (the frame before and after), the hand-off from the intro into the loop, or the loop wrapping from its last frame to its first. A ball that is in the right place on every frame can still move with the wrong easing.
-5. **The returns we added.** Where the source loop does not close we added a return at the end (the Midi return is now 20 frames, eased). The ball's easing into and out of that return is ours, not the illustrator's.
-6. **Intro hand-off.** Our intro lands the ball on the loop's first pose with our own roll and hop; the source has no intro, so its first loop frames are never seen the way ours are.
+3. **Two position nodes.** The Midi (and the other two) place the ball with `Ball_Move` plus a `Ball_01` offset, each with its own curves (some `cubicValue`). Both are keyed as they came, but this sheet and the Rive runtime may read `cubicValue` or `elastic` keys differently from the Editor's preview, and any ease the Editor shows is the sum of the two.
+4. **What a frame comparison cannot see.** `tools/compare_room.py` compares whole frames at whole-frame times, ignores differences of 12 colour levels or less, the 30 px border and the floor-line rows (709 to 715), which is exactly where the ball lands and squashes. It also never compares speed (the frame before and after), the hand-off from the intro into the loop, or the loop wrapping from its last frame to its first. A ball that is in the right place on every frame can still move with the wrong easing.
+5. **The returns.** Where a loop did not close, a return was added at the end (The Midi's is 20 frames, eased). The ball's easing into and out of that return is a finesse call, like the rest of the loop.
+6. **Intro hand-off.** Each intro lands the ball on the loop's first pose with its own roll and hop, and the loop starts on that frame.
 
-Ways to look: play the source's ball and ours at the same size, slowed, and plot ball position and scale per frame for both; compare crops of the ball only, with the floor-line rows included; check the rig's helper animations for keys on half frames; try the room with the ball left un-thinned.
+Ways to look: use the Finesse panel on `/experience` (pause, step a frame at a time, 0.5×, the loop-seam flash); plot ball position and scale per frame; compare crops of the ball only, with the floor-line rows included; check the helper animations for keys on half frames; try the room with the ball left un-thinned.
 
 """
 
@@ -329,7 +329,7 @@ ball and loop are keyed only on its own pieces, so a change in one room never re
 
 **Ball moves in the loop** are found from where the ball actually is on each frame (its position nodes added together), so
 "Move 2" is the second time the ball travels. "Rising N px" means a hop. Squash and stretch inside a loop are drawn into the
-illustrator's shape keys and are not listed here.
+the ball's shape keys and are not listed here.
 """
 
 

@@ -2,11 +2,11 @@
 
 ## To tune later
 
-- **Card 1 (c1s1): the ball story is the old YIG Test file's (Rive file 2666044), not the illustrator's 7 s one, and it is this scene's loop (Demetre, 2026-10-30).** Its keys are copied onto the illustrator's pieces (`tools/card1_story.py`, one time). The story starts the moment the intro ends: the ball slides out of the cuckoo clock's door, bounces on the chair and onto the window, the nine panes flip to tiles and back (the ball is knocked off), and it rolls off the right edge. Once it is out of sight it is removed (put back behind the clock door, also out of sight); 3 s later it slides out again, and the loop repeats (762 frames, 12.7 s). The ball never parks beyond x 1560, so it always leaves with its room. The small loops keep running and are fitted to the loop: the minute hand turns twice (24 ticks, a touch slower than the old file's), the pendulum swings 12 times, the dog's tail wags 3 times (a cycle 15% shorter than the illustrator's 5 s), the mouse runs once and waits in its hole, and the dog's eye follows the mouse (closes as the mouse passes to its left, opens once it has passed back to its right, blinks while open). Changes from the old file, on purpose: positions shifted 7 to 8 px right onto the illustrator's art (the shift eases between the clock, chair, window and floor); the old file's 41 frames of hiding before the slide are left out; the exit is cut where the ball is out of sight; no clouds in the window; the pull cord, plant and the rest stay still. To tune: the shift per contact, the pause (3.03 s), the eye's timing against the mouse, the dog's tail speed.
+- **Card 1: the ball's story is this scene's loop** (762 frames, 12.7 s), and the only scene that follows the scene loop guideline so far. It starts the moment the intro ends: the ball slides out of the cuckoo clock's door along the blue perch, bounces on the chair and onto the window, the nine panes flip to tiles and back (the ball is knocked off), and it rolls off the right edge. Once it is out of sight it is removed (put back behind the clock door, also out of sight); 3 s later it slides out again, and the loop repeats. The ball never goes beyond x 1519, so it always leaves with its room. The small loops (their own "Chapter 1 Card 1 Small" layer, which starts when the pan ends) fit the loop with no jump: the minute hand turns twice (24 ticks), the pendulum swings 12 times, the dog's tail wags 3 times, the mouse runs once and waits in its hole, one set of clouds drifts across the whole window (hidden while the panes are tiles), the plant sways and drifts, and the dog's eye follows the mouse (it closes as the mouse approaches, stays closed while the mouse passes, opens once the mouse is past on its way home, and blinks while open). To tune: the shift per contact (the clock, shelf, chair, window, dog bed and floor each have their own), the pause (3.03 s), the eye's timing against the mouse, the dog's tail speed and the clouds' speed.
 
-- **Card 1: the dog's eye.** `Dog_Eye` plays once in the source and ends on a different shape. In the loop it plays at the start of the 10 s and returns to its first shape over frames 300 to 599 (a slow drift). Worth looking at.
+- **Card 1: the dog's eye.** It is asleep while the mouse is in front of it. If it still doesn't read as asleep, the next step is a bigger cue (the head dipping, or a small z).
 
-- **Card 5 (c1s5): the ball's 257-unit jump is the illustrator's.** The ball jumps between the two tile tops inside the loop (x 877 to 745 at frames 60 to 61, and 617 to 875 at frames 90 to 91) and again where the loop wraps (875 to 618). We left it exactly as made, with no return. The loop therefore does not start and end on one pose for this one property; `chapters/ch1/chapter.json` lists it under `openLoops` so the check allows it.
+- **Card 5: the ball jumps 257 units.** The ball jumps between the two tile tops inside the loop (x 877 to 745 at frames 60 to 61, and 617 to 875 at frames 90 to 91) and again where the loop wraps (875 to 618), with no return. The loop therefore does not start and end on one pose for this one property; `chapters/ch1/chapter.json` lists it under `openLoops` so the check allows it. A finesse call (global pass item 3, the loop seams).
 
 
 Generated from `chapters/ch1/scene.rml` by `python3 tools/rooms_sheet.py ch1`. Do not edit by hand: change the room, then run the
@@ -22,10 +22,10 @@ ball and loop are keyed only on its own pieces, so a change in one room never re
 
 **Ball moves in the loop** are found from where the ball actually is on each frame (its position nodes added together), so
 "Move 2" is the second time the ball travels. "Rising N px" means a hop. Squash and stretch inside a loop are drawn into the
-illustrator's shape keys and are not listed here.
+the ball's shape keys and are not listed here.
 
 
-## Start (c0) and Loading · scene `start`
+## Start and Loading · scene `start`
 
 **Loop:** 4.50 s (270 frames at 60/s), repeats. First and last frames are the same pose.
 
@@ -43,7 +43,7 @@ illustrator's shape keys and are not listed here.
 - **Move 2**: 1.47 s to 1.80 s (0.33 s): 58 px down
 - Waits: 1.33–1.47 s
 
-## Chapter 1, card 1 (c1s1) · scene `chapter-1-card-1`
+## Chapter 1, card 1 · scene `chapter-1-card-1`
 
 **Loop:** 12.70 s (762 frames at 60/s), repeats. First and last frames are the same pose.
 
@@ -67,7 +67,7 @@ illustrator's shape keys and are not listed here.
 - **Move 3**: 4.95 s to 9.67 s (4.72 s): 46 px left and 210 px up
 - Waits: 1.87–2.32 s, 4.50–4.95 s
 
-## Chapter 1, card 2 (c1s2) · scene `chapter-1-card-2`
+## Chapter 1, card 2 · scene `chapter-1-card-2`
 
 **Loop:** 4.00 s (240 frames at 60/s), repeats. First and last frames are the same pose.
 
@@ -89,7 +89,7 @@ illustrator's shape keys and are not listed here.
 
 - **Move 1**: 0.03 s to 3.98 s (3.95 s): ends where it began
 
-## Chapter 1, card 3 (c1s3) · scene `chapter-1-card-3`
+## Chapter 1, card 3 · scene `chapter-1-card-3`
 
 **Loop:** 3.00 s (180 frames at 60/s), repeats. First and last frames are the same pose.
 
@@ -115,7 +115,7 @@ illustrator's shape keys and are not listed here.
 - **Move 2**: 0.30 s to 2.98 s (2.68 s): 5 px left and 21 px down, rising 37 px above its start/finish height
 - Waits: 0.23–0.30 s
 
-## Chapter 1, card 4 (c1s4) · scene `chapter-1-card-4`
+## Chapter 1, card 4 · scene `chapter-1-card-4`
 
 **Loop:** 3.00 s (180 frames at 60/s), repeats. First and last frames are the same pose.
 
@@ -138,7 +138,7 @@ illustrator's shape keys and are not listed here.
 - **Move 4**: 2.62 s to 2.98 s (0.37 s): 24 px down
 - Waits: 0.37–0.57 s, 1.45–1.55 s, 2.37–2.62 s
 
-## Chapter 1, card 5 (c1s5) · scene `chapter-1-card-5`
+## Chapter 1, card 5 · scene `chapter-1-card-5`
 
 **Loop:** 3.00 s (180 frames at 60/s), repeats. First and last frames are the same pose.
 
