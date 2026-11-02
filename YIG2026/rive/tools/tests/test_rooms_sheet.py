@@ -42,13 +42,24 @@ class KeyValues(unittest.TestCase):
 
 class Moves(unittest.TestCase):
     def test_a_hop_between_two_rests_is_one_move(self):
+        # a loop is closed (it ends where it began), so the hop goes out and comes back to its rest: one move
         sheet = R.Sheet(None)
-        pos = [(0, 0)] * 10 + [(i * 5, -abs(30 - i * 10)) for i in range(1, 7)] + [(30, 0)] * 10
+        pos = [(0, 0)] * 10 + [(i * 5, -abs(30 - i * 10)) for i in range(1, 7)] + [(30, 0)] * 10 + [(30 - i * 6, 0) for i in range(1, 6)] + [(0, 0)] * 4
         moves = sheet.moves(pos, 60)
-        self.assertEqual(len(moves), 1)
+        self.assertEqual(len(moves), 2)          # out, and back
         a, b, dx, dy, lift = moves[0]
         self.assertGreater(dx, 20)
         self.assertEqual(round(dy), 0)
+
+    def test_a_move_into_the_wrap_ends_on_the_last_frame_of_the_loop(self):
+        # the ball is still travelling on the last rendered frame and lands on frame 0 of the next pass: the move ends at n,
+        # not one frame early (Strands showed 2.98 s for a 3.00 s loop)
+        sheet = R.Sheet(None)
+        n = 20
+        pos = [(0, 0)] * 5 + [(i * 2, 0) for i in range(1, 11)] + [(20 - (i - 10) * 4, 0) for i in range(11, 16)]
+        pos = pos[:n - 1] + [(2, 0)]
+        moves = sheet.moves(pos, 60)
+        self.assertEqual(moves[-1][1], n)
 
 
 class Sheet(unittest.TestCase):

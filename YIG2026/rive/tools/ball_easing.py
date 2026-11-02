@@ -40,9 +40,9 @@ class Patcher:
         self.next_id += 1
         return f"9:{self.next_id}"
 
-    def block(self, room, obj, prop):
-        """(start, end) of the KeyedProperty's text in the room's Loop."""
-        a = self.text.index(f'name="{room} Loop"')
+    def block(self, room, obj, prop, anim="Loop"):
+        """(start, end) of the KeyedProperty's text in the room's Loop (or another of its animations)."""
+        a = self.text.index(f'name="{room} {anim}"')
         k = self.text.index(f'<KeyedObject objectId="{obj}"', a)
         p = self.text.index(f'<KeyedProperty property="{prop}"', k)
         e = self.text.index("</KeyedProperty>", p)

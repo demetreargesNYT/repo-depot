@@ -2,7 +2,7 @@
 
 ## To tune later
 
-**The ball's easing in The Mini, The Midi and The Crossword (global pass 2, 2026-11-02).** The speed of the ball was compared frame by frame (`python3 tools/ball_speed.py ch2 "<room>"`; the model agrees with the Rive runtime to 0.06 units). Done: the returns that close the loops in The Mini (frames 129 to 149) and The Crossword (158 to 179) were straight lines at constant speed and now ease in and out like The Midi's; The Midi's and The Crossword's first move now starts from rest (6 frames) instead of leaving the intro's pose at full speed; The Crossword's speed step at frame 93 is smoothed. Left as drawn, each a call for the room's own finesse: the cuts where the ball is hidden inside a box (The Mini 73 to 74, The Midi 97 to 98, The Crossword 128 to 129), the contacts where a bounce changes speed on purpose, The Mini's launch from under the floor, and the roll-in and pop. Still open: squash and stretch (drawn into the ball's shape keys) were not touched.
+**The ball's easing in The Mini, The Midi and The Crossword (global pass 2, 2026-11-02).** The speed of the ball was compared frame by frame (`python3 tools/ball_speed.py ch2 "<room>"`; the model agrees with the Rive runtime to 0.06 units). Done: the returns that close the loops in The Mini (frames 129 to 149) and The Crossword (158 to 179) were straight lines at constant speed and now ease in and out like The Midi's; The Midi's and The Crossword's first move now starts from rest (6 frames) instead of leaving the intro's pose at full speed; The Crossword's speed step at frame 93 is smoothed. Left as drawn, each a call for the room's own finesse: the cuts where the ball is hidden inside a box (The Mini 73 to 74, The Midi 97 to 98, The Crossword 128 to 129), the contacts where a bounce changes speed on purpose, The Mini's launch from under the floor, and the roll-in and pop. Still open: squash and stretch (drawn into the ball's shape keys) were not touched. Safe area (global pass 4): The Mini's ball path was squeezed in x from 580..921 to 596..899 so the whole ball stays between x 560 and 935 (it still leaves the left box, lands on the same block and drops into the right cube); Connections' ball now rolls 616 to 578.5, not 616 to 550.
 
 
 Generated from `chapters/ch2/scene.rml` by `python3 tools/rooms_sheet.py ch2`. Do not edit by hand: change the room, then run the
@@ -153,15 +153,13 @@ the ball's shape keys and are not listed here.
 
 ### Ball · loop
 
-- **Move 1**: 0.65 s to 1.55 s (0.90 s): 63 px left
-- **Move 2**: 1.68 s to 1.72 s (0.03 s): ends where it began
-- **Move 3**: 1.92 s to 1.98 s (0.07 s): ends where it began
-- **Move 4**: 2.35 s to 3.25 s (0.90 s): 63 px right
-- **Move 5**: 3.38 s to 3.55 s (0.17 s): 26 px up
-- **Move 6**: 3.62 s to 3.78 s (0.17 s): 26 px down
-- **Move 7**: 3.87 s to 4.02 s (0.15 s): 14 px up
-- **Move 8**: 4.12 s to 4.27 s (0.15 s): 14 px down
-- Waits: 1.55–1.68 s, 1.72–1.92 s, 1.98–2.35 s, 3.25–3.38 s, 3.55–3.62 s, 3.78–3.87 s, 4.02–4.12 s
+- **Move 1**: 0.68 s to 1.52 s (0.83 s): 35 px left
+- **Move 2**: 2.38 s to 3.22 s (0.83 s): 35 px right
+- **Move 3**: 3.38 s to 3.55 s (0.17 s): 26 px up
+- **Move 4**: 3.62 s to 3.78 s (0.17 s): 26 px down
+- **Move 5**: 3.87 s to 4.02 s (0.15 s): 14 px up
+- **Move 6**: 4.12 s to 4.27 s (0.15 s): 14 px down
+- Waits: 1.52–2.38 s, 3.22–3.38 s, 3.55–3.62 s, 3.78–3.87 s, 4.02–4.12 s
 
 ## Strands · scene `strands`
 
@@ -238,12 +236,12 @@ the ball's shape keys and are not listed here.
 
 ### Ball · intro
 
-- **The Mini Ball**: moves right 746 px (x -80 → 666), starts 2.30 s, takes 0.75 s, power1.out (fast, then a soft stop)
+- **The Mini Ball**: moves right 753 px (x -80 → 672), starts 2.30 s, takes 0.75 s, power1.out (fast, then a soft stop)
 
 ### Ball · loop
 
-- **Move 1**: 0.00 s to 1.23 s (1.23 s): 86 px left and 135 px up, rising 268 px above its start/finish height
-- **Move 2**: 1.52 s to 2.48 s (0.97 s): 86 px right and 135 px down, rising 150 px above its start/finish height
+- **Move 1**: 0.00 s to 1.23 s (1.23 s): 76 px left and 135 px up, rising 268 px above its start/finish height
+- **Move 2**: 1.52 s to 2.48 s (0.97 s): 76 px right and 135 px down, rising 150 px above its start/finish height
 - Waits: 1.23–1.52 s
 
 ## The Midi · scene `midi`

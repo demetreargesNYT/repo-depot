@@ -22,7 +22,7 @@
 - **Animations keep running while a room pans out on Next and pans in on Back.** Nothing freezes mid-motion. Any exception is a one-off, listed with its room (none yet).
 - The scene loop guideline in `CLAUDE.md` stays as the intent; the Rive CLI is signed in as lindsey.liang on purpose.
 
-**Next:** the global pass (below), then the rooms in the Finesse order.
+**Next:** Demetre reviews the global pass (below, done 2026-11-02, committed locally), then the rooms in the Finesse order.
 
 ## Status (2026-11-02)
 
@@ -36,16 +36,16 @@
 | File 2 · `chapters/ch2` · "yig-ch2" | 2677803 | 49235086 |
 | File 3 · `chapters/ch3` · "yig-ch3" | 2693093 | 49235090 |
 
-- **Next:** the global pass, then rooms in the Finesse order. Then the mobile How-to file (`how-to-mobile.riv`, placeholder art until Demetre's arrives).
+- **Next:** review of the global pass, then rooms in the Finesse order. Then the mobile How-to file (`how-to-mobile.riv`, placeholder art until Demetre's arrives).
 
-## Global pass (decided 2026-11-02)
+## Global pass (decided and done 2026-11-02, for Demetre's review)
 
 Four things that repeat across rooms. Everything else that repeats (the 0.15 s pop at 3.05 s, the shared roll-in, the landing squash, the Wordle and Connections stillness at the loop start, journey versus hop) is a room-by-room call, listed under the rooms in the Finesse order.
 
-1. **No room freezes mid-motion.** Two cases only. (a) When a room pans out on Next, its loop and its small loops keep playing as it leaves. (b) A room that is already built pans back in already moving on Back. Survey both by stepping through every room's pan out and Back pan in with the Finesse panel, list anything that stops, and fix it room by room; list any one-off exception with its room. **Not part of this, and intended (Demetre, 2026-10-30):** on a room's first visit the room pans in and plays its intro, and its small loops (the "<Room> Small" layers) hold their opening pose until the pan ends (1.65 s, 99 frames), then start.
-2. **The ball's easing in The Mini, The Midi and The Crossword.** The balls do not feel right yet. Likely causes, in `docs/rooms.md` ("To tune later"): how the keys were baked (one key per frame, thinned), squash and pivots, two position nodes, the returns that close each loop, the intro hand-off. First step: compare speed per frame, not just position, and re-bake or hand-ease.
-3. **The loop seams.** Use the panel's seam flash on every loop. Known: The Mini, The Midi and The Crossword close their loops with a return (The Midi's is 20 frames, eased); Strands' second move ends 0.02 s before the loop restarts; Chapter 1 card 5's ball jumps 257 units and the loop does not close on that property (`openLoops`); three Chapter 4 fireworks sets (Connections, Spelling Bee, Wordle) look different near the end of their 5 s loop.
-4. **The safe area** (x 560 to 935, y 0 to 812, the Figma phone frame): balls and key pieces stay inside. Known outside: the stand-in balls in Chapter 3 (rests at x 1030) and Chapter 4 (x 577, reaching past the left edge); the ball in Chapter 1 card 1 when it rolls off the right edge; parts of Connections and The Mini, the outer side pieces of Spelling Bee, The Crossword and Connections on the largest phone, Start's armchair and plant, End's two piles, Chapter 4's side fireworks, The Mini's front cube (below y 823).
+1. **No room freezes mid-motion.** Surveyed in the Rive runtime for every room in all three files (`python3 tools/loop_motion.py <ch>`, in `npm run suite`): each room is tapped out mid-loop and early in its visit, then tapped back in, and every piece its loops move is compared on every frame with a run that never leaves. Only **Start** stopped: a tap in the first second of its visit (while the Loading bounce was finishing) sent it to the Hidden pose, so the bird stayed above the stage and the intro never played. Fixed: the Loading bounce now blends into the Intro over 0.25 s from the tap instead of waiting up to a second for the bounce to end (so the Intro also starts on the tap, in step with the 3.2 s copy). `npm run check` now fails when any room's Intro, Hold or Loop state can be left on a scene change. No exceptions. The first-visit hold of the small loops (1.65 s) is intended and unchanged.
+2. **The ball's easing in The Mini, The Midi and The Crossword.** Compared speed per frame (`python3 tools/ball_speed.py ch2 "<room>"`; the model matches the runtime to 0.06 units). Done: the returns that close the loops in The Mini and The Crossword ease in and out (they were constant-speed straight lines that started and stopped dead); The Midi's and The Crossword's first move starts from rest over 6 frames; The Crossword's speed step at frame 93 is smoothed. Left as drawn: the cuts hidden inside boxes, the contacts, The Mini's launch from under the floor, the roll-in and the pop, and the squash (drawn into the shape keys).
+3. **The loop seams.** Chapter 1 card 5's loop is closed (the ball slides back behind the letter tiles over frames 177 to 179 instead of jumping 257 units at the wrap; `openLoops` is empty now); card 2's return eases. Strands' second move does not end early: the loop wraps on the string's contact and the ball arrives at 15.5 and leaves at 13.1 units per frame, a bounce (the sheet showed 2.98 s because it stopped counting at the last rendered frame; it now shows 3.00 s). Chapter 4's fireworks: at the wrap every set changes by under 100 pixels (against 1,500 to 2,900 mid-loop), so no set pops; each goes quiet for 0.1 to 0.3 s around the restart (Wordle 5 frames, Connections 11, Strands 7, Spelling Bee 17, The Mini, The Midi and The Crossword sets 19), left as drawn.
+4. **The safe area** (x 560 to 935, y 0 to 812): every ball is inside it now except Chapter 1 card 1's, which rolls off the right edge between 7.2 s and 9.7 s on purpose. Moved: the Chapter 3 stand-in (x 1030 to 748), the Chapter 4 stand-in (x 577 to 600), Connections (rolls 616 to 578.5, not to 550) and The Mini (path squeezed from 580..921 to 596..899). Non-ball pieces outside it are listed in the review notes, not moved (`python3 tools/safe_area.py <ch>`).
 
 ## Finesse order
 
@@ -53,20 +53,20 @@ Each room starts with its current "To tune later" items (`docs/rooms*.md` have t
 
 1. **Loading / Start (File 1).** The bird's bounce (third version): check it in the panel. The stage crop puts the floor line at about 702, not the mock's 712, so the ball sits a little high against the HTML. Call: how the ball and bird enter.
 2. **Chapter 1 rooms 1 to 5 (File 1).**
-   - Card 1: the shift per contact, the 3 s pause (3.03 s), the eye's timing and a bigger "asleep" cue (head dips, a small z), the dog's tail speed, the clouds' speed; the ball leaves off the right edge (safe area). Already follows the loop guideline.
-   - Cards 2 to 4: the pop (258, 272, 245 px) and the shared roll-in; squash. Card 5: the 257-unit jump and the open loop (global 3); the pop (80 px).
+   - Card 1: the shift per contact, the 3 s pause (3.03 s), the eye's timing and a bigger "asleep" cue (head dips, a small z), the dog's tail speed, the clouds' speed; the ball leaves off the right edge on purpose (safe area). Already follows the loop guideline.
+   - Cards 2 to 4: the pop (258, 272, 245 px) and the shared roll-in; squash. Card 5: the pop (80 px); its ball moves between the tile tops while hidden (loop closed in the global pass).
 3. **Chapter 2 opener (Shelf, File 2).** None recorded; the ball's loop is three small moves (0.15 s, 0.30 s, 0.15 s). Calls: entry, squash.
-4. **Chapter 3 and the bird room (File 3).** Chapter 3: a stand-in ball instead of a full journey (call: journey or hop; safe area, global 4). Bird on Ball (`chapter-3-bird`): the bird on the ball is a stand-in.
-5. **Chapter 4 with the reveal (File 3).** The stand-in ball (journey saved until card 1 and the video hand-off are decided; safe area); three fireworks sets' loop ends (global 3); The Mini and The Midi are placeholders (walls and The Crossword's fireworks); the stack rides in with the floor (a drop needs both halves timed together); the video background is page HTML. The reveal: the wall fades over 1.45 s and the copy waits for it.
+4. **Chapter 3 and the bird room (File 3).** Chapter 3: a stand-in ball instead of a full journey (call: journey or hop; it rests inside the safe area at x 748 now). Bird on Ball (`chapter-3-bird`): the bird on the ball is a stand-in.
+5. **Chapter 4 with the reveal (File 3).** The stand-in ball (journey saved until card 1 and the video hand-off are decided; it rests inside the safe area at x 600 now); the fireworks sets go quiet for 0.1 to 0.3 s around the loop restart (no pop; a call); The Mini and The Midi are placeholders (walls and The Crossword's fireworks); the stack rides in with the floor (a drop needs both halves timed together); the video background is page HTML. The reveal: the wall fades over 1.45 s and the copy waits for it.
 6. **End (File 3).** No ball of its own (two piles and the big one under the bird); the pieces ride in with the floor.
 7. **Game rooms, in this order.**
    1. **Wordle:** about 0.6 s of stillness at the start of its loop (first move at 0.63 s; call: where the loop starts); squash and spin that most rooms lack.
    2. **Connections:** the same stillness (0.65 s); partly outside the largest phone's view.
    3. **Spelling Bee:** one 3.93 s hop; the outer side pieces fall outside the largest phone's view; the lockup icon stays as drawn until you say.
-   4. **The Mini:** the ball's easing (global 2); it reaches its place at 3.05 s; the front cube sits below y 823.
-   5. **Strands:** the 76 px pop; the second move ends 0.02 s before the loop restarts (global 3); the lockup icon stays as drawn until you say.
-   6. **The Midi:** the ball's easing and the 20-frame return (globals 2 and 3); the 139 px pop.
-   7. **The Crossword:** the ball's easing (global 2); the 128 px pop in 0.15 s; its loop is 2.5 s inside a 3 s animation.
+   4. **The Mini:** the ball's path is inside the safe area now; it reaches its place at 3.05 s; the front cube sits below y 823.
+   5. **Strands:** the 76 px pop; the loop wraps on the string's contact (a bounce, checked: nothing to fix); the lockup icon stays as drawn until you say.
+   6. **The Midi:** the 139 px pop (easing and the return done in the global pass).
+   7. **The Crossword:** the 128 px pop in 0.15 s; its loop is 2.5 s inside a 3 s animation.
 8. **The bridge room, last, once Demetre's art is in.** An empty version of the opener's room for now (also on the guide's Coming later list).
 
 ## The Finesse panel (on `/experience`)

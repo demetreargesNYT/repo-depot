@@ -2,13 +2,13 @@
 
 ## To tune later
 
-- **Chapter 3: the ball is a stand-in, not a full journey.** It rolls in during the intro and rests at x 1030, y 729 (in front of the gift box), hopping in place at 1 s and 3.5 s of the 5 s loop. A fuller journey is an option for finesse: the ball starting inside the picture frame, hopping out onto the ring box (the lid opens), bouncing in the crib, swinging past the mobile and the disco ball (it bursts) and landing on the front floor. The opening pose of that journey (the picture frame, the ring box) is already set on the art. Whether the room gets a journey or keeps a hop is a room-by-room call.
+- **Chapter 3: the ball is a stand-in, not a full journey.** It rolls in during the intro and rests at x 748, y 729 (on the front floor between the cage and the blocks; it was x 1030, in front of the gift box, until the safe-area pass of 2026-11-02), hopping in place at 1 s and 3.5 s of the 5 s loop. A fuller journey is an option for finesse: the ball starting inside the picture frame, hopping out onto the ring box (the lid opens), bouncing in the crib, swinging past the mobile and the disco ball (it bursts) and landing on the front floor. The opening pose of that journey (the picture frame, the ring box) is already set on the art. Whether the room gets a journey or keeps a hop is a room-by-room call.
 
 - **Chapter 3: the loop is the bird's.** The 5 s loop keys the bird (it closes; one eye-handle rotation ends a whole turn from its start, which is the same angle).
 
-- **Chapters 3 and 4: the stand-in ball sits outside the safe area** (global pass item 4). The safe area is x 560 to 935 and y 0 to 812 (the Figma phone frame); engineering's framing decides the actual crop. Chapter 3's ball rests at x 1030, right of it; Chapter 4's rests at x 577 on the yellow Spelling Bee block, so with its 17.7 px radius it reaches past the left edge.
+- **Chapters 3 and 4: the stand-in balls are inside the safe area now** (global pass 4, 2026-11-02; the safe area is x 560 to 935 and y 0 to 812). Chapter 3's ball rests at x 748 (it was x 1030); Chapter 4's at x 600 on the yellow Spelling Bee block (it was x 577, whose left edge reached x 559). Only the ball moved. If either room gets a journey, the path has to stay inside the same lines.
 
-- **Chapter 4: the ball is a stand-in until its journey is decided** with card 1 and the video hand-off. A fuller journey would hop up the stack (Spelling Bee, Connections, the crosswords) and end leaping toward the viewer at 5.2 times its size. The stand-in rolls in, hops up onto the yellow Spelling Bee block (x 577, y 630) and hops in place there at 1 s and 3.5 s of the 5 s loop.
+- **Chapter 4: the ball is a stand-in until its journey is decided** with card 1 and the video hand-off. A fuller journey would hop up the stack (Spelling Bee, Connections, the crosswords) and end leaping toward the viewer at 5.2 times its size. The stand-in rolls in, hops up onto the yellow Spelling Bee block (x 600, y 630) and hops in place there at 1 s and 3.5 s of the 5 s loop.
 
 - **Chapter 4: The Mini and The Midi are placeholders.** Their walls are 95BEFA and 7EAAF1 (their Chapter 2 colours) and they show The Crossword's fireworks until their own art arrives.
 
@@ -67,7 +67,7 @@ the ball's shape keys and are not listed here.
 
 ### Ball · intro
 
-- **Chapter 3 Ball**: moves right 1110 px (x -80 → 1030), starts 2.45 s, takes 0.75 s, power1.out (fast, then a soft stop)
+- **Chapter 3 Ball**: moves right 828 px (x -80 → 748), starts 2.45 s, takes 0.75 s, power1.out (fast, then a soft stop)
 
 ### Ball · loop
 
@@ -87,7 +87,7 @@ the ball's shape keys and are not listed here.
 
 ### Ball · intro
 
-- **Chapter 4 Ball**: moves right 657 px (x -80 → 577), starts 2.20 s, takes 0.75 s, power1.out (fast, then a soft stop)
+- **Chapter 4 Ball**: moves right 680 px (x -80 → 600), starts 2.20 s, takes 0.75 s, power1.out (fast, then a soft stop)
 - **Chapter 4 Ball**: rises 82 px (y 712 → 630), starts 2.95 s, takes 0.25 s, power2.out (fast, then eases to a stop)
 
 ### Ball · loop

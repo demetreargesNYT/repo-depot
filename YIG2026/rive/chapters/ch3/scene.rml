@@ -12,7 +12,7 @@
                     <DrawTarget drawableId="1:2857" placementValue="before" name="Chapter 3 Top" id="9:3106"/>
                     <DrawTarget drawableId="1:2286" placementValue="before" name="Chapter 3 Bottom" id="9:3107"/>
                 </DrawRules>
-                <Node x="1030.5" y="729" name="Chapter 3 Ball" id="9:2100">
+                <Node x="748" y="729" name="Chapter 3 Ball" id="9:2100">
                     <Node y="-17.68" name="Chapter 3 Ball Art" id="9:2101">
                         <Shape x="6.39" y="-6.22" rotation="-0.777" name="Highlight" id="9:2102">
                             <Ellipse width="7.5" height="9.64" id="9:2103"/>
@@ -3182,7 +3182,7 @@
                     <DrawTarget drawableId="1:2857" placementValue="before" name="Chapter 4 Top" id="9:20853"/>
                     <DrawTarget drawableId="1:2286" placementValue="before" name="Chapter 4 Bottom" id="9:20854"/>
                 </DrawRules>
-                <Node x="577" y="630" name="Chapter 4 Ball" id="9:13991">
+                <Node x="600" y="630" name="Chapter 4 Ball" id="9:13991">
                     <Node y="-17.68" name="Chapter 4 Ball Art" id="9:13992">
                         <Shape x="6.39" y="-6.22" rotation="-0.777" name="Highlight" id="9:13993">
                             <Ellipse width="7.5" height="9.64" id="9:13994"/>
@@ -19961,7 +19961,7 @@
                     <KeyFrameDouble value="-80" interpolationType="cubic" frame="147" id="9:3458">
                         <CubicEaseInterpolator x1="0.5" y1="1" x2="0.89" y2="1" id="9:3459"/>
                     </KeyFrameDouble>
-                    <KeyFrameDouble value="1030.5" frame="192" id="9:3460"/>
+                    <KeyFrameDouble value="748.0" frame="192" id="9:3460"/>
                 </KeyedProperty>
                 <KeyedProperty property="y" id="9:3461">
                     <KeyFrameDouble value="729" frame="0" id="9:3462"/>
@@ -21803,7 +21803,7 @@
                     <KeyFrameDouble value="-80" interpolationType="cubic" frame="132" id="9:21560">
                         <CubicEaseInterpolator x1="0.5" y1="1" x2="0.89" y2="1" id="9:21561"/>
                     </KeyFrameDouble>
-                    <KeyFrameDouble value="577" frame="177" id="9:21562"/>
+                    <KeyFrameDouble value="600.0" frame="177" id="9:21562"/>
                 </KeyedProperty>
                 <KeyedProperty property="y" id="9:21563">
                     <KeyFrameDouble value="712" frame="132" id="9:21564"/>
