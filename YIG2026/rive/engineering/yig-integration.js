@@ -11,6 +11,9 @@
 //     from Chapter 3 plays them in reverse to that game card. Anons keep Ad 3 as a card on the empty room.
 //   - Files load ahead: File 1 at once, then each next file as soon as the one before it is ready. Every file stays
 //     loaded, so Back across files never reloads; a file that isn't on screen is paused.
+//   - An ad (a card tagged `ad: true`: Ad 1, Ad 2 and the anonymous Ad 3) shows only the first time the player reaches it with Next.
+//     After that Back and Next skip it and land on the card on its other side; the move is worked out from the card landed on,
+//     so it can be one move in a file, or the two-move crossing (Ad 2 sits between Chapter 1 card 5 and the Chapter 2 opener).
 //   - A Back during a pan, or a Next during a Back pan, waits for the pan to end (the file can't turn a room around part-way).
 //   - Copy arrives when the room has settled: 3.2 s on a room's first visit (its intro), at the end of the pan (1.65 s)
 //     when the room comes back already built or is an empty room, 0.34 s within a room, and on a community card as soon
@@ -50,10 +53,11 @@ let holdToken = 0;  // a tap waiting for a file to load; only the last one count
 let swapTimer = 0;
 let hopTimer = 0;   // a two-move Next: its second move (the next file taking over), still to come
 let hopRun = null;
+let seenAds = new Set();   // indexes of the ad cards the player has reached; a seen ad is skipped both ways
 
 // Call once, before any tap, with the element to draw in and every card in order. A card is
-//   { file: 1 | 2 | 3, scene: "<a scene of that file>", community?: true, icon?: "<game>", topGame?: "<game>" }
-// file and scene drive Rive; community (File 2 only) leaves the game's lockup out and times the copy to the room;
+//   { file: 1 | 2 | 3, scene: "<a scene of that file>", ad?: true, community?: true, icon?: "<game>", topGame?: "<game>" }
+// file and scene drive Rive; ad marks Ad 1, Ad 2 and the anonymous Ad 3 (shown once, then skipped); community (File 2 only) leaves the game's lockup out and times the copy to the room;
 // icon names the small HTML icon the card's copy shows with (data-icon-game), kept while the next cards share it;
 // the first card with a topGame sets File 3's top game; reveal (File 3, Chapter 4) is false on the first Chapter 4 card
 // (the stack and the ball on the lighter wall) and true from the top-game card on (the wall fades to that game's colour
@@ -73,6 +77,7 @@ function start(el, list) {
   frame = 0;
   shown = 0;
   visited = new Set(FILES.map((f, i) => `${i + 1}:${f.opens}`));
+  seenAds = new Set();
   copyFrom = {};
   pan = { dir: 0, endsAt: 0 };
   files = FILES.map(() => null);
@@ -152,10 +157,17 @@ function onBack() {
   move(-1);
 }
 
+// The card a tap lands on: the next one in that direction, leaving out any ad the player has already seen.
+function landing(step) {
+  let target = frame + step;
+  while (cards[target]?.ad && seenAds.has(target)) target += step;
+  return target;
+}
+
 function move(step) {
   clearTimeout(heldTimer);
   const token = ++holdToken;
-  const target = frame + step;
+  const target = landing(step);
   if (target < 1 && step < 0) return; // Back never returns to Loading
   if (target < 0 || target > cards.length - 1) return;
   const from = cards[frame];
@@ -178,6 +190,7 @@ function move(step) {
   if (roomChange) clearTimeout(swapTimer); // a new room change takes over from a Back's hand-back still to come
   if (roomChange && hopRun) { clearTimeout(hopTimer); hopRun(); } // and cuts a Next's two moves short: the next file takes over now
   frame = target;
+  if (to.ad) seenAds.add(target);
   const fading = applyReveal(to);
   const key = `${to.file}:${to.scene}`;
   const firstVisit = roomChange && step > 0 && !visited.has(key) && !FILES[fi].noIntro.includes(to.scene);

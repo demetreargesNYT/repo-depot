@@ -164,7 +164,7 @@ function buildCards() {
   const out = [
     c(1, "loading", "Loading", [["loader", ""]], { slot: "loader" }),      // the lockup and Supported by are the page's own (.splash); the stats load from the Games API
     c(1, "start", "Start", [["btn", "Let’s go"]], { slot: "start" }),
-    c(1, "ad", "Ad 1", [["panel", "AD 1 · T-MOBILE · PLACEHOLDER"], ["t-small", "Plays over the empty Chapter 1 room"]], { kind: "ad" }),
+    c(1, "ad", "Ad 1", [["panel", "AD 1 · T-MOBILE · PLACEHOLDER"], ["t-small", "Plays over the empty Chapter 1 room"]], { ad: true }),
   ];
   // Chapter 1 never skips a card: both flows always show all five
   const ch1 = anon
@@ -179,12 +179,12 @@ function buildCards() {
        [["t-serif", "And your longest streak was in [game] at X days."], ["t-small", "Keep the wins coming."]],
        [["t-tag", "Did you know"], ["panel", "DID YOU KNOW · ROBOT CARD · PLACEHOLDER"]]];
   ch1.forEach((copy, i) => out.push(c(1, `chapter-1-card-${i + 1}`, i ? "" : "Chapter 1", copy)));
-  out.push(c(1, "ad", "Ad 2", [["panel", "AD 2 · T-MOBILE · PLACEHOLDER"], ["t-small", "The last picture of File 1; File 2 opens on it"]], { kind: "ad" }));
+  out.push(c(1, "ad", "Ad 2", [["panel", "AD 2 · T-MOBILE · PLACEHOLDER"], ["t-small", "The last picture of File 1; File 2 opens on it"]], { ad: true }));
   out.push(c(2, "intro", "Chapter 2", [["t-serif", "But that’s not all"], ["t-small", "PLACEHOLDER · the Chapter 2 opener"]]));
   const community = (g, why) => c(2, g, "", [["t-tag", why], ["t-serif", `In ${NAME[g]}, all players…`], ["t-big", "Community stat"]], { community: true, icon: g });
   if (anon) {
     ANON_COMMUNITY.forEach((g) => out.push(community(g, "Community card · no lockup")));
-    out.push(c(2, "to-chapter-3", "Ad 3", [["panel", "AD 3 · T-MOBILE · PLACEHOLDER"], ["t-small", "Anons only: plays over the empty Chapter 3 room"]], { kind: "ad" }));
+    out.push(c(2, "to-chapter-3", "Ad 3", [["panel", "AD 3 · T-MOBILE · PLACEHOLDER"], ["t-small", "Anons only: plays over the empty Chapter 3 room"]], { ad: true }));
   } else {
     for (const g of own) {
       for (let i = 1; i <= CARDS_PER_GAME[g]; i++) {

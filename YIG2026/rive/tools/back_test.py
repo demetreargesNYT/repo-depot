@@ -271,6 +271,24 @@ def flow_cases(flow):
     return out
 
 
+def ad_cases(sequences, names):
+    """Cases for the ad rule: an ad shows once, then Back and Next skip it, so a room can be left for a room that is not its
+    neighbour in the flow (Chapter 1 card 1 back to Start, Start on to card 1). Each sequence in chapter.json (tests.adCases)
+    lists scene names in the order the player taps them; a name starting with "-" is a Back. Taps are 4 s apart (every pan
+    over), then again with the last tap 0.5, 1 and 2.5 s after the one before it."""
+    out = []
+    for seq in sequences:
+        steps = [(names.index(s.lstrip("-")), -1 if s.startswith("-") else 1) for s in seq]
+        for last in (4.0, 0.5, 1.0, 2.5):
+            taps, at = [], 0.2
+            for i, (sc, d) in enumerate(steps):
+                taps.append((at, sc, d))
+                at += last if i == len(steps) - 2 else 4.0
+            label = " -> ".join(("Back to " if d < 0 else "") + NAMES[sc] for sc, d in steps)
+            out.append((f"[ad rule] {label}, last tap {last} s after the one before", taps))
+    return out
+
+
 def main(argv):
     chapter = argv[0] if argv and not argv[0].startswith("--") else "ch2"
     names, tests = configure(chapter)
@@ -280,6 +298,7 @@ def main(argv):
         runs = [(flow_cases([names.index(n) for n in tests["flow"]]))]
     else:
         runs = [cases(first, second) for first, second in ((1, 2), (2, 1))]
+    runs.append(ad_cases(tests.get("adCases", []), names))
     try:
         for run in runs:
             for label, taps in run:

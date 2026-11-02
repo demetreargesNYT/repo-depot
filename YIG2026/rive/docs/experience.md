@@ -11,7 +11,7 @@ How the whole recap flows, for both audiences, and how it maps to the Rive files
 - **One stage for every device.** Each Rive file uses one 1495 × 1067 artboard for desktop and mobile. Balls and key pieces stay inside the safe area (x 560 to 935, y 0 to 812, the Figma phone frame); engineering's framing decides the actual crop. The stats, copy and icons are HTML, layered over the Rive stage.
 - **Data.** While Loading shows, the site loads the player's stats from the Games API. The stats fill every variable, decide which cards the player sees and in what order, and pick card variants.
 - **Two audiences.** Subscribers and registered players get a personalized experience. Anonymous players get the same structure with all-player (aggregate) stats.
-- **Ads.** Ads (sponsor: T-Mobile) play between some chapters, over an empty Rive room: the props leave, and the wall and floor stay.
+- **Ads.** Ads (sponsor: T-Mobile) play between some chapters, over an empty Rive room: the props leave, and the wall and floor stay. **An ad shows only the first time the player reaches it with Next (engineering's rule, 2026-11-02).** After that, Back and Next skip it and land on the card on its other side: Chapter 1 card 1 and Start, Chapter 1 card 5 and the Chapter 2 opener (two moves across files), and for anons the last Chapter 2 community card and Chapter 3 card 1 (two moves across files). This is card navigation in engineering's code; no Rive file changes.
 - **How-to overlay (mobile only).** Explains tap right for Next and tap left for Back. It shows if the player is idle on Chapter 1's first card. It's one small Rive file, `how-to-mobile.riv`, shown over the stage below the mobile breakpoint. Desktop has no How-to file: the arrow buttons explain themselves.
 
 ## Subscriber and registered flow
@@ -67,8 +67,8 @@ Both flows use the same files; only the card list and the HTML copy differ. Full
 | Rive file | Covers |
 |---|---|
 | File 1 | Loading, Start, Ad 1, Chapter 1, Ad 2 |
-| File 2 | Chapter 2, ending on the empty Chapter 3 room |
-| File 3 | Ad 3 (anons), Chapter 3, Chapter 4 with all seven top-game versions, End |
+| File 2 | Chapter 2, ending on the empty Chapter 3 room, where Ad 3 (anons) plays (`to-chapter-3`) |
+| File 3 | Chapter 3, Chapter 4 with all seven top-game versions, End |
 | How-to | `how-to-mobile.riv` (mobile only; desktop uses the arrow buttons) |
 
 **Engineering's side.** They build one card list from the stats, each card naming the file and scene it shows plus the tags its HTML needs, and drive the three files from `docs/engineering-guide.md` (what to set and in what order, the copy timings, Back during a pan, switching files). `engineering/yig-integration.js` and the React example are working references.
@@ -88,7 +88,7 @@ Both flows use the same files; only the card list and the HTML copy differ. Full
 - Chapter 4: the video, and how the page takes over from the stage behind it.
 - The full card list and variants for each game other than Wordle and Connections (they're in Figma).
 - What the page shows over Loading (not designed yet).
-- Art still to come: the mobile How-to overlay, and Chapter 4 versions for The Mini and The Midi.
+- Art still to come: the mobile How-to overlay. (Chapter 4's The Mini and The Midi use The Crossword's fireworks on their own walls; that is final.)
 
 ## Chapter 3 and Chapter 4 cards (Figma frames, 2026-10-30)
 
@@ -113,4 +113,4 @@ The example players in the review page cover every case: Wordle only has both ba
 | 2 | "In 2026, your top game was..." with the game's icon and name | true | The wall fades (1.45 s) to the top game's colour and that game's fireworks start looping from their opening. The card's copy waits for the fade to finish (1.45 s after the tap, instead of the usual 0.34 s). |
 | 3 | The game's video and the editor's name | true | The stage stays on card 2's picture; the page covers it with the game's wall colour, flat, behind the video (the Figma frame has no stack or floor there). |
 
-Going back to card 1 sets `reveal` back to false: the wall fades back to the lighter blue (the same 1.45 s wait for the copy applies) and the fireworks stop. Anons: the top game is always Wordle, so after the first card it shifts to Wordle's colour (C3E2C0) and Wordle's fireworks; their video is the special one from all the editors. Wall colours: Wordle C3E2C0, Connections E1DBF5, Strands DFF3F0, Spelling Bee FFFDEF, The Mini 95BEFA and The Midi 7EAAF1 (placeholders until their art arrives), The Crossword C0D8F8.
+Going back to card 1 sets `reveal` back to false: the wall fades back to the lighter blue (the same 1.45 s wait for the copy applies) and the fireworks stop. Anons: the top game is always Wordle, so after the first card it shifts to Wordle's colour (C3E2C0) and Wordle's fireworks; their video is the special one from all the editors. Wall colours: Wordle C3E2C0, Connections E1DBF5, Strands DFF3F0, Spelling Bee FFFDEF, The Mini 95BEFA and The Midi 7EAAF1 (their Chapter 2 colours; both show The Crossword's fireworks, which is final), The Crossword C0D8F8.

@@ -8,6 +8,8 @@ export type Game = 'wordle' | 'connections' | 'strands' | 'spelling-bee' | 'mini
 export type Card = {
   file: FileNumber
   scene: string
+  // Ad 1, Ad 2 and the anonymous Ad 3: shown the first time the player reaches them with Next, then skipped both ways
+  ad?: boolean
   // File 2 only: a community card turns the game's Rive lockup off (the small HTML icon still shows)
   community?: boolean
   // the game whose small HTML icon this card's copy shows with

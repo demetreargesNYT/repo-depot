@@ -93,12 +93,17 @@ for (const [flow, player, size] of runs) {
     const RANGE = NEXT_RANGE || BACK_RANGE;
     await b.nav(`${BASE}${PATH}?flow=${flow}&player=${player}${RANGE ? `&jump=${RANGE[0]}` : ""}`);
     for (let i = 0; i < 150 && !(await b.ev("!!window.yigExperience")); i++) await sleep(100);
-    const cards = await b.ev("window.yigExperience.cards.map((c) => ({ file: c.file, scene: c.scene, reveal: c.reveal, icon: c.icon }))");
+    const cards = await b.ev("window.yigExperience.cards.map((c) => ({ file: c.file, scene: c.scene, reveal: c.reveal, icon: c.icon, ad: !!c.ad }))");
     const st = () => b.ev("window.yigExperience.state()");
     const tag = `${flow}${flow === "sub" ? " " + player : ""} · ${label} ${w}x${h}`;
     const want = expectedCards(flow, player);
     const got = cards.map((c) => `${c.file}:${c.scene}`);
     check(JSON.stringify(got) === JSON.stringify(want), `${tag}: the card list is the guide's (${got.length} cards)` + (JSON.stringify(got) === JSON.stringify(want) ? "" : `; got ${got.join(" ")} / want ${want.join(" ")}`));
+    // the ad cards are Ad 1 (the first File 1 `ad`), Ad 2 (the one after Chapter 1 card 5) and, for anonymous players, Ad 3
+    // (File 2's `to-chapter-3`); the badge cards on File 3's `ad` scene are not ads
+    const adsWant = [2, want.indexOf("2:intro") - 1, ...(flow === "anon" || want.includes("2:to-chapter-3") ? [want.indexOf("2:to-chapter-3")] : [])];
+    const adsGot = cards.map((c, i) => (c.ad ? i : -1)).filter((i) => i >= 0);
+    check(JSON.stringify(adsGot) === JSON.stringify(adsWant), `${tag}: the ad cards are tagged ad (cards ${adsGot.join(", ")}; want ${adsWant.join(", ")})`);
     if (RANGE) {
       // a short stretch only: jump to card A behind the curtain, let it settle, then walk Next up to B (or Back down to B)
       const [from, to] = RANGE, fwd = !!NEXT_RANGE;
@@ -172,39 +177,76 @@ for (const [flow, player, size] of runs) {
     check(JSON.stringify([...b.rivs].sort()) === JSON.stringify(["chapter-2.riv", "chapters-3-4-end.riv", "start-chapter-1.riv"]),
       `${tag}: each .riv was fetched once, the next ones ahead of time (${b.rivs.join(", ")})`);
     bad.length = 0;
-    for (let i = cards.length - 2; i >= 1; i--) {
+    // every ad has been seen on the way here, so Back skips them all: it lands on the card on the ad's other side
+    for (let from = cards.length - 1; from > 1;) {
+      let i = from - 1;
+      while (i > 1 && cards[i].ad) i--;
       await b.ev(`document.getElementById('${back}').click()`);
-      if (cards[i].scene === "chapter-4" && cards[i + 1].scene === "chapter-4") {
+      if (cards[i].scene === "chapter-4" && cards[from].scene === "chapter-4") {
         await sleep(60);
         const d = await delayOf(i);
-        const fades = cards[i].reveal !== cards[i + 1].reveal;
-        if (fades ? d?.delay !== "1450ms" : !okNoFade(d, cards[i].icon !== cards[i + 1].icon)) revealBad.push(`Back to ${i}: ${JSON.stringify(d)} (${fades ? "wants 1450ms" : "wants the quick swap, or 340ms when the icon changes"})`);
+        const fades = cards[i].reveal !== cards[from].reveal;
+        if (fades ? d?.delay !== "1450ms" : !okNoFade(d, cards[i].icon !== cards[from].icon)) revealBad.push(`Back to ${i}: ${JSON.stringify(d)} (${fades ? "wants 1450ms" : "wants the quick swap, or 340ms when the icon changes"})`);
       }
-      await sleep(settle(i, i + 1, false));
+      await sleep(settle(i, from, false));
       await verify(i, "Back");
+      from = i;
     }
-    check(!bad.length, `${tag}: Back all the way to Start, across both file boundaries: the right file, scene and copy each time${bad.length ? ": " + bad.slice(0, 3).join(" / ") : ""}`);
+    check(!bad.length, `${tag}: Back all the way to Start, across both file boundaries and skipping every ad: the right file, scene and copy each time${bad.length ? ": " + bad.slice(0, 3).join(" / ") : ""}`);
     check(b.rivs.length === 3, `${tag}: Back across files reloaded nothing (${b.rivs.length} .riv requests)`);
     await b.ev(`document.getElementById('${back}').click()`);
     await sleep(600);
     s = await st();
     check(s.frame === 1, `${tag}: Back on Start does nothing; Loading never comes back (card ${s.frame})`);
 
-    // a Back during the Next pan into File 2 waits for the pan, then lands back in File 1
+    // a Back during the Next pan into File 2 waits for the pan, then lands back in File 1. Ad 2 has been seen, so Next from
+    // Chapter 1 card 5 skips it and plays the two-move crossing (File 1 out to the empty room, File 2 takes over and pans in),
+    // and the Back after it skips Ad 2 too: File 2 pans back to the empty room, then File 1 pans back into card 5
     const firstOf2 = cards.findIndex((c) => c.file === 2);
-    for (let i = 2; i < firstOf2; i++) { await b.ev(`document.getElementById('${next}').click()`); await sleep(120); }
+    const card5 = firstOf2 - 2;
+    while ((await st()).frame < card5) { await b.ev(`document.getElementById('${next}').click()`); await sleep(120); }
     await sleep((INTRO + 0.6) * 1000);
     await b.ev(`document.getElementById('${next}').click()`);
     await sleep(500);
     await b.ev(`document.getElementById('${back}').click()`);
     await sleep(200);
     const mid = await st();
-    await sleep((PAN + PAN + 0.8) * 1000);
+    await sleep((PAN * 3 + 0.8) * 1000);
     const end = await st();
-    check(mid.frame === firstOf2 && end.frame === firstOf2 - 1 && end.shown === 1,
-      `${tag}: a Back 0.5 s into the pan into File 2 waits (card ${mid.frame}), then lands on File 1's last card (card ${end.frame}, file ${end.shown})`);
+    check(mid.frame === firstOf2 && end.frame === card5 && end.shown === 1,
+      `${tag}: a Back 0.5 s into the two-move Next into File 2 waits (card ${mid.frame}), then skips Ad 2 and lands on Chapter 1 card 5 (card ${end.frame}, file ${end.shown})`);
     check(b.errors.length === 0, `${tag}: no console errors${b.errors.length ? ": " + b.errors.slice(0, 2).join(" / ") : ""}`);
     b.close();
+
+    // each ad, on its own: with the ad seen, Back skips it and lands on the card before it; Next skips it again and lands on
+    // the card after it. The copy waits the room's pan (1.65 s) or, for a crossing from a card that isn't on the empty room,
+    // both moves (3.3 s); neither card is a first visit (the jump walked through them), so neither waits for an intro.
+    for (const ad of adsGot) {
+      const before = ad - 1, after = ad + 1;
+      const c2 = await browser(w, h);
+      await c2.nav(`${BASE}${PATH}?flow=${flow}&player=${player}&jump=${after}`);
+      for (let i = 0; i < 150 && !(await c2.ev("!!window.yigExperience")); i++) await sleep(100);
+      const st2 = () => c2.ev("window.yigExperience.state()");
+      for (let i = 0; i < 400 && (await st2()).frame !== after; i++) await sleep(100);
+      await sleep((INTRO + PAN + 1.5) * 1000);
+      const legsOf = (from, to, forward) => (cards[to].file !== cards[from].file && (forward ? cards[from].scene !== ENDS[cards[from].file] : cards[to].scene !== ENDS[cards[to].file]) ? 2 : 1);
+      const problems = [];
+      for (const [to, from, forward] of [[before, after, false], [after, before, true]]) {
+        await c2.ev(`document.getElementById('${forward ? next : back}').click()`);
+        await sleep(60);
+        const d = await c2.ev(`(() => { const e = document.querySelector('[data-copy-frame="${to}"]'); return e ? e.style.getPropertyValue('--yig-delay') : null; })()`);
+        const wantMs = `${Math.round(PAN * legsOf(from, to, forward) * 1000)}ms`;
+        if (d !== wantMs) problems.push(`${forward ? "Next" : "Back"} to ${to}: the copy waits ${d}, not ${wantMs}`);
+        await sleep(settle(to, from, forward));
+        const x = await st2(), copy = await c2.ev(shownCopy);
+        if (x.frame !== to || x.shown !== cards[to].file || x.scenes[cards[to].file - 1] !== cards[to].scene || copy !== String(to)) {
+          problems.push(`${forward ? "Next" : "Back"} to ${to} (${cards[to].file}:${cards[to].scene}): card ${x.frame}, file ${x.shown}, scene ${x.scenes[x.shown - 1]}, copy ${copy || "none"}`);
+        }
+      }
+      if (c2.errors.length) problems.push(`console errors: ${c2.errors.slice(0, 2).join(" / ")}`);
+      check(!problems.length, `${tag}: ad card ${ad} (${cards[ad].file}:${cards[ad].scene}): Back skips it to card ${before}, Next skips it to card ${after}, right file, scene, copy and copy timing${problems.length ? ": " + problems.join(" / ") : ""}`);
+      c2.close();
+    }
   }
 }
 console.log(`\n${results.filter(Boolean).length} of ${results.length} checks passed`);

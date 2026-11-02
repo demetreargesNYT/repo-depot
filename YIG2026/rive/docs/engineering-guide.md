@@ -121,7 +121,7 @@ The wall colour changes with each game; the floor is pink.
 1. **Load File 1 at once.** It opens on `loading`: the ball bounces in the middle of the room. The Rive side is only that bouncing ball; what your page shows over Loading is up to you, and it isn't designed yet. File 2 and File 3 load behind it, one after the other (section 9).
 2. **Switch to Start when both are ready**: when the stats have arrived and File 1 has loaded, set `direction = forward` and then `scene = 'start'`. The ball finishes the bounce it is on (it never jumps, so this can take up to one second), then the bird drops in and lands on the ball. There is no pan and no colour change. Start is a room: its intro takes 3.2 s from the moment you set `scene`, and Start's HTML ("Let's go" and the rest) arrives at 3.2 s.
 3. **"Let's go" is an ordinary Next.** It sets `direction = forward` and `scene = 'ad'`. The ball and the bird pan out to the left, leaving the empty room. Show Ad 1 when the pan ends (1.65 s). The next ball the player sees is the one coming out of the cuckoo clock in Chapter 1's first card.
-4. **Back never returns to Loading.** Back on Start does nothing. Back from Ad 1 returns to Start, which comes back already built (its HTML arrives when the pan ends, 1.65 s).
+4. **Back never returns to Loading.** Back on Start does nothing. Ad 1 shows only the first time the player reaches it (section 9); after that, Back from Chapter 1's first card lands on Start, which comes back already built (its HTML arrives when the pan ends, 1.65 s).
 5. If the player taps before File 1 has loaded, hold the tap until it has.
 
 ## 7. Building the card list
@@ -145,6 +145,7 @@ A card carries what the Rive side needs and what the HTML side needs.
 | For | Field | Meaning |
 |---|---|---|
 | Rive | `file` and `scene` | Which file and which scene the card shows (section 5). |
+| Navigation | `ad` | `true` on Ad 1, Ad 2 and the anonymous Ad 3. An ad shows the first time the player reaches it with Next; after that Back and Next skip it (section 9). Not on the badge cards in Chapter 3, which are ordinary cards. |
 | Rive | `direction` | Not stored on the card: it is `forward` on Next and `back` on Back, set on every move. |
 | Rive | `lockup` | File 2 only. `true` unless the card is a community card (a community card sets it to `false`). |
 | Rive | `topGame` | File 3 only, on the first Chapter 4 card: the player's top game (anonymous: `wordle`). Set once when File 3 loads. |
@@ -188,9 +189,9 @@ A subscriber qualifies in Wordle (212 completed puzzles), Spelling Bee (64) and 
 |---|---|---|---|---|
 | 0 | Loading | 1 | `loading` | |
 | 1 | Start | 1 | `start` | |
-| 2 | Ad 1 | 1 | `ad` | |
+| 2 | Ad 1 | 1 | `ad` | `ad` |
 | 3–7 | Chapter 1, cards 1–5 | 1 | `chapter-1-card-1` … `-5` | |
-| 8 | Ad 2 | 1 | `ad` | |
+| 8 | Ad 2 | 1 | `ad` | `ad` |
 | 9 | Chapter 2 opener | 2 | `intro` | |
 | 10–13 | Wordle, 4 cards | 2 | `wordle` | icon `wordle` |
 | 14–15 | Spelling Bee, 2 cards | 2 | `spelling-bee` | icon `spelling-bee` |
@@ -204,7 +205,7 @@ A subscriber qualifies in Wordle (212 completed puzzles), Spelling Bee (64) and 
 | 23 | End | 3 | `end` | |
 | 24 | Share | 3 | `end` | |
 
-There is no Chapter 2.5 (three qualifying games), and no card on the empty Chapter 3 room: the tap on card 16 plays both moves.
+There is no Chapter 2.5 (three qualifying games), and no card on the empty Chapter 3 room: the tap on card 16 plays both moves. Once Ad 1 and Ad 2 have been seen, Back from card 3 lands on card 1, Next from card 1 lands on card 3, Back from card 9 lands on card 7 (two moves) and Next from card 7 lands on card 9 (two moves).
 
 ### Worked example 2: one game (Chapter 2.5)
 
@@ -212,7 +213,7 @@ A subscriber qualifies only in Connections (120 completed puzzles; the rest unde
 
 | # | Card | File | Scene | Tags |
 |---|---|---|---|---|
-| 0–8 | Loading, Start, Ad 1, Chapter 1 ×5, Ad 2 | 1 | as above | |
+| 0–8 | Loading, Start, Ad 1, Chapter 1 ×5, Ad 2 | 1 | as above | `ad` on Ad 1 and Ad 2 |
 | 9 | Chapter 2 opener | 2 | `intro` | |
 | 10–14 | Connections, 5 cards | 2 | `connections` | icon `connections` |
 | 15 | Bridge | 2 | `bridge` | Chapter 2.5 |
@@ -231,19 +232,21 @@ The player's own game (Connections) is left out of the community cards, and no r
 
 | # | Card | File | Scene | Tags |
 |---|---|---|---|---|
-| 0–8 | Loading, Start, Ad 1, Chapter 1 ×5, Ad 2 | 1 | as above | |
+| 0–8 | Loading, Start, Ad 1, Chapter 1 ×5, Ad 2 | 1 | as above | `ad` on Ad 1 and Ad 2 |
 | 9 | Chapter 2 opener | 2 | `intro` | |
 | 10 | Community card: Connections | 2 | `connections` | `community`, icon `connections` |
 | 11 | Community card: Spelling Bee | 2 | `spelling-bee` | `community`, icon `spelling-bee` |
 | 12 | Community card: The Mini | 2 | `mini` | `community`, icon `mini` |
 | 13 | Community card: Strands | 2 | `strands` | `community`, icon `strands` |
-| 14 | Ad 3 | 2 | `to-chapter-3` | the empty Chapter 3 room |
+| 14 | Ad 3 | 2 | `to-chapter-3` | `ad`; the empty Chapter 3 room |
 | 15 | Chapter 3, card 1 | 3 | `chapter-3` | |
 | 16 | Chapter 3, card 2 | 3 | `chapter-3-bird` | |
 | 17 | Chapter 3, card 3 | 3 | `ad` | the empty room |
 | 18 | Chapter 3, card 4 | 3 | `ad` | the same empty room |
 | 19–21 | Chapter 4 ×3 | 3 | `chapter-4` | `topGame` wordle; `reveal` false, true, true |
 | 22 | End | 3 | `end` | |
+
+Once Ad 3 has been seen, Back from card 15 lands on card 13 (two moves) and Next from card 13 lands on card 15 (two moves).
 
 ## 8. When the copy may appear
 
@@ -259,6 +262,8 @@ The HTML of a card must not appear before its room has settled. These numbers ar
 | A tap inside a room whose intro is still running | When the intro ends (the 3.2 s, or the community time), not before |
 | Subscriber, last Chapter 2 card → Chapter 3 (two moves) | **4.85 s**: 1.65 s for the first move, then 3.2 s for Chapter 3's intro |
 | Chapter 3 → Back to that Chapter 2 card (two moves) | **3.3 s**: two pans of 1.65 s |
+| A move that skips a seen ad, inside one file (Chapter 1 card 1 ⇄ Start) | **1.65 s**: both rooms are already built |
+| A move that skips a seen ad across files, in either direction (Chapter 1 card 5 ⇄ the opener; anonymous Chapter 3 card 1 ⇄ the last Chapter 2 community card) | **3.3 s**: two pans of 1.65 s |
 
 The old copy leaves at once on every tap (it drifts up, or down on Back, and dissolves within 340 ms).
 
@@ -269,6 +274,10 @@ The pan is 1.6 s long; wait 1.65 s to be safe. 3.2 s applies only to the first v
 ### One move
 
 For a move that stays inside a file, set `direction`, the properties the card names (`lockup`, `reveal`), then `scene`. The stage does the rest.
+
+### Ads are shown once
+
+An ad (a card tagged `ad`: Ad 1, Ad 2 and the anonymous Ad 3) shows the first time the player reaches it with Next. After that, Back and Next both skip it and land on the card on its other side. Keep a set of the ads reached; when a tap would land on a seen ad, step over it. Work out the move from the card the tap lands on: one move inside a file, or the two-move crossing below. Whether Back is allowed while an ad is on screen is your choice.
 
 ### A Back during a move waits
 
@@ -290,6 +299,7 @@ Files 2 and 3 start on an empty picture, and every file ends on one. The neighbo
 - **Stack the canvases.** Each file has its own canvas, in the same place. Show one at a time. A file that is not on screen should be paused (`rive.pause()`), and played again when it is shown.
 - **Next into the next file.** The next file is already sitting on the shared picture. In the same frame, show its canvas on top and set its `scene`. When the old canvas has been covered (after two animation frames), hide it and pause it.
 - **Back into the earlier file.** The later file is on the shared picture. Set its `scene` to that picture (its first scene) with `direction = back` so it pans back to it, wait 1.65 s, then show the earlier file's canvas (which is still sitting on the same picture) and, if the card is not on that picture, set the earlier file's `scene` to the card's.
+- **A card that is not on the empty picture takes two moves to cross.** Skipping a seen ad creates more of these: Back from the Chapter 2 opener to Chapter 1 card 5 (Ad 2 skipped), Next from card 5 to the opener, and, for anonymous players, Chapter 3 card 1 to the last Chapter 2 community card and back (Ad 3 skipped). They are the same two moves as the crossing below.
 - **The subscriber crossing from Chapter 2 into Chapter 3, with no extra tap.** Subscribers and registered players have no card on the empty Chapter 3 room. The tap on their last Chapter 2 card takes two moves: first set File 2's `scene` to `to-chapter-3` (the room pans out), and after 1.65 s show File 3 and set its `scene` to the card's (`chapter-3`). If the player taps again before the second move starts, run it at once. Back is the same two moves in reverse. Anonymous players have Ad 3 as a card on that empty room instead, so their crossing is a single move.
 
 ## 10. Controls
@@ -369,7 +379,6 @@ npx tsc --noEmit
 **Coming later.** These pieces are stand-ins or not built yet, and arrive as updated `.riv` files; the property names and your code do not change.
 
 - The bridge room art (Chapter 2.5's `bridge` scene is an empty room for now).
-- The Mini and Midi Chapter 4 fireworks.
 - The stand-in balls in Chapter 4.
 - The bird-on-ball stand-in in `chapter-3-bird`.
 - The How-to overlay (`how-to-mobile.riv`, mobile only; section 11).
@@ -383,5 +392,6 @@ npx tsc --noEmit
 - HTML at 3.2 s for a first visit; the per-game time for a community card; 1.65 s for a picture or a return; 0.34 s inside a room; 1.45 s for Chapter 4's reveal card.
 - A Back during a pan waits for it.
 - Keep every file loaded; pause the one that is hidden.
+- Tag Ad 1, Ad 2 and the anonymous Ad 3 with `ad`: shown the first time only, skipped by Back and Next after that; work out the move (one move, or two across files) from the card landed on.
 - Subscribers have no card on the empty Chapter 3 room; the last Chapter 2 card's tap plays both moves.
 - Anonymous players: community cards in Chapter 2 (no Wordle), Ad 3 on the empty Chapter 3 room, four Chapter 3 cards, `topGame = 'wordle'`.

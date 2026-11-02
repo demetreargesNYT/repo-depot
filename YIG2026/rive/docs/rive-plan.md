@@ -38,6 +38,14 @@
 
 - **Next:** review of the global pass, then rooms in the Finesse order. Then the mobile How-to file (`how-to-mobile.riv`, placeholder art until Demetre's arrives).
 
+## Changes since the last delivery
+
+The last package went out as `158faed`. Keep this list current; the next note to engineering is made from it. Add a line whenever something changes that engineering would notice, in the code (the card list, the guide) or in the Rive files.
+
+- **Ads are skipped once seen** (2026-11-02; engineering's rule, card navigation only, no Rive change). Ad 1, Ad 2 and the anonymous Ad 3 show the first time the player reaches them with Next; after that Back and Next skip them, so the cards need an `ad: true` tag. New moves this creates: Chapter 1 card 1 ⇄ Start (one move); Chapter 1 card 5 ⇄ the Chapter 2 opener (two moves across files); anonymous Chapter 3 card 1 ⇄ the last Chapter 2 community card (two moves across files). The guide (sections 6, 7, 8, 9 and the checklist), the reference code (`yig-integration.js`, the React example) and the example page are updated.
+- **The Mini and The Midi in Chapter 4 use The Crossword's fireworks on their own wall colours, final** (no longer placeholders). Their walls, 95BEFA and 7EAAF1, are exactly their Chapter 2 walls. The guide's "Coming later" list no longer has them.
+- **Rive files changed in the global pass** (new `.riv` files, no property or code change): Start no longer stops when tapped in its first second (its intro now starts on the tap, blending from the Loading bounce over 0.25 s); the returns that close the loops in The Mini and The Crossword ease; The Midi's and The Crossword's first move starts from rest; Chapter 1 card 5's loop closes behind the tiles; the Chapter 3 and Chapter 4 stand-in balls, Connections' ball and The Mini's ball path moved inside the safe area. None has been pushed to Rive.
+
 ## Global pass (decided and done 2026-11-02, for Demetre's review)
 
 Four things that repeat across rooms. Everything else that repeats (the 0.15 s pop at 3.05 s, the shared roll-in, the landing squash, the Wordle and Connections stillness at the loop start, journey versus hop) is a room-by-room call, listed under the rooms in the Finesse order.
@@ -57,7 +65,7 @@ Each room starts with its current "To tune later" items (`docs/rooms*.md` have t
    - Cards 2 to 4: the pop (258, 272, 245 px) and the shared roll-in; squash. Card 5: the pop (80 px); its ball moves between the tile tops while hidden (loop closed in the global pass).
 3. **Chapter 2 opener (Shelf, File 2).** None recorded; the ball's loop is three small moves (0.15 s, 0.30 s, 0.15 s). Calls: entry, squash.
 4. **Chapter 3 and the bird room (File 3).** Chapter 3: a stand-in ball instead of a full journey (call: journey or hop; it rests inside the safe area at x 748 now). Bird on Ball (`chapter-3-bird`): the bird on the ball is a stand-in.
-5. **Chapter 4 with the reveal (File 3).** The stand-in ball (journey saved until card 1 and the video hand-off are decided; it rests inside the safe area at x 600 now); the fireworks sets go quiet for 0.1 to 0.3 s around the loop restart (no pop; a call); The Mini and The Midi are placeholders (walls and The Crossword's fireworks); the stack rides in with the floor (a drop needs both halves timed together); the video background is page HTML. The reveal: the wall fades over 1.45 s and the copy waits for it.
+5. **Chapter 4 with the reveal (File 3).** The stand-in ball (journey saved until card 1 and the video hand-off are decided; it rests inside the safe area at x 600 now); the fireworks sets go quiet for 0.1 to 0.3 s around the loop restart (no pop; a call); The Mini and The Midi use The Crossword's fireworks on their own walls (final); the stack rides in with the floor (a drop needs both halves timed together); the video background is page HTML. The reveal: the wall fades over 1.45 s and the copy waits for it.
 6. **End (File 3).** No ball of its own (two piles and the big one under the bird); the pieces ride in with the floor.
 7. **Game rooms, in this order.**
    1. **Wordle:** about 0.6 s of stillness at the start of its loop (first move at 0.63 s; call: where the loop starts); squash and spin that most rooms lack.
@@ -88,6 +96,7 @@ One line each, newest last within a theme; git keeps the full history.
 **Design and structure**
 
 - Both flows (subscriber/registered and anonymous) ship as the same three files; only the card list and the HTML copy differ.
+- **Ads show once** (engineering, 2026-11-02): Ad 1, Ad 2 and the anonymous Ad 3 appear the first time the player reaches them with Next, then Back and Next skip them. Card navigation only; the Rive files do not change.
 - The floor line is 712 in every file. The artboard is 1495 × 1067 for desktop and mobile. Balls and key pieces stay inside the safe area, x 560 to 935 and y 0 to 812 (the Figma phone frame); engineering's framing decides the actual crop.
 - Rooms are plain RML in the file, not nested components (2026-10, Stage 1: the rule checks only read the main artboard, and a component clips to its own frame). Each room's ball is plain ball art; the rig it came from was baked into direct keys.
 - Ads and the top-game video are cards with no Rive copy; the HTML owns them.
@@ -144,7 +153,7 @@ All seven lockups are in `art/ch2/originals/` (`*-lockup.svg`, 175 × 128), conv
 
 ### What's still to come
 
-The mobile How-to overlay; the bridge room's art; Chapter 4 versions (fireworks and walls) for The Mini and The Midi; the real ball journeys in Chapters 3 and 4; the bird-on-ball art in `chapter-3-bird`; what the page shows over Loading.
+The mobile How-to overlay; the bridge room's art; the real ball journeys in Chapters 3 and 4; the bird-on-ball art in `chapter-3-bird`; what the page shows over Loading.
 
 ### Order of work
 

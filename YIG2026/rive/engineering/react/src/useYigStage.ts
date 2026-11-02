@@ -13,6 +13,7 @@ type Mutable = {
   loaded: boolean[]
   waiters: Array<Array<() => void>>
   visited: Set<string> // 'file:scene' rooms whose intro has played (or that have none)
+  seenAds: Set<number> // indexes of the ad cards the player has reached: a seen ad is skipped both ways
   copyFrom: Record<string, number> // 'file:scene': when a first visit's copy may arrive (performance.now() time)
   pan: { dir: number; endsAt: number }
   heldTimer: number
@@ -46,6 +47,7 @@ export function useYigStage(cards: Card[]) {
     loaded: [false, false, false],
     waiters: [[], [], []],
     visited: new Set(FILE_NUMBERS.map((n) => `${n}:${FILES[n].opens}`)),
+    seenAds: new Set(),
     copyFrom: {},
     pan: { dir: 0, endsAt: 0 },
     heldTimer: 0,
@@ -167,7 +169,9 @@ export function useYigStage(cards: Card[]) {
     const list = cardsRef.current
     window.clearTimeout(mut.heldTimer)
     const token = ++mut.holdToken
-    const target = mut.frame + step
+    // the card a tap lands on: the next one in that direction, leaving out any ad the player has already seen
+    let target = mut.frame + step
+    while (list[target]?.ad && mut.seenAds.has(target)) target += step
     if (target < 1 && step < 0) return // Back never returns to Loading
     if (target < 0 || target > list.length - 1) return
     const from = list[mut.frame]
@@ -191,6 +195,7 @@ export function useYigStage(cards: Card[]) {
     if (roomChange) window.clearTimeout(mut.swapTimer) // a new room change takes over from a Back's hand-back still to come
     if (roomChange && mut.hopRun) { window.clearTimeout(mut.hopTimer); mut.hopRun() } // and cuts a Next's two moves short
     mut.frame = target
+    if (to.ad) mut.seenAds.add(target)
     setFrame(target)
     const fading = !roomChange && applyReveal(to)
     const key = roomKey(to)

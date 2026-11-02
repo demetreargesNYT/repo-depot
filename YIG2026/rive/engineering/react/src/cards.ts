@@ -19,19 +19,19 @@ export function buildCards(stats: Stats): Card[] {
   const cards: Card[] = [
     { file: 1, scene: 'loading' },
     { file: 1, scene: 'start' },
-    { file: 1, scene: 'ad' }, // Ad 1, on the empty Chapter 1 room
+    { file: 1, scene: 'ad', ad: true }, // Ad 1, on the empty Chapter 1 room
   ]
 
   // Chapter 1: always five cards, in both flows
   for (let n = 1; n <= 5; n += 1) cards.push({ file: 1, scene: `chapter-1-card-${n}` })
-  cards.push({ file: 1, scene: 'ad' }) // Ad 2
+  cards.push({ file: 1, scene: 'ad', ad: true }) // Ad 2
 
   // Chapter 2
   cards.push({ file: 2, scene: 'intro' })
   if (anonymous) {
     // community cards for every community game but Wordle: Chapter 1 already covers Wordle (ADIEU and PSHAW)
     for (const game of communityGames('wordle')) cards.push({ file: 2, scene: game, community: true, icon: game })
-    cards.push({ file: 2, scene: 'to-chapter-3' }) // Ad 3, on the empty Chapter 3 room
+    cards.push({ file: 2, scene: 'to-chapter-3', ad: true }) // Ad 3, on the empty Chapter 3 room
   } else {
     for (const game of own) {
       for (let n = 0; n < (stats.cardsPerGame[game] ?? 0); n += 1) cards.push({ file: 2, scene: game, icon: game })

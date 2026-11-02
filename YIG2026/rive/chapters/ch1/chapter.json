@@ -90,6 +90,10 @@
       "chapter-1-card-4",
       "chapter-1-card-5"
     ],
+    "adCases": [
+      ["start", "ad", "chapter-1-card-1", "-start", "chapter-1-card-1"],
+      ["chapter-1-card-5", "ad", "-chapter-1-card-5", "ad", "-chapter-1-card-5"]
+    ],
     "tapOrders": {
       "s1": [
         "start",
