@@ -113,7 +113,8 @@ function load(i) {
   files[i] = f;
 }
 
-// File 3's `reveal`: set with the move to a card that names it, so the wall fades as the player taps
+// File 3's `reveal` for a card in the same room (Chapter 4's cards): the wall fades as the player taps. A move that changes
+// room sets `reveal` inside setScene instead, in the guide's order.
 function applyReveal(card) {
   if (card.reveal === undefined) return false;
   const f = files[card.file - 1];
@@ -124,10 +125,12 @@ function applyReveal(card) {
   return changed; // the wall is about to fade (1.45 s), forward or back
 }
 
-function setScene(i, scene, step, community) {
+// A room change sets direction, lockup, reveal, then scene (the guide's order); `reveal` is passed only for a card that names it (File 3).
+function setScene(i, scene, step, community, reveal) {
   const vm = files[i].rive.viewModelInstance;
   vm.enum("direction").value = step < 0 ? "back" : "forward";
   if (FILES[i].lockup) vm.boolean("lockup").value = !community;
+  if (reveal !== undefined && vm.boolean("reveal")) vm.boolean("reveal").value = !!reveal;
   vm.enum("scene").value = scene;
 }
 
@@ -190,16 +193,16 @@ function move(step) {
   if (roomChange && hopRun) { clearTimeout(hopTimer); hopRun(); } // and cuts a Next's two moves short: the next file takes over now
   frame = target;
   if (to.ad) seenAds.add(target);
-  const fading = applyReveal(to);
+  const fading = !roomChange && applyReveal(to);
   const key = `${to.file}:${to.scene}`;
   const firstVisit = roomChange && step > 0 && !visited.has(key) && !FILES[fi].noIntro.includes(to.scene);
   if (roomChange) {
     pan = { dir: step, endsAt: now + PAN_MS * legs };
     if (to.file === from.file) {
-      setScene(fi, to.scene, step, !!to.community);
+      setScene(fi, to.scene, step, !!to.community, to.reveal);
     } else if (step > 0) {
       // Next into another file: it is already on the shared picture, so show it and set its scene on the same frame
-      const takeOver = () => { hopRun = null; show(fi); setScene(fi, to.scene, step, !!to.community); };
+      const takeOver = () => { hopRun = null; show(fi); setScene(fi, to.scene, step, !!to.community, to.reveal); };
       if (legs === 1) {
         takeOver();
       } else {
@@ -212,7 +215,7 @@ function move(step) {
       // Back into the earlier file: pan back inside this file to the shared picture, then hand the stage back (and, if
       // the card isn't on that picture, pan back into its room)
       setScene(from.file - 1, FILES[from.file - 1].opens, step, false);
-      swapTimer = setTimeout(() => { show(fi); if (legs === 2) setScene(fi, to.scene, step, !!to.community); }, PAN_MS);
+      swapTimer = setTimeout(() => { show(fi); if (legs === 2) setScene(fi, to.scene, step, !!to.community, to.reveal); }, PAN_MS);
     }
   }
   if (firstVisit) {

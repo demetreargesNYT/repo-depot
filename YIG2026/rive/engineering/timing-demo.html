@@ -87,7 +87,15 @@
   table.waits { width: 100%; border-collapse: collapse; font-size: 14px; }
   table.waits td { padding: 6px 8px; border-top: 1px solid var(--line); }
   table.waits td.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; font-weight: 600; }
-  table.waits tr.hit td { background: #fff1b8; }
+  table.waits td.n { font: 600 20px/1 Georgia, serif; }
+  table.waits td small { display: block; color: var(--mute); font-size: 13px; margin-top: 2px; }
+  table.waits tr.hit td, .hit { background: #fff1b8; }
+  .crossing { margin: 12px 0 0; padding: 6px 8px; font-size: 14px; }
+  ul.notes { margin: 10px 0 0; padding: 0; list-style: none; font-size: 12.5px; color: var(--mute); }
+  ul.notes li { padding: 3px 8px; }
+  details { margin-top: 14px; }
+  summary { cursor: pointer; font-size: 14px; margin-bottom: 10px; }
+  .code h3 { font: 600 16px/1.2 Georgia, serif; margin: 0 0 10px; }
 
   section.code { margin-top: 10px; padding-bottom: 60px; }
   section.code p { color: #3a3a36; max-width: 80ch; margin: 0 0 10px; }
@@ -99,7 +107,7 @@
 
 <header class="top">
   <h1>Copy timing and navigation</h1>
-  <p class="lede">This page plays the rules from the engineering guide (<code>core/engineering-guide.md</code>, sections 4, 8 and 9) with stand-in rooms. Tap through the cards, or click any card to open straight on it, and see the same few Rive calls and the one rule that sets the wait.</p>
+  <p class="lede">This page plays the rules from the engineering guide (<code>core/engineering-guide.md</code> in this package, sections 4, 8 and 9) with stand-in rooms. Tap through the cards, or click any card to open straight on it, and see the same few Rive calls and the one rule that sets the wait.</p>
   <div class="cssnote" id="cssnote" hidden>The text CSS wasn't found at <code>../core/yig-text-motion.css</code>. Open this page from the unzipped package folder.</div>
 
   <div class="stripbar">
@@ -153,14 +161,24 @@
     <div class="panel">
       <h2>All the waits</h2>
       <table class="waits" id="waits"></table>
+      <p class="crossing" id="crossing" data-key="crossing"></p>
+      <ul class="notes">
+        <li data-key="note-start">Opened on a scene with startScene: the copy appears right away.</li>
+        <li data-key="note-settle">A tap while copy is still on its way doesn't restart the wait.</li>
+      </ul>
     </div>
   </div>
 </main>
 
 <section class="code">
   <h2>The code you write for a tap</h2>
-  <p>This is the page's own tap code, shown exactly as it runs (lines that only feed the readout are left out). <code>files[n].rive.viewModelInstance</code> is where your Rive objects go.</p>
-  <pre id="yourcode"></pre>
+  <h3>Every move sets these, in this order</h3>
+  <pre id="setscene"></pre>
+  <p style="margin-top:12px">The rest of the tap code picks the wait from the four rules above, and <code>files[n].rive.viewModelInstance</code> is where your Rive objects go. A crossing between two files adds two of the waits together.</p>
+  <details>
+    <summary>Show the full tap code</summary>
+    <pre id="yourcode"></pre>
+  </details>
   <p style="margin-top:16px">Everything else in this file (the stand-in phone, rooms, lockup and readout) is the page's own plumbing, kept in a separate script. You don't write it.</p>
 </section>
 
@@ -368,20 +386,27 @@ function enter(el, { quick = false, delay = null, afterIcon = false, back = fals
 }
 
 // ---- the readout, the waits table and the strip
+// The four waits and what each means; every rule the code picks maps onto them (RULE_KEYS), so the readout and the table agree.
 const RULES = {
-  "first-visit": { row: "First visit to a room", ms: () => FIRST_VISIT_MS, say: (ms) => `First visit to this room: ${secs(ms)} s` },
-  lockup: { row: "A Chapter 2 game's first card, with its lockup", ms: () => LOCKUP_MS, say: (ms) => `First card of a game, with its lockup: ${secs(ms)} s, so the copy never overlaps the lockup` },
-  comeback: { row: "A room that comes back, already built (Back, or a room seen before)", ms: () => PAN_MS, say: (ms) => `A room that comes back: ${secs(ms)} s, when the pan ends` },
-  picture: { row: "An empty room: the bridge, the empty Chapter 3 room, a badge card", ms: () => PAN_MS, say: (ms) => `An empty room: ${secs(ms)} s, when the pan ends` },
-  "same-room": { row: "Another card in the same room", ms: () => CLEAR_MS, say: (ms) => `Another card in the same room: ${secs(ms)} s, right after the old copy has cleared` },
-  reveal: { row: "Chapter 4's reveal card, forward and back", ms: () => REVEAL_FADE_MS, say: (ms) => `Chapter 4 reveal: ${secs(ms)} s, after the wall has faded` },
-  "two-first": { row: "Two moves forward, first visit (Chapter 2 to Chapter 3)", ms: () => PAN_MS + FIRST_VISIT_MS, say: (ms) => `Two moves, first visit: ${secs(PAN_MS)} s for the first move, then ${secs(ms - PAN_MS)} s for the room = ${secs(ms)} s` },
-  "two-back": { row: "Two moves into a room already built (Back across files)", ms: () => 2 * PAN_MS, say: (ms) => `Two moves, both rooms built: two pans of ${secs(PAN_MS)} s = ${secs(ms)} s` },
-  "ad-first": { row: "An ad, the first time with Next", ms: () => PAN_MS, say: (ms) => `An ad, shown the first time: ${secs(ms)} s, when the pan ends` },
-  "skip-in": { row: "A seen ad skipped, inside one file", ms: () => PAN_MS, say: (ms) => `A seen ad is skipped inside the file: ${secs(ms)} s` },
-  "skip-across": { row: "A seen ad skipped, across files", ms: () => 2 * PAN_MS, say: (ms) => `A seen ad is skipped across files: two pans of ${secs(PAN_MS)} s = ${secs(ms)} s` },
-  settle: { row: "A tap before the room's copy has arrived", ms: null, say: (ms) => `Tapped before this room's copy was due: it arrives at that time, ${secs(ms)} s after the scene was set` },
-  jump: { row: "Opened on a scene (startScene)", ms: () => 0, say: () => "Opened on a scene: it is already built, so there is nothing to wait for" },
+  "first-visit": { say: (ms) => `A new room: ${secs(ms)} s` },
+  lockup: { say: (ms) => `A new room, with a lockup: ${secs(ms)} s (a Chapter 2 game's first card)` },
+  comeback: { say: (ms) => `A room already built: ${secs(ms)} s (Back, or a room seen before)` },
+  picture: { say: (ms) => `A room already built: ${secs(ms)} s (an empty room)` },
+  "ad-first": { say: (ms) => `A room already built: ${secs(ms)} s (an ad)` },
+  "skip-in": { say: (ms) => `A room already built: ${secs(ms)} s (a seen ad is skipped)` },
+  "same-room": { say: (ms) => `The same room: ${secs(ms)} s` },
+  reveal: { say: (ms) => `Chapter 4's reveal: ${secs(ms)} s` },
+  "two-first": { say: (ms) => `Crossing between two files: ${secs(PAN_MS)} + ${secs(ms - PAN_MS)} = ${secs(ms)} s` },
+  "two-back": { say: (ms) => `Crossing between two files: ${secs(PAN_MS)} + ${secs(ms - PAN_MS)} = ${secs(ms)} s` },
+  "skip-across": { say: (ms) => `Crossing between two files, a seen ad skipped: ${secs(PAN_MS)} + ${secs(ms - PAN_MS)} = ${secs(ms)} s` },
+  settle: { say: (ms) => `Copy still on its way: the wait isn't restarted, it arrives ${secs(ms)} s from now` },
+  jump: { say: () => "Opened on a scene with startScene: the copy appears right away" },
+};
+// which rows of the table (and lines under it) each rule lights up
+const RULE_KEYS = {
+  "first-visit": ["new"], lockup: ["new"], comeback: ["built"], picture: ["built"], "ad-first": ["built"], "skip-in": ["built"],
+  "same-room": ["same"], reveal: ["reveal"], "two-first": ["new", "built", "crossing"], "two-back": ["built", "crossing"], "skip-across": ["built", "crossing"],
+  settle: ["note-settle"], jump: ["note-start"],
 };
 
 const readout = {
@@ -421,12 +446,20 @@ const readout = {
     tick();
   },
   setWait(ms) { const w = document.getElementById("wait"); w.dataset.ms = ms ?? ""; w.innerHTML = ms === null ? "&ndash;" : `${secs(ms)} <small>s</small>`; document.getElementById("bar").firstElementChild.style.width = "0"; },
-  hit(rule) { document.querySelectorAll("#waits tr").forEach((tr) => tr.classList.toggle("hit", tr.dataset.rule === rule)); },
+  hit(rule) { const keys = rule ? RULE_KEYS[rule] : []; document.querySelectorAll("[data-key]").forEach((el) => el.classList.toggle("hit", keys.includes(el.dataset.key))); },
 };
 
 function renderTable() {
-  document.getElementById("waits").innerHTML = Object.entries(RULES).map(([id, r]) =>
-    `<tr data-rule="${id}"><td>${r.row}</td><td class="n">${r.ms ? secs(r.ms()) + " s" : "when its copy is due"}</td></tr>`).join("");
+  const rows = [
+    ["new", "A new room", FIRST_VISIT_MS, `${secs(LOCKUP_MS)} s for a Chapter 2 game's first card, because of its lockup`],
+    ["built", "A room already built", PAN_MS, "Back, a room seen before, an empty room, or an ad"],
+    ["same", "The same room", CLEAR_MS, "Another card in the room"],
+    ["reveal", "Chapter 4's reveal", REVEAL_FADE_MS, "Forward and back"],
+  ];
+  document.getElementById("waits").innerHTML = rows.map(([key, name, ms, sub]) =>
+    `<tr data-key="${key}"><td>${name}<small>${sub}</small></td><td class="n">${secs(ms)} s</td></tr>`).join("");
+  document.getElementById("crossing").textContent =
+    `Crossing between two files adds two waits together: ${secs(PAN_MS)} + ${secs(FIRST_VISIT_MS)} = ${secs(PAN_MS + FIRST_VISIT_MS)} s forward, ${secs(PAN_MS)} + ${secs(PAN_MS)} = ${secs(2 * PAN_MS)} s back.`;
 }
 
 function renderStrip() {
@@ -620,6 +653,8 @@ document.getElementById("yourcode").textContent = document.getElementById("tapco
   .split("\n").filter((l) => !/^\s*readout\./.test(l))
   .map((l) => l.replace(/return readout\.nothing\([^;]*\);/, "return;"))
   .join("\n").trim();
+
+document.getElementById("setscene").textContent = (/function setScene[\s\S]*?\n}\n/.exec(document.getElementById("yourcode").textContent) || [""])[0].trim();
 
 document.getElementById("next").onclick = () => go(1);
 document.getElementById("back").onclick = () => go(-1);
