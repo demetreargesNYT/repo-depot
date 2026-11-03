@@ -12,6 +12,7 @@
     "experience": "node harness/experience-test.mjs",
     "suite": "caffeinate -i python3 tools/suite.py",
     "smoke": "caffeinate -i python3 tools/suite.py --smoke",
-    "finesse": "python3 tools/finesse.py"
+    "finesse": "python3 tools/finesse.py",
+    "open-package": "test -d .cache/scratch.nosync/shared/yig-engineering-package || python3 tools/package_engineering.py && open .cache/scratch.nosync/shared/yig-engineering-package"
   }
 }
