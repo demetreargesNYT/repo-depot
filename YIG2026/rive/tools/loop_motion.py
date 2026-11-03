@@ -20,7 +20,7 @@ import sys
 from pathlib import Path
 
 from rml_read import Scene, chapter_dir
-import scratch  # scratch output goes in .cache/scratch/, never /tmp
+import scratch  # scratch output goes in .cache/scratch.nosync/, never /tmp
 
 RIVE = os.path.expanduser("~/.rive/bin/rive")
 PROPS = {"x": 13, "y": 14, "rotation": 15, "scaleX": 16, "scaleY": 17, "opacity": 18}   # Rive's property keys for a node or shape

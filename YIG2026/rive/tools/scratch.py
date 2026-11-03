@@ -1,4 +1,5 @@
-"""The one place for scratch output: .cache/scratch/ (git-ignored, inside the repo so it is easy to find and to clear).
+"""The one place for scratch output: .cache/scratch.nosync/ (git-ignored, inside the repo so it is easy to find and to clear;
+the .nosync ending keeps iCloud from syncing it, since the repo sits in the iCloud-synced Desktop).
 
 Tools and tests put their throwaway copies, renders and screenshots here, never in /tmp or the repo root:
 
@@ -11,11 +12,11 @@ import time
 import tempfile
 from pathlib import Path
 
-SCRATCH = Path(__file__).resolve().parent.parent / ".cache" / "scratch"
+SCRATCH = Path(__file__).resolve().parent.parent / ".cache" / "scratch.nosync"
 
 
 def mkdtemp(prefix="yig-"):
-    """A new, empty folder under .cache/scratch/ (like tempfile.mkdtemp, but in the scratch folder). The callers remove their
+    """A new, empty folder under .cache/scratch.nosync/ (like tempfile.mkdtemp, but in the scratch folder). The callers remove their
     folders when done, but a removal can leave a few empty folders behind; so folders with the same prefix older than an hour
     (no run of ours takes that long) are cleared first."""
     SCRATCH.mkdir(parents=True, exist_ok=True)
@@ -30,7 +31,7 @@ def mkdtemp(prefix="yig-"):
 
 
 def fresh(name):
-    """.cache/scratch/<name>, emptied, for output that stays until the next run of the same tool."""
+    """.cache/scratch.nosync/<name>, emptied, for output that stays until the next run of the same tool."""
     path = (SCRATCH / name).resolve()
     if SCRATCH.resolve() not in path.parents:
         raise ValueError(f"{name!r} is not a folder inside {SCRATCH}")

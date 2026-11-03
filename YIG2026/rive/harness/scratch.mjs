@@ -1,11 +1,11 @@
-// Scratch output for the browser tests goes in .cache/scratch/ (git-ignored), never /tmp (tools/scratch.py is the same rule for
+// Scratch output for the browser tests goes in .cache/scratch.nosync/ (git-ignored), never /tmp (tools/scratch.py is the same rule for
 // the Python tools). chromeProfile() gives a test its own empty Chrome profile folder there, clears the ones an earlier run of the
 // same test left behind, and removes its own when the test exits.
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-export const SCRATCH = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", ".cache", "scratch");
+export const SCRATCH = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", ".cache", "scratch.nosync");
 
 const cleared = new Set();   // prefixes whose leftovers this process has already cleared
 

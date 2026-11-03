@@ -73,7 +73,7 @@ def up():
 def ensure_server():
     if up():
         return "the review server is running"
-    log = REPO / ".cache" / "scratch" / "harness-server.log"
+    log = REPO / ".cache" / "scratch.nosync" / "harness-server.log"
     log.parent.mkdir(parents=True, exist_ok=True)
     subprocess.Popen(["node", "serve.mjs"], cwd=REPO / "harness", stdout=open(log, "w"), stderr=subprocess.STDOUT, start_new_session=True)
     for _ in range(50):

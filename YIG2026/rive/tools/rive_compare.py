@@ -2,7 +2,7 @@
 
     python3 tools/rive_compare.py <ch>          1, 2, 3 or ch1, ch2, ch3; several at once: python3 tools/rive_compare.py 1 2 3
 
-The pull goes into a scratch copy (.cache/scratch/rive-compare/<ch>/), never into chapters/<ch>/, so nothing local is
+The pull goes into a scratch copy (.cache/scratch.nosync/rive-compare/<ch>/), never into chapters/<ch>/, so nothing local is
 overwritten. Then the pulled scene.rml is compared, element by element, with two versions of ours:
   1. the scene.rml at this chapter's last push (its newest rive/<ch>-* tag): any difference here is an edit made in the Rive
      Editor since that push, which a push from here would throw away. Pull it in (rive pull, then commit) before pushing.

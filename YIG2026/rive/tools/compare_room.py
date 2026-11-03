@@ -41,7 +41,7 @@ BORDER = 30
 FLOOR_ROWS = (709, 715)
 CROP = (330, 250, 1170, 860)
 SCALE = 0.6
-CACHE = scratch.SCRATCH / "compare-room"     # its working copies and frames (scratch: .cache/scratch/, never /tmp)
+CACHE = scratch.SCRATCH / "compare-room"     # its working copies and frames (scratch: .cache/scratch.nosync/, never /tmp)
 
 
 def slug(text):

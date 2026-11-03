@@ -13,7 +13,7 @@
 import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { chromeProfile } from "./scratch.mjs";   // Chrome's profile goes in .cache/scratch/, never /tmp
+import { chromeProfile } from "./scratch.mjs";   // Chrome's profile goes in .cache/scratch.nosync/, never /tmp
 
 const args = process.argv.slice(2);
 const flag = (n, d) => (args.includes(n) ? args[args.indexOf(n) + 1] : d);

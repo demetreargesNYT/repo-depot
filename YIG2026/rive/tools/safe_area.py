@@ -17,7 +17,7 @@ from pathlib import Path
 from PIL import Image, ImageChops
 
 from rml_read import Scene, chapter_dir
-import scratch  # scratch output goes in .cache/scratch/, never /tmp
+import scratch  # scratch output goes in .cache/scratch.nosync/, never /tmp
 
 RIVE = os.path.expanduser("~/.rive/bin/rive")
 SAFE = (560, 935, 0, 812)          # x0, x1, y0, y1

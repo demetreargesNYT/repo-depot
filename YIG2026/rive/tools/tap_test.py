@@ -1,7 +1,7 @@
 """Interrupted-tap test: no browser, no wall-clock timing.
 
     python3 tools/tap_test.py ch2                      every order (Wordle then Connections and back, the opener then Wordle, the last game then the Chapter 3 ending), tap 2 at 0.5, 1.5, 2.5 and 3.0 s into the intro
-    python3 tools/tap_test.py ch2 --times 0.5 --orders cw --keep .cache/scratch/frames
+    python3 tools/tap_test.py ch2 --times 0.5 --orders cw --keep .cache/scratch.nosync/frames
 
 Scenario: from the opener, tap 1 starts the first game at t = 0. Tap 2 starts the second game T seconds later,
 while the first game's intro is still running.
@@ -26,7 +26,7 @@ from pathlib import Path
 
 from PIL import Image, ImageChops
 from rml_read import Scene, chapter_dir
-import scratch  # scratch output goes in .cache/scratch/, never /tmp
+import scratch  # scratch output goes in .cache/scratch.nosync/, never /tmp
 
 RIVE = os.path.expanduser("~/.rive/bin/rive")
 # the orders to run, by scene name: letters name the first and second game; "x" as the second is the Chapter 3 ending

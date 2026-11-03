@@ -28,7 +28,7 @@ import sys
 from pathlib import Path
 
 from rml_read import Scene, chapter_dir
-import scratch  # scratch output goes in .cache/scratch/, never /tmp
+import scratch  # scratch output goes in .cache/scratch.nosync/, never /tmp
 
 RIVE = os.path.expanduser("~/.rive/bin/rive")
 ROOMS, EMPTY, NAMES, SPOTS, START = {}, {}, {}, [], 0   # set from the chapter's manifest by configure()

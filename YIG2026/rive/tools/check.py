@@ -24,7 +24,7 @@ from pathlib import Path
 from PIL import Image, ImageChops
 import check_chapter
 from rml_read import Scene, chapter_dir
-import scratch  # scratch output goes in .cache/scratch/, never /tmp
+import scratch  # scratch output goes in .cache/scratch.nosync/, never /tmp
 
 RIVE = os.path.expanduser("~/.rive/bin/rive")
 

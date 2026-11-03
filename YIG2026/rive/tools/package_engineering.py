@@ -26,7 +26,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import check_chapter  # noqa: E402
 from rml_read import REPO, Scene, chapter_dir  # noqa: E402
-import scratch  # noqa: E402  scratch output goes in .cache/scratch/, never /tmp
+import scratch  # noqa: E402  scratch output goes in .cache/scratch.nosync/, never /tmp
 from xml_fragments import parse, ser  # noqa: E402
 
 RIVE = os.path.expanduser("~/.rive/bin/rive")

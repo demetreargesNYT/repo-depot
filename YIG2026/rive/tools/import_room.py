@@ -1,7 +1,7 @@
 """Bring one of the illustrator's rooms into a chapter, copying their loop exactly.
 
     python3 tools/import_room.py tools/rooms/spelling-bee.json                     into chapters/ch2
-    python3 tools/import_room.py tools/rooms/spelling-bee.json --out .cache/scratch/try      into a copy of the chapter instead
+    python3 tools/import_room.py tools/rooms/spelling-bee.json --out .cache/scratch.nosync/try      into a copy of the chapter instead
     python3 tools/import_room.py tools/rooms/spelling-bee.json --illustrator FILE  another pull of the art source
 
 The art source is read, never written. A config in tools/rooms/ names the room. The importer:
