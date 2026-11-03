@@ -15,7 +15,7 @@ It also looks for jitter, on the ball and on every piece the room moves (rotatio
 or two frames in the middle of a movement and then carries on the same way), a LURCH (the speed jumps from one frame to the next with
 no turn to explain it, or the ball's contact has no surface: speed changes more than 25 percent while the direction stays within 20
 degrees), and a BUZZ (swings back and forth shorter than 20 frames, i.e. faster than about 3 a second, two in a row (three turning points) without dying
-away: the second at least 0.6 of the first). A swing is one way, from one end to the other. Stillness at a contact, at the end
+away: the second between 0.6 and 1.5 times the first). A swing is one way, from one end to the other. Stillness at a contact, at the end
 of a swing and at a real rest is fine. The repeated frame where the intro hands over to the loop and where the loop wraps (every room has them) is not read as a hitch.
 """
 import math
@@ -221,7 +221,7 @@ def contacts_report(pts, t_of, tmax_report):
 
 
 SWING = 20          # a swing (one way) shorter than this many frames, repeated without dying away, is a buzz
-AMP_MIN = {"rotation": 0.01, "x": 1.5, "y": 1.5}      # swings smaller than this are noise
+AMP_MIN = {"rotation": 0.015, "x": 1.5, "y": 1.5}      # swings smaller than this are noise
 HITCH_MIN = {"rotation": 0.004, "x": 0.5, "y": 0.5}   # a movement of at least this much a frame on both sides of a stop
 
 
@@ -270,7 +270,7 @@ def jitter_track(label, vals, kind, t_of, flags, skip=(), hitch=True):
     pts = swings(vals, amp)[1:-1]            # the turning points only (not where it starts from rest or ends)
     for a, b, c in zip(pts, pts[1:], pts[2:]):
         s1, s2 = abs(b[1] - a[1]), abs(c[1] - b[1])
-        if b[0] - a[0] < SWING and c[0] - b[0] < SWING and s2 >= 0.6 * s1:
+        if b[0] - a[0] < SWING and c[0] - b[0] < SWING and 0.6 * s1 <= s2 <= 1.5 * s1:
             flags.append((t_of(a[0]), f"BUZZ: {label} swings back and forth every {b[0] - a[0]} to {c[0] - b[0]} frames from {t_of(a[0]):.2f} s"))
             break
 

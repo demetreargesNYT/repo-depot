@@ -588,7 +588,7 @@ def card3(doc, write):
     """The #1 mug circuit on the physics (finesse round 5): mug -> band (a spring) -> books (ricochet) -> FIRST card (ricochet) -> the
     white knob -> down the blue stick -> back into the mug. The path after the band is simulated (ball_physics.py): one gravity, every
     contact keeps 70 to 90 percent of its speed, the roll down the stick speeds up by G times the slope."""
-    from ball_physics import Circ, Seg, build_path, flight, piece_at, simulate
+    from ball_physics import Circ, Seg, build_path, flight, norm, piece_at, simulate
     global BALL_CENTER
     room = "Chapter 1 Card 3"
     BALL_CENTER = 16.78
@@ -638,12 +638,34 @@ def card3(doc, write):
     hits = [e for e in events if e[0] == "hit"]
     assert [h[2].name for h in hits][:3] == ["books", "FIRST", "knob"], [h[2].name for h in hits]
     pieces = build_path(events, (x_rel, y_band), v_out, 0.0)
+    # off the stick's low end the stick's spring-back gives the ball lift: it keeps about 70 percent of the speed it arrived with, leaves
+    # almost straight up (the angle is found so that it comes down inside the mug's mouth), clears the mug's left rim, and drops in
+    assert events[-1][0] == "leave", events[-1]
+    t_l, p_l, v_arr = events[-1][1], events[-1][2], events[-1][3]
+    sp_launch = 0.72 * norm(v_arr)
+    X_MOUTH, Y_RIM = 733.0, 689.0
+
+    def mouth_x(ang):
+        vx, vy = sp_launch * math.cos(ang), -sp_launch * math.sin(ang)
+        tau = (-vy + math.sqrt(vy * vy + 2 * GP * (Y_RIM - p_l[1]))) / GP
+        return p_l[0] + vx * tau
+    lo_a, hi_a = math.radians(55.0), math.radians(89.0)
+    for _ in range(40):
+        mid_a = (lo_a + hi_a) / 2
+        if mouth_x(mid_a) > X_MOUTH:
+            lo_a = mid_a
+        else:
+            hi_a = mid_a
+    ang_launch = (lo_a + hi_a) / 2
+    v_launch = (sp_launch * math.cos(ang_launch), -sp_launch * math.sin(ang_launch))
+    pieces[-1] = (t_l, t_l + 400.0, flight(p_l, v_launch, t_l)[0], "air")
     # when the flight off the stick's low end drops below the mug's front rim and out of sight
     t_rim = next(t / 16.0 for t in range(16 * 300) if piece_at(pieces, t / 16.0)[0][1] >= 698.0 and piece_at(pieces, t / 16.0)[1] == "air" and piece_at(pieces, t / 16.0)[0][0] > 680)
     t_hid = next(t / 16.0 for t in range(int(16 * t_rim), 16 * 300) if piece_at(pieces, t / 16.0)[0][1] >= mug_hide[1])
     F_RIM = F_UP + math.ceil(t_rim)
+    F_LEAVE = F_UP + round(t_l)
     F_IN = F_UP + math.ceil(t_hid)
-    WAIT = 26
+    WAIT = 30
     L = F_IN + WAIT
     hit_f = {h[2].name + str(i): F_UP + h[1] for i, h in enumerate(hits)}
     F_BOOK, F_CARD, F_KNOB = (round(F_UP + hits[i][1]) for i in range(3))
@@ -652,10 +674,10 @@ def card3(doc, write):
     assert T0 >= 80, T0
 
     # ---- reactions -------------------------------------------------------------------------------------------------------------------------------
-    books = lambda t: spring(t - F_BOOK, -0.03, down=2, tau=7.0, period=16.0)
+    books = lambda t: spring(t - F_BOOK, -0.11, down=4, tau=12.0, period=18.0)
     card = lambda t: spring(t - F_CARD, 0.04, down=2, tau=9.0, period=20.0)
-    stick = lambda t: spring(t - F_STK, -0.015, down=3, tau=8.0, period=18.0) + spring(t - F_KNOB, -0.008, down=2, tau=6.0, period=14.0)
-    mug_th = lambda t: spring(t - 2, 0.05, down=3, tau=10.0, period=20.0) + spring(t - F_RIM, -0.07, down=3, tau=5.0, period=13.0)
+    stick = lambda t: spring(t - F_STK, -0.08, down=3, tau=9.0, period=18.0) + spring(t - F_KNOB, -0.02, down=3, tau=9.0, period=18.0)
+    mug_th = lambda t: spring(t - 2, 0.05, down=3, tau=10.0, period=20.0) + spring(t - F_RIM, -0.045, down=4, tau=7.0, period=20.0)
 
     # ---- the ball -------------------------------------------------------------------------------------------------------------------------------------
     b = Ball(L)
@@ -667,6 +689,8 @@ def card3(doc, write):
         b.put(t, ride(t - F_BAND), "air")
     for t in range(F_UP + 1, F_IN + 1):
         p, m = piece_at(pieces, t - F_UP)
+        if m == "roll":                                  # rolling on the stick: it rides the stick as it bends
+            p = rot(p, stick_pivot, stick(t))
         b.put(t, p, m)
     last = b.c[F_IN]
     for t in range(F_IN + 1, L):
@@ -675,7 +699,7 @@ def card3(doc, write):
     b.put(L, b.c[0])
     b.mode[L] = b.mode[0]
     b.kick = {F_BOOK: 0.5 * 3.4 / 16.9, F_CARD: -0.5 * 4.5 / 16.9, F_KNOB: 0.3 * 3.0 / 16.9}
-    for fr, a in ((F_BAND, 0.10), (F_BOOK, 0.08), (F_CARD, 0.08), (F_KNOB, 0.06), (F_STK, 0.08)):
+    for fr, a in ((F_BAND, 0.10), (F_BOOK, 0.08), (F_CARD, 0.08), (F_KNOB, 0.06), (F_STK, 0.08), (F_LEAVE, 0.08)):
         b.squash(fr, a)
     # spin: the leftover to a whole number of turns goes into the hidden rest in the mug
     theta = b.spin()
@@ -688,10 +712,11 @@ def card3(doc, write):
     tc = lambda t: (t + T0) / 60.0
     names = [("mug rocks", 2), ("hops out of the mug", F_POP), ("lands on the band (it sags)", F_BAND), ("springs off the band", F_UP),
              ("ricochets off the books", F_BOOK), ("ricochets off the FIRST card", F_CARD), ("hits the white knob", F_KNOB),
-             ("lands on the blue stick", F_STK), ("drops into the mug (rim)", F_RIM), ("out of sight in the mug", F_IN)]
+             ("lands on the blue stick", F_STK), ("leaves the stick's low end, lifted", F_LEAVE), ("drops into the mug (rim)", F_RIM), ("out of sight in the mug", F_IN)]
     print(f"{room}: cycle {L} frames ({L / 60:.2f} s), loop {L + 1} frames, journey starts at intro frame {T0} ({T0 / 60:.2f} s); the loop starts at cycle frame {INTRO - 1 - T0}")
     for name, t in names:
         print(f"  cycle {t:3d}  timecode {tc(t):5.2f} s  {name}")
+    print(f"  stick end: arrives at {norm(v_arr):.1f}, leaves at {sp_launch:.1f} at {math.degrees(ang_launch):.0f} degrees above horizontal ({v_launch[0]:.1f}, {v_launch[1]:.1f}); comes down at x {mouth_x(ang_launch):.0f} through the rim line")
     print(f"  highest point of the ball: y {top:.1f} ({phone_y(top):.0f} px on the phone frame); copy ends at {COPY_BOTTOM:.0f}: clearance {phone_y(top) - COPY_BOTTOM:.0f} px")
     print(f"  x range {min(c[0] for c in b.c.values()) - 17.6:.0f} to {max(c[0] for c in b.c.values()) + 17.6:.0f}")
     edge_d = lambda pts: min(min(segdist(p, card_edge[i], card_edge[i + 1]) for i in range(3)) for p in pts)
