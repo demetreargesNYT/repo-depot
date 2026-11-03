@@ -42,7 +42,7 @@
 
 The last delivery went out on 2026-11-03 (below). Keep this list current; the next note to engineering is made from it. Add a line whenever something changes that engineering would notice, in the code (the card list, the guide) or in the Rive files.
 
-- Nothing yet.
+- **A visual timing demo, `reference/timing-demo.html`** (2026-11-03; source `engineering/timing-demo.html`, copied into the package by `tools/package_engineering.py`; no Rive change, nothing in `core/` or the guide changed). It opens with a double-click, links the real `core/yig-text-motion.css` and plays the card strip for the subscriber (several games or one game) and anonymous flows with stand-in rooms. Each tap or jump shows the Rive properties set in order, the one timing rule that applied, the wait and a live timer, and highlights its row in an "All the waits" table built from the same constants; the tap code shown at the bottom is the code that runs. It is a visual companion to the guide's section 8 (the package README points to it).
 
 ### Delivered 2026-11-03 ("Chapter 1 polish, startScene")
 

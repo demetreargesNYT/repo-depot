@@ -113,6 +113,7 @@ def readme():
 Start here. You need the four things in `core/`: the three Rive files, the guide, the text CSS and the desktop arrow art.
 Read `core/engineering-guide.md` first: its opening section, "How the animation works, in plain English", is a one-page summary of the rules, and "What's new in this delivery" follows it.
 Everything in `reference/` is optional, a working example of the guide.
+`reference/timing-demo.html` is the visual companion to the guide's timing section (section 8): double-click it to see every wait and the Rive calls on each tap.
 """
 
 
@@ -129,6 +130,7 @@ def assemble(files):
     shutil.copy(REPO / "art" / "global" / "ui-desktop-button.svg", core / "ui-desktop-button.svg")      # the desktop arrow art: engineering needs it, so it is in core/ (the demo page keeps its own copy)
     (core / "ui-desktop-button.svg").chmod(0o644)
     (ref / "yig-integration.js").write_text(reference_integration())
+    shutil.copy(REPO / "engineering" / "timing-demo.html", ref / "timing-demo.html")      # opens from a double-click; links ../core/yig-text-motion.css
     shutil.copytree(REPO / "engineering" / "react", ref / "react", ignore=shutil.ignore_patterns("node_modules", "dist"))
     main = ref / "react" / "src" / "main.tsx"
     main.write_text(main.read_text().replace("'../../yig-text-motion.css'", "'../../../core/yig-text-motion.css'"))
