@@ -20,6 +20,7 @@ import math
 import sys
 
 from ball_motion import G, Path, arc, bezier, fall_height, gravity, pulse, release, rot, roll_distance, smooth, speed_profile, ease_in, spring
+from ball_physics import G as GP
 from rml_edit import Doc, bake
 from rml_read import Scene, chapter_dir
 
@@ -219,9 +220,15 @@ def emit_room(doc, room, b, theta, T0, ids, pre, pieces):
 
 
 def card2(doc, write):
-    """Slide down, climb back up (finesse round 4): the block on top teeters like a seesaw and rolls the ball onto the bar, the ball
-    slides down the whole stack and out along the floor, then climbs the right side in small hops."""
+    """Slide down, climb back up, on the physics (finesse round 5). The pencil topples into place and knocks the stack; the top block
+    teeters like a seesaw and rolls the ball off onto the purple bar; from there the path is simulated (ball_physics.py): one gravity,
+    every contact keeps 70 to 90 percent of its speed, a roll speeds up by G times the slope. The ball lands on the bar, bounces into
+    the pencil, falls onto the yellow stick and rolls down it, comes off its low end onto the floor line moving left, rolls a short way
+    and stops, pauses, then rolls back right along the floor line (behind TOTAL, behind the C block) to the pencil's foot, and climbs
+    back up the right side in hops."""
+    from ball_physics import Circ, Seg, build_path, flight, norm, piece_at, simulate, sub, mul
     room = "Chapter 1 Card 2"
+    Rb = 17.1
     # ---- the art (world coordinates measured from the file; every piece here is unscaled) ------------------------------------
     block_top = 444.8                                   # the pink and orange block: flat from x 666.5 to 719.3
     block_poly = [(719.3, 444.8), (722.1, 450.4), (714.9, 460.1), (706.6, 464.3), (653.8, 464.3), (651.0, 458.6), (658.2, 448.9), (666.5, 444.8)]
@@ -241,14 +248,12 @@ def card2(doc, write):
     st_d = ((st_b[0] - st_a[0]) / st_len, (st_b[1] - st_a[1]) / st_len)
     st_n = (st_d[1], -st_d[0])
     ST_UP = 7.25 + 16.855
-    total_pivot = (681.0, 711.8)
-    total_poly = [(706.7, 711.8), (655.0, 711.8), (649.2, 701.6), (703.7, 608.6), (713.2, 603.2), (764.9, 603.2), (770.7, 613.4), (716.2, 706.4)]
     dom_pivot = (697.0, 572.5)
     c_pivot = (780.2, 711.8)
     c_top = 646.6
     slab_top = 572.7
     floor_c = 711.8 - R
-    ramp_p0, ramp_d, ramp_n = (703.7, 608.6), (-0.5056, 0.8627), (-0.8627, -0.5056)
+    total_poly = [(706.7, 711.8), (655.0, 711.8), (649.2, 701.6), (703.7, 608.6), (713.2, 603.2), (764.9, 603.2), (770.7, 613.4), (716.2, 706.4)]
 
     def bar_pt(p, th):
         c = (bar_c[0] + p * bar_d[0] + BAR_UP * bar_n[0], bar_c[1] + p * bar_d[1] + BAR_UP * bar_n[1])
@@ -261,11 +266,8 @@ def card2(doc, write):
         c = (st_a[0] + q * st_d[0] + ST_UP * st_n[0], st_a[1] + q * st_d[1] + ST_UP * st_n[1])
         return rot(c, j_mid, th)
 
-    def ramp_pt(s):
-        return (ramp_p0[0] + s * ramp_d[0] + R * ramp_n[0], ramp_p0[1] + s * ramp_d[1] + R * ramp_n[1])
-
-    # ---- the teeter: the block rocks on its joint, tips, and the ball rolls off its right end --------------------------------------
-    ctrl = [(0, 0.0), (8, -0.04), (18, 0.05), (26, -0.03), (40, 0.16)]
+    # ---- the teeter: the block rocks on its joint, tips, and the ball rolls off its right end (a roll speeds up by G times the slope) ----
+    ctrl = [(0, 0.0), (6, -0.05), (13, 0.06), (19, -0.02), (25, 0.20)]
     TIP = ctrl[-1][1]
 
     def th_base(t):
@@ -273,7 +275,7 @@ def card2(doc, write):
             if t <= t1:
                 return v0 + (v1 - v0) * smooth((t - t0) / (t1 - t0))
         return TIP
-    A_ROLL, EDGE_U = 0.9, 720.0
+    EDGE_U = 720.0
     us, u, v = [], home_u, 0.0
     t_off = None
     for t in range(0, 120):
@@ -281,28 +283,112 @@ def card2(doc, write):
         if u >= EDGE_U:
             t_off = t
             break
-        v += A_ROLL * math.sin(th_base(t))
+        v += GP * math.sin(th_base(t))
         u += v
     assert t_off, "the ball never rolls off"
-    v_off = us[t_off] - us[t_off - 1]
     th_main = lambda t: th_base(t) if t <= t_off else release(t - t_off, TIP, tau=7.0, period=22.0)
 
     def on_block(u_, th):
         return rot((u_, block_top - R), J_top, th)
+    p_off = on_block(us[t_off], th_main(t_off))
+    p_prev = on_block(us[t_off - 1], th_main(t_off - 1))
+    v_off = (p_off[0] - p_prev[0], p_off[1] - p_prev[1])
+
+    # ---- the path after the block, simulated ----------------------------------------------------------------------------------------------
+    def seg_c(c0, c1, n, name, e):
+        return Seg(sub(c0, mul(n, Rb)), sub(c1, mul(n, Rb)), name, e=e, kt=0.95, n=n)
+    s_bar = seg_c(bar_pt(bar_p_at(724.0), 0.0), bar_pt(bar_p_at(792.0), 0.0), (bar_n[0], bar_n[1]), "bar", 0.66)
+    pd = unit_((T[0] - E[0], T[1] - E[1]))
+    n_wall = (-pd[1], pd[0])
+    c_wall = bar_pt(bar_p_at(792.0), 0.0)
+    w0 = sub(c_wall, mul(n_wall, Rb))
+    s_wall = Seg((w0[0] - 200 * pd[0], w0[1] - 200 * pd[1]), (w0[0] + 200 * pd[0], w0[1] + 200 * pd[1]), "pencil", e=0.8, kt=0.95, n=n_wall)
+    s_jmid = Circ(j_mid, 17.35, "joint", e=0.7)
+    st_up = (-st_n[0], -st_n[1]) if st_n[1] > 0 else st_n
+    s_stick = seg_c(stick_pt(0.0, 0.0), stick_pt(st_len, 0.0), st_up, "stick", 0.2)
+    ev1 = simulate(p_off, v_off, 0.0, [s_bar, s_wall], max_events=3)
+    k_pen = next(i for i, e in enumerate(ev1) if e[0] == "hit" and e[2].name == "pencil")
+    ev1 = ev1[:k_pen + 1]
+    ev2 = simulate(ev1[-1][3], ev1[-1][5], ev1[-1][1], [s_wall, s_jmid, s_stick], max_events=5)
+    events = ev1 + ev2
+    hits = [e for e in events if e[0] == "hit"]
+    assert [h[2].name for h in hits][:3] == ["bar", "pencil", "stick"], [h[2].name for h in hits]
+    assert events[-1][0] == "leave" and any(e[0] == "roll" for e in events), events[-3:]
+    path = build_path(events, p_off, v_off, 0.0)
+    t_l, p_l, v_l = events[-1][1], events[-1][2], events[-1][3]            # leaves the stick's low end
+    tau = (-v_l[1] + math.sqrt(v_l[1] ** 2 + 2 * GP * (floor_c - p_l[1]))) / GP
+    t_fl = t_l + tau                                                          # lands on the floor line (sim time)
+    x_fl = p_l[0] + v_l[0] * tau
+    vx_roll = 0.80 * v_l[0]                                                   # the floor takes the fall and keeps most of the sideways speed
+    MU = 0.50                                                                 # slows and stops on the floor
+    tau_s = abs(vx_roll) / MU
+    x_stop = x_fl + vx_roll * tau_s / 2
 
     # ---- when things happen (cycle frames; the Finesse timecode is the intro's journey start + frame / 60) ------------------------------
-    N_FALL = 22
-    F_BAR = t_off + N_FALL
-    F_WALL = F_BAR + 9
-    F_JOINT = F_WALL + 12
-    F_STICK = F_JOINT + 18
-    F_LOW = F_STICK + 20
-    F_RAMP = F_LOW + 14
-    F_RAMP_END = F_RAMP + 9
-    D_RUN = 92
-    F_FOOT = F_RAMP_END + D_RUN
-    F_UP = F_FOOT + 18
-    HOP = [(26, 26), (26, 28), (22, 22), (20, 16), (20, 14), (24, None)]
+    T_BAR, T_PEN, T_STK = (t_off + hits[i][1] for i in range(3))
+    F_BAR, F_PEN, F_STK = round(T_BAR), round(T_PEN), round(T_STK)
+    roll_ev = next(e for e in events if e[0] == "roll")
+    F_LOW = round(t_off + roll_ev[2])                                       # off the stick's low end
+    tl_c = t_off + t_fl                                                       # landing on the floor (fractional cycle frame)
+    F_FL = math.ceil(tl_c)
+    F_STOP = math.ceil(tl_c + tau_s)
+    PAUSE1, PAUSE2 = 16, 18
+    F_GO = F_STOP + PAUSE1
+    # rolling back right along the floor line: speeds up, cruises, slows to a stop at the pencil's foot
+    foot = (819.0, floor_c)
+    A_RUN, V_RUN, MU_RUN = 0.10, 3.6, 0.13
+    d_acc, d_dec = V_RUN ** 2 / (2 * A_RUN), V_RUN ** 2 / (2 * MU_RUN)
+    D_run = foot[0] - x_stop
+    d_cru = D_run - d_acc - d_dec
+    assert d_cru > 0, d_cru
+    t_acc, t_cru, t_dec = V_RUN / A_RUN, d_cru / V_RUN, V_RUN / MU_RUN
+
+    def run_x(k):
+        if k <= 0:
+            return x_stop
+        if k <= t_acc:
+            return x_stop + 0.5 * A_RUN * k * k
+        if k <= t_acc + t_cru:
+            return x_stop + d_acc + V_RUN * (k - t_acc)
+        j = min(k - t_acc - t_cru, t_dec)
+        return x_stop + d_acc + d_cru + V_RUN * j - 0.5 * MU_RUN * j * j
+    D_RUN = math.ceil(t_acc + t_cru + t_dec)
+    F_FOOT = F_GO + D_RUN
+    F_UP = F_FOOT + PAUSE2
+    f_tap = next(t for t in range(F_GO, F_FOOT + 1) if run_x(t - F_GO) + 17.0 >= 747.6)
+    f_hole0 = F_GO - 1
+    f_hole1 = next(t for t in range(F_GO, F_FOOT + 1) if run_x(t - F_GO) >= 762.0)
+
+    def parab(p0, p1, ha):
+        """A flight at the project gravity from p0 to p1 that peaks ha above the higher of the two: (frames, points)."""
+        apex_y = min(p0[1], p1[1]) - ha
+        vy0 = -math.sqrt(2 * GP * (p0[1] - apex_y))
+        n = round(-vy0 / GP + math.sqrt(2 * (p1[1] - apex_y) / GP))
+        vyn = ((p1[1] - p0[1]) - 0.5 * GP * n * n) / n
+        return n, [(p0[0] + (p1[0] - p0[0]) * i / n, p0[1] + vyn * i + 0.5 * GP * i * i) for i in range(n + 1)]
+    bar_stops = [bar_p_at(x) for x in (794.0, 774.0, 750.0)]
+    c_land = (790.0, c_top - R)
+    slab_land = (806.0, slab_top - R)
+    top_land_u = 714.0
+    top_land = (top_land_u, block_top - R)
+    pos_h5 = bar_pt(bar_stops[2], 0.0)
+    ends = [c_land, slab_land, bar_pt(bar_stops[0], 0.0), bar_pt(bar_stops[1], 0.0), pos_h5, top_land]
+    starts = [foot] + ends[:5]
+    HA = [26, 26, 22, 20, 20]
+    HOP, pts_hop = [], []
+    for i in range(5):
+        n, pts = parab(starts[i], ends[i], HA[i])
+        HOP.append((n, HA[i]))
+        pts_hop.append(pts)
+    # the climb's last step: the smallest hop that clears the block's corner
+    for h6 in range(8, 44, 2):
+        n, pts = parab(starts[5], ends[5], h6)
+        if min(polydist(p, block_poly) for p in pts[:-3]) >= 16.8:
+            break
+    else:
+        raise AssertionError("no clear last hop")
+    HOP.append((n, h6))
+    pts_hop.append(pts)
     STAY = 4
     leave, land = [], []
     f = F_UP
@@ -312,97 +398,35 @@ def card2(doc, write):
         f += n + STAY
     F_TOP = land[-1]
     L = F_TOP + 40
-    T0 = max(118, INTRO - F_BAR)
-
-    # ---- positions ----------------------------------------------------------------------------------------------------------------------
-    p_off = on_block(us[t_off], th_main(t_off))
-    p_prev = on_block(us[t_off - 1], th_main(t_off - 1))
-    vx, vy0 = p_off[0] - p_prev[0], p_off[1] - p_prev[1]
-    x_land = p_off[0] + vx * N_FALL
-    p_bar1 = bar_p_at(x_land)
-    land_bar = bar_pt(p_bar1, 0.0)
-    h_fall = ((land_bar[1] - p_off[1]) - vy0 * N_FALL) / 4
-    p_wall = bar_p_at(792.0)
-    shoulder = (j_mid[0] + 34.2 * math.cos(math.radians(-115)), j_mid[1] + 34.2 * math.sin(math.radians(-115)))
-    Q0, Q1 = 45.0, 100.0
-    s_land, s_end = 66.0, 104.0
-    foot = (819.0, floor_c)
-    c_land = (790.0, c_top - R)
-    slab_land = (806.0, slab_top - R)
-    bar_stops = [bar_p_at(x) for x in (794.0, 774.0, 750.0)]
-    top_land_u = 714.0
-    # the climb's last step: the smallest hop that clears the block's corner
-    pos_h5 = bar_pt(bar_stops[2], 0.0)
-    top_land = (top_land_u, block_top - R)
-    best = None
-    for h6 in range(8, 44, 2):
-        for xe in (1.0, 1.4, 1.8, 2.2, 2.6):
-            pts = arc(pos_h5, top_land, HOP[5][0], h6, xe)
-            if min(polydist(p, block_poly) for p in pts[:-3]) >= 16.8:
-                best = (h6, xe)
-                break
-        if best:
-            break
-    assert best, "no clear last hop"
-    h6, xe6 = best
-    HOP[5] = (HOP[5][0], h6)
+    T0 = INTRO - 1 - F_BAR
+    assert T0 >= 115, T0
 
     # ---- reactions (functions of the cycle frame) -------------------------------------------------------------------------------------------
     bar_hits = [(F_BAR, -0.03)] + [(land[i], -0.012) for i in (2, 3, 4)]
     bar = lambda t: sum(spring(t - fl, d, down=4, tau=9.0, period=20.0) for fl, d in bar_hits)
     domino = lambda t: 0.05 * math.exp(-(t - F_BAR - 4) / 14.0) * math.sin(2 * math.pi * (t - F_BAR - 4) / 22.0) if t > F_BAR + 4 else 0.0
-    joint_hits = [(F_WALL - 3, 0.10), (F_JOINT, 0.14), (land[1], 0.10)]
-    joint_p = lambda t: sum(a * pulse(t - fl, down=3, tau=7.0, period=16.0) for fl, a in joint_hits)
+    joint_p = lambda t: 0.10 * pulse(t - land[1], down=3, tau=7.0, period=16.0)
     low_p = lambda t: 0.14 * pulse(t - F_LOW, down=3, tau=7.0, period=16.0)
-    stick = lambda t: spring(t - F_STICK, -0.03, down=4, tau=9.0, period=20.0)
-    total_dip = lambda t: spring(t - F_RAMP, 0.04, down=4, tau=10.0, period=20.0)
-    pencil = lambda t: spring(t - F_WALL, 0.02, down=2, tau=7.0, period=16.0) + spring(t - F_FOOT, 0.012, down=2, tau=7.0, period=16.0)
+    stick = lambda t: spring(t - F_STK, -0.03, down=4, tau=9.0, period=20.0)
+    pencil = lambda t: spring(t - F_PEN, 0.02, down=2, tau=7.0, period=16.0) + spring(t - F_FOOT, 0.012, down=2, tau=7.0, period=16.0)
     slab_dip = lambda t: spring(t - land[1], 2.5, down=3, tau=8.0, period=18.0)
     block_th = lambda t: th_main(t) + spring(t - F_TOP, 0.03, down=3, tau=7.0, period=20.0)
+    hole_x = lambda t: 0.0 if f_hole0 <= t <= f_hole1 else 1500.0
 
     # ---- the ball -----------------------------------------------------------------------------------------------------------------------------
     b = Ball(L)
     for t in range(0, t_off + 1):
         b.put(t, on_block(us[t], th_main(t)), "roll")
-    b.seg(t_off, F_BAR, arc(p_off, land_bar, N_FALL, h_fall))
-    # down the bar, speeding up; the joint beneath squashes as the ball crosses it
-    v0_bar = vx / bar_d[0]
-    D_bar = p_wall - p_bar1
-    n_bar = F_WALL - F_BAR
-    a_bar = 2 * (D_bar - v0_bar * n_bar) / (n_bar * n_bar)
-    assert D_bar > 0 and a_bar >= 0, (D_bar, v0_bar, n_bar, a_bar)
-    for i in range(n_bar + 1):
-        t = F_BAR + i
-        b.put(t, bar_pt(p_bar1 + v0_bar * i + 0.5 * a_bar * i * i, bar(t)), "roll")
-    # into the pencil, which gives a little, and back to the joint's shoulder, then off it onto the yellow stick
-    b.seg(F_WALL, F_JOINT, arc(b.c[F_WALL], shoulder, F_JOINT - F_WALL, 7))
-    b.put(F_JOINT, shoulder)
-    b.put(F_JOINT + 1, shoulder)
-    b.seg(F_JOINT + 2, F_STICK, arc(shoulder, stick_pt(Q0, 0.0), F_STICK - F_JOINT - 2, 9))
-    s_st, _ = roll_distance(F_LOW - F_STICK, 1.8, Q1 - Q0)
-    for i, s in enumerate(s_st):
-        b.put(F_STICK + i, stick_pt(Q0 + s, stick(F_STICK + i)), "roll")
-    b.seg(F_LOW, F_RAMP, arc(b.c[F_LOW], ramp_pt(s_land), F_RAMP - F_LOW, 8))
-
-    def ramp_ride(pt, t):
-        return (pt[0], total_pivot[1] + (pt[1] - total_pivot[1]) * (1 - total_dip(t)))
-    s_rp, _ = roll_distance(F_RAMP_END - F_RAMP, 3.2, s_end - s_land)
-    for i, s in enumerate(s_rp):
-        b.put(F_RAMP + i, ramp_ride(ramp_pt(s_land + s), F_RAMP + i), "roll")
-    # off the bottom of the slide: it curves round in front of the floor, below TOTAL's base, and heads right toward the C block
-    p_exit = ramp_pt(s_end)
-    ex = (ramp_d[0], ramp_d[1])
-    A = bezier(p_exit, (p_exit[0] + 20 * ex[0], p_exit[1] + 20 * ex[1]), (611.0, 742.0), (648.0, 746.0), 40)
-    B = [(648.0 + (712.0 - 648.0) * i / 20, 746.0) for i in range(1, 21)]
-    C = bezier((712.0, 746.0), (738.0, 746.0), (765.0, floor_c), (790.0, floor_c), 40)[1:]
-    Dd = [(790.0 + (foot[0] - 790.0) * i / 8, floor_c) for i in range(1, 9)]
-    path = Path(A + B + C + Dd)
-    cum = speed_profile(D_RUN, 4.9, 2.6, 12)
-    for i in range(D_RUN + 1):
-        b.put(F_RAMP_END + i, path.at(cum[i] * path.length), "floor" if i < D_RUN else "rest")
-    f_tap = next(t for t in range(F_RAMP_END, F_FOOT + 1) if b.c[t][0] + 17.0 >= 747.6)
+    for t in range(t_off + 1, F_FL):
+        p, m = piece_at(path, t - t_off)
+        b.put(t, p, m)
+    for t in range(F_FL, F_GO + 1):                      # lands on the floor line, rolls a short way left, slows and stops, pauses
+        tt = min(t - tl_c, tau_s)
+        b.put(t, (x_fl + vx_roll * tt - math.copysign(0.5 * MU * tt * tt, vx_roll), floor_c), "roll" if t <= F_STOP else "rest")
+    for t in range(F_GO + 1, F_FOOT + 1):                # rolls back right along the floor line, behind TOTAL and the C block, to the pencil's foot
+        b.put(t, (run_x(t - F_GO), floor_c), "roll" if t < F_FOOT else "rest")
     for t in range(F_FOOT, F_UP + 1):
-        b.put(t, foot)
+        b.put(t, (run_x(D_RUN + 1), floor_c) if False else foot, "rest")
     # the climb
     c_nudge = lambda t: spring(t - f_tap, 0.03, down=3, tau=8.0, period=18.0)
     c_dip = lambda t: spring(t - land[0], 0.04, down=3, tau=8.0, period=18.0)
@@ -420,7 +444,9 @@ def card2(doc, write):
         if i:
             for t in range(land[i - 1], a_ + 1):
                 b.put(t, pos_on(i - 1, t))
-        b.seg(a_, z_, arc(b.c[a_], pos_on(i, z_), n, h, xe6 if i == 5 else 1.0))
+        pts = [(p[0], p[1]) for p in pts_hop[i]]
+        pts[-1] = pos_on(i, z_)
+        b.seg(a_, z_, pts)
     # settle on top: it rolls back to its spot as the block rocks and comes to rest
     for t in range(F_TOP, L):
         u_ = top_land_u - (top_land_u - home_u) * smooth((t - F_TOP - 8) / 18.0)
@@ -428,7 +454,7 @@ def card2(doc, write):
     b.put(L, b.c[0])
     b.mode[L] = b.mode[0]
     assert math.dist(b.c[L - 1], b.c[0]) < 0.05, (b.c[L - 1], b.c[0])
-    for fr, a in ((F_BAR, 0.10), (F_WALL, 0.10), (F_JOINT, 0.12), (F_STICK, 0.10), (F_LOW, 0.12), (F_RAMP, 0.10), (F_FOOT, 0.12)):
+    for fr, a in ((F_BAR, 0.10), (F_PEN, 0.10), (F_STK, 0.10), (F_LOW, 0.10), (F_FL, 0.12), (F_FOOT, 0.12)):
         b.squash(fr, a)
     for i, z_ in enumerate(land):
         b.squash(z_, 0.08 if i < 5 else 0.10)
@@ -443,51 +469,59 @@ def card2(doc, write):
 
     # ---- numbers to check -----------------------------------------------------------------------------------------------------------------------
     tc = lambda t: (t + T0) / 60.0           # Finesse timecode of a cycle frame
-    names = [("block starts to teeter", 0), ("block tips and the ball rolls off its end", t_off), ("lands on the purple bar", F_BAR),
-             ("hits the pencil at the bar's low end", F_WALL), ("touches the right white joint", F_JOINT), ("lands on the yellow stick", F_STICK),
-             ("reaches the lower-left white joint", F_LOW), ("lands on TOTAL's left edge", F_RAMP), ("off the bottom of TOTAL, curving right", F_RAMP_END),
-             ("goes behind the C block (tap)", f_tap), ("stops against the pencil's foot", F_FOOT)]
+    names = [("pencil lands and knocks the stack (intro)", -3), ("block starts to teeter", 0), ("block tips and the ball rolls off its end", t_off),
+             ("lands on the purple bar", F_BAR), ("hits the pencil", F_PEN), ("lands on the yellow stick", F_STK), ("off the stick's low end", F_LOW),
+             ("lands on the floor line, moving left", F_FL), ("stops", F_STOP), ("starts back right", F_GO),
+             ("goes behind the C block (tap)", f_tap), ("stops at the pencil's foot", F_FOOT)]
     names += [(f"climb hop {i + 1} lands", land[i]) for i in range(6)]
     print(f"{room}: cycle {L} frames ({L / 60:.2f} s), loop {L + 1} frames, journey starts at intro frame {T0} ({T0 / 60:.2f} s); the loop starts at cycle frame {INTRO - 1 - T0}")
     for name, t in names:
         print(f"  cycle {t:3d}  timecode {tc(t):5.2f} s (and +{L / 60:.2f} s each loop)  {name}")
     print(f"  highest point of the ball: y {top:.1f} ({phone_y(top):.0f} px on the phone frame); copy ends at {COPY_BOTTOM:.0f}: clearance {phone_y(top) - COPY_BOTTOM:.0f} px")
     print(f"  x range {min(c[0] for c in b.c.values()) - 17.6:.0f} to {max(c[0] for c in b.c.values()) + 17.6:.0f}, y to {max(c[1] for c in b.c.values()) + 17.6:.0f}")
-    sp = lambda fa, fb: max(math.dist(b.c[f_], b.c[f_ + 1]) for f_ in range(fa, fb))
-    print(f"  top speeds (px/frame): off the block {v_off:.1f}, bar {sp(F_BAR, F_WALL):.1f}, stick {sp(F_STICK, F_LOW):.1f}, ramp {sp(F_RAMP, F_RAMP_END):.1f}, run {sp(F_RAMP_END, F_FOOT):.1f}")
-    print(f"  run: path {path.length:.0f} px; closest the ball's centre gets to TOTAL's outline on the way out: {min(polydist(b.c[t], total_poly) for t in range(F_RAMP_END + 1, F_FOOT)):.1f} (radius 17)")
-    print(f"  last hop: {h6} high, x warp {xe6}; closest to the block's outline {min(polydist(b.c[t], block_poly) for t in range(leave[5], land[5] - 2)):.1f}")
+    print(f"  floor: lands at x {x_fl:.0f} moving {vx_roll:.1f} per frame, stops at x {x_stop:.0f} (the ball's left edge {x_stop - 17:.0f}); run back {D_run:.0f} px: {t_acc:.0f} frames speeding up to {V_RUN}, {t_cru:.0f} cruising, {t_dec:.0f} slowing")
+    print(f"  hole in the clip (ball behind TOTAL) on frames {f_hole0} to {f_hole1}; TOTAL spans x {min(p[0] for p in total_poly):.0f} to {max(p[0] for p in total_poly):.0f}")
     print(f"  spin: {theta[L] / (2 * math.pi):.2f} turns over the cycle (leftover {resid:+.2f} rad put into the last hop)")
-    print(f"  gravity: fall off the block {gravity(N_FALL, h_fall):.2f}; climbing hops " + ", ".join(f"{gravity(n, h):.2f}" for n, h in HOP))
+    print("  climb hops (frames, height above the higher end): " + ", ".join(f"{n} / {h}" for n, h in HOP))
     if not write:
         return
 
     # ---- write ----------------------------------------------------------------------------------------------------------------------------------
-    ids = dict(ball="9:8040", scale="9:8042", pencil="9:7760", bar="9:7865", domino="9:7872", total="9:7959", stick="9:7655", jmid="9:7643",
-               jlow="9:7649", frontcircle="9:7748", cblock="9:7719", slab="9:7947", blocka="9:7686")
+    ids = dict(ball="9:8040", scale="9:8042", pencil="9:7760", bar="9:7865", domino="9:7872", stick="9:7655", jmid="9:7643",
+               jlow="9:7649", cblock="9:7719", slab="9:7947", blocka="9:7686")
     old = ["9:7659", "9:7748", "9:8049", "9:8043", "9:8054", "9:8052", "9:8051"]
     loop, intro = f"{room} Loop", f"{room} Intro"
     piv = {}
     piv["pencil"], _ = doc.wrap(ids["pencil"], f"{room} Pencil", *T)
     piv["bar"], _ = doc.wrap(ids["bar"], f"{room} Bar", *bar_pivot)
     piv["domino"], _ = doc.wrap(ids["domino"], f"{room} Domino", *dom_pivot)
-    piv["total"], _ = doc.wrap(ids["total"], f"{room} Total", *total_pivot)
     piv["stick"], _ = doc.wrap(ids["stick"], f"{room} Yellow Stick", j_mid[0] - 649.0, j_mid[1] - 463.5)      # inside a node at (649, 463.5)
     piv["cblock"], _ = doc.wrap(ids["cblock"], f"{room} C Block", *c_pivot)
     piv["block"], _ = doc.wrap(ids["blocka"], f"{room} Block Seesaw", *J_top)                                  # inside the Top Piece's Art node
-    # the ball: turn about its own centre; no floor clip (it now runs in front of the floor); the old vertex and highlight keys go
+    # the ball turns about its own centre; its floor clip stays, and a second clip with TOTAL's outline cut out of it (evenOdd) hides
+    # the ball while it runs behind the card; that hole is slid 1500 to the right except for that run
     spin_id, _ = doc.wrap_run("9:8043", "9:8049", f"{room} Ball Spin", 0.0, -17.572)
-    doc.drop_clipping("9:8043")
-    doc.drop_clipping("9:8049")
+    hole_id = doc.new_id()
+    floor_clip = doc.idx("9:8830")
+    verts = [f'                        <StraightVertex x="{num_(p[0])}" y="{num_(p[1])}" id="{doc.new_id()}"/>' for p in total_poly]
+    doc.lines[floor_clip:floor_clip] = ([f'                <Shape name="{room} TOTAL Hole" id="{hole_id}">',
+                                         f'                    <Rectangle width="30000" height="30000" originX="0.5" originY="0.5" name="Path" id="{doc.new_id()}"/>',
+                                         f'                    <PointsPath isClosed="true" id="{doc.new_id()}">'] + verts
+                                        + ["                    </PointsPath>", "                </Shape>"])
+    for shape in ("9:8043", "9:8049"):
+        i = doc.idx(shape)
+        j = doc.end(i)
+        doc.lines[j:j] = [f'                                <ClippingShape sourceId="{hole_id}" fillRule="evenOdd" name="TOTAL Hole" id="{doc.new_id()}"/>']
     for oid in old:
         doc.drop_object(loop, oid)
         doc.drop_object(intro, oid)
-    doc.set_prop(intro, ids["frontcircle"], "opacity", [(0, 0.0, "hold")])
+    doc.set_prop(intro, "9:7748", "opacity", [(0, 0.0, "hold")])
     ids["spin"] = spin_id
 
-    # the intro: the block drops in with the ball on it; the pencil tips into place last, quickly, with a small bounce
+    # the intro: the block drops in with the ball on it; the pencil tips over into place and knocks the stack three frames before the first rock
     tp = intro_keys(room, f"{room} Top Piece")
-    TIP0, HIT = 117, 135
+    HIT = T0 - 3
+    TIP0 = HIT - 18
 
     def p_intro(fr):
         if fr < TIP0:
@@ -508,20 +542,28 @@ def card2(doc, write):
         x = block_pivot[0] + sx_t * (home_u - block_pivot[0])
         return x, surf_y - R, ib.sx[fr], ib.sy[fr]
     ib.squash(98, 0.10)
+    # the knock: the purple bar and the domino shiver as the pencil lands (cycle frames -3 to the first rock)
     pieces = [(piv["pencil"], "rotation", pencil, 0.0, p_intro),
-              (piv["bar"], "rotation", bar, 0.0, None), (piv["domino"], "rotation", domino, 0.0, None),
+              (piv["bar"], "rotation", bar, 0.0, lambda f: -0.02 * math.exp(-(f - HIT) / 6.0) * math.sin(2 * math.pi * (f - HIT) / 14.0) if f >= HIT else 0.0),
+              (piv["domino"], "rotation", domino, 0.0, None),
               (piv["stick"], "rotation", stick, 0.0, None),
-              (ids["jmid"], "scaleY", lambda t: 1 - joint_p(t) / 0.14 * 0.14, 1.0, None),
-              (ids["jmid"], "scaleX", lambda t: 1 + 0.10 * joint_p(t) / 0.14, 1.0, None),
               (ids["jlow"], "scaleY", lambda t: 1 - low_p(t), 1.0, None), (ids["jlow"], "scaleX", lambda t: 1 + 0.7 * low_p(t), 1.0, None),
-              (piv["total"], "scaleY", lambda t: 1 - total_dip(t), 1.0, None), (piv["total"], "scaleX", lambda t: 1 + 0.5 * total_dip(t), 1.0, None),
+              (ids["jmid"], "scaleY", lambda t: 1 - joint_p(t), 1.0, None), (ids["jmid"], "scaleX", lambda t: 1 + joint_p(t), 1.0, None),
               (piv["cblock"], "rotation", c_nudge, 0.0, None), (piv["cblock"], "scaleY", lambda t: 1 - c_dip(t), 1.0, None),
               (ids["slab"], "y", lambda t: 8.3395 + slab_dip(t), 8.3395, None),
-              (piv["block"], "rotation", block_th, 0.0, None)]
+              (piv["block"], "rotation", block_th, 0.0, None),
+              (hole_id, "x", hole_x, 1500.0, None)]
     emit_room(doc, room, b, theta, T0, ids, pre, pieces)
 
 
+def unit_(a):
+    n = math.hypot(a[0], a[1])
+    return (a[0] / n, a[1] / n)
 
+
+def num_(v):
+    s = f"{v:.4f}".rstrip("0").rstrip(".")
+    return "0" if s in ("-0", "") else s
 
 
 def polydist_min(pts, poly):
@@ -530,6 +572,155 @@ def polydist_min(pts, poly):
 
 
 def card3(doc, write):
+    """The #1 mug circuit on the physics (finesse round 5): mug -> band (a spring) -> books (ricochet) -> FIRST card (ricochet) -> the
+    white knob -> down the blue stick -> back into the mug. The path after the band is simulated (ball_physics.py): one gravity, every
+    contact keeps 70 to 90 percent of its speed, the roll down the stick speeds up by G times the slope."""
+    from ball_physics import Circ, Seg, build_path, flight, piece_at, simulate
+    global BALL_CENTER
+    room = "Chapter 1 Card 3"
+    BALL_CENTER = 16.78
+    Rb = 17.1
+    # ---- the art (world coordinates; the shelf, stick, card and mug groups are scaled 0.85 in the file, these are after the scale) ----
+    mug_hide = (718.0, 724.0)                       # hidden inside the mug; its front rim is at y 698, so a centre below 715 is out of sight
+    posts = [(792.0, 486.0), (862.1, 486.0)]        # radius 14.9
+    band_rest_top = 485.7 - 6.4 + 0.4               # the band is straight at rest: its ends are at y 485.7, 12.75 thick
+    y_band = band_rest_top - Rb                     # the ball's centre on the band
+    card_edge = [(830.2, 538.6), (820.1, 544.4), (761.6, 644.0), (767.9, 654.9)]     # FIRST card's top and left edge
+    tip, low = (594.5, 591.0), (671.0, 676.0)        # the blue stick's two white ends (radius 14.9)
+    st_len = math.dist(tip, low)
+    st_d = ((low[0] - tip[0]) / st_len, (low[1] - tip[1]) / st_len)
+    st_n = (st_d[1], -st_d[0])
+    ST_UP = 22.6
+    stick_pivot, card_pivot, books_pivot, mug_pivot = low, (795.0, 654.9), (650.0, 508.0), (737.0, 745.0)
+    # surfaces for the simulation, each with how much of the ball's speed it gives back (e) and a little roll-off friction in the tangent
+    s_books = Seg((654.6, 473.9), (665.0, 506.2), "books", e=0.85, n=(32.3 / 33.9, -10.4 / 33.9))
+    s_card = Seg((830.2, 538.6), (761.6, 644.0), "FIRST", e=0.85, n=(-0.8624, -0.5065))
+    s_stick = Seg((tip[0] + (ST_UP - Rb) * st_n[0], tip[1] + (ST_UP - Rb) * st_n[1]), (low[0] + (ST_UP - Rb) * st_n[0], low[1] + (ST_UP - Rb) * st_n[1]), "stick", e=0.3, n=st_n)
+    s_knob = Circ(tip, 14.9, "knob", e=0.7)
+    s_posts = [Circ(p, 14.9, "post", e=0.5) for p in posts]
+
+    # ---- the hop out of the mug, up to the band (a plain parabola at the project's gravity) ---------------------------------------------------
+    F_POP, N1 = 10, 59
+    F_BAND = F_POP + N1
+    x_land = 815.0                                  # where it lands on the band, left of the middle so the band's left half tilts it left
+    p_land = (x_land, y_band)
+    v1 = ((x_land - mug_hide[0]) / N1, ((y_band - mug_hide[1]) - 0.5 * GP * N1 * N1) / N1)
+    v_in = (v1[0], v1[1] + GP * N1)
+    # ---- the band (a spring) throws it left, nearly at the speed it arrived with --------------------------------------------------------------
+    RIDE = 6
+    F_UP = F_BAND + RIDE
+    x_rel, sp_out, ang = 798.0, 7.4, 20.0
+    v_out = (-sp_out * math.cos(math.radians(ang)), -sp_out * math.sin(math.radians(ang)))
+
+    def hermite(u, y0, y1, d0, d1):
+        h00, h10, h01, h11 = 2 * u ** 3 - 3 * u ** 2 + 1, u ** 3 - 2 * u ** 2 + u, -2 * u ** 3 + 3 * u ** 2, u ** 3 - u ** 2
+        return h00 * y0 + h10 * RIDE * d0 + h01 * y1 + h11 * RIDE * d1
+
+    def ride(k):
+        u = k / RIDE
+        return (hermite(u, x_land, x_rel, v_in[0], v_out[0]), y_band + hermite(u, 0.0, 0.0, v_in[1], v_out[1]))
+    band_dip = lambda t: 2.6 * (ride(t - F_BAND)[1] - y_band) if 0 <= t - F_BAND <= RIDE else 0.0
+    # ---- the rest of the circuit, simulated ---------------------------------------------------------------------------------------------------
+    events = simulate((x_rel, y_band), v_out, 0.0, [s_books, s_card, s_stick, s_knob] + s_posts, max_events=9)
+    hits = [e for e in events if e[0] == "hit"]
+    assert [h[2].name for h in hits][:3] == ["books", "FIRST", "knob"], [h[2].name for h in hits]
+    pieces = build_path(events, (x_rel, y_band), v_out, 0.0)
+    # when the flight off the stick's low end drops below the mug's front rim and out of sight
+    t_rim = next(t / 16.0 for t in range(16 * 300) if piece_at(pieces, t / 16.0)[0][1] >= 698.0 and piece_at(pieces, t / 16.0)[1] == "air" and piece_at(pieces, t / 16.0)[0][0] > 680)
+    t_hid = next(t / 16.0 for t in range(int(16 * t_rim), 16 * 300) if piece_at(pieces, t / 16.0)[0][1] >= mug_hide[1])
+    F_RIM = F_UP + math.ceil(t_rim)
+    F_IN = F_UP + math.ceil(t_hid)
+    WAIT = 26
+    L = F_IN + WAIT
+    hit_f = {h[2].name + str(i): F_UP + h[1] for i, h in enumerate(hits)}
+    F_BOOK, F_CARD, F_KNOB = (round(F_UP + hits[i][1]) for i in range(3))
+    F_STK = round(F_UP + next(h[1] for h in hits if h[2].name == "stick"))
+    T0 = INTRO - 1 - F_BOOK
+    assert T0 >= 80, T0
+
+    # ---- reactions -------------------------------------------------------------------------------------------------------------------------------
+    books = lambda t: spring(t - F_BOOK, -0.03, down=2, tau=7.0, period=16.0)
+    card = lambda t: spring(t - F_CARD, 0.04, down=2, tau=9.0, period=20.0)
+    stick = lambda t: spring(t - F_STK, -0.015, down=3, tau=8.0, period=18.0) + spring(t - F_KNOB, -0.008, down=2, tau=6.0, period=14.0)
+    mug_th = lambda t: spring(t - 2, 0.05, down=3, tau=10.0, period=20.0) + spring(t - F_RIM, -0.07, down=3, tau=5.0, period=13.0)
+
+    # ---- the ball -------------------------------------------------------------------------------------------------------------------------------------
+    b = Ball(L)
+    for t in range(0, F_POP + 1):
+        b.put(t, mug_hide)
+    fl1 = flight(mug_hide, v1, F_POP)[0]
+    b.seg(F_POP, F_BAND, [fl1(t) for t in range(F_POP, F_BAND + 1)])
+    for t in range(F_BAND, F_UP + 1):
+        b.put(t, ride(t - F_BAND), "air")
+    for t in range(F_UP + 1, F_IN + 1):
+        p, m = piece_at(pieces, t - F_UP)
+        b.put(t, p, m)
+    last = b.c[F_IN]
+    for t in range(F_IN + 1, L):
+        u = smooth((t - F_IN) / 5.0)
+        b.put(t, (last[0] + (mug_hide[0] - last[0]) * u, last[1] + (mug_hide[1] - last[1]) * u), "rest")
+    b.put(L, b.c[0])
+    b.mode[L] = b.mode[0]
+    b.kick = {F_BOOK: 0.5 * 3.4 / 16.9, F_CARD: -0.5 * 4.5 / 16.9, F_KNOB: 0.3 * 3.0 / 16.9}
+    for fr, a in ((F_BAND, 0.10), (F_BOOK, 0.08), (F_CARD, 0.08), (F_KNOB, 0.06), (F_STK, 0.08)):
+        b.squash(fr, a)
+    # spin: the leftover to a whole number of turns goes into the hidden rest in the mug
+    theta = b.spin()
+    resid = theta[L] - 2 * math.pi * round(theta[L] / (2 * math.pi))
+    a_, z_ = F_IN + 4, L - 1
+    theta = [th - resid * (smooth((t - a_) / (z_ - a_)) if t <= z_ else 1.0) for t, th in enumerate(theta)]
+    top = min(c[1] for c in b.c.values()) - 17.6
+
+    # ---- numbers to check ------------------------------------------------------------------------------------------------------------------------------
+    tc = lambda t: (t + T0) / 60.0
+    names = [("mug rocks", 2), ("hops out of the mug", F_POP), ("lands on the band (it sags)", F_BAND), ("springs off the band", F_UP),
+             ("ricochets off the books", F_BOOK), ("ricochets off the FIRST card", F_CARD), ("hits the white knob", F_KNOB),
+             ("lands on the blue stick", F_STK), ("drops into the mug (rim)", F_RIM), ("out of sight in the mug", F_IN)]
+    print(f"{room}: cycle {L} frames ({L / 60:.2f} s), loop {L + 1} frames, journey starts at intro frame {T0} ({T0 / 60:.2f} s); the loop starts at cycle frame {INTRO - 1 - T0}")
+    for name, t in names:
+        print(f"  cycle {t:3d}  timecode {tc(t):5.2f} s  {name}")
+    print(f"  highest point of the ball: y {top:.1f} ({phone_y(top):.0f} px on the phone frame); copy ends at {COPY_BOTTOM:.0f}: clearance {phone_y(top) - COPY_BOTTOM:.0f} px")
+    print(f"  x range {min(c[0] for c in b.c.values()) - 17.6:.0f} to {max(c[0] for c in b.c.values()) + 17.6:.0f}")
+    edge_d = lambda pts: min(min(segdist(p, card_edge[i], card_edge[i + 1]) for i in range(3)) for p in pts)
+    pd_ = lambda pts: min(math.dist(p, q) for p in pts for q in posts)
+    print(f"  hop out: in speed at the band {math.hypot(*v_in):.2f}, out {math.hypot(*v_out):.2f}; closest to FIRST card's edge {edge_d([b.c[t] for t in range(F_POP, F_BAND + 1)]):.1f}, to a post {pd_([b.c[t] for t in range(F_POP, F_UP + 4)]):.1f} (needs 32; the band's left end is under the ball for a moment)")
+    print(f"  band sag: ball {max(ride(k)[1] - y_band for k in range(RIDE + 1)):.1f} px, band's middle {max(band_dip(t) for t in range(F_BAND, F_UP + 1)):.1f} px, over {RIDE} frames; spin: {theta[L] / (2 * math.pi):.2f} turns over the cycle (leftover {resid:+.2f} rad hidden in the mug)")
+    if not write:
+        return
+
+    # ---- write -----------------------------------------------------------------------------------------------------------------------------------------
+    ids = dict(ball="9:9619", scale="9:9621")
+    loop, intro = f"{room} Loop", f"{room} Intro"
+    piv = {}
+    piv["mug"], _ = doc.wrap_run("9:9482", "9:9522", f"{room} Mug", (mug_pivot[0] - 679.0) / 0.85, (mug_pivot[1] - 676.0) / 0.85)      # inside a node at (679, 676) scaled 0.85
+    piv["books"], _ = doc.wrap("9:9432", f"{room} Leaning Books", (books_pivot[0] - 581.0) / 0.85, (books_pivot[1] - 460.0) / 0.85)      # inside a node at (581, 460) scaled 0.85
+    piv["stick"], _ = doc.wrap("9:9239", f"{room} Blue Stick", *stick_pivot)
+    piv["card"], _ = doc.wrap("9:9272", f"{room} First Card Wobble", *card_pivot)
+    # the ball hides in the mug behind a clip: everything above the mug's front rim
+    clip_id = doc.new_id()
+    floor_clip = doc.idx("9:10551")
+    doc.lines[floor_clip:floor_clip] = [f'                <Shape y="697" name="{room} Mug Clip" id="{clip_id}">',
+                                        f'                    <Rectangle width="9000" height="2000" originX="0.5" originY="1" name="Path" id="{doc.new_id()}"/>',
+                                        "                </Shape>"]
+    for shape in ("9:9622", "9:9628"):
+        i = doc.idx(shape)
+        j = doc.end(i)
+        doc.lines[j:j] = [f'                                <ClippingShape sourceId="{clip_id}" name="Mug Clip" id="{doc.new_id()}"/>']
+    round_ball(doc, intro, ("9:9622", "9:9630", "9:9631", "9:9633"))
+    for oid in ("9:9628", "9:9257", "9:9272", "9:9481"):
+        doc.drop_object(loop, oid)
+    doc.drop_object(intro, "9:9628")
+    ids["spin"], _ = doc.wrap_run("9:9622", "9:9628", f"{room} Ball Spin", 0.0, -17.572)
+    pre = lambda fr: (mug_hide[0], mug_hide[1], 1.0, 1.0)
+    band_vertex = "9:9613"
+    pieces = [(piv["mug"], "rotation", mug_th, 0.0, None), (piv["books"], "rotation", books, 0.0, None),
+              (piv["stick"], "rotation", stick, 0.0, None), (piv["card"], "rotation", card, 0.0, None),
+              (band_vertex, "y", lambda t: band_dip(t) / 0.85, 0.0, None),
+              (band_vertex, "x", lambda t: 2.5149 - 0.07 * band_dip(t), 2.5149, None)]
+    emit_room(doc, room, b, theta, T0, ids, pre, pieces)
+
+
+def card3_round4(doc, write):
     """The #1 mug circuit (finesse round 4): mug -> band -> books (ricochet) -> FIRST card (ricochet) -> blue stick -> back into the mug."""
     global BALL_CENTER
     room = "Chapter 1 Card 3"
@@ -1004,7 +1195,7 @@ def main(argv):
     if "--write" in argv:
         card1_spin(doc)
     for c in cards:
-        {2: card2, 3: card3, 4: card4}[c](doc, "--write" in argv)
+        {2: card2, 3: card3, 4: card4, 31: card3_round4}[c](doc, "--write" in argv)
     if "--write" in argv:
         doc.save()
         print("wrote", SCENE)
