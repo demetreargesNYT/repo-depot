@@ -68,6 +68,16 @@ body.on-splash .nav-logo, body.on-splash .nav-progress { opacity: 0; }
 .splash-support img { display: block; width: 118px; height: 24px; }
 .icons { display: flex; gap: 10px; margin-top: 14px; }
 .icons img { width: 44px; height: auto; display: block; }
+/* Desktop (1025 px and wider): the whole Loading and Start block (lockup, tiles, progress bar or button, Supported by) moves up to the top of the
+   window so it never covers the ball, the bird or the floor line. Its own spacing is unchanged; it is only shifted, and scaled down together
+   when the window is so short that it would not clear the bird's hop. --sp-dy and --sp-k come from layoutSplash() below. Below 1025 px
+   nothing here applies, so mobile and tablet stay exactly as the Figma frames. */
+@media (min-width: 1025px) {
+  .splash, .blk-start, .blk-loader { transform: translateY(var(--sp-dy, 0px)) scale(var(--sp-k, 1)); }
+  .splash { transform-origin: 50% 0; }
+  .blk-start { transform-origin: 50% -403px; }
+  .blk-loader { transform-origin: 50% -413px; }
+}
 .blk-start { top: 403px; }
 .blk-start .btn { margin-top: 0; }
 .blk-loader { top: 413px; }
@@ -280,6 +290,25 @@ addEventListener("keydown", (e) => {
   if (e.key === "ArrowLeft") { e.preventDefault(); onBack(); }
 });
 addEventListener("resize", () => resize());
+
+// Loading and Start on desktop: keep the block in the top part of the window, clear of the ball and the bird. The block spans 197 to 527 px
+// of the 375 x 812 frame (330 px tall). The highest the animation reaches is the bird's hop on Start, artboard y 525 (the Loading bounce tops
+// out at 568, the resting bird and ball at 600, the floor line is 712); the bird's drop starts above the artboard and falls through the top part
+// of the window in about half a second. The block sits 16 px from the top and, if the window is short, shrinks (all together) to leave 28 px above the hop.
+const SPLASH_TOP = 16, SPLASH_H = 330, SPLASH_LOCKUP_Y = 197, HOP_TOP_Y = 525, HOP_GAP = 28;
+function layoutSplash() {
+  const root = document.documentElement.style;
+  if (innerWidth < 1025) { root.removeProperty("--sp-dy"); root.removeProperty("--sp-k"); return; }
+  const r = document.getElementById("artboard").getBoundingClientRect();
+  const hopTop = r.top + (HOP_TOP_Y / 1067) * r.height;
+  const k = Math.max(0.5, Math.min(1, (hopTop - HOP_GAP - SPLASH_TOP) / SPLASH_H));
+  root.setProperty("--sp-k", k.toFixed(4));
+  root.setProperty("--sp-dy", `${(SPLASH_TOP - SPLASH_LOCKUP_Y * k).toFixed(2)}px`);
+}
+addEventListener("resize", layoutSplash);
+addEventListener("load", layoutSplash);
+layoutSplash();
+setTimeout(layoutSplash, 300);
 
 // exposed for the browser test
 // the progress bar: how far through the cards the player is

@@ -42,7 +42,7 @@
 
 The last delivery went out on 2026-11-02 (below). Keep this list current; the next note to engineering is made from it. Add a line whenever something changes that engineering would notice, in the code (the card list, the guide) or in the Rive files.
 
-- (nothing yet)
+- **Loading and Start on desktop (HTML layout, no Rive change; guide section 6, item 6).** On desktop (1025 px and wider) the Loading and Start HTML (the lockup, the 2026 tiles, the progress bar or "Let's go", "Supported by T-Mobile") goes in the top part of the window, clear of the ball, the bird and the floor line. The animation uses artboard y 525 (the bird's hop on Start) down to the bottom; the Loading bounce tops out at 568, the resting bird and ball at 600, the floor line is 712. The review page (`layoutSplash()` in `harness/experience-stage.html`, and so the package's demo page) puts the block 16 px from the top and shrinks it uniformly on short windows to keep 28 px above the hop. Below 1025 px nothing changes. The bird's drop still passes through the top of the window once, for about 0.4 s.
 
 ### Delivered 2026-11-02 ("Ads once, polish")
 
