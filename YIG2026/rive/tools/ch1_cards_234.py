@@ -62,6 +62,7 @@ class Ball:
         self.sx = {f: 1.0 for f in range(n)}
         self.sy = {f: 1.0 for f in range(n)}
         self.notes = []
+        self.kick = {}
 
     def put(self, f, c, mode="rest"):
         self.c[f] = c
@@ -98,7 +99,9 @@ class Ball:
             elif m == "floor":
                 w = dx / r
             elif m == "air":
-                if prev != "air":
+                if f in self.kick:
+                    w_air = self.kick[f]
+                elif prev != "air":
                     if prev in ("roll", "floor"):
                         w_air = w_prev
                     else:                                        # off the ground from rest: the push gives it a little
@@ -525,6 +528,182 @@ def polydist_min(pts, poly):
 
 
 
+def card3(doc, write):
+    """The #1 mug circuit (finesse round 4): mug -> band -> books (ricochet) -> FIRST card (ricochet) -> blue stick -> back into the mug."""
+    global BALL_CENTER
+    room = "Chapter 1 Card 3"
+    BALL_CENTER = 16.78
+    Rb = 17.1
+    # ---- the art (world coordinates; the shelf, stick, card and mug groups are scaled 0.85 in the file, these are after the scale) ----
+    mug_hide = (735.0, 724.0)                       # hidden inside the mug; its front rim is at y 698, so a centre below 715 is out of sight
+    posts = [(792.0, 486.0), (862.1, 486.0)]        # radius 14.9
+    band_x = 827.0
+    band_rest_top = 485.7 - 6.4 + 0.4               # the band is straight at rest: its ends are at y 485.7, 12.75 thick
+    band_land = (band_x, band_rest_top - Rb)
+    face_a, face_b = (654.6, 473.9), (665.0, 506.2)  # the yellow book's right face (the books lean left against the orange book)
+    fn_ = (32.3 / 33.9, -10.4 / 33.9)                # its outward normal, right and a little up
+    face_mid = ((face_a[0] + face_b[0]) / 2, (face_a[1] + face_b[1]) / 2)
+    book_hit = (face_mid[0] + fn_[0] * Rb, face_mid[1] + fn_[1] * Rb)
+    card_edge = [(830.2, 538.6), (820.1, 544.4), (761.6, 644.0), (767.9, 654.9)]     # FIRST card's top and left edge
+    ce_d, ce_n = (-0.5065, 0.8624), (-0.8624, -0.5065)
+    s_hit = 30.0
+    card_hit = (820.1 + s_hit * ce_d[0] + Rb * ce_n[0], 544.4 + s_hit * ce_d[1] + Rb * ce_n[1])
+    tip, low = (594.5, 591.0), (671.0, 676.0)        # the blue stick's two white ends (radius 14.9)
+    st_len = math.dist(tip, low)
+    st_d = ((low[0] - tip[0]) / st_len, (low[1] - tip[1]) / st_len)
+    st_n = (st_d[1], -st_d[0])
+    ST_UP = 22.6
+    stick_pivot, card_pivot, books_pivot, mug_pivot = low, (795.0, 654.9), (650.0, 508.0), (737.0, 745.0)
+
+    def stick_pt(q):
+        return (tip[0] + q * st_d[0] + ST_UP * st_n[0], tip[1] + q * st_d[1] + ST_UP * st_n[1])
+    stick_land_q = 40.0
+    # where the ball meets the lower white joint (centre 32 from it) and rolls over it
+    q_join = math.dist(tip, low) - math.sqrt(32.0 ** 2 - ST_UP ** 2)
+    jc = low
+
+    # ---- when things happen (cycle frames) --------------------------------------------------------------------------------------------------
+    F_POP, N1 = 10, 40                  # hops out of the mug, flight to the band
+    F_BAND = F_POP + N1
+    BAND_HOLD = 12
+    F_UP = F_BAND + BAND_HOLD
+    N2 = 34
+    F_BOOK = F_UP + N2                  # ricochets off the books
+    N3 = 36
+    F_CARD = F_BOOK + N3                # ricochets off the FIRST card
+    N4 = 34
+    F_STK = F_CARD + N4                 # lands on the blue stick
+    N_ROLL = 44
+    F_JOIN = F_STK + N_ROLL             # reaches the white joint at the stick's low end
+    N_ARC = 9
+    F_LEAVE = F_JOIN + N_ARC            # rolls off it
+    T0 = INTRO - 1 - F_BOOK
+    assert T0 >= 90, T0
+
+    # ---- reactions -------------------------------------------------------------------------------------------------------------------------------
+    band_dip = lambda t: spring(t - F_BAND, 9.0, down=5, tau=11.0, period=24.0)             # px (world) the band sags
+    books = lambda t: spring(t - F_BOOK, -0.03, down=2, tau=7.0, period=16.0)
+    card = lambda t: spring(t - F_CARD, 0.04, down=2, tau=9.0, period=20.0)
+    stick = lambda t: spring(t - F_STK, -0.015, down=3, tau=8.0, period=18.0)
+    # the mug rocks to push the ball out, and wobbles when the ball lands in it (the landing frame is found below)
+
+    # ---- the ball -------------------------------------------------------------------------------------------------------------------------------------
+    # off the band: ride the sag until the band is back through straight, going up
+    def band_pos(t):
+        return (band_land[0], band_land[1] + band_dip(t))
+    # the fall into the mug, after rolling over the joint: a plain projectile
+    ang0, ang1 = math.atan2(ST_UP * 0 + (-math.sqrt(32.0 ** 2 - ST_UP ** 2)) * 0, 1), 0
+    a_start = math.atan2((tip[1] + q_join * st_d[1] + ST_UP * st_n[1]) - jc[1], (tip[0] + q_join * st_d[0] + ST_UP * st_n[0]) - jc[0])
+    a_leave = math.radians(-40.0)
+    arc_pts = [(jc[0] + 32.0 * math.cos(a_start + (a_leave - a_start) * i / N_ARC), jc[1] + 32.0 * math.sin(a_start + (a_leave - a_start) * i / N_ARC)) for i in range(N_ARC + 1)]
+    speed_leave = 2.9
+    dirv = (-math.sin(a_leave), math.cos(a_leave))
+    vx_, vy_ = dirv[0] * speed_leave, dirv[1] * speed_leave
+    fall = [arc_pts[-1]]
+    x_, y_ = arc_pts[-1]
+    while y_ < mug_hide[1] and len(fall) < 60:
+        x_, y_ = x_ + vx_, y_ + vy_
+        vy_ += G
+        fall.append((x_, y_))
+    n_fall = len(fall) - 1
+    F_IN = F_LEAVE + n_fall                 # reaches the hidden spot
+    F_RIM = F_LEAVE + next(i for i, p in enumerate(fall) if p[1] >= 698.0)
+    L = F_IN + 20
+    mug_th = lambda t: spring(t - 2, 0.05, down=3, tau=10.0, period=20.0) + spring(t - F_RIM, -0.07, down=3, tau=5.0, period=13.0)
+
+    b = Ball(L)
+    for t in range(0, F_POP + 1):
+        b.put(t, mug_hide)
+    xe1 = 2.4
+    # fit the first flight's height so its apex is 20 above the band
+    best_h = None
+    for h in range(60, 400, 4):
+        pts = arc(mug_hide, band_land, N1, h, xe1)
+        if min(p[1] for p in pts) <= band_land[1] - 22:
+            best_h = h
+            break
+    assert best_h
+    b.seg(F_POP, F_BAND, arc(mug_hide, band_land, N1, best_h, xe1))
+    for t in range(F_BAND, F_UP + 1):
+        b.put(t, band_pos(t))
+    h2 = 30
+    b.seg(F_UP, F_BOOK, arc(b.c[F_UP], book_hit, N2, h2))
+    h3 = ((card_hit[1] - book_hit[1]) + 1.2 * N3) / 4
+    b.seg(F_BOOK, F_CARD, arc(book_hit, card_hit, N3, h3))
+    h4 = ((stick_pt(stick_land_q)[1] - card_hit[1]) + 1.5 * N4) / 4
+    b.seg(F_CARD, F_STK, arc(card_hit, stick_pt(stick_land_q), N4, h4))
+    s_roll, a_roll = roll_distance(F_JOIN - F_STK, 0.6, q_join - stick_land_q)
+    for i, s in enumerate(s_roll):
+        b.put(F_STK + i, stick_pt(stick_land_q + s), "roll")
+    for i, p in enumerate(arc_pts):
+        b.put(F_JOIN + i, p, "roll")
+    for i, p in enumerate(fall):
+        b.put(F_LEAVE + i, p, "air")
+    for t in range(F_IN, L):
+        u = smooth((t - F_IN) / 6.0)
+        b.put(t, (fall[-1][0] + (mug_hide[0] - fall[-1][0]) * u, fall[-1][1] + (mug_hide[1] - fall[-1][1]) * u), "rest")
+    b.put(L, b.c[0])
+    b.mode[L] = b.mode[0]
+    b.kick = {F_BOOK: 0.5 * 3.4 / 16.9, F_CARD: -0.5 * 4.5 / 16.9}
+    for fr, a in ((F_BAND, 0.10), (F_BOOK, 0.08), (F_CARD, 0.08), (F_STK, 0.08)):
+        b.squash(fr, a)
+    # spin: the leftover to a whole number of turns goes into the hidden rest in the mug
+    theta = b.spin()
+    resid = theta[L] - 2 * math.pi * round(theta[L] / (2 * math.pi))
+    a_, z_ = F_IN + 4, L - 1
+    theta = [th - resid * (smooth((t - a_) / (z_ - a_)) if t <= z_ else 1.0) for t, th in enumerate(theta)]
+    top = min(c[1] for c in b.c.values()) - 17.6
+
+    # ---- numbers to check ------------------------------------------------------------------------------------------------------------------------------
+    tc = lambda t: (t + T0) / 60.0
+    names = [("mug rocks", 2), ("hops out of the mug", F_POP), ("lands on the band (it sags)", F_BAND), ("springs off the band", F_UP),
+             ("ricochets off the books", F_BOOK), ("ricochets off the FIRST card", F_CARD), ("drops onto the blue stick", F_STK),
+             ("reaches the white joint at the stick's low end", F_JOIN), ("rolls off it", F_LEAVE), ("drops into the mug (rim)", F_RIM)]
+    print(f"{room}: cycle {L} frames ({L / 60:.2f} s), loop {L + 1} frames, journey starts at intro frame {T0} ({T0 / 60:.2f} s); the loop starts at cycle frame {INTRO - 1 - T0}")
+    for name, t in names:
+        print(f"  cycle {t:3d}  timecode {tc(t):5.2f} s  {name}")
+    print(f"  highest point of the ball: y {top:.1f} ({phone_y(top):.0f} px on the phone frame); copy ends at {COPY_BOTTOM:.0f}: clearance {phone_y(top) - COPY_BOTTOM:.0f} px")
+    print(f"  x range {min(c[0] for c in b.c.values()) - 17.6:.0f} to {max(c[0] for c in b.c.values()) + 17.6:.0f}")
+    edge_d = lambda pts: min(min(segdist(p, card_edge[i], card_edge[i + 1]) for i in range(3)) for p in pts)
+    pd_ = lambda pts: min(math.dist(p, q) for p in pts for q in posts)
+    print(f"  hop out: {best_h} high, gravity {gravity(N1, best_h):.2f}; closest to FIRST card's edge {edge_d([b.c[t] for t in range(F_POP, F_BAND + 1)]):.1f}, to a post {pd_([b.c[t] for t in range(F_POP, F_BAND + 1)]):.1f} (needs 32)")
+    print(f"  band to books: gravity {gravity(N2, h2):.2f}, to a post {pd_([b.c[t] for t in range(F_UP, F_BOOK + 1)]):.1f}; books to FIRST {gravity(N3, h3):.2f}; FIRST to stick {gravity(N4, h4):.2f}, closest to the card's edge {edge_d([b.c[t] for t in range(F_CARD + 3, F_STK + 1)]):.1f}")
+    print(f"  fall into the mug: {n_fall} frames; spin: {theta[L] / (2 * math.pi):.2f} turns over the cycle (leftover {resid:+.2f} rad hidden in the mug)")
+    if not write:
+        return
+
+    # ---- write -----------------------------------------------------------------------------------------------------------------------------------------
+    ids = dict(ball="9:9619", scale="9:9621")
+    loop, intro = f"{room} Loop", f"{room} Intro"
+    piv = {}
+    piv["mug"], _ = doc.wrap_run("9:9482", "9:9522", f"{room} Mug", (mug_pivot[0] - 679.0) / 0.85, (mug_pivot[1] - 676.0) / 0.85)      # inside a node at (679, 676) scaled 0.85
+    piv["books"], _ = doc.wrap("9:9432", f"{room} Leaning Books", (books_pivot[0] - 581.0) / 0.85, (books_pivot[1] - 460.0) / 0.85)      # inside a node at (581, 460) scaled 0.85
+    piv["stick"], _ = doc.wrap("9:9239", f"{room} Blue Stick", *stick_pivot)
+    piv["card"], _ = doc.wrap("9:9272", f"{room} First Card Wobble", *card_pivot)
+    # the ball hides in the mug behind a clip: everything above the mug's front rim
+    clip_id = doc.new_id()
+    floor_clip = doc.idx("9:10551")
+    doc.lines[floor_clip:floor_clip] = [f'                <Shape y="697" name="{room} Mug Clip" id="{clip_id}">',
+                                        f'                    <Rectangle width="9000" height="2000" originX="0.5" originY="1" name="Path" id="{doc.new_id()}"/>',
+                                        "                </Shape>"]
+    for shape in ("9:9622", "9:9628"):
+        i = doc.idx(shape)
+        j = doc.end(i)
+        doc.lines[j:j] = [f'                                <ClippingShape sourceId="{clip_id}" name="Mug Clip" id="{doc.new_id()}"/>']
+    round_ball(doc, intro, ("9:9622", "9:9630", "9:9631", "9:9633"))
+    for oid in ("9:9628", "9:9257", "9:9272", "9:9481"):
+        doc.drop_object(loop, oid)
+    doc.drop_object(intro, "9:9628")
+    ids["spin"], _ = doc.wrap_run("9:9622", "9:9628", f"{room} Ball Spin", 0.0, -17.572)
+    pre = lambda fr: (mug_hide[0], mug_hide[1], 1.0, 1.0)
+    band_vertex = "9:9613"
+    pieces = [(piv["mug"], "rotation", mug_th, 0.0, None), (piv["books"], "rotation", books, 0.0, None),
+              (piv["stick"], "rotation", stick, 0.0, None), (piv["card"], "rotation", card, 0.0, None),
+              (band_vertex, "y", lambda t: band_dip(t) / 0.85, 0.0, None),
+              (band_vertex, "x", lambda t: 2.5149 - 0.07 * band_dip(t), 2.5149, None)]
+    emit_room(doc, room, b, theta, T0, ids, pre, pieces)
+
+
 def card3_v1(doc, write):
     global BALL_CENTER
     room = "Chapter 1 Card 3"
@@ -776,7 +955,7 @@ def main(argv):
     if "--write" in argv:
         card1_spin(doc)
     for c in cards:
-        {2: card2, 3: card3_v1, 4: card4_v1}[c](doc, "--write" in argv)
+        {2: card2, 3: card3, 4: card4_v1}[c](doc, "--write" in argv)
     if "--write" in argv:
         doc.save()
         print("wrote", SCENE)
