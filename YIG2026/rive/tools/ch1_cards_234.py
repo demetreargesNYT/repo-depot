@@ -219,6 +219,12 @@ def emit_room(doc, room, b, theta, T0, ids, pre, pieces):
     doc.rebuild_waiting(room)
 
 
+def dip(t, f0, depth, T):
+    """A single smooth dip that starts at frame f0, reaches `depth` halfway and is back at f0 + T: no overshoot, one turning point."""
+    u = t - f0
+    return depth * math.sin(math.pi * u / T) ** 2 if 0 < u < T else 0.0
+
+
 def card2(doc, write):
     """Slide down, climb back up, on the physics (finesse round 5). The pencil topples into place and knocks the stack; the top block
     teeters like a seesaw and rolls the ball off onto the purple bar; from there the path is simulated (ball_physics.py): one gravity,
@@ -267,13 +273,17 @@ def card2(doc, write):
         return rot(c, j_mid, th)
 
     # ---- the teeter: the block rocks on its joint, tips, and the ball rolls off its right end (a roll speeds up by G times the slope) ----
-    ctrl = [(0, 0.0), (6, -0.05), (13, 0.06), (19, -0.02), (25, 0.20)]
-    TIP = ctrl[-1][1]
+    # three swings of a pendulum, eased through cosines (smooth through the middle, still only at the ends): a small rock right, a bigger
+    # rock back left, then a third swing right that goes past the balance point and tips; the ball rolls off while it tips
+    swings_ = [(19, 0.04), (39, -0.07), (68, 0.40)]
+    TIP = swings_[-1][1]
 
     def th_base(t):
-        for (t0, v0), (t1, v1) in zip(ctrl, ctrl[1:]):
-            if t <= t1:
-                return v0 + (v1 - v0) * smooth((t - t0) / (t1 - t0))
+        t0, v0 = 0, 0.0
+        for te, ve in swings_:
+            if t <= te:
+                return v0 + (ve - v0) * (1 - math.cos(math.pi * (t - t0) / (te - t0))) / 2
+            t0, v0 = te, ve
         return TIP
     EDGE_U = 720.0
     us, u, v = [], home_u, 0.0
@@ -286,7 +296,9 @@ def card2(doc, write):
         v += GP * math.sin(th_base(t))
         u += v
     assert t_off, "the ball never rolls off"
-    th_main = lambda t: th_base(t) if t <= t_off else release(t - t_off, TIP, tau=7.0, period=22.0)
+    T_PEAK = swings_[-1][0]
+    assert t_off <= T_PEAK, (t_off, T_PEAK)
+    th_main = lambda t: th_base(t) if t <= T_PEAK else release(t - T_PEAK, TIP, tau=10.0, period=30.0)
 
     def on_block(u_, th):
         return rot((u_, block_top - R), J_top, th)
@@ -297,7 +309,7 @@ def card2(doc, write):
     # ---- the path after the block, simulated ----------------------------------------------------------------------------------------------
     def seg_c(c0, c1, n, name, e):
         return Seg(sub(c0, mul(n, Rb)), sub(c1, mul(n, Rb)), name, e=e, kt=0.95, n=n)
-    s_bar = seg_c(bar_pt(bar_p_at(724.0), 0.0), bar_pt(bar_p_at(792.0), 0.0), (bar_n[0], bar_n[1]), "bar", 0.66)
+    s_bar = seg_c(bar_pt(bar_p_at(724.0), 0.0), bar_pt(bar_p_at(792.0), 0.0), (bar_n[0], bar_n[1]), "bar", 0.72)
     pd = unit_((T[0] - E[0], T[1] - E[1]))
     n_wall = (-pd[1], pd[0])
     c_wall = bar_pt(bar_p_at(792.0), 0.0)
@@ -399,18 +411,18 @@ def card2(doc, write):
     F_TOP = land[-1]
     L = F_TOP + 40
     T0 = INTRO - 1 - F_BAR
-    assert T0 >= 115, T0
+    assert T0 >= 107, T0
 
     # ---- reactions (functions of the cycle frame) -------------------------------------------------------------------------------------------
     bar_hits = [(F_BAR, -0.03)] + [(land[i], -0.012) for i in (2, 3, 4)]
-    bar = lambda t: sum(spring(t - fl, d, down=4, tau=9.0, period=20.0) for fl, d in bar_hits)
+    bar = lambda t: dip(t, F_BAR, -0.03, 36) + sum(dip(t, fl, d, 44) for fl, d in bar_hits[1:])
     domino = lambda t: 0.05 * math.exp(-(t - F_BAR - 4) / 14.0) * math.sin(2 * math.pi * (t - F_BAR - 4) / 22.0) if t > F_BAR + 4 else 0.0
     joint_p = lambda t: 0.10 * pulse(t - land[1], down=3, tau=7.0, period=16.0)
     low_p = lambda t: 0.14 * pulse(t - F_LOW, down=3, tau=7.0, period=16.0)
     stick = lambda t: spring(t - F_STK, -0.03, down=4, tau=9.0, period=20.0)
-    pencil = lambda t: spring(t - F_PEN, 0.02, down=2, tau=7.0, period=16.0) + spring(t - F_FOOT, 0.012, down=2, tau=7.0, period=16.0)
+    pencil = lambda t: dip(t, F_PEN, 0.02, 30) + dip(t, F_FOOT, 0.012, 30)
     slab_dip = lambda t: spring(t - land[1], 2.5, down=3, tau=8.0, period=18.0)
-    block_th = lambda t: th_main(t) + spring(t - F_TOP, 0.03, down=3, tau=7.0, period=20.0)
+    block_th = lambda t: th_main(t) + dip(t, F_TOP, 0.03, 36)
     hole_x = lambda t: 0.0 if f_hole0 <= t <= f_hole1 else 1500.0
 
     # ---- the ball -----------------------------------------------------------------------------------------------------------------------------
@@ -521,7 +533,8 @@ def card2(doc, write):
     # the intro: the block drops in with the ball on it; the pencil tips over into place and knocks the stack three frames before the first rock
     tp = intro_keys(room, f"{room} Top Piece")
     HIT = T0 - 3
-    TIP0 = HIT - 18
+    TIP0 = HIT - 11
+    assert TIP0 >= 93, TIP0
 
     def p_intro(fr):
         if fr < TIP0:

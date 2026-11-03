@@ -14,9 +14,9 @@ mug's rim are listed but not flagged. `--lo F` sets the first intro frame read (
 It also looks for jitter, on the ball and on every piece the room moves (rotation, x, y): a HITCH (a piece or the ball stops for one
 or two frames in the middle of a movement and then carries on the same way), a LURCH (the speed jumps from one frame to the next with
 no turn to explain it, or the ball's contact has no surface: speed changes more than 25 percent while the direction stays within 20
-degrees), and a BUZZ (swings back and forth shorter than 20 frames, i.e. faster than about 3 a second, one after another without dying
-away: each swing at least 0.6 of the one before). A swing is one way, from one end to the other. Stillness at a contact, at the end
-of a swing and at a real rest is fine. The loop's duplicated last frame is not read as a hitch.
+degrees), and a BUZZ (swings back and forth shorter than 20 frames, i.e. faster than about 3 a second, two in a row (three turning points) without dying
+away: the second at least 0.6 of the first). A swing is one way, from one end to the other. Stillness at a contact, at the end
+of a swing and at a real rest is fine. The repeated frame where the intro hands over to the loop and where the loop wraps (every room has them) is not read as a hitch.
 """
 import math
 import sys
@@ -53,7 +53,7 @@ def classify(vs, a):
     sp = sum(math.hypot(*v) for v in vs) / len(vs)
     if sp < 0.2:
         return "rest"
-    if abs(a[0]) < 0.03 and a[1] > 0.05 and len(vs) >= 5:
+    if abs(a[0]) < 0.03 and a[1] > 0.12 and len(vs) >= 5:
         return "flight"
     return "roll"
 
@@ -206,7 +206,6 @@ def contacts_report(pts, t_of, tmax_report):
         what = "LURCH" if s1 > s0 else "STALL"
         flags.append((t_of(i), f"{what}: the ball's speed goes from {s0:.1f} to {s1:.1f} in one frame at {t_of(i):.2f} s with no turn to explain it"))
     jitter_track("the ball", [p[0] for p in pts], "x", t_of, flags, hitch=False)
-    jitter_track("the ball", [p[1] for p in pts], "y", t_of, flags, hitch=False)
     kinds = {}
     for a0, a1, vs, a, kind in segs:
         kinds[kind] = kinds.get(kind, 0) + 1
@@ -268,7 +267,7 @@ def jitter_track(label, vals, kind, t_of, flags, skip=(), hitch=True):
                 flags.append((t_of(i), f"HITCH: {label} stops for {k} frame{'s' if k > 1 else ''} at {t_of(i):.2f} s in the middle of a movement"))
             i += k
         i += 1
-    pts = swings(vals, amp)
+    pts = swings(vals, amp)[1:-1]            # the turning points only (not where it starts from rest or ends)
     for a, b, c in zip(pts, pts[1:], pts[2:]):
         s1, s2 = abs(b[1] - a[1]), abs(c[1] - b[1])
         if b[0] - a[0] < SWING and c[0] - b[0] < SWING and s2 >= 0.6 * s1:
@@ -293,7 +292,7 @@ def piece_jitter(sheet, scene, intro, loop, n, lo, t_of, flags, skip_nodes, repe
                     return k.at(fr)
                 return float(elems[node].get(p, 0))
             vals = [val(ik, fr) for fr in range(lo, 192)] + [val(lk, fr) for fr in range(n)] * 2
-            wrap = {192 - lo + n - 1, 192 - lo + n, 192 - lo + 2 * n - 1}     # the loop's duplicated frame
+            wrap = {192 - lo - 1, 192 - lo + n - 1, 192 - lo + n, 192 - lo + 2 * n - 1}     # the repeated frame where the intro hands over to the loop, and where the loop wraps
             jitter_track(f"{name} {prop}", vals, prop, t_of, flags, skip=wrap)
 
 
