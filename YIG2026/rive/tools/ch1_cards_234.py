@@ -1,4 +1,4 @@
-"""One time (2026-11-02, history like loading_start.py): new ball loops for Chapter 1 cards 2, 3 and 4 (finesse round).
+"""One time (2026-11-02, history like loading_start.py): new ball loops for Chapter 1 cards 2, 3 and 4 (finesse round 4), and the rest-window fix to card 1's spin.
 
     python3 tools/ch1_cards_234.py --cards 2            dry run: prints each beat and the clearances, writes nothing
     python3 tools/ch1_cards_234.py --cards 2 --write    rewrite chapters/ch1/scene.rml
@@ -9,9 +9,10 @@ little and settle (a dip with a spring back, a rock, a wobble), each one turning
 of the contact and the ball rides the piece while it moves. The ball's position is written one key per frame, like the other
 rooms' baked arcs. The old roll-in (x -80 at 2.30 to 3.05 s, then the 0.15 s pop) is gone from the intros.
 
-Card 2 was rewritten the same day (finesse round 3): slide down the whole stack, climb back up the right side in small hops; the
-eraser launch, the TOTAL spring and the return arc of the first version are gone. Rebuild from the file as it was before the first
-version (git show b409b42~1:...scene.rml) to run it: it wraps pieces in pivots and so is not safe to run twice.
+The three rooms were rewritten (rounds 3 and 4) on one framework: each room is a cycle of the ball's journey that starts inside the
+intro as soon as the room has landed; the Loop is the same cycle picked up at the intro's last frame (emit_room), so the loop closes on
+the pose the intro ends on. The ball turns about its own centre (Ball.spin; "Ball Spin" pivot). Rebuild from the file as it was before
+this work (git show b409b42~1:YIG2026/rive/chapters/ch1/scene.rml) to run it: it wraps pieces in pivots and so is not safe to run twice.
 
 Times in the notes are Finesse-panel timecodes: the loop's time plus 3.2 s (the intro).
 """
@@ -704,249 +705,297 @@ def card3(doc, write):
     emit_room(doc, room, b, theta, T0, ids, pre, pieces)
 
 
-def card3_v1(doc, write):
-    global BALL_CENTER
-    room = "Chapter 1 Card 3"
-    N = 432
-    BALL_CENTER = 16.78
-    Rb = 17.1
-    mug_in = (722.0, 722.0)                 # hidden inside the mug (its front rim is at y 698)
-    mug_hide = (737.0, 724.0)
-    band_x = 827.0                          # between the two posts (they are at x 792 and 862, radius 14.9)
-    band_top = 490.0 - 6.4 + 0.4            # the band's low point is y 490.0 and it is 12.75 thick
-    book_land = (645.0, 473.9 - Rb)         # the leaning books' top edge
-    shelf_land = (585.0, 509.6 - Rb)        # the left end of the shelf plank
-    tip = (594.5, 591.0)
-    shoulder = (tip[0] - 32.4 * math.sin(math.radians(22)), tip[1] - 32.4 * math.cos(math.radians(22)))
-    low_joint = (671.0, 676.0)
-    st_len = math.dist(tip, low_joint)
-    st_d = ((low_joint[0] - tip[0]) / st_len, (low_joint[1] - tip[1]) / st_len)
-    st_n = (st_d[1], -st_d[0])
-    ST_UP = 22.6
-    card_tap = (858.0, 538.6 - Rb)
-    card_edge = [(830.2, 538.6), (820.1, 544.4), (761.6, 644.0), (767.9, 654.9)]
-    books_pivot, stick_pivot, card_pivot, mug_pivot = (650.0, 508.0), low_joint, (795.0, 654.9), (737.0, 745.0)
-
-    def stick_pt(q, th):
-        c = (tip[0] + q * st_d[0] + ST_UP * st_n[0], tip[1] + q * st_d[1] + ST_UP * st_n[1])
-        return rot(c, stick_pivot, th)
-
-    F_POP, F_BAND, F_UP, F_BOOK, F_BOOK_UP = 34, 104, 114, 164, 172
-    F_SHELF, F_EDGE, F_TIP, F_TIP_UP, F_STK, F_STK_END = 206, 214, 240, 246, 262, 306
-    F_CARD, F_CARD_UP, F_IN = 354, 356, 406
-    Q0, Q1 = 32.0, 104.0
-
-    band = lambda f: spring(f - F_BAND, 9.0, down=5, tau=11.0, period=24.0)          # px the band's middle sags
-    books = lambda f: spring(f - F_BOOK, 0.07, down=3, tau=9.0, period=20.0)
-    stick = lambda f: spring(f - F_TIP, -0.045, down=4, tau=9.0, period=20.0)
-    card = lambda f: spring(f - F_CARD, 0.035, down=3, tau=9.0, period=20.0)
-    mug = lambda f: spring(f - F_POP, 0.05, down=3, tau=10.0, period=20.0) + spring(f - F_IN, -0.07, down=3, tau=5.0, period=13.0)
-
-    b = Ball(N)
-    for f in range(0, F_POP + 1):
-        b.put(f, mug_hide)
-    c_band = (band_x, band_top - Rb)
-    b.seg(F_POP, F_BAND, arc(mug_hide, c_band, F_BAND - F_POP, 165, 1.8))
-    for f in range(F_BAND, F_UP + 1):
-        b.put(f, (c_band[0], c_band[1] + 0.85 * band(f)))
-    b.seg(F_UP, F_BOOK, arc(b.c[F_UP], book_land, F_BOOK - F_UP, 48))
-    for f in range(F_BOOK, F_BOOK_UP + 1):
-        b.put(f, rot(book_land, books_pivot, books(f)))
-    b.seg(F_BOOK_UP, F_SHELF, arc(b.c[F_BOOK_UP], shelf_land, F_SHELF - F_BOOK_UP, 40))
-    for f in range(F_SHELF, F_EDGE + 1):
-        t = (f - F_SHELF) / (F_EDGE - F_SHELF)
-        b.put(f, (shelf_land[0] - 6.0 * t, shelf_land[1] + 2.0 * t * t))
-    b.seg(F_EDGE, F_TIP, arc(b.c[F_EDGE], shoulder, F_TIP - F_EDGE, fall_height(F_TIP - F_EDGE)))
-    for f in range(F_TIP, F_TIP_UP + 1):
-        b.put(f, rot(shoulder, stick_pivot, stick(f)))
-    b.seg(F_TIP_UP, F_STK, arc(b.c[F_TIP_UP], stick_pt(Q0, 0.0), F_STK - F_TIP_UP, 12))
-    s_roll, _ = roll_distance(F_STK_END - F_STK, 0.5, Q1 - Q0)
-    for i, s in enumerate(s_roll):
-        b.put(F_STK + i, stick_pt(Q0 + s, 0.0))
-    b.seg(F_STK_END, F_CARD, arc(b.c[F_STK_END], card_tap, F_CARD - F_STK_END, 70))
-    for f in range(F_CARD, F_CARD_UP + 1):
-        b.put(f, card_tap)
-    b.seg(F_CARD_UP, F_IN, arc(card_tap, mug_in, F_IN - F_CARD_UP, 69, 0.55))
-    for f in range(F_IN, N):
-        b.put(f, mug_in)
-    b.seg(N - 1, N - 1, [mug_hide]) if False else None
-    # the last frames settle to the hidden spot the loop starts on
-    for f in range(F_IN + 6, N):
-        t = smooth((f - (F_IN + 6)) / (N - 1 - (F_IN + 6)))
-        b.put(f, (mug_in[0] + (mug_hide[0] - mug_in[0]) * t, mug_in[1] + (mug_hide[1] - mug_in[1]) * t))
-    for f, a in ((F_BAND, 0.10), (F_BOOK, 0.10), (F_SHELF, 0.10), (F_TIP, 0.10), (F_STK, 0.10), (F_CARD, 0.06)):
-        b.squash(f, a)
-    xs, ys = b.node()
-
-    top = min(c[1] for c in b.c.values()) - 17.6
-    flight1 = [b.c[f] for f in range(F_POP, F_BAND + 1)]
-    flight6 = [b.c[f] for f in range(F_CARD_UP, F_IN + 1)]
-    flight5 = [b.c[f] for f in range(F_STK_END, F_CARD + 1)]
-    edge_d = lambda pts: min(min(segdist(p, card_edge[i], card_edge[i + 1]) for i in range(3)) for p in pts)
-    print(f"{room}: loop {N} frames ({N / 60:.2f} s)")
-    for name, f in (("ball hops out of the mug", F_POP), ("lands on the yellow band", F_BAND), ("springs off the band", F_UP),
-                    ("lands on the leaning books", F_BOOK), ("leaves the books", F_BOOK_UP), ("lands on the shelf's left end", F_SHELF),
-                    ("rolls off the shelf's left end", F_EDGE), ("lands on the blue stick's white tip", F_TIP), ("leaves the tip", F_TIP_UP),
-                    ("lands on the blue stick", F_STK), ("leaves the stick's low end", F_STK_END), ("taps the FIRST card", F_CARD),
-                    ("drops into the mug", F_IN)):
-        print(f"  frame {f:3d}  loop {f / 60:5.2f} s  timecode {f / 60 + 3.2:5.2f} s  {name}")
-    print(f"  highest point of the ball: y {top:.1f} ({phone_y(top):.0f} px on the phone frame); copy ends at {COPY_BOTTOM:.0f}: clearance {phone_y(top) - COPY_BOTTOM:.0f} px")
-    print(f"  closest the ball's centre gets to the FIRST card's left edge: mug to band {edge_d(flight1):.1f}, stick to card {edge_d(flight5):.1f}, card to mug {edge_d(flight6):.1f} (ball radius 17)")
-    posts = [(792.0, 486.0), (862.1, 486.0)]
-    pd = lambda pts: min(math.dist(p, q) for p in pts for q in posts)
-    print(f"  closest to a white post's centre (post radius 14.9 + ball 17 = 32): mug to band {pd(flight1):.1f}; band to books {pd([b.c[f] for f in range(F_UP, F_BOOK + 1)]):.1f}")
-    print(f"  gravity: mug to band {gravity(F_BAND - F_POP, 165):.2f}, band to books {gravity(F_BOOK - F_UP, 48):.2f}, books to shelf {gravity(F_SHELF - F_BOOK_UP, 40):.2f}, stick to card {gravity(F_CARD - F_STK_END, 70):.2f}, card to mug {gravity(F_IN - F_CARD_UP, 69):.2f}")
-    print(f"  x range {min(c[0] for c in b.c.values()) - 17.6:.0f} to {max(c[0] for c in b.c.values()) + 17.6:.0f}")
-    if not write:
-        return
-
-    ids = dict(ball="9:9619", scale="9:9621", total_hl="9:9622")
-    loop, intro = f"{room} Loop", f"{room} Intro"
-    piv = {}
-    piv["mug"], _ = doc.wrap_run("9:9482", "9:9522", f"{room} Mug", (mug_pivot[0] - 679.0) / 0.85, (mug_pivot[1] - 676.0) / 0.85)      # inside a node at (679, 676) scaled 0.85
-    piv["books"], _ = doc.wrap("9:9432", f"{room} Leaning Books", (books_pivot[0] - 581.0) / 0.85, (books_pivot[1] - 460.0) / 0.85)      # inside a node at (581, 460) scaled 0.85
-    piv["stick"], _ = doc.wrap("9:9239", f"{room} Blue Stick", *stick_pivot)
-    piv["card"], _ = doc.wrap("9:9272", f"{room} First Card Wobble", *card_pivot)
-    # the ball hides in the mug behind a clip: everything above the mug's front rim
-    clip_id = doc.new_id()
-    floor_clip = doc.idx("9:10551")
-    doc.lines[floor_clip:floor_clip] = [f'                <Shape y="697" name="{room} Mug Clip" id="{clip_id}">',
-                                        f'                    <Rectangle width="9000" height="2000" originX="0.5" originY="1" name="Path" id="{doc.new_id()}"/>',
-                                        "                </Shape>"]
-    for shape in ("9:9622", "9:9628"):
-        i = doc.idx(shape)
-        j = doc.end(i)
-        doc.lines[j:j] = [f'                                <ClippingShape sourceId="{clip_id}" name="Mug Clip" id="{doc.new_id()}"/>']
-    round_ball(doc, intro, ("9:9622", "9:9630", "9:9631", "9:9633"))
-    for oid in ("9:9628", "9:9257", "9:9272", "9:9481"):
-        doc.drop_object(loop, oid)
-    doc.drop_object(intro, "9:9628")
-    doc.set_duration(loop, N)
-    fr_i, fr_l = range(INTRO), range(N)
-    hide_x, hide_y = mug_hide[0], mug_hide[1] + BALL_CENTER
-    px = plane_x(room)
-    doc.set_prop(intro, ids["ball"], "x", bake({f: hide_x + px(f) for f in fr_i}, fr_i))
-    doc.set_prop(intro, ids["ball"], "y", [(0, hide_y, "hold")])
-    doc.set_prop(loop, ids["ball"], "x", bake(xs, fr_l))
-    doc.set_prop(loop, ids["ball"], "y", bake(ys, fr_l))
-    for prop, ser in (("scaleX", b.sx), ("scaleY", b.sy)):
-        doc.set_prop(intro, ids["scale"], prop, [(0, 1.0, "hold"), (INTRO - 1, 1.0, "hold")])
-        doc.set_prop(loop, ids["scale"], prop, bake(ser, fr_l))
-
-    def both(oid, prop, fn, rest):
-        doc.set_prop(loop, oid, prop, bake(series(0, N, fn), fr_l))
-        doc.set_prop(intro, oid, prop, [(0, rest, "hold"), (INTRO - 1, rest, "hold")])
-    both(piv["mug"], "rotation", mug, 0.0)
-    both(piv["books"], "rotation", books, 0.0)
-    both(piv["stick"], "rotation", stick, 0.0)
-    both(piv["card"], "rotation", card, 0.0)
-    # the band's middle vertex sags under the ball (it was already keyed this way by the old loop)
-    band_vertex = "9:9613"
-    doc.set_prop(loop, band_vertex, "y", bake(series(0, N, lambda f: 5.0702 + band(f) / 0.85), fr_l))
-    doc.set_prop(loop, band_vertex, "x", bake(series(0, N, lambda f: 2.5149 - 0.07 * band(f)), fr_l))
-    doc.rebuild_waiting(room)
+def sim_fall(p, v, g, segs, rad, stop_y=None, max_n=90):
+    """A ball let go at p with velocity v, falling under gravity g until its centre comes within `rad` of one of the segments
+    (list of (a, b)), or reaches stop_y. Returns the positions on each frame (the last is snapped onto the contact) and the segment hit."""
+    pts, (x, y), (vx, vy) = [p], p, v
+    for _ in range(max_n):
+        nx, ny = x + vx, y + vy
+        hit = None
+        for k in range(1, 9):
+            qx, qy = x + (nx - x) * k / 8, y + (ny - y) * k / 8
+            for i, (a, b) in enumerate(segs):
+                if segdist((qx, qy), a, b) <= rad:
+                    hit = (i, (qx, qy))
+                    break
+            if hit:
+                break
+            if stop_y is not None and qy >= stop_y:
+                hit = (None, (qx, stop_y))
+                break
+        if hit:
+            pts.append(hit[1])
+            return pts, hit[0]
+        x, y, vy = nx, ny, vy + g
+        vx_ = vx
+        pts.append((x, y))
+    return pts, None
 
 
-
-def card4_v1(doc, write):
+def card4(doc, write):
+    """A longer, more varied loop (finesse round 4): balance on the crossword head, a streak of hops, balance, down to the pot through
+    the blue leaf, around the rim, and back up the flowers."""
     global BALL_CENTER
     room = "Chapter 1 Card 4"
-    N = 400
     BALL_CENTER = 16.78
     Rb = 17.1
-    A = (721.0, 511.2 - Rb)           # the crossword flower's checker head
-    B = (786.0, 532.2 - Rb)           # the yellow S hexagon's flat top
-    C = (680.0, 548.2 - Rb)           # the purple leaf's top edge
-    base_y = 634.2                    # where the stems meet the pot's rim
-    pivots = dict(cross=(720.9, base_y), hexa=(765.5, base_y), leaf=(714.5, 633.0))
-    HOP, STAY = 40, 4                 # frames in the air, frames on the flower before the next hop: a steady beat of 44
-    F_GO = 72
-    legs = [("cross", A, "hexa", B, 38), ("hexa", B, "leaf", C, 68), ("leaf", C, "cross", A, 26)]
-    sched = []                       # (frame landed, flower)
-    f = F_GO
-    takeoffs = []
-    for rnd in range(2):
-        for src, ps, dst, pd_, h in legs:
-            takeoffs.append((f, f + HOP, src, pd_, h, dst))
-            sched.append((f + HOP, dst))
-            f += HOP + STAY
-    F_END = takeoffs[-1][1]
+    # ---- the art (world coordinates; this room is unscaled) ------------------------------------------------------------------------------
+    H = (720.9, 530.4)                      # the crossword head (a checker 38 x 38): flat top at y 511.2
+    head_top, head_hw = 511.2, 19.2
+    S_top = (786.0, 532.2 - Rb)              # the yellow hexagon's flat top (x 769.1 to 803.1)
+    P_top = (681.0, 548.2 - Rb)              # the purple leaf's top edge (x 673.4 to 692.7)
+    hex_edge = ((769.1, 532.2), (744.3, 566.1))      # the hexagon's upper-left slope: top end, lower end
+    hex_dir = (-0.5890, 0.8081)
+    hex_n = (-0.8081, -0.5890)
+    leaf_edge = ((745.1, 581.3), (727.0, 607.9))     # the blue leaf's upper-left edge
+    leaf_dir = (-0.5620, 0.8271)
+    leaf_n = (-0.8271, -0.5620)
+    rim_c = 634.2 - Rb                       # the pot's rim
+    B1, B2, B3, BL = (720.9, 634.2), (765.5, 634.2), (714.5, 633.0), (729.6, 634.2)      # where the stems meet the pot: crossword, hexagon, purple leaf, blue leaf
+    ws = lambda w: (w[0] - 669.0, w[1] - 489.0)       # the flowers sit inside a node at (669, 489)
 
-    dip = {"cross": 0.04, "hexa": 0.04, "leaf": 0.04}
-    land = {}
-    for fl, who in sched:
-        land.setdefault(who, []).append(fl)
-    def react(who, fr):
-        return sum(spring(fr - fl, 1.0, down=3, tau=8.0, period=16.0) for fl in land.get(who, []))
-    sway = lambda fr: 0.014 * (1 - math.cos(2 * math.pi * fr / 48)) / 2 if fr < F_GO - 24 else (
-        0.014 * (1 - math.cos(2 * math.pi * (F_GO - 24) / 48)) / 2 * (1 - smooth((fr - (F_GO - 24)) / 24)) if fr < F_GO else 0.0)
-    scale_y = {w: (lambda fr, w=w: 1 - dip[w] * react(w, fr)) for w in dip}
-    rotation = {"cross": lambda fr: sway(fr) + 0.02 * react("cross", fr), "hexa": lambda fr: 0.025 * react("hexa", fr), "leaf": lambda fr: -0.025 * react("leaf", fr)}
+    # ---- pieces' motion --------------------------------------------------------------------------------------------------------------------
+    # event frames (cycle)
+    N_H = 34
+    STAY = 5
+    # balance A: rolls on the head's flat top, with pauses (Wordle's rhythm)
+    balA = [(0, 0.0), (8, 0.0), (26, 8.0), (34, 8.0), (58, -8.0), (68, -8.0), (84, 3.0), (98, 3.0)]
+    F_H1 = 100                         # the streak: crossword -> hexagon -> purple leaf -> crossword
+    leave = [F_H1, F_H1 + N_H + STAY, F_H1 + 2 * (N_H + STAY)]
+    land = [l + N_H for l in leave]
+    F_C = land[2]                      # back on the crossword head
+    balB = [(F_C, 3.0), (F_C + 8, 3.0), (F_C + 22, -6.0), (F_C + 30, -6.0), (F_C + 46, 5.0), (F_C + 54, 5.0), (F_C + 64, 0.0), (F_C + 70, 0.0)]
+    F_EDGE0 = F_C + 70                  # starts to roll toward the head's right edge
 
-    b = Ball(N)
-    pos = {"cross": A, "hexa": B, "leaf": C}
-    contact_y = {"cross": 511.2, "hexa": 532.2, "leaf": 548.2}
-    def ride(who, fr):
-        p = pos[who]
-        sy = scale_y[who](fr)
-        return (p[0], p[1] + (1 - sy) * (base_y - contact_y[who]))
-    cur = "cross"
-    fr = 0
-    for (fl, fland, ps, pd_, h, dst) in takeoffs:
-        for g in range(fr, fl + 1):
-            b.put(g, ride(cur, g))
-        pts = arc(b.c[fl], ride(dst, fland), fland - fl, h)
-        b.seg(fl, fland, pts)
-        cur = dst
-        fr = fland
-    for g in range(fr, N):
-        b.put(g, ride(cur, g))
-    for fl, who in sched:
-        b.squash(fl, 0.10)
-    xs, ys = b.node()
+    def smooth_path(pts, t):
+        """Piecewise smooth value through (frame, value) control points (flat between pairs that share a value)."""
+        if t <= pts[0][0]:
+            return pts[0][1]
+        for (t0, v0), (t1, v1) in zip(pts, pts[1:]):
+            if t <= t1:
+                return v0 + (v1 - v0) * smooth((t - t0) / (t1 - t0))
+        return pts[-1][1]
 
+    def u_head(t):
+        if t < balA[-1][0] + 1:
+            return smooth_path(balA, t)
+        if F_C <= t <= balB[-1][0]:
+            return smooth_path(balB, t)
+        return None
+
+    TILT = 0.06 / 8.0
+
+    # roll off the head's right edge: the head tips like a scale and the ball goes
+    F_ROLL = F_EDGE0
+    N_ROLL = 22
+    u_edge = head_hw
+    def u_roll(t):
+        return u_edge * ((t - F_ROLL) / N_ROLL) ** 2
+    F_OFF = F_ROLL + N_ROLL
+    th_roll = lambda t: 0.12 * smooth((t - F_ROLL) / N_ROLL)
+    v_off = 2 * u_edge / N_ROLL
+
+    def head_pos(u, th):
+        return rot((H[0] + u, head_top - Rb), H, th)
+
+    # the ball leaves the head; falls onto the hexagon's slope; slides down it; falls onto the blue leaf; slides down; falls to the rim
+    p_edge = head_pos(u_edge, 0.12)
+    pts1, hit1 = sim_fall(p_edge, (v_off * 0.8, 0.15), G, [hex_edge], Rb)
+    assert hit1 == 0, "the ball misses the hexagon's slope"
+    F_HEX = F_OFF + len(pts1) - 1
+    contact1 = pts1[-1]
+    # slide: along the slope toward its lower end
+    s_from = ((contact1[0] - hex_n[0] * Rb) - hex_edge[0][0]) * hex_dir[0] + ((contact1[1] - hex_n[1] * Rb) - hex_edge[0][1]) * hex_dir[1]
+    s_len = math.dist(*hex_edge)
+    a_sl = 0.06
+    v_in = 1.0
+    sl1, s = [], s_from
+    v_s = v_in
+    while s < s_len:
+        P = (hex_edge[0][0] + s * hex_dir[0], hex_edge[0][1] + s * hex_dir[1])
+        sl1.append((P[0] + Rb * hex_n[0], P[1] + Rb * hex_n[1]))
+        v_s = min(v_s + a_sl, 1.9)
+        s += v_s
+    F_HEX_END = F_HEX + len(sl1)
+    pts2, hit2 = sim_fall(sl1[-1], (hex_dir[0] * v_s, hex_dir[1] * v_s), G, [leaf_edge], Rb)
+    assert hit2 == 0, "the ball misses the blue leaf"
+    F_LEAF = F_HEX_END + len(pts2) - 1
+    contact2 = pts2[-1]
+    s_from2 = ((contact2[0] - leaf_n[0] * Rb) - leaf_edge[0][0]) * leaf_dir[0] + ((contact2[1] - leaf_n[1] * Rb) - leaf_edge[0][1]) * leaf_dir[1]
+    s_len2 = math.dist(*leaf_edge)
+    sl2, s, v_s2 = [], s_from2, 1.0
+    while s < s_len2:
+        P = (leaf_edge[0][0] + s * leaf_dir[0], leaf_edge[0][1] + s * leaf_dir[1])
+        sl2.append((P[0] + Rb * leaf_n[0], P[1] + Rb * leaf_n[1]))
+        v_s2 = min(v_s2 + 0.08, 1.9)
+        s += v_s2
+    F_LEAF_END = F_LEAF + len(sl2)
+    pts3, hit3 = sim_fall(sl2[-1], (leaf_dir[0] * v_s2 * 0.6, leaf_dir[1] * v_s2 * 0.6), G, [], Rb, stop_y=rim_c)
+    F_RIM = F_LEAF_END + len(pts3) - 1
+    rim_x0 = pts3[-1][0]
+    # the rim: Wordle-style rolls and pauses
+    rim_ctrl = [(0, 0.0), (5, 0.0), (22, 30.0), (30, 30.0), (46, 8.0), (54, 8.0), (68, 28.0), (76, 28.0), (84, 2.0), (92, 2.0)]
+    F_RIM_END = F_RIM + rim_ctrl[-1][0]
+    # the climb back: rim -> blue leaf (touch) -> hexagon -> crossword head
+    leaf_touch = (729.8, 573.5)
+    CL = [(24, 22), (30, 34), (30, 22)]
+    F_CL0 = F_RIM_END + 6
+    cl_leave, cl_land = [], []
+    f = F_CL0
+    for n, h in CL:
+        cl_leave.append(f)
+        cl_land.append(f + n)
+        f += n + STAY
+    F_TOPL = cl_land[2]
+    L = F_TOPL + 40
+    T0 = INTRO - 1 - (balA[-1][0] - 3)       # the loop starts inside balance A's last pause
+
+    # ---- reactions -------------------------------------------------------------------------------------------------------------------------------
+    dip = lambda t, evs, depth: sum(spring(t - fl, depth, down=3, tau=10.0, period=18.0) for fl in evs)
+    cross_ev = [F_C, F_TOPL]
+    hex_ev = [land[0], cl_land[1], F_HEX]
+    leaf_ev = [land[1]]
+    sy_c = lambda t: 1 - dip(t, cross_ev, 0.06)
+    ph_c = lambda t: dip(t, cross_ev, 0.03)
+    sy_h = lambda t: 1 - dip(t, hex_ev[:2], 0.06)
+    ph_h = lambda t: dip(t, hex_ev[:2], -0.03) + spring(t - F_HEX, 0.05, down=3, tau=9.0, period=18.0)
+    sy_l = lambda t: 1 - dip(t, leaf_ev, 0.06)
+    ph_l = lambda t: dip(t, leaf_ev, 0.03)
+    bleaf = lambda t: spring(t - F_LEAF, -0.14, down=4, tau=10.0, period=20.0) + spring(t - cl_land[0], -0.10, down=3, tau=8.0, period=18.0)
+
+    def th_head(t):
+        if t <= F_H1 - 0:
+            return TILT * smooth_path(balA, t)
+        if t < F_C:
+            return release(t - F_H1, TILT * smooth_path(balA, F_H1), tau=7.0, period=18.0)
+        if t < F_ROLL:
+            return TILT * smooth_path(balB, t) + spring(t - F_C, 0.03, down=3, tau=9.0, period=18.0)
+        if t < F_OFF:
+            return th_roll(t) + spring(t - F_C, 0.03, down=3, tau=9.0, period=18.0) * (1 - smooth((t - F_ROLL) / N_ROLL))
+        if t < F_TOPL:
+            return release(t - F_OFF, 0.12, tau=7.0, period=20.0)
+        return spring(t - F_TOPL, 0.03, down=3, tau=9.0, period=18.0)
+
+    def flower(t, p, base, sy, ph):
+        x, y = p[0], base[1] + (p[1] - base[1]) * sy(t)
+        return rot((x, y), base, ph(t))
+
+    def head_world(t, u):
+        return flower(t, rot((H[0] + u, head_top - Rb), H, th_head(t)), B1, sy_c, ph_c)
+
+    # ---- the ball ------------------------------------------------------------------------------------------------------------------------------------
+    b = Ball(L)
+    for t in range(0, balA[-1][0] + 1):
+        b.put(t, head_world(t, u_head(t)), "roll")
+    for t in range(balA[-1][0], F_H1 + 1):
+        b.put(t, head_world(t, u_head(balA[-1][0])), "rest")
+    hexpos = lambda t: flower(t, S_top, B2, sy_h, ph_h)
+    leafpos = lambda t: flower(t, P_top, B3, sy_l, ph_l)
+    hops = [("cross", 38, 1.0), ("hexa", 62, 1.0), ("leaf", 24, 1.0)]
+    cur = lambda t: None
+    for i in range(3):
+        a_, z_ = leave[i], land[i]
+        start = b.c[a_]
+        end = (hexpos(z_) if i == 0 else leafpos(z_) if i == 1 else head_world(z_, balB[0][1]))
+        # fit the middle hop's height so the ball clears the crossword head
+        h = hops[i][1]
+        if i == 1:
+            for hh in range(40, 90, 2):
+                pts = arc(start, end, N_H, hh, 1.0)
+                if min(polydist(p, [(701.8, 511.2), (740.0, 511.2), (740.0, 549.5), (701.8, 549.5)]) for p in pts) >= 17.5:
+                    h = hh
+                    break
+        hops[i] = (hops[i][0], h, hops[i][2])
+        b.seg(a_, z_, arc(start, end, N_H, h, 1.0))
+        if i < 2:
+            for t in range(z_, leave[i + 1] + 1):
+                b.put(t, hexpos(t) if i == 0 else leafpos(t), "rest")
+    for t in range(F_C, balB[-1][0] + 1):
+        b.put(t, head_world(t, u_head(t)), "roll" if t > F_C + 4 else "rest")
+    for t in range(balB[-1][0] + 1, F_ROLL):
+        b.put(t, head_world(t, 0.0), "rest")
+    for t in range(F_ROLL, F_OFF):
+        b.put(t, head_world(t, u_roll(t)), "roll")
+    for i, p in enumerate(pts1):
+        b.put(F_OFF + i, p, "air")
+    for i, p in enumerate(sl1):
+        b.put(F_HEX + i, p, "roll")
+    for i, p in enumerate(pts2):
+        b.put(F_HEX_END + i, p, "air")
+    for i, p in enumerate(sl2):
+        b.put(F_LEAF + i, p, "roll")
+    for i, p in enumerate(pts3):
+        b.put(F_LEAF_END + i, p, "air")
+    for t in range(F_RIM, F_RIM_END + 1):
+        b.put(t, (rim_x0 + smooth_path(rim_ctrl, t - F_RIM), rim_c), "roll")
+    rim_end = b.c[F_RIM_END]
+    for t in range(F_RIM_END, F_CL0 + 1):
+        b.put(t, rim_end, "rest")
+    ends = [leaf_touch, hexpos(cl_land[1]), head_world(cl_land[2], 0.0)]
+    for i, (n, h) in enumerate(CL):
+        a_, z_ = cl_leave[i], cl_land[i]
+        start = b.c[a_]
+        end = ends[i]
+        if i == 1:      # clears the hexagon's top-left corner
+            for hh in range(20, 70, 2):
+                pts = arc(start, end, n, hh, 1.0)
+                if min(math.dist(p, (769.1, 532.2)) for p in pts[:-4]) >= 17.5:
+                    h = hh
+                    break
+        CL[i] = (n, h)
+        b.seg(a_, z_, arc(start, end, n, h, 1.0))
+        if i < 2:
+            for t in range(z_, cl_leave[i + 1] + 1):
+                b.put(t, ends[i] if i == 0 else hexpos(t), "rest")
+    for t in range(F_TOPL, L):
+        b.put(t, head_world(t, 0.0), "rest")
+    b.put(L, b.c[0])
+    b.mode[L] = b.mode[0]
+    assert math.dist(b.c[L - 1], b.c[0]) < 0.1, (b.c[L - 1], b.c[0])
+    for fl in [land[0], land[1], F_C, F_HEX, F_LEAF, F_RIM, cl_land[0], cl_land[1], F_TOPL]:
+        b.squash(fl, 0.09)
+    b.kick = {F_OFF: 0.5 * v_off / 16.9}
+    theta = b.spin()
+    resid = theta[L] - 2 * math.pi * round(theta[L] / (2 * math.pi))
+    a_, z_ = cl_leave[2], cl_land[2]
+    theta = [th - resid * (smooth((t - a_) / (z_ - a_)) if t <= z_ else 1.0) for t, th in enumerate(theta)]
     top = min(c[1] for c in b.c.values()) - 17.6
-    print(f"{room}: loop {N} frames ({N / 60:.2f} s)")
-    names = {"cross": "crossword flower", "hexa": "yellow S hexagon", "leaf": "purple leaf"}
-    print(f"  rest on the crossword flower until frame {F_GO}")
-    for fl, fland, ps, pd_, h, dst in takeoffs:
-        print(f"  frame {fl:3d} hop off the {names[ps]}; frame {fland:3d} lands on the {names[dst]}  (loop {fland / 60:5.2f} s, timecode {fland / 60 + 3.2:5.2f} s; arc {h} high, gravity {gravity(HOP, h):.2f})")
+
+    # ---- numbers to check ---------------------------------------------------------------------------------------------------------------------------
+    tc = lambda t: (t + T0) / 60.0
+    names = [("balance on the crossword head starts", 0), ("hop off the crossword head", leave[0]), ("lands on the yellow S hexagon", land[0]),
+             ("lands on the purple leaf", land[1]), ("lands back on the crossword head", land[2]), ("second balance ends, rolls to the edge", F_EDGE0),
+             ("leaves the head's right edge", F_OFF), ("lands on the hexagon's slope", F_HEX), ("drops onto the blue leaf (it bends)", F_LEAF),
+             ("drops onto the pot's rim", F_RIM), ("rim rolls end", F_RIM_END)]
+    names += [("climb: touches the blue leaf", cl_land[0]), ("climb: lands on the hexagon", cl_land[1]), ("climb: lands on the crossword head", cl_land[2])]
+    print(f"{room}: cycle {L} frames ({L / 60:.2f} s), loop {L + 1} frames, journey starts at intro frame {T0} ({T0 / 60:.2f} s); the loop starts at cycle frame {INTRO - 1 - T0}")
+    for name, t in sorted(names, key=lambda n: n[1]):
+        print(f"  cycle {t:3d}  timecode {tc(t):5.2f} s  {name}")
     print(f"  highest point of the ball: y {top:.1f} ({phone_y(top):.0f} px on the phone frame); copy ends at {COPY_BOTTOM:.0f}: clearance {phone_y(top) - COPY_BOTTOM:.0f} px")
-    head_top = 511.2
-    cl = min(c[1] for f_, c in b.c.items() if 701.8 - 17 < c[0] < 740 + 17)
-    over = [(f_, c) for f_, c in b.c.items() if 701.8 - 14 < c[0] < 740 + 14 and c[1] + 17 > head_top + 0.5 and not (abs(c[0] - A[0]) < 1 and abs(c[1] - A[1]) < 6)]
-    print(f"  frames where the ball is in the checker head (should be none): {[f_ for f_, _ in over][:5]}")
-    print(f"  x range {min(c[0] for c in b.c.values()) - 17.6:.0f} to {max(c[0] for c in b.c.values()) + 17.6:.0f}")
+    print(f"  x range {min(c[0] for c in b.c.values()) - 17.6:.0f} to {max(c[0] for c in b.c.values()) + 17.6:.0f}, y to {max(c[1] for c in b.c.values()) + 17.6:.0f}")
+    print(f"  hops: {hops}; climb {CL}; spin {theta[L] / (2 * math.pi):.2f} turns (leftover {resid:+.2f} rad into the last hop)")
     if not write:
         return
 
+    # ---- write -----------------------------------------------------------------------------------------------------------------------------------------
+    ids = dict(ball="9:11187", scale="9:11189")
     loop, intro = f"{room} Loop", f"{room} Intro"
-    ball_id, scale_id = "9:11187", "9:11189"
     piv = {}
-    piv["cross"], _ = doc.wrap("9:11138", f"{room} Crossword Flower", pivots["cross"][0] - 669.0, pivots["cross"][1] - 489.0)
-    piv["hexa"], _ = doc.wrap("9:10996", f"{room} S Flower", pivots["hexa"][0] - 669.0, pivots["hexa"][1] - 489.0)
-    piv["leaf"], _ = doc.wrap("9:11075", f"{room} Purple Leaf", pivots["leaf"][0] - 669.0, pivots["leaf"][1] - 489.0)
+    piv["head"], _ = doc.wrap("9:11139", f"{room} Crossword Head", H[0] - 720.9, H[1] - 583.5)       # inside the flower node at (720.9, 583.5)
+    piv["cross"], _ = doc.wrap("9:11138", f"{room} Crossword Flower", *ws(B1))
+    piv["hexa"], _ = doc.wrap("9:10996", f"{room} S Flower", *ws(B2))
+    piv["leaf"], _ = doc.wrap("9:11075", f"{room} Purple Leaf", *ws(B3))
+    piv["bleaf"], _ = doc.wrap("9:11052", f"{room} Blue Leaf", *ws(BL))
     round_ball(doc, intro, ("9:11190", "9:11198", "9:11199", "9:11201"))
     doc.drop_object(loop, "9:11138")
-    doc.set_duration(loop, N)
-    fr_i, fr_l = range(INTRO), range(N)
-    px = plane_x(room)
-    hx, hy = A[0], A[1] + BALL_CENTER
-    doc.set_prop(intro, ball_id, "x", bake({f_: hx + px(f_) for f_ in fr_i}, fr_i))
-    doc.set_prop(intro, ball_id, "y", [(0, hy, "hold")])
-    doc.set_prop(loop, ball_id, "x", bake(xs, fr_l))
-    doc.set_prop(loop, ball_id, "y", bake(ys, fr_l))
-    for prop, ser in (("scaleX", b.sx), ("scaleY", b.sy)):
-        doc.set_prop(intro, scale_id, prop, [(0, 1.0, "hold"), (INTRO - 1, 1.0, "hold")])
-        doc.set_prop(loop, scale_id, prop, bake(ser, fr_l))
-
-    def both(oid, prop, fn, rest):
-        doc.set_prop(loop, oid, prop, bake(series(0, N, fn), fr_l))
-        doc.set_prop(intro, oid, prop, [(0, rest, "hold"), (INTRO - 1, rest, "hold")])
-    for w in ("cross", "hexa", "leaf"):
-        both(piv[w], "scaleY", scale_y[w], 1.0)
-        both(piv[w], "rotation", rotation[w], 0.0)
-    doc.rebuild_waiting(room)
+    ids["spin"], _ = doc.wrap_run("9:11190", "9:11196", f"{room} Ball Spin", 0.0, -17.572)
+    pre = lambda fr: (b.c[0][0], b.c[0][1], 1.0, 1.0)
+    pieces = [(piv["head"], "rotation", th_head, 0.0, None),
+              (piv["cross"], "scaleY", sy_c, 1.0, None), (piv["cross"], "rotation", ph_c, 0.0, None),
+              (piv["hexa"], "scaleY", sy_h, 1.0, None), (piv["hexa"], "rotation", ph_h, 0.0, None),
+              (piv["leaf"], "scaleY", sy_l, 1.0, None), (piv["leaf"], "rotation", ph_l, 0.0, None),
+              (piv["bleaf"], "rotation", bleaf, 0.0, None)]
+    emit_room(doc, room, b, theta, T0, ids, pre, pieces)
 
 
 def main(argv):
@@ -955,7 +1004,7 @@ def main(argv):
     if "--write" in argv:
         card1_spin(doc)
     for c in cards:
-        {2: card2, 3: card3, 4: card4_v1}[c](doc, "--write" in argv)
+        {2: card2, 3: card3, 4: card4}[c](doc, "--write" in argv)
     if "--write" in argv:
         doc.save()
         print("wrote", SCENE)
