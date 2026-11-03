@@ -28,6 +28,13 @@
       "default": "forward",
       "setBy": "engineering",
       "about": "forward for Next, back for Back. Set before scene."
+    },
+    "startScene": {
+      "type": "enum",
+      "enum": "Scene",
+      "default": "loading",
+      "setBy": "engineering",
+      "about": "The scene the file opens on, already built and looping (no intro, pan or fade). Read once, on the file's first frame: set it and scene to the same value in onLoad. Same values as scene; the default is the file's usual opening scene."
     }
   },
   "scenes": [

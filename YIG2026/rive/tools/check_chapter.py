@@ -78,6 +78,55 @@ def layer_moves(s, layer):
     return out
 
 
+def conditions(s, tr):
+    """{(property id, op, compared value)} of a transition."""
+    return {(c.find(".//DataBindContext").get("sourcePathIds").split("-")[-1], c.get("opValue", "equal"),
+             (c.find("TransitionValueEnumComparator") if c.find("TransitionValueEnumComparator") is not None
+              else c.find("TransitionValueBooleanComparator")).get("value", "false"))
+            for c in tr.findall("TransitionViewModelCondition")}
+
+
+def start_colours(s, layer, props):
+    """The Backdrop layer opens on the start room's colours with no fade (startScene). Rive looks at AnyState rules before a
+    state's own, so: each AnyState fade skips the start room (startScene != its scene); Entry leads to a Boot state that cuts
+    (0 ms) to the pose the fade would reach, when startScene == its scene; and every colour state carries that same fade
+    for the start room (1450 ms, power1.inOut, early exit) to every other pose, so a later return to the start room fades."""
+    sid, st_id = props["scene"].get("id"), props["startScene"].get("id")
+    rules = []
+    bad = []
+    for tr in layer.find("AnyState").findall("StateTransition"):
+        cs = conditions(s, tr)
+        scene_v = next(v for p, op, v in cs if p == sid and op == "equal")
+        skip = (st_id, "notEqual", scene_v)
+        if skip not in cs:
+            bad.append(tr.get("id"))
+        rules.append((tr.get("stateToId"), frozenset(cs - {skip} | {(st_id, "equal", scene_v)})))
+    check(not bad, "every Backdrop fade from AnyState skips the start room (startScene != its scene)" + ("" if not bad else f": {bad}"))
+    boot = layer.find("EntryState/StateTransition").get("stateToId")
+    states = {st.get("id"): st for st in layer.findall("AnimationState")}
+    cuts = {(tr.get("stateToId"), frozenset(conditions(s, tr))) for tr in states[boot].findall("StateTransition")}
+    durations = {tr.get("duration", "0") for tr in states[boot].findall("StateTransition")}
+    # none for the default scene: the web runtime runs the machine once before onLoad, with the defaults, and a cut then
+    # would leave Boot before onLoad's startScene arrives (it would fade instead)
+    default = next(v.get("propertyValue") for v in s.view_model.iter("ViewModelInstanceEnum") if v.get("viewModelPropertyId") == sid)
+    want_cuts = {r for r in rules if (st_id, "equal", default) not in r[1]}
+    check(cuts == want_cuts and durations <= {"0"}, f"the Backdrop's Boot state cuts at once to each colour pose when startScene is its scene, except the default scene's, whose colours it already shows ({len(cuts)} of {len(want_cuts)})")
+    wrong = []
+    for st_id_, st in states.items():
+        if st_id_ == boot:
+            continue
+        got = set()
+        for tr in st.findall("StateTransition"):
+            ease = s.eases_of(tr.find("CubicEaseInterpolator")) if tr.find("CubicEaseInterpolator") is not None else None
+            if not (tr.get("duration") == "1450" and ease == "power1.inOut" and tr.get("enableEarlyExit") == "true"):
+                wrong.append((s.names.get(st.get("animationId")), "not a 1450 ms power1.inOut early-exit fade"))
+            got.add((tr.get("stateToId"), frozenset(conditions(s, tr))))
+        want = {r for r in rules if r[0] != st_id_}
+        if got != want:
+            wrong.append((s.names.get(st.get("animationId")), f"{len(got)} fades, want {len(want)}"))
+    check(not wrong, "every colour pose fades to every other pose for the start room, as AnyState does for the others" + ("" if not wrong else f": {wrong}"))
+
+
 def run(chapter):
     results.clear()          # run() may be called more than once in a process
     s = Scene(chapter_dir(chapter) / "scene.rml")
@@ -118,6 +167,15 @@ def run(chapter):
             got_scenes = [v.get("key") for v in s_enum] if s_enum is not None else None
             check(got_scenes == want_scenes, f"the scene enum lists the manifest's scenes in order (file: {got_scenes}, manifest: {want_scenes})")
         check(all(v.get("key") == v.get("value") for v in (s_enum if s_enum is not None else [])), "every scene's key and label are the same name, so either spelling sets it")
+        # startScene: the scene the file opens on, read once on the first frame; the same enum as scene, the same default
+        st = props.get("startScene")
+        check(st is not None and st.tag == "ViewModelPropertyEnumCustom" and st.get("enumId") == props["scene"].get("enumId"),
+              'the view model has an enum property "startScene" on the same enum as scene (same values, same order)')
+        if st is not None:
+            check(s.property_default(st.get("id")) == s.property_default(props["scene"].get("id")),
+                  f'startScene defaults to scene\'s default ({s.property_default(props["scene"].get("id"))}), so a file opened without it behaves as before')
+            names_in_vm = [p.get("name") for p in s.view_model if p.tag.startswith("ViewModelProperty")]
+            check(names_in_vm[-1] == "startScene", f"startScene is the view model's last property, added after the others ({names_in_vm})")
     numbers = s.scene_numbers()
     layers = {l.get("name") for l in sm.findall("StateMachineLayer")}
     for room in rooms:
@@ -163,6 +221,8 @@ def run(chapter):
             conds = []
             for c in tr.findall("TransitionViewModelCondition"):
                 pid = c.find(".//DataBindContext").get("sourcePathIds").split("-")[-1]
+                if props_by_id[pid] == "startScene":       # the fade skips the start room (checked in start_colours)
+                    continue
                 conds.append((props_by_id[pid], names_of[pid][s.cond_value(c)] if pid in names_of else s.cond_value(c) == "true"))   # an enum's name, or a boolean
             ease = s.eases_of(tr.find("CubicEaseInterpolator")) if tr.find("CubicEaseInterpolator") is not None else None
             check(tr.get("duration") == "1450" and ease == "power1.inOut" and tr.get("enableEarlyExit") == "true",
@@ -241,6 +301,9 @@ def run(chapter):
         check(got_start == want_start, f"{START_COLORS} is the cream wall F1ECC0 and orange floor FF811E File 1 ends on ({got_start})")
         dflt_scene = s.property_default(props["scene"].get("id"))
         check(dflt_scene == START_SCENE, f"the file starts on scene {START_SCENE}, the empty Chapter 1 room, with no room of its own (scene defaults to {dflt_scene})")
+    if layer is not None and "startScene" in props:
+        start_colours(s, layer, props)
+
     # only the Colors timelines may key the Background, or two layers would fight over its colours
     for name, a in A.items():
         if not name.endswith(" Colors"):
@@ -321,6 +384,11 @@ def run(chapter):
             (R("Forward In"), R("Outro"), (N, F), "1550", True),
             (R("Forward In"), R("Home (2)"), "end", "0", False),
         ])
+        if "startScene" in props:
+            # opened on this room (startScene): shown at home at once; asked for with Back before it was ever shown
+            # (a file opened on the picture it shares with the file before it): it comes in from the left, built
+            want += [(R("Home"), R("Home (2)"), (S, ("startScene", "==", n)), "0", False),
+                     (R("Home"), R("Return"), (S, B), "0", False)]
         want = sorted((a, b, g if g == "end" else tuple(sorted(g)), d, bl) for a, b, g, d, bl in want)
         got = sorted(layer_moves(s, el))
         check(got == want, f'layer "{room} Exit" has exactly the Next and Back moves' + ("" if got == want else f"; extra {sorted(set(got) - set(want))}, missing {sorted(set(want) - set(got))}"))
@@ -368,6 +436,27 @@ def run(chapter):
         unknown = sorted(k for k in l_keys if k not in i_last)
         check(not unknown, f"every property {room} Loop keys is also set by {room} Intro" + ("" if not unknown else f": {unknown}"))
 
+        # startScene: the room opens built, on its Intro's last keys, straight into its Loop
+        if "startScene" in props:
+            built = A.get(f"{room} Built")
+            b_first = first_values(s, built) if built is not None else {}
+            wrong = sorted(k for k in set(i_last) | set(b_first) if k not in b_first or k not in i_last or not same(i_last[k], b_first[k]))
+            check(built is not None and s.duration(built) == 1 and not wrong,
+                  f"{room} Built is one frame equal to {room} Intro's last keys ({len(i_last)} properties)" + ("" if not wrong else f": {wrong[:4]}"))
+            rl = next(l for l in sm.findall("StateMachineLayer") if l.get("name") == room)
+            n = per_room[room]
+            S = ("scene", "==", n)
+            src = "Start Loading Loop" if room == "Start" else f"{room} Waiting"
+            got = {(a, b, g) for a, b, g, _d, _bl in layer_moves(s, rl) if b == f"{room} Built" or a == f"{room} Built"}
+            want = {(src, f"{room} Built", tuple(sorted([S, ("startScene", "==", n)]))), (f"{room} Built", f"{room} Loop", "end"),
+                    (src, f"{room} Built", tuple(sorted([S, ("direction", "==", 1)])))}
+            got = {(a.split(" (")[0], b, g) for a, b, g in got}
+            check(got == want, f'layer "{room}" goes from {src} to {room} Built when opened on it or asked for with Back before it was shown'
+                  + f", then on to its Loop" + ("" if got == want else f"; has {sorted(got, key=str)}"))
+            first_tr = [tr for st in rl.findall("AnimationState") if s.names.get(st.get("animationId")) == src for tr in st.findall("StateTransition")]
+            first_to = [s.names.get(next(x for x in rl.findall("AnimationState") if x.get("id") == tr.get("stateToId")).get("animationId")) for tr in first_tr[:1]]
+            check(first_to == [f"{room} Built"], f"{src}'s first transition is the one to {room} Built, so it wins over the intro ({first_to})")
+
     # a room's small loops (decor that runs on its own) start as soon as its pan ends, in their own layer, "<Room> Small":
     # Small Waiting (their opening pose) -> Small Hold (the same pose, to the end of the pan) -> Small Loop. The room's own
     # Intro and Waiting no longer hold them
@@ -389,6 +478,15 @@ def run(chapter):
         check(not unknown, f"every property {room} Small Loop keys is also held by {room} Small Waiting" + ("" if not unknown else f": {unknown}"))
         both = sorted(set(sl_keys) & set(s.keys(A[f"{room} Loop"])))
         check(not both, f"{room}'s Loop and Small Loop key different pieces" + ("" if not both else f": {both}"))
+        if "startScene" in props:
+            n = per_room[room]
+            S = ("scene", "==", n)
+            got = {(a, b, g) for a, b, g, _d, _bl in layer_moves(s, next(l for l in sm.findall("StateMachineLayer") if l.get("name") == f"{room} Small"))
+                   if a == f"{room} Small Waiting" and b == f"{room} Small Loop"}
+            want = {(f"{room} Small Waiting", f"{room} Small Loop", tuple(sorted([S, ("startScene", "==", n)]))),
+                    (f"{room} Small Waiting", f"{room} Small Loop", tuple(sorted([S, ("direction", "==", 1)])))}
+            check(got == want, f"{room}'s small loops start at once when the file opens on it or it is asked for with Back before it was shown"
+                  + ("" if got == want else f"; has {sorted(got, key=str)}"))
 
     # a room's loop never stops because the scene changed: on its own layers ("<Room>" and "<Room> Small") only the first
     # state (Waiting) may wait on the scene. Everything after it (Intro, Hold, Loop) moves on by its own clock, so a Next
@@ -509,10 +607,17 @@ def run(chapter):
             values = m["properties"]["topGame"]["values"]
             extra = 1 if "reveal" in m["properties"] else 0       # and one that shows none until the top game is revealed
             check(len(gl.find("AnyState").findall("StateTransition")) == len(values) + extra, f"{room}'s gate layer has one transition per topGame value ({values})" + (" and one for reveal == false" if extra else ""))
+            # a set shows only while its room is the scene, so a file opened on another scene with reveal already true
+            # (startScene) shows no fireworks; in normal playback reveal only turns true there anyway
+            n = per_room[room]
+            loose = [tr.get("id") for tr in gl.find("AnyState").findall("StateTransition")
+                     if any(p.endswith(props["topGame"].get("id")) for p, _o, _v in conditions(s, tr))
+                     and (props["scene"].get("id"), "equal", [v.get("id") for v in s_enum if v.tag == "DataEnumValue"][n]) not in conditions(s, tr)]
+            check(not loose, f"{room}'s gate layer picks a set only while scene is {room}'s" + ("" if not loose else f": {loose}"))
 
     # the opener's toy ball is keyed only by its own loop, and held on the loop's first pose by its Intro and Waiting
     for name, a in A.items():
-        if name not in ("Shelf Loop", "Shelf Intro", "Shelf Waiting"):
+        if name not in ("Shelf Loop", "Shelf Intro", "Shelf Waiting", "Shelf Built"):
             bad = [o for (o, _p) in s.keys(a) if o in ("Shelf Ball", "Shelf Ball Spin")]
             check(not bad, f"{name} does not key the Shelf Ball or its Spin")
 

@@ -59,19 +59,22 @@ These are the rules the animation follows, written so each one can become code a
 
 **Chapter by chapter**
 
-32. Start: set the scene when the stats have arrived and File 1 has loaded. The Loading bounce blends into the intro over 0.25 s, so the intro starts on your tap and Start's HTML arrives 3.2 s after it. "Let's go" is a normal Next. [6]
+32. Start: set the scene when the stats have arrived and File 1 has loaded. The Loading bounce blends into the intro over 0.25 s, so the intro starts when you set the scene and Start's HTML arrives 3.2 s after it. "Let's go" is a normal Next. [6]
 33. Chapter 2: a game's first card shows its lockup, drawn by Rive and gone by 3.2 s. A community card sets `lockup` to `false`. The small game icon is HTML and stays while the game's cards change. [4, 7, 12]
 34. Chapter 2 to 3: subscribers have no card on the empty Chapter 3 room, so the tap on their last Chapter 2 card plays both moves. Anonymous players have Ad 3 there. [9]
 35. Chapter 4: set `topGame` once File 3 has loaded. `reveal` is `false` on the first card (lighter wall, no fireworks) and `true` on the next two (the wall fades to the game's colour and its fireworks start). [4, 8]
 36. End: a looping room. The Share card for subscribers is another card on the same room, in HTML. [7]
 
+**Opening a file on any scene**
+
+37. A file can open directly on any of its scenes, already built and looping, with no intro, pan or colour fade: in `onLoad`, set `startScene` and then `scene` to that scene's name. If you never set `startScene`, the file opens exactly as before. [9]
+
 ## What's new in this delivery
 
-- **Ads show once.** Back and Next skip an ad the player has already seen, so ad cards need the `ad` tag (sections 6 to 9). This creates new moves: Chapter 1's first card back to Start (one move, copy at 1.65 s), Chapter 1's last card to the Chapter 2 opener and back (two moves, 3.3 s), and, for anonymous players, the first Chapter 3 card to the last Chapter 2 community card and back (two moves, 3.3 s).
-- **Start's intro begins on the tap.** The Loading bounce blends into it over 0.25 s instead of finishing its bounce first, so Start's copy always arrives 3.2 s after you set the scene (section 6).
-- **The Mini and The Midi in Chapter 4 are final.** They use The Crossword's fireworks on their own wall colours.
-- **The Crossword's Chapter 4 wall now matches its Chapter 2 room** (6493E6). Every game's Chapter 4 wall now equals its Chapter 2 wall.
-- **Animation polish in the Rive files.** The bird on Start lands with the ball, the balls in The Mini, The Midi and The Crossword move more smoothly, loops close cleanly, balls stay inside the phone frame, and Chapter 1's first ball comes out of the clock door. No property name or scene name changed, so none of this needs a code change.
+- **A new property, `startScene`, in all three files.** A file can now open directly on any of its scenes, already built and looping, with no intro, pan or colour fade. Set `startScene` and then `scene` to the same scene in `onLoad`. It is there for mounting one file at a time: open the next file on the empty room the two files share, swap on that picture, then play the move. If you don't set it, every file opens exactly as before (section 9, "Opening a file on any scene").
+- **Chapter 1 animation polish.** The balls in Chapter 1's cards 2, 3 and 4 have new loops that start moving as soon as each room arrives. The ball now turns as it rolls (cards 1 to 4), and the motion is smoother throughout.
+- **Loading and Start on desktop.** At 1025 px and wider, keep the Loading and Start HTML in the top part of the window, above the animation: the ball and the bird use artboard y 525 down to the bottom of the artboard (section 6, item 6).
+- **No existing property or scene name changed**, so your current code keeps working as it is.
 
 ## 1. What is Rive and what is HTML
 
@@ -130,7 +133,7 @@ Setting a property to the value it already has does nothing. This matters: setti
 
 ## 4. The properties
 
-All three files have `scene` and `direction`. File 2 also has `lockup`; File 3 also has `topGame` and `reveal`. Enum values are set by name.
+All three files have `scene`, `direction` and `startScene`. File 2 also has `lockup`; File 3 also has `topGame` and `reveal`. Enum values are set by name.
 
 | Property | Type | File | What it does |
 |---|---|---|---|
@@ -139,8 +142,9 @@ All three files have `scene` and `direction`. File 2 also has `lockup`; File 3 a
 | `reveal` | boolean, default `false` | File 3 | Chapter 4 only. `false` on the first Chapter 4 card (the stack and the ball on the lighter blue wall); `true` from the top-game card on (the wall fades to the top game's colour and that game's fireworks start). Back to the first card sets it to `false` again. |
 | `topGame` | enum: `wordle`, `connections`, `strands`, `spelling-bee`, `mini`, `midi`, `daily` | File 3 | The player's top game. Chooses Chapter 4's wall colour and fireworks. Default `wordle`. Set it once, as soon as File 3 has loaded, from the stats (anonymous players: always `wordle`). |
 | `scene` | enum, see section 5 | all | Which room the stage shows. |
+| `startScene` | enum, the same values as `scene`, default the file's opening scene (File 1 `loading`, File 2 `from-chapter-1`, File 3 `ad`) | all | The scene the file opens on, already built and looping. Set it only in `onLoad`, together with `scene` (section 9, "Opening a file on any scene"). Leave it alone and the file opens as before. |
 
-**The order to set them in: `direction`, then `lockup`, then `reveal`, then `scene`.** `scene` is the one that starts the move, and the others are read when it changes, so they must already be right.
+**The order to set them in: `direction`, then `lockup`, then `reveal`, then `scene`.** `scene` is the one that starts the move, and the others are read when it changes, so they must already be right. When you open a file on a scene, `startScene` comes just before `scene`.
 
 Rules of thumb:
 
@@ -188,7 +192,7 @@ The wall colour changes with each game; the floor is pink.
 ## 6. Loading and Start (File 1)
 
 1. **Load File 1 at once.** It opens on `loading`: the ball bounces in the middle of the room. The Rive side is only that bouncing ball; what your page shows over Loading is up to you, and it isn't designed yet. File 2 and File 3 load behind it, one after the other (section 9).
-2. **Switch to Start when both are ready**: when the stats have arrived and File 1 has loaded, set `direction = forward` and then `scene = 'start'`. The Loading bounce blends into Start's intro over 0.25 s, so the intro starts on your tap, wherever the ball is in its bounce. The bird drops in and lands on the ball. There is no pan and no colour change. Start is a room: its intro takes 3.2 s from the moment you set `scene`, and Start's HTML ("Let's go" and the rest) arrives at 3.2 s.
+2. **Switch to Start when both are ready**: when the stats have arrived and File 1 has loaded, set `direction = forward` and then `scene = 'start'`. The Loading bounce blends into Start's intro over 0.25 s, so the intro starts when you set the scene, wherever the ball is in its bounce. The bird drops in and lands on the ball. There is no pan and no colour change. Start is a room: its intro takes 3.2 s from the moment you set `scene`, and Start's HTML ("Let's go" and the rest) arrives at 3.2 s.
 3. **"Let's go" is an ordinary Next.** It sets `direction = forward` and `scene = 'ad'`. The ball and the bird pan out to the left, leaving the empty room. Show Ad 1 when the pan ends (1.65 s). The next ball the player sees is the one coming out of the cuckoo clock in Chapter 1's first card.
 4. **Back never returns to Loading.** Back on Start does nothing. Ad 1 shows only the first time the player reaches it (section 9); after that, Back from Chapter 1's first card lands on Start, which comes back already built (its HTML arrives when the pan ends, 1.65 s).
 5. If the player taps before File 1 has loaded, hold the tap until it has.
@@ -328,7 +332,7 @@ The HTML of a card must not appear before its room has settled. These numbers ar
 
 | Situation | HTML appears |
 |---|---|
-| A room's first visit with Next (it has an intro): Start, a Chapter 1 card, a game with its lockup, `intro`, `chapter-3`, `chapter-3-bird`, `chapter-4`, `end` | **3.2 s** after you set `scene` (Start too: its intro begins on your tap) |
+| A room's first visit with Next (it has an intro): Start, a Chapter 1 card, a game with its lockup, `intro`, `chapter-3`, `chapter-3-bird`, `chapter-4`, `end` | **3.2 s** after you set `scene` (Start too: its intro begins when you set the scene) |
 | A **community card** (no lockup), first visit | When the room's pieces have landed, per game: Wordle 2334 ms, Connections 2367 ms, Strands 1967 ms, Spelling Bee 2017 ms, The Mini 2084 ms. (The Midi and The Crossword have no community cards.) |
 | Coming back to a room with **Back** (it slides in already built), or any picture (`ad`, `from-chapter-1`, `to-chapter-3`, `bridge`). Show an ad when the pan ends. | **1.65 s**: when the pan ends |
 | Another card **inside the same room** (the next Wordle card) | **0.34 s**: right after the old copy has cleared (it clears in 340 ms). Nothing changes in Rive. |
@@ -375,6 +379,36 @@ Files 2 and 3 start on an empty picture, and every file ends on one. The neighbo
 - **Back into the earlier file.** The later file is on the shared picture. Set its `scene` to that picture (its first scene) with `direction = back` so it pans back to it, wait 1.65 s, then show the earlier file's canvas (which is still sitting on the same picture) and, if the card is not on that picture, set the earlier file's `scene` to the card's.
 - **A card that is not on the empty picture takes two moves to cross.** Skipping a seen ad creates more of these: Back from the Chapter 2 opener to Chapter 1 card 5 (Ad 2 skipped), Next from card 5 to the opener, and, for anonymous players, Chapter 3 card 1 to the last Chapter 2 community card and back (Ad 3 skipped). They are the same two moves as the crossing below.
 - **The subscriber crossing from Chapter 2 into Chapter 3, with no extra tap.** Subscribers and registered players have no card on the empty Chapter 3 room. The tap on their last Chapter 2 card takes two moves: first set File 2's `scene` to `to-chapter-3` (the room pans out), and after 1.65 s show File 3 and set its `scene` to the card's (`chapter-3`). If the player taps again before the second move starts, run it at once. Back is the same two moves in reverse. Anonymous players have Ad 3 as a card on that empty room instead, so their crossing is a single move.
+
+### Opening a file on any scene (`startScene`)
+
+Every file can open directly on any of its scenes. You need this if you mount one file at a time (for example in an app webview) instead of keeping all three loaded.
+
+**What it does.** The file opens on that scene already built and looping, exactly as the room looks when it comes back with Back: no intro, no pan, no colour fade and no lockup; the room's loop and small loops are running, the wall and floor are already in its colours, and every other room is off stage. After that, every scene change plays the normal move.
+
+**What to set, and when.** In `onLoad`, before you do anything else with the file:
+
+1. File 3 only: set `topGame`, and if the scene is `chapter-4`, set `reveal` to the card's value (`true` opens on the game's wall with its fireworks running; `false` on the lighter wall).
+2. Set `startScene` to the scene's name.
+3. Set `scene` to the same name.
+
+```ts
+onLoad: () => {
+  rive.resizeDrawingSurfaceToCanvas()
+  const vm = rive.viewModelInstance
+  vm.enum('startScene').value = 'wordle'
+  vm.enum('scene').value = 'wordle'
+}
+```
+
+That is all: the first frame the player sees is that scene. You don't need `direction` or `lockup` for it. The file reads `startScene` once, as it starts: set it only in `onLoad`, and don't change it afterwards. Its copy can show as soon as the canvas is on screen, because there is no pan or intro to wait for. If you never set `startScene`, the file opens on its usual first scene, exactly as before.
+
+**Mounting one file at a time.** Each file ends on an empty room and the next file starts on the same picture (the table above), so a file can be swapped for its neighbour on that picture:
+
+- **Next into the next file.** Pan the current file out to the shared picture (File 1 `ad`, File 2 `to-chapter-3`) as today. Mount the next file with `startScene` and `scene` set to the same picture (File 2 `from-chapter-1`, File 3 `ad`). Mount it early, while the pan runs or before, so it has loaded when the pan ends, and hold a Next until it has. Once it has drawn (two animation frames), show its canvas and remove the old one. Then play the move: set `direction = forward` and `scene` to the card's.
+- **Back into the earlier file.** Pan the current file back to its first picture with `direction = back` as today (1.65 s). Mount the earlier file with `startScene` and `scene` set to its last picture (File 1 `ad`, File 2 `to-chapter-3`), swap on that picture, then set `direction = back` and `scene` to the card's. The room comes in from the left already built, as a room coming back does, even though this copy of the file has never shown it.
+- **The copy timings follow the file you have mounted.** A freshly mounted file has not seen any of its rooms. Back into one always brings it in built (1.65 s). Next into one plays its intro (3.2 s), even if the player saw that room before the file was last mounted. So time a Next into a room as a first visit whenever the file was mounted since the player last saw that room.
+- The two-move crossings (section 8) are the same two moves, with the swap on the picture between them.
 
 ## 10. Controls
 
@@ -470,3 +504,4 @@ npx tsc --noEmit
 - Tag Ad 1, Ad 2 and the anonymous Ad 3 with `ad`: shown the first time only, skipped by Back and Next after that; work out the move (one move, or two across files) from the card landed on.
 - Subscribers have no card on the empty Chapter 3 room; the last Chapter 2 card's tap plays both moves.
 - Anonymous players: community cards in Chapter 2 (no Wordle), Ad 3 on the empty Chapter 3 room, four Chapter 3 cards, `topGame = 'wordle'`.
+- Mounting one file at a time: in `onLoad`, set `startScene` and then `scene` to the same scene (File 3: `topGame` and `reveal` first); swap files on the empty room they share; never change `startScene` afterwards. A Next into a room of a freshly mounted file is a first visit (3.2 s).

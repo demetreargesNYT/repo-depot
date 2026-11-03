@@ -46,6 +46,13 @@
       "default": false,
       "setBy": "engineering",
       "about": "False on Chapter 4's first card: the lighter blue wall, the stack and the ball, no fireworks. True from the top-game card on: the wall fades to topGame's colour and that game's fireworks start looping. Set it with the scene; false again when going back to the first card."
+    },
+    "startScene": {
+      "type": "enum",
+      "enum": "Scene",
+      "default": "ad",
+      "setBy": "engineering",
+      "about": "The scene the file opens on, already built and looping (no intro, pan or fade). Read once, on the file's first frame: set it and scene to the same value in onLoad. Same values as scene; the default is the file's usual opening scene. On chapter-4, set topGame and reveal in the same onLoad: reveal true opens on the game's wall with its fireworks running. Chapter 4's fireworks show only while scene is chapter-4."
     }
   },
   "scenes": [

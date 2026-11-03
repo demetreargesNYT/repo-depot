@@ -29,6 +29,13 @@
       "default": true,
       "setBy": "engineering",
       "about": "true shows the game lockup, false hides it (anon slides and community cards). Read only while a game's scene is entered."
+    },
+    "startScene": {
+      "type": "enum",
+      "enum": "Scene",
+      "default": "from-chapter-1",
+      "setBy": "engineering",
+      "about": "The scene the file opens on, already built and looping (no intro, pan, fade or lockup). Read once, on the file's first frame: set it and scene to the same value in onLoad. Same values as scene; the default is the file's usual opening scene."
     }
   },
   "scenes": [

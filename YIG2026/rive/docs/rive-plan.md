@@ -22,27 +22,38 @@
 - **Animations keep running while a room pans out on Next and pans in on Back.** Nothing freezes mid-motion. Any exception is a one-off, listed with its room (none yet).
 - The scene loop guideline in `CLAUDE.md` stays as the intent; the Rive CLI is signed in as lindsey.liang on purpose.
 
-**Next:** Demetre reviews the global pass (below, done 2026-11-02, committed locally), then the rooms in the Finesse order.
+**Next:** the finesse round goes on in the Finesse order. Start and Chapter 1 cards 1 to 4 have been through it; **card 5 (with Wordle Bot) is next, then Chapter 2 onward.**
 
-## Status (2026-11-02)
+## Status (2026-11-03)
 
-- **The engineering package is final** (commit `158faed`, `deliver/yig-engineering-package.zip`, built with `python3 tools/package_engineering.py`) and goes to engineering from Demetre. Nothing is sent without him.
-- **Done:** the engineering guide and React example; the test cleanup (the three tiers, one entry point `window.__yigTest` for the Chapter 2 page's text test); the Finesse panel on `/experience`. Nothing from the package rework onward has been pushed to GitHub (local commits on `main`).
-- **Latest Rive revisions** (all pushed 2026-11-02 as "Ads once, polish", tags `rive/ch1-ads-once-polish`, `rive/ch2-ads-once-polish`, `rive/ch3-ads-once-polish`; the earlier push, 2026-10-30, is tagged `rive/chN-framework-for-engineering`):
+- **The latest engineering package is the 2026-11-03 delivery, "Chapter 1 polish, startScene"** (`deliver/yig-engineering-package.zip`, built with `python3 tools/package_engineering.py`; the first package was commit `158faed`). It goes to engineering from Demetre. Nothing is sent without him.
+- **Done:** the engineering guide and React example; the test cleanup (the three tiers, one entry point `window.__yigTest` for the Chapter 2 page's text test); the Finesse panel on `/experience`; the global pass; the finesse round for Start and Chapter 1 cards 1 to 4; `startScene` in all three files.
+- **Latest Rive revisions** (all pushed 2026-11-03 as "Chapter 1 polish, startScene", tags `rive/ch1-chapter-1-polish-startscene`, `rive/ch2-chapter-1-polish-startscene`, `rive/ch3-chapter-1-polish-startscene`; the push before it, 2026-11-02, is tagged `rive/chN-ads-once-polish`). Before the push all three were pulled into a scratch copy and compared with their last push: no Editor edits.
 
 | File | Rive file | Revision |
 |---|---|---|
-| File 1 · `chapters/ch1` · "yig-ch1" | 2692475 | 49362750 |
-| File 2 · `chapters/ch2` · "yig-ch2" | 2677803 | 49362756 |
-| File 3 · `chapters/ch3` · "yig-ch3" | 2693093 | 49362763 |
+| File 1 · `chapters/ch1` · "yig-ch1" | 2692475 | 49418454 |
+| File 2 · `chapters/ch2` · "yig-ch2" | 2677803 | 49418480 |
+| File 3 · `chapters/ch3` · "yig-ch3" | 2693093 | 49418501 |
 
-- **Next:** review of the global pass, then rooms in the Finesse order. Then the mobile How-to file (`how-to-mobile.riv`, placeholder art until Demetre's arrives).
+- **Next:** Chapter 1 card 5 (with Wordle Bot), then Chapter 2 onward, in the Finesse order. Then the mobile How-to file (`how-to-mobile.riv`, placeholder art until Demetre's arrives).
 
 ## Changes since the last delivery
 
-The last delivery went out on 2026-11-02 (below). Keep this list current; the next note to engineering is made from it. Add a line whenever something changes that engineering would notice, in the code (the card list, the guide) or in the Rive files.
+The last delivery went out on 2026-11-03 (below). Keep this list current; the next note to engineering is made from it. Add a line whenever something changes that engineering would notice, in the code (the card list, the guide) or in the Rive files.
+
+- Nothing yet.
+
+### Delivered 2026-11-03 ("Chapter 1 polish, startScene")
+
+Rive revisions: File 1 (2692475) 49418454, File 2 (2677803) 49418480, File 3 (2693093) 49418501, all named "Chapter 1 polish, startScene"; git tags `rive/ch1-chapter-1-polish-startscene`, `rive/ch2-chapter-1-polish-startscene`, `rive/ch3-chapter-1-polish-startscene`. The package is `deliver/yig-engineering-package.zip` (308,116 bytes; sent by Demetre). The full suite was skipped for this delivery only (Demetre's call, 2026-11-03); what ran instead: `npm run check` for all three files, the unit tests, startScene spot checks in the CLI and in runtime 2.27.3, the experience harness (subscriber and anon, phone) and the unzipped package's demo (subscriber and anon, phone). The guide's rule 32 and section 6 now say Start's intro starts when you set the scene (it said "on your tap"); the guide gained rule 37 and section 9's "Opening a file on any scene".
 
 - **Loading and Start on desktop (HTML layout, no Rive change; guide section 6, item 6).** On desktop (1025 px and wider) the Loading and Start HTML (the lockup, the 2026 tiles, the progress bar or "Let's go", "Supported by T-Mobile") goes in the top part of the window, clear of the ball, the bird and the floor line. The animation uses artboard y 525 (the bird's hop on Start) down to the bottom; the Loading bounce tops out at 568, the resting bird and ball at 600, the floor line is 712. The review page (`layoutSplash()` in `harness/experience-stage.html`, and so the package's demo page) puts the block 16 px from the top and shrinks it uniformly on short windows to keep 28 px above the hop. Below 1025 px nothing changes. The bird's drop still passes through the top of the window once, for about 0.4 s.
+- **Chapter 1 cards 2, 3 and 4 have new ball loops** (finesse round, Rive file change in File 1, no property or code change). Each starts moving as soon as its room arrives: card 2 slides down the stack and climbs back up; card 3 runs mug → band → books → FIRST → stick → mug; card 4 balances, hops a streak and rolls around the pot. Full detail in `docs/rooms-ch1.md`.
+- **The ball now turns as it rolls** (cards 1 to 4; File 1): one full turn per circumference, in the direction of travel, keeping its spin in the air and stopping at rest.
+- **Smoother motion** under the new physics rule (one gravity, contacts that keep most of their speed) and the jitter checks (no hitch, lurch, stall or buzz) in cards 1 to 4.
+- **No property or scene name changed**, so none of the above needs a code change.
+- **`startScene`, a new property in all three files** (2026-11-03; appended to the `Backdrop` view model, nothing existing renamed or reordered; guide sections 3, 4 and 9, and the checklist). An enum with exactly the file's `scene` values, in the same order; its default is the file's usual opening scene (File 1 `loading`, File 2 `from-chapter-1`, File 3 `ad`), so code that never sets it behaves exactly as before (every file renders pixel-identical to its last push without it). Set it and `scene` to the same value in `onLoad` (File 3: `topGame` and `reveal` first) and the file opens directly on that scene, already built and looping, as the room looks when it comes back with Back: no intro, pan, colour fade or lockup, the backdrop already in its colours, every other room off stage; after that, scene changes play the normal moves. Engineering may need it to mount one file at a time in app webviews: mount the next file with `startScene` set to the empty room the two files share, swap on that picture, then play the move. Built by `tools/start_scene.py` (each room gets a one-frame "<Room> Built" pose, its Intro's last keys; the Backdrop layer gets a Boot state). Two rules came with it: a room asked for with Back before it was ever shown in that file arrives built from the left, like a room coming back (this is what makes Back into a freshly mounted earlier file work); and Chapter 4's fireworks show only while `scene` is `chapter-4` (in normal playback `reveal` only turns true there, so nothing changes; it keeps a File 3 opened on another scene with `reveal` true free of stray fireworks). Tested in runtime 2.27.3: it runs the state machine once before `onLoad`, with the defaults, so the Backdrop's Boot state keeps no cut for the default scene and waits on its colours instead. One thing the guide spells out: a freshly mounted file has seen none of its rooms, so a Next into one plays its intro (copy at 3.2 s) even if the player saw it before the file was last mounted; Back into one always brings it in built.
 
 ### Delivered 2026-11-02 ("Ads once, polish")
 
@@ -66,12 +77,15 @@ Four things that repeat across rooms. Everything else that repeats (the 0.15 s p
 
 Each room starts with its current "To tune later" items (`docs/rooms*.md` have the full text). **Room-by-room calls for every room with a ball, decided as we go:** how the ball enters (it won't be the same on every card, and sometimes it is just part of the loop); whether it squashes; a full journey or a hop; where the loop starts. Reference facts for those calls: the roll-in runs 2.30 to 3.05 s in Chapter 1 cards 2 to 5, Strands, Spelling Bee, The Mini, The Midi and The Crossword (from x -80, 0.75 s, `power1.out`, a soft stop) and the ball is absent for about 0.65 s after the pan ends; a 0.15 s `power2.out` "pop" at 3.05 s lifts the ball 76 to 272 px onto the loop's first pose in seven rooms (Chapter 1 cards 2 to 5, Strands, The Midi, The Crossword); only Wordle and Connections have a landing squash and a spin.
 
-**Global rule added 2026-11-02: the ball rotates** (full text in CLAUDE.md next to the ball's role): it turns one full turn per circumference rolled, clockwise rolling right and anticlockwise rolling left, keeps its spin in the air, and stops at rest. It is a rotation of the white dot and body about the ball's own centre (a "Ball Spin" pivot inside the squash node, so the squash stays relative to the floor contact). Done so far: Chapter 1 cards 1 to 4. **Every other room gets it during its own finesse round** (Start's ball, the Chapter 2 rooms and their Chapter 4 twins, the Chapter 3 stand-ins and Chapter 1 card 5 are still without it).
+**Global rule added 2026-11-02: the ball rotates** (full text in CLAUDE.md next to the ball's role): it turns one full turn per circumference rolled, clockwise rolling right and anticlockwise rolling left, keeps its spin in the air, and stops at rest. It is a rotation of the white dot and body about the ball's own centre (a "Ball Spin" pivot inside the squash node, so the squash stays relative to the floor contact). Done so far: Chapter 1 cards 1 to 4. **Every other room gets it during its own finesse round** (the Chapter 2 rooms and their Chapter 4 twins, the Chapter 3 stand-ins and Chapter 1 card 5 are still without it; Start's ball only bounces in place, so it has nothing to turn with).
 
-1. **Loading / Start (File 1).** The bird's bounce (fourth version, 2026-11-02: it rides the ball up, tops out at 1.55 s into the loop, falls for 0.35 s and lands at 1.9 s, 0.1 s after the ball touches down at 1.8 s): check it in the panel. The stage crop puts the floor line at about 702, not the mock's 712, so the ball sits a little high against the HTML. Call: how the ball and bird enter.
-2. **Chapter 1 rooms 1 to 5 (File 1).**
-   - Card 1: the shift per contact, the 3 s pause (3.03 s), the eye's timing and a bigger "asleep" cue (head dips, a small z), the dog's tail speed, the clouds' speed; the ball leaves off the right edge on purpose (safe area). Already follows the loop guideline.
-   - Cards 2 to 4: the pop (258, 272, 245 px) and the shared roll-in; squash. Card 5: the pop (80 px); its ball moves between the tile tops while hidden (loop closed in the global pass).
+1. **Loading / Start (File 1). Through the finesse round.** The bird's bounce is its fourth version (2026-11-02): it rides the ball up, tops out at 1.55 s into the loop, falls for 0.35 s and lands at 1.9 s, 0.1 s after the ball touches down at 1.8 s. On desktop the Loading and Start HTML sits at the top of the window, clear of the ball and the bird (2026-11-03, HTML only; guide section 6, item 6). The ball bounces in place, so it has no roll to turn with. Still open: the stage crop puts the floor line at about 702, not the mock's 712, so the ball sits a little high against the HTML.
+2. **Chapter 1 rooms 1 to 5 (File 1).** Cards 1 to 4 are through the finesse round; each starts its ball moving as soon as its room arrives, the ball turns as it rolls, and each passes the physics and jitter checks (`tools/ball_speed.py ch1 "<room>" --contacts`). Their full current state, with every time, is in `docs/rooms-ch1.md` ("To tune later").
+   - Card 1: the ball's story is the loop (out of the cuckoo clock's door, chair, window, off the right edge, 3.03 s pause); it rolls off the right edge on purpose (safe area). Left to tune: the shift per contact, the pause, the eye's timing and a bigger "asleep" cue, the dog's tail speed, the clouds' speed.
+   - Card 2: the pencil knocks the stack, the ball teeters off the block, slides down the stack to the floor, runs back behind TOTAL and climbs back up (loop 8.3 s).
+   - Card 3: the #1 mug circuit: out of the mug, band, books, FIRST, the knob and the blue stick, whose spring-back lifts it back into the mug (loop 3.65 s).
+   - Card 4: balances on the crossword head as the room pans in, hops a streak across the flowers, rolls down to the pot's rim and climbs back (loop 10.2 s). Its softer gravity and two faster-out contacts are kept on purpose (Demetre, 2026-11-03).
+   - **Card 5 (with Wordle Bot) is next:** the pop (80 px); its ball moves between the tile tops while hidden (loop closed in the global pass); it does not turn yet.
 3. **Chapter 2 opener (Shelf, File 2).** None recorded; the ball's loop is three small moves (0.15 s, 0.30 s, 0.15 s). Calls: entry, squash.
 4. **Chapter 3 and the bird room (File 3).** Chapter 3: a stand-in ball instead of a full journey (call: journey or hop; it rests inside the safe area at x 748 now). Bird on Ball (`chapter-3-bird`): the bird on the ball is a stand-in.
 5. **Chapter 4 with the reveal (File 3).** The stand-in ball (journey saved until card 1 and the video hand-off are decided; it rests inside the safe area at x 600 now); the fireworks sets go quiet for 0.1 to 0.3 s around the loop restart (no pop; a call); The Mini and The Midi use The Crossword's fireworks on their own walls (final); the stack rides in with the floor (a drop needs both halves timed together); the video background is page HTML. The reveal: the wall fades over 1.45 s and the copy waits for it.
@@ -164,6 +178,8 @@ All seven lockups are in `art/ch2/originals/` (`*-lockup.svg`, 175 × 128), conv
 ### What's still to come
 
 The mobile How-to overlay; the bridge room's art; the real ball journeys in Chapters 3 and 4; the bird-on-ball art in `chapter-3-bird`; what the page shows over Loading.
+
+**startScene for a new room (before the bridge art comes in).** `tools/start_scene.py` adds the startScene rules to a whole file and refuses to run twice. `tools/import_room.py` copies an existing room's layers as a template, so since 2026-11-03 it drops the template's startScene rules from the copy (they name the template's scene and its Built pose). A newly imported room therefore comes in without them, and `npm run check` fails on it until they are added: its Built pose, its Waiting and Home transitions, its small loops, and its colour pose's place in the Backdrop's Boot state and start-room fades. Teach `start_scene.py` to add them to one room before importing the bridge room.
 
 ### Order of work
 

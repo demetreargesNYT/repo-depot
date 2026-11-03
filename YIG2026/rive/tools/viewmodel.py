@@ -8,10 +8,12 @@ layer copied from one file points at the right property in another, and the Dire
     lockup     1:3260   boolean          (only in files with game lockups)
     topGame    1:3300   enum TopGame     (values 1:9300 + place in the property's values)
     through    1:3301   boolean          (only our integration sets it)
+    reveal     1:3310   boolean          (File 3)
+    startScene 1:3400   enum Scene       (the same enum and values as scene; read once, on the first frame)
 """
 
-PROPERTY_ID = {"scene": "1:2713", "direction": "1:2855", "lockup": "1:3260", "topGame": "1:3300", "through": "1:3301", "reveal": "1:3310"}
-INSTANCE_ID = {"scene": "1:2816", "direction": "1:2856", "lockup": "1:3261", "topGame": "1:3302", "through": "1:3303", "reveal": "1:3311"}
+PROPERTY_ID = {"scene": "1:2713", "direction": "1:2855", "lockup": "1:3260", "topGame": "1:3300", "through": "1:3301", "reveal": "1:3310", "startScene": "1:3400"}
+INSTANCE_ID = {"scene": "1:2816", "direction": "1:2856", "lockup": "1:3261", "topGame": "1:3302", "through": "1:3303", "reveal": "1:3311", "startScene": "1:3401"}
 ENUM_ID = {"Scene": "1:9001", "Direction": "1:9002", "TopGame": "1:9003"}
 VALUE_BASE = {"Scene": 9100, "Direction": 9200, "TopGame": 9300}
 SCENE_ID, DIRECTION_ID, LOCKUP_ID = PROPERTY_ID["scene"], PROPERTY_ID["direction"], PROPERTY_ID["lockup"]
@@ -36,7 +38,7 @@ def enum_xml(manifest, enum):
 
 
 def enums_xml(manifest):
-    names = [p["enum"] for p in manifest["properties"].values() if p["type"] == "enum"]
+    names = list(dict.fromkeys(p["enum"] for p in manifest["properties"].values() if p["type"] == "enum"))   # startScene shares Scene
     return "".join(enum_xml(manifest, e) for e in names)
 
 

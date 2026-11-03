@@ -5141,6 +5141,40 @@
                 </KeyedProperty>
             </KeyedObject>
         </LinearAnimation>
+        <LinearAnimation fps="60" duration="1" name="Start Built" id="20:461">
+            <KeyedObject objectId="9:13166" id="20:462">
+                <KeyedProperty property="y" id="20:463">
+                    <KeyFrameDouble value="712" frame="0" id="20:464"/>
+                </KeyedProperty>
+                <KeyedProperty property="x" id="20:465">
+                    <KeyFrameDouble value="748" frame="0" id="20:466"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:13165" id="20:467">
+                <KeyedProperty property="scaleX" id="20:468">
+                    <KeyFrameDouble value="1" frame="0" id="20:469"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY" id="20:470">
+                    <KeyFrameDouble value="1" frame="0" id="20:471"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:13164" id="20:472">
+                <KeyedProperty property="y" id="20:473">
+                    <KeyFrameDouble value="-17.68" frame="0" id="20:474"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:13163" id="20:475">
+                <KeyedProperty property="y" id="20:476">
+                    <KeyFrameDouble value="-58" frame="0" id="20:477"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleX" id="20:478">
+                    <KeyFrameDouble value="1" frame="0" id="20:479"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY" id="20:480">
+                    <KeyFrameDouble value="1" frame="0" id="20:481"/>
+                </KeyedProperty>
+            </KeyedObject>
+        </LinearAnimation>
         <LinearAnimation duration="270" loopValue="loop" name="Start Loop" id="9:985">
             <KeyedObject objectId="9:13166" id="9:14319">
                 <KeyedProperty property="y" id="9:14320">
@@ -6668,6 +6702,266 @@
                 </KeyedProperty>
                 <KeyedProperty property="opacity" id="15:7041">
                     <KeyFrameDouble value="1" id="15:7040"/>
+                </KeyedProperty>
+            </KeyedObject>
+        </LinearAnimation>
+        <LinearAnimation fps="60" duration="1" name="Chapter 1 Card 1 Built" id="20:1">
+            <KeyedObject objectId="9:6706" id="20:2">
+                <KeyedProperty property="x" id="20:3">
+                    <KeyFrameDouble frame="0" id="20:4"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:6707" id="20:5">
+                <KeyedProperty property="x" id="20:6">
+                    <KeyFrameDouble frame="0" id="20:7"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:3528" id="20:8">
+                <KeyedProperty property="y" id="20:9">
+                    <KeyFrameDouble value="519.25" frame="0" id="20:10"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleX" id="20:11">
+                    <KeyFrameDouble value="1" frame="0" id="20:12"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY" id="20:13">
+                    <KeyFrameDouble value="1" frame="0" id="20:14"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:4057" id="20:15">
+                <KeyedProperty property="y" id="20:16">
+                    <KeyFrameDouble value="631.25" frame="0" id="20:17"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleX" id="20:18">
+                    <KeyFrameDouble value="1" frame="0" id="20:19"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY" id="20:20">
+                    <KeyFrameDouble value="1" frame="0" id="20:21"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:4805" id="20:22">
+                <KeyedProperty property="x" id="20:23">
+                    <KeyFrameDouble value="635.93001" frame="0" id="20:24"/>
+                </KeyedProperty>
+                <KeyedProperty property="y" id="20:25">
+                    <KeyFrameDouble value="443.27" frame="0" id="20:26"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleX" id="20:27">
+                    <KeyFrameDouble value="1" frame="0" id="20:28"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY" id="20:29">
+                    <KeyFrameDouble value="1" frame="0" id="20:30"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:4806" id="20:31">
+                <KeyedProperty property="rotation" id="20:32">
+                    <KeyFrameDouble value="-2.0164001" frame="0" id="20:33"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:3660" id="20:34">
+                <KeyedProperty property="scaleY" id="20:35">
+                    <KeyFrameDouble value="1" frame="0" id="20:36"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:3670" id="20:37">
+                <KeyedProperty property="scaleY" id="20:38">
+                    <KeyFrameDouble value="1" frame="0" id="20:39"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:3659" id="20:40">
+                <KeyedProperty property="activeComponentId" id="20:41">
+                    <KeyFrameId value="9:3670" frame="0" id="20:42"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:3681" id="20:43">
+                <KeyedProperty property="scaleY" id="20:44">
+                    <KeyFrameDouble value="1" frame="0" id="20:45"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:3691" id="20:46">
+                <KeyedProperty property="scaleY" id="20:47">
+                    <KeyFrameDouble value="1" frame="0" id="20:48"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:3680" id="20:49">
+                <KeyedProperty property="activeComponentId" id="20:50">
+                    <KeyFrameId value="9:3691" frame="0" id="20:51"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:3702" id="20:52">
+                <KeyedProperty property="scaleY" id="20:53">
+                    <KeyFrameDouble value="1" frame="0" id="20:54"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:3712" id="20:55">
+                <KeyedProperty property="scaleY" id="20:56">
+                    <KeyFrameDouble value="1" frame="0" id="20:57"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:3701" id="20:58">
+                <KeyedProperty property="activeComponentId" id="20:59">
+                    <KeyFrameId value="9:3712" frame="0" id="20:60"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:3597" id="20:61">
+                <KeyedProperty property="scaleY" id="20:62">
+                    <KeyFrameDouble value="1" frame="0" id="20:63"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:3607" id="20:64">
+                <KeyedProperty property="scaleY" id="20:65">
+                    <KeyFrameDouble value="1" frame="0" id="20:66"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:3596" id="20:67">
+                <KeyedProperty property="activeComponentId" id="20:68">
+                    <KeyFrameId value="9:3607" frame="0" id="20:69"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:3618" id="20:70">
+                <KeyedProperty property="scaleY" id="20:71">
+                    <KeyFrameDouble value="1" frame="0" id="20:72"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:3628" id="20:73">
+                <KeyedProperty property="scaleY" id="20:74">
+                    <KeyFrameDouble value="1" frame="0" id="20:75"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:3617" id="20:76">
+                <KeyedProperty property="activeComponentId" id="20:77">
+                    <KeyFrameId value="9:3628" frame="0" id="20:78"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:3639" id="20:79">
+                <KeyedProperty property="scaleY" id="20:80">
+                    <KeyFrameDouble value="1" frame="0" id="20:81"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:3649" id="20:82">
+                <KeyedProperty property="scaleY" id="20:83">
+                    <KeyFrameDouble value="1" frame="0" id="20:84"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:3638" id="20:85">
+                <KeyedProperty property="activeComponentId" id="20:86">
+                    <KeyFrameId value="9:3649" frame="0" id="20:87"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:3534" id="20:88">
+                <KeyedProperty property="scaleY" id="20:89">
+                    <KeyFrameDouble value="1" frame="0" id="20:90"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:3544" id="20:91">
+                <KeyedProperty property="scaleY" id="20:92">
+                    <KeyFrameDouble value="1" frame="0" id="20:93"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:3533" id="20:94">
+                <KeyedProperty property="activeComponentId" id="20:95">
+                    <KeyFrameId value="9:3544" frame="0" id="20:96"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:3555" id="20:97">
+                <KeyedProperty property="scaleY" id="20:98">
+                    <KeyFrameDouble value="1" frame="0" id="20:99"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:3565" id="20:100">
+                <KeyedProperty property="scaleY" id="20:101">
+                    <KeyFrameDouble value="1" frame="0" id="20:102"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:3554" id="20:103">
+                <KeyedProperty property="activeComponentId" id="20:104">
+                    <KeyFrameId value="9:3565" frame="0" id="20:105"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:3576" id="20:106">
+                <KeyedProperty property="scaleY" id="20:107">
+                    <KeyFrameDouble value="1" frame="0" id="20:108"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:3586" id="20:109">
+                <KeyedProperty property="scaleY" id="20:110">
+                    <KeyFrameDouble value="1" frame="0" id="20:111"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:3575" id="20:112">
+                <KeyedProperty property="activeComponentId" id="20:113">
+                    <KeyFrameId value="9:3586" frame="0" id="20:114"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="15:6227" id="20:115">
+                <KeyedProperty property="scaleY" id="20:116">
+                    <KeyFrameDouble value="1" frame="0" id="20:117"/>
+                </KeyedProperty>
+                <KeyedProperty property="opacity" id="20:118">
+                    <KeyFrameDouble value="1" frame="0" id="20:119"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="15:6303" id="20:120">
+                <KeyedProperty property="scaleY" id="20:121">
+                    <KeyFrameDouble value="1" frame="0" id="20:122"/>
+                </KeyedProperty>
+                <KeyedProperty property="opacity" id="20:123">
+                    <KeyFrameDouble value="1" frame="0" id="20:124"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="15:6377" id="20:125">
+                <KeyedProperty property="scaleY" id="20:126">
+                    <KeyFrameDouble value="1" frame="0" id="20:127"/>
+                </KeyedProperty>
+                <KeyedProperty property="opacity" id="20:128">
+                    <KeyFrameDouble value="1" frame="0" id="20:129"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="15:6451" id="20:130">
+                <KeyedProperty property="scaleY" id="20:131">
+                    <KeyFrameDouble value="1" frame="0" id="20:132"/>
+                </KeyedProperty>
+                <KeyedProperty property="opacity" id="20:133">
+                    <KeyFrameDouble value="1" frame="0" id="20:134"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="15:6527" id="20:135">
+                <KeyedProperty property="scaleY" id="20:136">
+                    <KeyFrameDouble value="1" frame="0" id="20:137"/>
+                </KeyedProperty>
+                <KeyedProperty property="opacity" id="20:138">
+                    <KeyFrameDouble value="1" frame="0" id="20:139"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="15:6601" id="20:140">
+                <KeyedProperty property="scaleY" id="20:141">
+                    <KeyFrameDouble value="1" frame="0" id="20:142"/>
+                </KeyedProperty>
+                <KeyedProperty property="opacity" id="20:143">
+                    <KeyFrameDouble value="1" frame="0" id="20:144"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="15:6675" id="20:145">
+                <KeyedProperty property="scaleY" id="20:146">
+                    <KeyFrameDouble value="1" frame="0" id="20:147"/>
+                </KeyedProperty>
+                <KeyedProperty property="opacity" id="20:148">
+                    <KeyFrameDouble value="1" frame="0" id="20:149"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="15:6751" id="20:150">
+                <KeyedProperty property="scaleY" id="20:151">
+                    <KeyFrameDouble value="1" frame="0" id="20:152"/>
+                </KeyedProperty>
+                <KeyedProperty property="opacity" id="20:153">
+                    <KeyFrameDouble value="1" frame="0" id="20:154"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="15:6825" id="20:155">
+                <KeyedProperty property="scaleY" id="20:156">
+                    <KeyFrameDouble value="1" frame="0" id="20:157"/>
+                </KeyedProperty>
+                <KeyedProperty property="opacity" id="20:158">
+                    <KeyFrameDouble value="1" frame="0" id="20:159"/>
                 </KeyedProperty>
             </KeyedObject>
         </LinearAnimation>
@@ -13130,6 +13424,125 @@
                 </KeyedProperty>
             </KeyedObject>
         </LinearAnimation>
+        <LinearAnimation fps="60" duration="1" name="Chapter 1 Card 2 Built" id="20:160">
+            <KeyedObject objectId="9:8822" id="20:161">
+                <KeyedProperty property="x" id="20:162">
+                    <KeyFrameDouble frame="0" id="20:163"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:8823" id="20:164">
+                <KeyedProperty property="x" id="20:165">
+                    <KeyFrameDouble frame="0" id="20:166"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:7684" id="20:167">
+                <KeyedProperty property="y" id="20:168">
+                    <KeyFrameDouble value="620.373" frame="0" id="20:169"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleX" id="20:170">
+                    <KeyFrameDouble value="1" frame="0" id="20:171"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY" id="20:172">
+                    <KeyFrameDouble value="1" frame="0" id="20:173"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:7717" id="20:174">
+                <KeyedProperty property="y" id="20:175">
+                    <KeyFrameDouble value="464.265" frame="0" id="20:176"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleX" id="20:177">
+                    <KeyFrameDouble value="1" frame="0" id="20:178"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY" id="20:179">
+                    <KeyFrameDouble value="1" frame="0" id="20:180"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:8040" id="20:181">
+                <KeyedProperty property="x" id="20:182">
+                    <KeyFrameDouble value="754.0148" frame="0" id="20:183"/>
+                </KeyedProperty>
+                <KeyedProperty property="y" id="20:184">
+                    <KeyFrameDouble value="514.3614" frame="0" id="20:185"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:7748" id="20:186">
+                <KeyedProperty property="opacity" id="20:187">
+                    <KeyFrameDouble frame="0" id="20:188"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:8042" id="20:189">
+                <KeyedProperty property="scaleX" id="20:190">
+                    <KeyFrameDouble value="1" frame="0" id="20:191"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY" id="20:192">
+                    <KeyFrameDouble value="1" frame="0" id="20:193"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:15104" id="20:194">
+                <KeyedProperty property="rotation" id="20:195">
+                    <KeyFrameDouble value="3.3885" frame="0" id="20:196"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:15092" id="20:197">
+                <KeyedProperty property="rotation" id="20:198">
+                    <KeyFrameDouble frame="0" id="20:199"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:15094" id="20:200">
+                <KeyedProperty property="rotation" id="20:201">
+                    <KeyFrameDouble frame="0" id="20:202"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:15096" id="20:203">
+                <KeyedProperty property="rotation" id="20:204">
+                    <KeyFrameDouble frame="0" id="20:205"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:15098" id="20:206">
+                <KeyedProperty property="rotation" id="20:207">
+                    <KeyFrameDouble frame="0" id="20:208"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:7649" id="20:209">
+                <KeyedProperty property="scaleY" id="20:210">
+                    <KeyFrameDouble value="1" frame="0" id="20:211"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleX" id="20:212">
+                    <KeyFrameDouble value="1" frame="0" id="20:213"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:7643" id="20:214">
+                <KeyedProperty property="scaleY" id="20:215">
+                    <KeyFrameDouble value="1" frame="0" id="20:216"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleX" id="20:217">
+                    <KeyFrameDouble value="1" frame="0" id="20:218"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:15100" id="20:219">
+                <KeyedProperty property="rotation" id="20:220">
+                    <KeyFrameDouble frame="0" id="20:221"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY" id="20:222">
+                    <KeyFrameDouble value="1" frame="0" id="20:223"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:7947" id="20:224">
+                <KeyedProperty property="y" id="20:225">
+                    <KeyFrameDouble value="8.3395" frame="0" id="20:226"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:15102" id="20:227">
+                <KeyedProperty property="rotation" id="20:228">
+                    <KeyFrameDouble value="-0.0637" frame="0" id="20:229"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:15106" id="20:230">
+                <KeyedProperty property="x" id="20:231">
+                    <KeyFrameDouble value="1500" frame="0" id="20:232"/>
+                </KeyedProperty>
+            </KeyedObject>
+        </LinearAnimation>
         <LinearAnimation duration="499" loopValue="loop" name="Chapter 1 Card 2 Loop" id="9:8059">
             <KeyedObject objectId="9:8040" id="9:8060">
                 <KeyedProperty property="x" id="9:15309">
@@ -16250,6 +16663,181 @@
                 </KeyedProperty>
             </KeyedObject>
         </LinearAnimation>
+        <LinearAnimation fps="60" duration="1" name="Chapter 1 Card 3 Built" id="20:233">
+            <KeyedObject objectId="9:10544" id="20:234">
+                <KeyedProperty property="x" id="20:235">
+                    <KeyFrameDouble frame="0" id="20:236"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:9270" id="20:237">
+                <KeyedProperty property="y" id="20:238">
+                    <KeyFrameDouble value="676.013" frame="0" id="20:239"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleX" id="20:240">
+                    <KeyFrameDouble value="1" frame="0" id="20:241"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY" id="20:242">
+                    <KeyFrameDouble value="1" frame="0" id="20:243"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:9345" id="20:244">
+                <KeyedProperty property="y" id="20:245">
+                    <KeyFrameDouble value="654.87" frame="0" id="20:246"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleX" id="20:247">
+                    <KeyFrameDouble value="1" frame="0" id="20:248"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY" id="20:249">
+                    <KeyFrameDouble value="1" frame="0" id="20:250"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:9479" id="20:251">
+                <KeyedProperty property="y" id="20:252">
+                    <KeyFrameDouble value="538.997" frame="0" id="20:253"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleX" id="20:254">
+                    <KeyFrameDouble value="1" frame="0" id="20:255"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY" id="20:256">
+                    <KeyFrameDouble value="1" frame="0" id="20:257"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:9619" id="20:258">
+                <KeyedProperty property="x" id="20:259">
+                    <KeyFrameDouble value="676.6293" frame="0" id="20:260"/>
+                </KeyedProperty>
+                <KeyedProperty property="y" id="20:261">
+                    <KeyFrameDouble value="497.3693" frame="0" id="20:262"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:9622" id="20:263">
+                <KeyedProperty property="y" id="20:264">
+                    <KeyFrameDouble value="-23.834" frame="0" id="20:265"/>
+                </KeyedProperty>
+                <KeyedProperty property="x" id="20:266">
+                    <KeyFrameDouble value="6.364" frame="0" id="20:267"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY" id="20:268">
+                    <KeyFrameDouble value="1" frame="0" id="20:269"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleX" id="20:270">
+                    <KeyFrameDouble value="1" frame="0" id="20:271"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:9631" id="20:272">
+                <KeyedProperty property="y" id="20:273">
+                    <KeyFrameDouble frame="0" id="20:274"/>
+                </KeyedProperty>
+                <KeyedProperty property="x" id="20:275">
+                    <KeyFrameDouble value="17.678" frame="0" id="20:276"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:9630" id="20:277">
+                <KeyedProperty property="outDistance" id="20:278">
+                    <KeyFrameDouble value="9.7633" frame="0" id="20:279"/>
+                </KeyedProperty>
+                <KeyedProperty property="inDistance" id="20:280">
+                    <KeyFrameDouble value="9.7633" frame="0" id="20:281"/>
+                </KeyedProperty>
+                <KeyedProperty property="y" id="20:282">
+                    <KeyFrameDouble value="-17.678" frame="0" id="20:283"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:9633" id="20:284">
+                <KeyedProperty property="y" id="20:285">
+                    <KeyFrameDouble frame="0" id="20:286"/>
+                </KeyedProperty>
+                <KeyedProperty property="x" id="20:287">
+                    <KeyFrameDouble value="-17.678" frame="0" id="20:288"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:9613" id="20:289">
+                <KeyedProperty property="inDistance" id="20:290">
+                    <KeyFrameDouble value="21.514332" frame="0" id="20:291"/>
+                </KeyedProperty>
+                <KeyedProperty property="inRotation" id="20:292">
+                    <KeyFrameDouble value="-0.0000002" frame="0" id="20:293"/>
+                </KeyedProperty>
+                <KeyedProperty property="outDistance" id="20:294">
+                    <KeyFrameDouble value="23.779787" frame="0" id="20:295"/>
+                </KeyedProperty>
+                <KeyedProperty property="outRotation" id="20:296">
+                    <KeyFrameDouble value="3.1415927" frame="0" id="20:297"/>
+                </KeyedProperty>
+                <KeyedProperty property="x" id="20:298">
+                    <KeyFrameDouble value="2.5149" frame="0" id="20:299"/>
+                </KeyedProperty>
+                <KeyedProperty property="y" id="20:300">
+                    <KeyFrameDouble frame="0" id="20:301"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:9257" id="20:302">
+                <KeyedProperty property="x" id="20:303">
+                    <KeyFrameDouble value="0.2793853" frame="0" id="20:304"/>
+                </KeyedProperty>
+                <KeyedProperty property="y" id="20:305">
+                    <KeyFrameDouble value="1.1617059" frame="0" id="20:306"/>
+                </KeyedProperty>
+                <KeyedProperty property="inRotation" id="20:307">
+                    <KeyFrameDouble value="-2.3080568" frame="0" id="20:308"/>
+                </KeyedProperty>
+                <KeyedProperty property="outRotation" id="20:309">
+                    <KeyFrameDouble value="0.8335415" frame="0" id="20:310"/>
+                </KeyedProperty>
+                <KeyedProperty property="inDistance" id="20:311">
+                    <KeyFrameDouble value="30.932863" frame="0" id="20:312"/>
+                </KeyedProperty>
+                <KeyedProperty property="outDistance" id="20:313">
+                    <KeyFrameDouble value="30.135746" frame="0" id="20:314"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:9272" id="20:315">
+                <KeyedProperty property="x" id="20:316">
+                    <KeyFrameDouble value="760" frame="0" id="20:317"/>
+                </KeyedProperty>
+                <KeyedProperty property="y" id="20:318">
+                    <KeyFrameDouble value="538" frame="0" id="20:319"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:9481" id="20:320">
+                <KeyedProperty property="x" id="20:321">
+                    <KeyFrameDouble value="679" frame="0" id="20:322"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:9621" id="20:323">
+                <KeyedProperty property="scaleX" id="20:324">
+                    <KeyFrameDouble value="1" frame="0" id="20:325"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY" id="20:326">
+                    <KeyFrameDouble value="1" frame="0" id="20:327"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:17967" id="20:328">
+                <KeyedProperty property="rotation" id="20:329">
+                    <KeyFrameDouble value="3.2298" frame="0" id="20:330"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:17922" id="20:331">
+                <KeyedProperty property="rotation" id="20:332">
+                    <KeyFrameDouble frame="0" id="20:333"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:17924" id="20:334">
+                <KeyedProperty property="rotation" id="20:335">
+                    <KeyFrameDouble frame="0" id="20:336"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:17926" id="20:337">
+                <KeyedProperty property="rotation" id="20:338">
+                    <KeyFrameDouble frame="0" id="20:339"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:17928" id="20:340">
+                <KeyedProperty property="rotation" id="20:341">
+                    <KeyFrameDouble frame="0" id="20:342"/>
+                </KeyedProperty>
+            </KeyedObject>
+        </LinearAnimation>
         <LinearAnimation duration="219" loopValue="loop" name="Chapter 1 Card 3 Loop" id="9:9638">
             <KeyedObject objectId="9:9619" id="9:9639">
                 <KeyedProperty property="x" id="9:18146">
@@ -18136,6 +18724,119 @@
             <KeyedObject objectId="9:19490" id="9:22480">
                 <KeyedProperty property="rotation" id="9:22481">
                     <KeyFrameDouble id="9:22482"/>
+                </KeyedProperty>
+            </KeyedObject>
+        </LinearAnimation>
+        <LinearAnimation fps="60" duration="1" name="Chapter 1 Card 4 Built" id="20:343">
+            <KeyedObject objectId="9:11848" id="20:344">
+                <KeyedProperty property="x" id="20:345">
+                    <KeyFrameDouble frame="0" id="20:346"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:11849" id="20:347">
+                <KeyedProperty property="x" id="20:348">
+                    <KeyFrameDouble frame="0" id="20:349"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:11187" id="20:350">
+                <KeyedProperty property="x" id="20:351">
+                    <KeyFrameDouble value="724.7159" frame="0" id="20:352"/>
+                </KeyedProperty>
+                <KeyedProperty property="y" id="20:353">
+                    <KeyFrameDouble value="510.9567" frame="0" id="20:354"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:11190" id="20:355">
+                <KeyedProperty property="y" id="20:356">
+                    <KeyFrameDouble value="-23.834" frame="0" id="20:357"/>
+                </KeyedProperty>
+                <KeyedProperty property="x" id="20:358">
+                    <KeyFrameDouble value="6.364" frame="0" id="20:359"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY" id="20:360">
+                    <KeyFrameDouble value="1" frame="0" id="20:361"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleX" id="20:362">
+                    <KeyFrameDouble value="1" frame="0" id="20:363"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:11199" id="20:364">
+                <KeyedProperty property="y" id="20:365">
+                    <KeyFrameDouble frame="0" id="20:366"/>
+                </KeyedProperty>
+                <KeyedProperty property="x" id="20:367">
+                    <KeyFrameDouble value="17.678" frame="0" id="20:368"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:11201" id="20:369">
+                <KeyedProperty property="y" id="20:370">
+                    <KeyFrameDouble frame="0" id="20:371"/>
+                </KeyedProperty>
+                <KeyedProperty property="x" id="20:372">
+                    <KeyFrameDouble value="-17.678" frame="0" id="20:373"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:11198" id="20:374">
+                <KeyedProperty property="outDistance" id="20:375">
+                    <KeyFrameDouble value="9.7633" frame="0" id="20:376"/>
+                </KeyedProperty>
+                <KeyedProperty property="inDistance" id="20:377">
+                    <KeyFrameDouble value="9.7633" frame="0" id="20:378"/>
+                </KeyedProperty>
+                <KeyedProperty property="y" id="20:379">
+                    <KeyFrameDouble value="-17.678" frame="0" id="20:380"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:11138" id="20:381">
+                <KeyedProperty property="y" id="20:382">
+                    <KeyFrameDouble value="94.5" frame="0" id="20:383"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:11189" id="20:384">
+                <KeyedProperty property="scaleX" id="20:385">
+                    <KeyFrameDouble value="1" frame="0" id="20:386"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY" id="20:387">
+                    <KeyFrameDouble value="1" frame="0" id="20:388"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:19525" id="20:389">
+                <KeyedProperty property="rotation" id="20:390">
+                    <KeyFrameDouble value="0.2259" frame="0" id="20:391"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:19482" id="20:392">
+                <KeyedProperty property="rotation" id="20:393">
+                    <KeyFrameDouble value="0.0225" frame="0" id="20:394"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:19484" id="20:395">
+                <KeyedProperty property="scaleY" id="20:396">
+                    <KeyFrameDouble value="1" frame="0" id="20:397"/>
+                </KeyedProperty>
+                <KeyedProperty property="rotation" id="20:398">
+                    <KeyFrameDouble frame="0" id="20:399"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:19486" id="20:400">
+                <KeyedProperty property="scaleY" id="20:401">
+                    <KeyFrameDouble value="1" frame="0" id="20:402"/>
+                </KeyedProperty>
+                <KeyedProperty property="rotation" id="20:403">
+                    <KeyFrameDouble frame="0" id="20:404"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:19488" id="20:405">
+                <KeyedProperty property="scaleY" id="20:406">
+                    <KeyFrameDouble value="1" frame="0" id="20:407"/>
+                </KeyedProperty>
+                <KeyedProperty property="rotation" id="20:408">
+                    <KeyFrameDouble frame="0" id="20:409"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:19490" id="20:410">
+                <KeyedProperty property="rotation" id="20:411">
+                    <KeyFrameDouble frame="0" id="20:412"/>
                 </KeyedProperty>
             </KeyedObject>
         </LinearAnimation>
@@ -20834,6 +21535,83 @@
                 </KeyedProperty>
             </KeyedObject>
         </LinearAnimation>
+        <LinearAnimation fps="60" duration="1" name="Chapter 1 Card 5 Built" id="20:413">
+            <KeyedObject objectId="9:12733" id="20:414">
+                <KeyedProperty property="x" id="20:415">
+                    <KeyFrameDouble frame="0" id="20:416"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:12734" id="20:417">
+                <KeyedProperty property="x" id="20:418">
+                    <KeyFrameDouble frame="0" id="20:419"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:12180" id="20:420">
+                <KeyedProperty property="y" id="20:421">
+                    <KeyFrameDouble value="663.75" frame="0" id="20:422"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleX" id="20:423">
+                    <KeyFrameDouble value="1" frame="0" id="20:424"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY" id="20:425">
+                    <KeyFrameDouble value="1" frame="0" id="20:426"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:12325" id="20:427">
+                <KeyedProperty property="x" id="20:428">
+                    <KeyFrameDouble value="618.30444" frame="0" id="20:429"/>
+                </KeyedProperty>
+                <KeyedProperty property="y" id="20:430">
+                    <KeyFrameDouble value="674" frame="0" id="20:431"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:12339" id="20:432">
+                <KeyedProperty property="y" id="20:433">
+                    <KeyFrameDouble frame="0" id="20:434"/>
+                </KeyedProperty>
+                <KeyedProperty property="x" id="20:435">
+                    <KeyFrameDouble value="-17.677999" frame="0" id="20:436"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:12336" id="20:437">
+                <KeyedProperty property="outDistance" id="20:438">
+                    <KeyFrameDouble value="9.7632895" frame="0" id="20:439"/>
+                </KeyedProperty>
+                <KeyedProperty property="inDistance" id="20:440">
+                    <KeyFrameDouble value="9.7632895" frame="0" id="20:441"/>
+                </KeyedProperty>
+                <KeyedProperty property="y" id="20:442">
+                    <KeyFrameDouble value="-17.677999" frame="0" id="20:443"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:12337" id="20:444">
+                <KeyedProperty property="y" id="20:445">
+                    <KeyFrameDouble frame="0" id="20:446"/>
+                </KeyedProperty>
+                <KeyedProperty property="x" id="20:447">
+                    <KeyFrameDouble value="17.677999" frame="0" id="20:448"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:12328" id="20:449">
+                <KeyedProperty property="y" id="20:450">
+                    <KeyFrameDouble value="-23.834076" frame="0" id="20:451"/>
+                </KeyedProperty>
+                <KeyedProperty property="x" id="20:452">
+                    <KeyFrameDouble value="6.3640137" frame="0" id="20:453"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY" id="20:454">
+                    <KeyFrameDouble value="1" frame="0" id="20:455"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleX" id="20:456">
+                    <KeyFrameDouble value="1" frame="0" id="20:457"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:12326" id="20:458">
+                <KeyedProperty property="y" id="20:459">
+                    <KeyFrameDouble value="2" frame="0" id="20:460"/>
+                </KeyedProperty>
+            </KeyedObject>
+        </LinearAnimation>
         <LinearAnimation duration="180" loopValue="loop" workStart="0" workEnd="180" name="Chapter 1 Card 5 Loop" id="9:12344">
             <KeyedObject objectId="9:12325" id="9:12345">
                 <KeyedProperty property="x" id="9:12346">
@@ -21379,6 +22157,42 @@
                     <StateTransition stateToId="9:13881" id="9:13889"/>
                 </EntryState>
                 <AnimationState animationId="9:13353" x="160" y="0" id="9:13881">
+                    <StateTransition stateToId="20:756" duration="0" id="20:758">
+                        <TransitionViewModelCondition opValue="equal" id="20:759">
+                            <TransitionPropertyViewModelComparator id="20:760">
+                                <BindablePropertyEnum id="20:761">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="20:762"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9101" id="20:763"/>
+                        </TransitionViewModelCondition>
+                        <TransitionViewModelCondition opValue="equal" id="20:764">
+                            <TransitionPropertyViewModelComparator id="20:765">
+                                <BindablePropertyEnum id="20:766">
+                                    <DataBindContext sourcePathIds="1:14-1:3400" propertyKey="637" id="20:767"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9101" id="20:768"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
+                    <StateTransition stateToId="20:756" duration="0" id="20:769">
+                        <TransitionViewModelCondition opValue="equal" id="20:770">
+                            <TransitionPropertyViewModelComparator id="20:771">
+                                <BindablePropertyEnum id="20:772">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="20:773"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9101" id="20:774"/>
+                        </TransitionViewModelCondition>
+                        <TransitionViewModelCondition opValue="equal" id="20:775">
+                            <TransitionPropertyViewModelComparator id="20:776">
+                                <BindablePropertyEnum id="20:777">
+                                    <DataBindContext sourcePathIds="1:14-1:2855" propertyKey="637" id="20:778"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9201" id="20:779"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
                     <StateTransition stateToId="9:13883" duration="0" id="9:13896">
                         <TransitionViewModelCondition opValue="notEqual" id="9:13897">
                             <TransitionPropertyViewModelComparator id="9:13898">
@@ -21411,6 +22225,42 @@
                     <StateTransition stateToId="9:13882" duration="0" id="9:13907" enableExitTime="true" exitTimeIsPercetange="true" exitTime="100"/>
                 </AnimationState>
                 <AnimationState animationId="9:13353" x="160" y="120" id="9:13882">
+                    <StateTransition stateToId="20:756" duration="0" id="20:780">
+                        <TransitionViewModelCondition opValue="equal" id="20:781">
+                            <TransitionPropertyViewModelComparator id="20:782">
+                                <BindablePropertyEnum id="20:783">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="20:784"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9101" id="20:785"/>
+                        </TransitionViewModelCondition>
+                        <TransitionViewModelCondition opValue="equal" id="20:786">
+                            <TransitionPropertyViewModelComparator id="20:787">
+                                <BindablePropertyEnum id="20:788">
+                                    <DataBindContext sourcePathIds="1:14-1:3400" propertyKey="637" id="20:789"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9101" id="20:790"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
+                    <StateTransition stateToId="20:756" duration="0" id="20:791">
+                        <TransitionViewModelCondition opValue="equal" id="20:792">
+                            <TransitionPropertyViewModelComparator id="20:793">
+                                <BindablePropertyEnum id="20:794">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="20:795"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9101" id="20:796"/>
+                        </TransitionViewModelCondition>
+                        <TransitionViewModelCondition opValue="equal" id="20:797">
+                            <TransitionPropertyViewModelComparator id="20:798">
+                                <BindablePropertyEnum id="20:799">
+                                    <DataBindContext sourcePathIds="1:14-1:2855" propertyKey="637" id="20:800"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9201" id="20:801"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
                     <StateTransition stateToId="9:13883" duration="0" id="9:13914">
                         <TransitionViewModelCondition opValue="notEqual" id="9:13915">
                             <TransitionPropertyViewModelComparator id="9:13916">
@@ -21458,6 +22308,9 @@
                     <StateTransition stateToId="9:13885" duration="0" id="9:13932" enableExitTime="true" exitTimeIsPercetange="true" exitTime="100"/>
                 </AnimationState>
                 <AnimationState animationId="9:985" x="640" y="0" id="9:13885"/>
+                <AnimationState animationId="20:461" x="160" y="360" id="20:756">
+                    <StateTransition stateToId="9:13885" duration="0" enableExitTime="true" exitTimeIsPercetange="true" exitTime="100" id="20:757"/>
+                </AnimationState>
             </StateMachineLayer>
             <StateMachineLayer name="Start Exit" id="9:3229">
                 <AnyState x="160" y="200" id="9:3230"/>
@@ -21466,6 +22319,42 @@
                     <StateTransition stateToId="9:3234" id="9:3233"/>
                 </EntryState>
                 <AnimationState animationId="9:3155" x="160" y="0" id="9:3234">
+                    <StateTransition stateToId="9:3241" duration="0" id="20:802">
+                        <TransitionViewModelCondition opValue="equal" id="20:803">
+                            <TransitionPropertyViewModelComparator id="20:804">
+                                <BindablePropertyEnum id="20:805">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="20:806"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9101" id="20:807"/>
+                        </TransitionViewModelCondition>
+                        <TransitionViewModelCondition opValue="equal" id="20:808">
+                            <TransitionPropertyViewModelComparator id="20:809">
+                                <BindablePropertyEnum id="20:810">
+                                    <DataBindContext sourcePathIds="1:14-1:3400" propertyKey="637" id="20:811"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9101" id="20:812"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
+                    <StateTransition stateToId="9:3282" duration="0" id="20:813">
+                        <TransitionViewModelCondition opValue="equal" id="20:814">
+                            <TransitionPropertyViewModelComparator id="20:815">
+                                <BindablePropertyEnum id="20:816">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="20:817"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9101" id="20:818"/>
+                        </TransitionViewModelCondition>
+                        <TransitionViewModelCondition opValue="equal" id="20:819">
+                            <TransitionPropertyViewModelComparator id="20:820">
+                                <BindablePropertyEnum id="20:821">
+                                    <DataBindContext sourcePathIds="1:14-1:2855" propertyKey="637" id="20:822"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9201" id="20:823"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
                     <StateTransition stateToId="9:3241" duration="0" id="9:3235">
                         <TransitionViewModelCondition opValue="equal" id="9:3236">
                             <TransitionPropertyViewModelComparator id="9:3237">
@@ -21609,6 +22498,42 @@
                     <StateTransition stateToId="9:7538" id="9:7537"/>
                 </EntryState>
                 <AnimationState animationId="9:7463" x="160" y="0" id="9:7538">
+                    <StateTransition stateToId="20:482" duration="0" id="20:484">
+                        <TransitionViewModelCondition opValue="equal" id="20:485">
+                            <TransitionPropertyViewModelComparator id="20:486">
+                                <BindablePropertyEnum id="20:487">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="20:488"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9103" id="20:489"/>
+                        </TransitionViewModelCondition>
+                        <TransitionViewModelCondition opValue="equal" id="20:490">
+                            <TransitionPropertyViewModelComparator id="20:491">
+                                <BindablePropertyEnum id="20:492">
+                                    <DataBindContext sourcePathIds="1:14-1:3400" propertyKey="637" id="20:493"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9103" id="20:494"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
+                    <StateTransition stateToId="20:482" duration="0" id="20:495">
+                        <TransitionViewModelCondition opValue="equal" id="20:496">
+                            <TransitionPropertyViewModelComparator id="20:497">
+                                <BindablePropertyEnum id="20:498">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="20:499"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9103" id="20:500"/>
+                        </TransitionViewModelCondition>
+                        <TransitionViewModelCondition opValue="equal" id="20:501">
+                            <TransitionPropertyViewModelComparator id="20:502">
+                                <BindablePropertyEnum id="20:503">
+                                    <DataBindContext sourcePathIds="1:14-1:2855" propertyKey="637" id="20:504"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9201" id="20:505"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
                     <StateTransition stateToId="9:7545" duration="0" id="9:7539">
                         <TransitionViewModelCondition opValue="equal" id="9:7540">
                             <TransitionPropertyViewModelComparator id="9:7541">
@@ -21624,6 +22549,9 @@
                     <StateTransition stateToId="9:7547" duration="0" enableExitTime="true" exitTimeIsPercetange="true" exitTime="100" id="9:7546"/>
                 </AnimationState>
                 <AnimationState animationId="9:4819" x="640" y="0" id="9:7547"/>
+                <AnimationState animationId="20:1" x="160" y="240" id="20:482">
+                    <StateTransition stateToId="9:7547" duration="0" enableExitTime="true" exitTimeIsPercetange="true" exitTime="100" id="20:483"/>
+                </AnimationState>
             </StateMachineLayer>
             <StateMachineLayer name="Chapter 1 Card 1 Exit" id="9:7548">
                 <AnyState x="160" y="200" id="9:7549"/>
@@ -21632,6 +22560,42 @@
                     <StateTransition stateToId="9:7553" id="9:7552"/>
                 </EntryState>
                 <AnimationState animationId="9:7474" x="160" y="0" id="9:7553">
+                    <StateTransition stateToId="9:7560" duration="0" id="20:506">
+                        <TransitionViewModelCondition opValue="equal" id="20:507">
+                            <TransitionPropertyViewModelComparator id="20:508">
+                                <BindablePropertyEnum id="20:509">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="20:510"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9103" id="20:511"/>
+                        </TransitionViewModelCondition>
+                        <TransitionViewModelCondition opValue="equal" id="20:512">
+                            <TransitionPropertyViewModelComparator id="20:513">
+                                <BindablePropertyEnum id="20:514">
+                                    <DataBindContext sourcePathIds="1:14-1:3400" propertyKey="637" id="20:515"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9103" id="20:516"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
+                    <StateTransition stateToId="9:7601" duration="0" id="20:517">
+                        <TransitionViewModelCondition opValue="equal" id="20:518">
+                            <TransitionPropertyViewModelComparator id="20:519">
+                                <BindablePropertyEnum id="20:520">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="20:521"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9103" id="20:522"/>
+                        </TransitionViewModelCondition>
+                        <TransitionViewModelCondition opValue="equal" id="20:523">
+                            <TransitionPropertyViewModelComparator id="20:524">
+                                <BindablePropertyEnum id="20:525">
+                                    <DataBindContext sourcePathIds="1:14-1:2855" propertyKey="637" id="20:526"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9201" id="20:527"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
                     <StateTransition stateToId="9:7560" duration="0" id="9:7554">
                         <TransitionViewModelCondition opValue="equal" id="9:7555">
                             <TransitionPropertyViewModelComparator id="9:7556">
@@ -21775,6 +22739,42 @@
                     <StateTransition stateToId="9:9141" id="9:9140"/>
                 </EntryState>
                 <AnimationState animationId="9:9066" x="160" y="0" id="9:9141">
+                    <StateTransition stateToId="20:528" duration="0" id="20:530">
+                        <TransitionViewModelCondition opValue="equal" id="20:531">
+                            <TransitionPropertyViewModelComparator id="20:532">
+                                <BindablePropertyEnum id="20:533">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="20:534"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9104" id="20:535"/>
+                        </TransitionViewModelCondition>
+                        <TransitionViewModelCondition opValue="equal" id="20:536">
+                            <TransitionPropertyViewModelComparator id="20:537">
+                                <BindablePropertyEnum id="20:538">
+                                    <DataBindContext sourcePathIds="1:14-1:3400" propertyKey="637" id="20:539"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9104" id="20:540"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
+                    <StateTransition stateToId="20:528" duration="0" id="20:541">
+                        <TransitionViewModelCondition opValue="equal" id="20:542">
+                            <TransitionPropertyViewModelComparator id="20:543">
+                                <BindablePropertyEnum id="20:544">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="20:545"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9104" id="20:546"/>
+                        </TransitionViewModelCondition>
+                        <TransitionViewModelCondition opValue="equal" id="20:547">
+                            <TransitionPropertyViewModelComparator id="20:548">
+                                <BindablePropertyEnum id="20:549">
+                                    <DataBindContext sourcePathIds="1:14-1:2855" propertyKey="637" id="20:550"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9201" id="20:551"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
                     <StateTransition stateToId="9:9148" duration="0" id="9:9142">
                         <TransitionViewModelCondition opValue="equal" id="9:9143">
                             <TransitionPropertyViewModelComparator id="9:9144">
@@ -21790,6 +22790,9 @@
                     <StateTransition stateToId="9:9150" duration="0" enableExitTime="true" exitTimeIsPercetange="true" exitTime="100" id="9:9149"/>
                 </AnimationState>
                 <AnimationState animationId="9:8059" x="640" y="0" id="9:9150"/>
+                <AnimationState animationId="20:160" x="160" y="240" id="20:528">
+                    <StateTransition stateToId="9:9150" duration="0" enableExitTime="true" exitTimeIsPercetange="true" exitTime="100" id="20:529"/>
+                </AnimationState>
             </StateMachineLayer>
             <StateMachineLayer name="Chapter 1 Card 2 Exit" id="9:9151">
                 <AnyState x="160" y="200" id="9:9152"/>
@@ -21798,6 +22801,42 @@
                     <StateTransition stateToId="9:9156" id="9:9155"/>
                 </EntryState>
                 <AnimationState animationId="9:9077" x="160" y="0" id="9:9156">
+                    <StateTransition stateToId="9:9163" duration="0" id="20:552">
+                        <TransitionViewModelCondition opValue="equal" id="20:553">
+                            <TransitionPropertyViewModelComparator id="20:554">
+                                <BindablePropertyEnum id="20:555">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="20:556"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9104" id="20:557"/>
+                        </TransitionViewModelCondition>
+                        <TransitionViewModelCondition opValue="equal" id="20:558">
+                            <TransitionPropertyViewModelComparator id="20:559">
+                                <BindablePropertyEnum id="20:560">
+                                    <DataBindContext sourcePathIds="1:14-1:3400" propertyKey="637" id="20:561"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9104" id="20:562"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
+                    <StateTransition stateToId="9:9204" duration="0" id="20:563">
+                        <TransitionViewModelCondition opValue="equal" id="20:564">
+                            <TransitionPropertyViewModelComparator id="20:565">
+                                <BindablePropertyEnum id="20:566">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="20:567"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9104" id="20:568"/>
+                        </TransitionViewModelCondition>
+                        <TransitionViewModelCondition opValue="equal" id="20:569">
+                            <TransitionPropertyViewModelComparator id="20:570">
+                                <BindablePropertyEnum id="20:571">
+                                    <DataBindContext sourcePathIds="1:14-1:2855" propertyKey="637" id="20:572"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9201" id="20:573"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
                     <StateTransition stateToId="9:9163" duration="0" id="9:9157">
                         <TransitionViewModelCondition opValue="equal" id="9:9158">
                             <TransitionPropertyViewModelComparator id="9:9159">
@@ -21941,6 +22980,42 @@
                     <StateTransition stateToId="9:10897" id="9:10896"/>
                 </EntryState>
                 <AnimationState animationId="9:10822" x="160" y="0" id="9:10897">
+                    <StateTransition stateToId="20:574" duration="0" id="20:576">
+                        <TransitionViewModelCondition opValue="equal" id="20:577">
+                            <TransitionPropertyViewModelComparator id="20:578">
+                                <BindablePropertyEnum id="20:579">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="20:580"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9105" id="20:581"/>
+                        </TransitionViewModelCondition>
+                        <TransitionViewModelCondition opValue="equal" id="20:582">
+                            <TransitionPropertyViewModelComparator id="20:583">
+                                <BindablePropertyEnum id="20:584">
+                                    <DataBindContext sourcePathIds="1:14-1:3400" propertyKey="637" id="20:585"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9105" id="20:586"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
+                    <StateTransition stateToId="20:574" duration="0" id="20:587">
+                        <TransitionViewModelCondition opValue="equal" id="20:588">
+                            <TransitionPropertyViewModelComparator id="20:589">
+                                <BindablePropertyEnum id="20:590">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="20:591"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9105" id="20:592"/>
+                        </TransitionViewModelCondition>
+                        <TransitionViewModelCondition opValue="equal" id="20:593">
+                            <TransitionPropertyViewModelComparator id="20:594">
+                                <BindablePropertyEnum id="20:595">
+                                    <DataBindContext sourcePathIds="1:14-1:2855" propertyKey="637" id="20:596"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9201" id="20:597"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
                     <StateTransition stateToId="9:10904" duration="0" id="9:10898">
                         <TransitionViewModelCondition opValue="equal" id="9:10899">
                             <TransitionPropertyViewModelComparator id="9:10900">
@@ -21956,6 +23031,9 @@
                     <StateTransition stateToId="9:10906" duration="0" enableExitTime="true" exitTimeIsPercetange="true" exitTime="100" id="9:10905"/>
                 </AnimationState>
                 <AnimationState animationId="9:9638" x="640" y="0" id="9:10906"/>
+                <AnimationState animationId="20:233" x="160" y="240" id="20:574">
+                    <StateTransition stateToId="9:10906" duration="0" enableExitTime="true" exitTimeIsPercetange="true" exitTime="100" id="20:575"/>
+                </AnimationState>
             </StateMachineLayer>
             <StateMachineLayer name="Chapter 1 Card 3 Exit" id="9:10907">
                 <AnyState x="160" y="200" id="9:10908"/>
@@ -21964,6 +23042,42 @@
                     <StateTransition stateToId="9:10912" id="9:10911"/>
                 </EntryState>
                 <AnimationState animationId="9:10833" x="160" y="0" id="9:10912">
+                    <StateTransition stateToId="9:10919" duration="0" id="20:598">
+                        <TransitionViewModelCondition opValue="equal" id="20:599">
+                            <TransitionPropertyViewModelComparator id="20:600">
+                                <BindablePropertyEnum id="20:601">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="20:602"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9105" id="20:603"/>
+                        </TransitionViewModelCondition>
+                        <TransitionViewModelCondition opValue="equal" id="20:604">
+                            <TransitionPropertyViewModelComparator id="20:605">
+                                <BindablePropertyEnum id="20:606">
+                                    <DataBindContext sourcePathIds="1:14-1:3400" propertyKey="637" id="20:607"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9105" id="20:608"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
+                    <StateTransition stateToId="9:10960" duration="0" id="20:609">
+                        <TransitionViewModelCondition opValue="equal" id="20:610">
+                            <TransitionPropertyViewModelComparator id="20:611">
+                                <BindablePropertyEnum id="20:612">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="20:613"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9105" id="20:614"/>
+                        </TransitionViewModelCondition>
+                        <TransitionViewModelCondition opValue="equal" id="20:615">
+                            <TransitionPropertyViewModelComparator id="20:616">
+                                <BindablePropertyEnum id="20:617">
+                                    <DataBindContext sourcePathIds="1:14-1:2855" propertyKey="637" id="20:618"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9201" id="20:619"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
                     <StateTransition stateToId="9:10919" duration="0" id="9:10913">
                         <TransitionViewModelCondition opValue="equal" id="9:10914">
                             <TransitionPropertyViewModelComparator id="9:10915">
@@ -22107,6 +23221,42 @@
                     <StateTransition stateToId="9:12054" id="9:12053"/>
                 </EntryState>
                 <AnimationState animationId="9:11979" x="160" y="0" id="9:12054">
+                    <StateTransition stateToId="20:620" duration="0" id="20:622">
+                        <TransitionViewModelCondition opValue="equal" id="20:623">
+                            <TransitionPropertyViewModelComparator id="20:624">
+                                <BindablePropertyEnum id="20:625">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="20:626"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9106" id="20:627"/>
+                        </TransitionViewModelCondition>
+                        <TransitionViewModelCondition opValue="equal" id="20:628">
+                            <TransitionPropertyViewModelComparator id="20:629">
+                                <BindablePropertyEnum id="20:630">
+                                    <DataBindContext sourcePathIds="1:14-1:3400" propertyKey="637" id="20:631"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9106" id="20:632"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
+                    <StateTransition stateToId="20:620" duration="0" id="20:633">
+                        <TransitionViewModelCondition opValue="equal" id="20:634">
+                            <TransitionPropertyViewModelComparator id="20:635">
+                                <BindablePropertyEnum id="20:636">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="20:637"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9106" id="20:638"/>
+                        </TransitionViewModelCondition>
+                        <TransitionViewModelCondition opValue="equal" id="20:639">
+                            <TransitionPropertyViewModelComparator id="20:640">
+                                <BindablePropertyEnum id="20:641">
+                                    <DataBindContext sourcePathIds="1:14-1:2855" propertyKey="637" id="20:642"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9201" id="20:643"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
                     <StateTransition stateToId="9:12061" duration="0" id="9:12055">
                         <TransitionViewModelCondition opValue="equal" id="9:12056">
                             <TransitionPropertyViewModelComparator id="9:12057">
@@ -22122,6 +23272,9 @@
                     <StateTransition stateToId="9:12063" duration="0" enableExitTime="true" exitTimeIsPercetange="true" exitTime="100" id="9:12062"/>
                 </AnimationState>
                 <AnimationState animationId="9:11206" x="640" y="0" id="9:12063"/>
+                <AnimationState animationId="20:343" x="160" y="240" id="20:620">
+                    <StateTransition stateToId="9:12063" duration="0" enableExitTime="true" exitTimeIsPercetange="true" exitTime="100" id="20:621"/>
+                </AnimationState>
             </StateMachineLayer>
             <StateMachineLayer name="Chapter 1 Card 4 Exit" id="9:12064">
                 <AnyState x="160" y="200" id="9:12065"/>
@@ -22130,6 +23283,42 @@
                     <StateTransition stateToId="9:12069" id="9:12068"/>
                 </EntryState>
                 <AnimationState animationId="9:11990" x="160" y="0" id="9:12069">
+                    <StateTransition stateToId="9:12076" duration="0" id="20:644">
+                        <TransitionViewModelCondition opValue="equal" id="20:645">
+                            <TransitionPropertyViewModelComparator id="20:646">
+                                <BindablePropertyEnum id="20:647">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="20:648"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9106" id="20:649"/>
+                        </TransitionViewModelCondition>
+                        <TransitionViewModelCondition opValue="equal" id="20:650">
+                            <TransitionPropertyViewModelComparator id="20:651">
+                                <BindablePropertyEnum id="20:652">
+                                    <DataBindContext sourcePathIds="1:14-1:3400" propertyKey="637" id="20:653"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9106" id="20:654"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
+                    <StateTransition stateToId="9:12117" duration="0" id="20:655">
+                        <TransitionViewModelCondition opValue="equal" id="20:656">
+                            <TransitionPropertyViewModelComparator id="20:657">
+                                <BindablePropertyEnum id="20:658">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="20:659"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9106" id="20:660"/>
+                        </TransitionViewModelCondition>
+                        <TransitionViewModelCondition opValue="equal" id="20:661">
+                            <TransitionPropertyViewModelComparator id="20:662">
+                                <BindablePropertyEnum id="20:663">
+                                    <DataBindContext sourcePathIds="1:14-1:2855" propertyKey="637" id="20:664"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9201" id="20:665"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
                     <StateTransition stateToId="9:12076" duration="0" id="9:12070">
                         <TransitionViewModelCondition opValue="equal" id="9:12071">
                             <TransitionPropertyViewModelComparator id="9:12072">
@@ -22273,6 +23462,42 @@
                     <StateTransition stateToId="9:12969" id="9:12968"/>
                 </EntryState>
                 <AnimationState animationId="9:12894" x="160" y="0" id="9:12969">
+                    <StateTransition stateToId="20:666" duration="0" id="20:668">
+                        <TransitionViewModelCondition opValue="equal" id="20:669">
+                            <TransitionPropertyViewModelComparator id="20:670">
+                                <BindablePropertyEnum id="20:671">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="20:672"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9107" id="20:673"/>
+                        </TransitionViewModelCondition>
+                        <TransitionViewModelCondition opValue="equal" id="20:674">
+                            <TransitionPropertyViewModelComparator id="20:675">
+                                <BindablePropertyEnum id="20:676">
+                                    <DataBindContext sourcePathIds="1:14-1:3400" propertyKey="637" id="20:677"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9107" id="20:678"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
+                    <StateTransition stateToId="20:666" duration="0" id="20:679">
+                        <TransitionViewModelCondition opValue="equal" id="20:680">
+                            <TransitionPropertyViewModelComparator id="20:681">
+                                <BindablePropertyEnum id="20:682">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="20:683"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9107" id="20:684"/>
+                        </TransitionViewModelCondition>
+                        <TransitionViewModelCondition opValue="equal" id="20:685">
+                            <TransitionPropertyViewModelComparator id="20:686">
+                                <BindablePropertyEnum id="20:687">
+                                    <DataBindContext sourcePathIds="1:14-1:2855" propertyKey="637" id="20:688"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9201" id="20:689"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
                     <StateTransition stateToId="9:12976" duration="0" id="9:12970">
                         <TransitionViewModelCondition opValue="equal" id="9:12971">
                             <TransitionPropertyViewModelComparator id="9:12972">
@@ -22288,6 +23513,9 @@
                     <StateTransition stateToId="9:12978" duration="0" enableExitTime="true" exitTimeIsPercetange="true" exitTime="100" id="9:12977"/>
                 </AnimationState>
                 <AnimationState animationId="9:12344" x="640" y="0" id="9:12978"/>
+                <AnimationState animationId="20:413" x="160" y="240" id="20:666">
+                    <StateTransition stateToId="9:12978" duration="0" enableExitTime="true" exitTimeIsPercetange="true" exitTime="100" id="20:667"/>
+                </AnimationState>
             </StateMachineLayer>
             <StateMachineLayer name="Chapter 1 Card 5 Exit" id="9:12979">
                 <AnyState x="160" y="200" id="9:12980"/>
@@ -22296,6 +23524,42 @@
                     <StateTransition stateToId="9:12984" id="9:12983"/>
                 </EntryState>
                 <AnimationState animationId="9:12905" x="160" y="0" id="9:12984">
+                    <StateTransition stateToId="9:12991" duration="0" id="20:690">
+                        <TransitionViewModelCondition opValue="equal" id="20:691">
+                            <TransitionPropertyViewModelComparator id="20:692">
+                                <BindablePropertyEnum id="20:693">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="20:694"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9107" id="20:695"/>
+                        </TransitionViewModelCondition>
+                        <TransitionViewModelCondition opValue="equal" id="20:696">
+                            <TransitionPropertyViewModelComparator id="20:697">
+                                <BindablePropertyEnum id="20:698">
+                                    <DataBindContext sourcePathIds="1:14-1:3400" propertyKey="637" id="20:699"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9107" id="20:700"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
+                    <StateTransition stateToId="9:13032" duration="0" id="20:701">
+                        <TransitionViewModelCondition opValue="equal" id="20:702">
+                            <TransitionPropertyViewModelComparator id="20:703">
+                                <BindablePropertyEnum id="20:704">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="20:705"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9107" id="20:706"/>
+                        </TransitionViewModelCondition>
+                        <TransitionViewModelCondition opValue="equal" id="20:707">
+                            <TransitionPropertyViewModelComparator id="20:708">
+                                <BindablePropertyEnum id="20:709">
+                                    <DataBindContext sourcePathIds="1:14-1:2855" propertyKey="637" id="20:710"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9201" id="20:711"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
                     <StateTransition stateToId="9:12991" duration="0" id="9:12985">
                         <TransitionViewModelCondition opValue="equal" id="9:12986">
                             <TransitionPropertyViewModelComparator id="9:12987">
@@ -22439,6 +23703,42 @@
                     <StateTransition stateToId="16:671" id="16:670"/>
                 </EntryState>
                 <AnimationState animationId="16:333" x="160" y="0" id="16:671">
+                    <StateTransition stateToId="16:680" duration="0" id="20:712">
+                        <TransitionViewModelCondition opValue="equal" id="20:713">
+                            <TransitionPropertyViewModelComparator id="20:714">
+                                <BindablePropertyEnum id="20:715">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="20:716"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9103" id="20:717"/>
+                        </TransitionViewModelCondition>
+                        <TransitionViewModelCondition opValue="equal" id="20:718">
+                            <TransitionPropertyViewModelComparator id="20:719">
+                                <BindablePropertyEnum id="20:720">
+                                    <DataBindContext sourcePathIds="1:14-1:3400" propertyKey="637" id="20:721"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9103" id="20:722"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
+                    <StateTransition stateToId="16:680" duration="0" id="20:723">
+                        <TransitionViewModelCondition opValue="equal" id="20:724">
+                            <TransitionPropertyViewModelComparator id="20:725">
+                                <BindablePropertyEnum id="20:726">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="20:727"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9103" id="20:728"/>
+                        </TransitionViewModelCondition>
+                        <TransitionViewModelCondition opValue="equal" id="20:729">
+                            <TransitionPropertyViewModelComparator id="20:730">
+                                <BindablePropertyEnum id="20:731">
+                                    <DataBindContext sourcePathIds="1:14-1:2855" propertyKey="637" id="20:732"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9201" id="20:733"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
                     <StateTransition stateToId="16:678" duration="0" id="16:672">
                         <TransitionViewModelCondition opValue="equal" id="16:673">
                             <TransitionPropertyViewModelComparator id="16:674">
@@ -22462,6 +23762,42 @@
                     <StateTransition stateToId="16:1211" id="16:1210"/>
                 </EntryState>
                 <AnimationState animationId="16:943" x="160" y="0" id="16:1211">
+                    <StateTransition stateToId="16:1220" duration="0" id="20:734">
+                        <TransitionViewModelCondition opValue="equal" id="20:735">
+                            <TransitionPropertyViewModelComparator id="20:736">
+                                <BindablePropertyEnum id="20:737">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="20:738"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9101" id="20:739"/>
+                        </TransitionViewModelCondition>
+                        <TransitionViewModelCondition opValue="equal" id="20:740">
+                            <TransitionPropertyViewModelComparator id="20:741">
+                                <BindablePropertyEnum id="20:742">
+                                    <DataBindContext sourcePathIds="1:14-1:3400" propertyKey="637" id="20:743"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9101" id="20:744"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
+                    <StateTransition stateToId="16:1220" duration="0" id="20:745">
+                        <TransitionViewModelCondition opValue="equal" id="20:746">
+                            <TransitionPropertyViewModelComparator id="20:747">
+                                <BindablePropertyEnum id="20:748">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="20:749"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9101" id="20:750"/>
+                        </TransitionViewModelCondition>
+                        <TransitionViewModelCondition opValue="equal" id="20:751">
+                            <TransitionPropertyViewModelComparator id="20:752">
+                                <BindablePropertyEnum id="20:753">
+                                    <DataBindContext sourcePathIds="1:14-1:2855" propertyKey="637" id="20:754"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9201" id="20:755"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
                     <StateTransition stateToId="16:1218" duration="0" id="16:1212">
                         <TransitionViewModelCondition opValue="equal" id="16:1213">
                             <TransitionPropertyViewModelComparator id="16:1214">
@@ -22497,9 +23833,11 @@
     <ViewModel defaultInstanceId="1:15" name="Backdrop" id="1:14">
         <ViewModelPropertyEnumCustom enumId="1:9001" name="scene" id="1:2713"/>
         <ViewModelPropertyEnumCustom enumId="1:9002" name="direction" id="1:2855"/>
+        <ViewModelPropertyEnumCustom enumId="1:9001" name="startScene" id="1:3400"/>
         <ViewModelInstance exports="true" name="Default" id="1:15">
             <ViewModelInstanceEnum propertyValue="1:9100" viewModelPropertyId="1:2713" id="1:2816"/>
             <ViewModelInstanceEnum propertyValue="1:9200" viewModelPropertyId="1:2855" id="1:2856"/>
+            <ViewModelInstanceEnum propertyValue="1:9100" viewModelPropertyId="1:3400" id="1:3401"/>
         </ViewModelInstance>
     </ViewModel>
 </Rive>

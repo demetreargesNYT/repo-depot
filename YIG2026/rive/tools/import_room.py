@@ -1049,6 +1049,7 @@ class Build:
                 dbc, cmp_ = cond.find(".//DataBindContext"), cond.find("TransitionValueEnumComparator")
                 if dbc is not None and dbc.get("sourcePathIds", "").endswith("-" + scene_prop) and cmp_ is not None:
                     cmp_.set("value", self.scene_value_id())
+            self.drop_start_scene(lay)
             if ln == T and not intro_cfg:
                 self.start_in_loop(lay, new[f"{name} Loop"].get("id"))
             layers.append(lay)
@@ -1060,6 +1061,7 @@ class Build:
             bd = self.layers["Backdrop"]
             state_id = ids()
             tr = fresh(bd.find("AnyState").findall("StateTransition")[0], self.ids, {})
+            self.drop_start_scene_conditions(tr)
             tr.set("stateToId", state_id)
             tr.find(".//TransitionValueEnumComparator").set("value", self.scene_value_id())
             state = ET.fromstring(f'<AnimationState animationId="{new[f"{name} Colors"].get("id")}" x="{160 + 240 * len(bd.findall("AnimationState"))}" y="0" id="{state_id}"/>')
@@ -1119,6 +1121,34 @@ class Build:
         default = self.cfg["gates"].get("default", next(iter(g["show"])))
         ET.SubElement(entry, "StateTransition", {"stateToId": states[default].get("id"), "id": ids()})
         return layer
+
+    def start_scene_prop(self):
+        return next((p.get("id") for p in self.root.find("ViewModel") if p.get("name") == "startScene"), None)
+
+    def drop_start_scene_conditions(self, tr):
+        sp = self.start_scene_prop()
+        for c in list(tr.findall("TransitionViewModelCondition")):
+            if sp and c.find(".//DataBindContext").get("sourcePathIds", "").endswith("-" + sp):
+                tr.remove(c)
+
+    def drop_start_scene(self, layer):
+        """The template room's layers carry its startScene rules (tools/start_scene.py): the "<Room> Built" state, and in the
+        first state the transitions that open on the room (startScene) or bring it in with Back before it was shown. They
+        name the template's scene and its Built pose, so the copy drops them: a newly imported room comes in without
+        startScene rules, and `npm run check` fails on it until they are added."""
+        built = {a.get("id") for n, a in self.tanims.items() if n.endswith(" Built")}
+        gone = {st.get("id") for st in layer.findall("AnimationState") if st.get("animationId") in built}
+        for st in list(layer.findall("AnimationState")):
+            if st.get("id") in gone:
+                layer.remove(st)
+        first = layer.find("EntryState/StateTransition").get("stateToId")
+        sp = self.start_scene_prop()
+        dp = next((p.get("id") for p in self.root.find("ViewModel") if p.get("name") == "direction"), None)
+        for st in layer.findall("AnimationState"):
+            for tr in list(st.findall("StateTransition")):
+                props = {c.find(".//DataBindContext").get("sourcePathIds", "").split("-")[-1] for c in tr.findall("TransitionViewModelCondition")}
+                if tr.get("stateToId") in gone or (sp in props) or (st.get("id") == first and dp in props):
+                    st.remove(tr)
 
     def start_in_loop(self, layer, loop_id):
         """The room the file opens on has no intro: its layer starts in the Loop and the Waiting and Intro states go."""
