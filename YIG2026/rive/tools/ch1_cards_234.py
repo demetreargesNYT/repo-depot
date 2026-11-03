@@ -171,22 +171,26 @@ def card1_spin(doc):
     doc.set_prop("Chapter 1 Card 1 Loop", "9:4806", "rotation", bake(vals, range(762)))
 
 
-def emit_room(doc, room, b, theta, T0, ids, pre, pieces):
+def emit_room(doc, room, b, theta, T0, ids, pre, pieces, Ps=0):
     """Write a room whose ball journey starts at intro frame T0 and then repeats as the loop (picked up at the intro's last frame).
 
-    b: the Ball over cycle frames 0 to L - 1 with c[L] = c[0]; theta: its turn at cycle frames 0 to L (the ends a whole number of turns apart);
-    ids: dict with ball, scale, spin (node ids); pre(f): (x, y, scaleX, scaleY) of the ball's centre on intro frames before T0;
-    pieces: [(object id, property, fn(cycle frame), rest value, extra(intro frame) or None)]. Everything must be at rest on cycle frame 0
-    and L - 1, so the loop closes."""
+    b: the Ball over cycle frames 0 to L - 1 with c[L] = c[Ps]; theta: its turn at cycle frames 0 to L (the periodic part, Ps to L, a whole
+    number of turns apart); ids: dict with ball, scale, spin (node ids); pre(f): (x, y, scaleX, scaleY) of the ball's centre on intro frames
+    before T0; pieces: [(object id, property, fn(cycle frame), rest value, extra(intro frame) or None)]. Everything must be at rest on cycle
+    frames Ps and L - 1, so the loop closes. Ps is where the repeating part of the cycle starts: frames before it (a lead-in that
+    only the first visit plays, in the intro) are not part of the loop."""
     L = b.n
+    Lp = L - Ps
     assert T0 <= INTRO - 1
     loop, intro = f"{room} Loop", f"{room} Intro"
     phase0 = INTRO - 1 - T0
+    assert Ps <= phase0 < L
     px = plane_x(room)
-    turns = theta[L] - theta[0]
+    turns = theta[L] - theta[Ps]
     assert abs(turns / (2 * math.pi) - round(turns / (2 * math.pi))) < 1e-6, turns
-    th_ext = lambda t: theta[t % L] + (t // L) * turns
-    fr_i, fr_l = range(INTRO), range(L + 1)
+    idx = lambda k: Ps + ((phase0 - Ps + k) % Lp)
+    wraps = lambda k: (phase0 - Ps + k) // Lp
+    fr_i, fr_l = range(INTRO), range(Lp + 1)
     ix, iy, isx, isy, ith = {}, {}, {}, {}, {}
     for f in fr_i:
         if f < T0:
@@ -194,14 +198,14 @@ def emit_room(doc, room, b, theta, T0, ids, pre, pieces):
             th = 0.0
         else:
             t = f - T0
-            (x, y), sx, sy, th = b.c[t], b.sx[t], b.sy[t], th_ext(t)
+            (x, y), sx, sy, th = b.c[t], b.sx[t], b.sy[t], theta[t]
         ix[f], iy[f], isx[f], isy[f], ith[f] = x + px(f), y + BALL_CENTER, sx, sy, th
-    lx = {k: b.c[(phase0 + k) % L][0] for k in fr_l}
-    ly = {k: b.c[(phase0 + k) % L][1] + BALL_CENTER for k in fr_l}
-    lsx = {k: b.sx[(phase0 + k) % L] for k in fr_l}
-    lsy = {k: b.sy[(phase0 + k) % L] for k in fr_l}
-    lth = {k: th_ext(phase0 + k) for k in fr_l}
-    doc.set_duration(loop, L + 1)
+    lx = {k: b.c[idx(k)][0] for k in fr_l}
+    ly = {k: b.c[idx(k)][1] + BALL_CENTER for k in fr_l}
+    lsx = {k: b.sx[idx(k)] for k in fr_l}
+    lsy = {k: b.sy[idx(k)] for k in fr_l}
+    lth = {k: theta[idx(k)] + wraps(k) * turns for k in fr_l}
+    doc.set_duration(loop, Lp + 1)
     for prop, i_ser, l_ser in (("x", ix, lx), ("y", iy, ly)):
         doc.set_prop(intro, ids["ball"], prop, bake(i_ser, fr_i))
         doc.set_prop(loop, ids["ball"], prop, bake(l_ser, fr_l))
@@ -211,9 +215,9 @@ def emit_room(doc, room, b, theta, T0, ids, pre, pieces):
     doc.set_prop(intro, ids["spin"], "rotation", bake(ith, fr_i))
     doc.set_prop(loop, ids["spin"], "rotation", bake(lth, fr_l))
     for oid, prop, fn, rest, extra in pieces:
-        assert abs(fn(0) - rest) < 1e-6 and abs(fn(L - 1) - rest) < 1e-3, (oid, prop, fn(0), fn(L - 1), rest)
+        assert abs(fn(Ps) - rest) < 1e-6 and abs(fn(L - 1) - rest) < 1e-3, (oid, prop, fn(Ps), fn(L - 1), rest)
         iser = {f: (fn(max(f - T0, 0)) + (extra(f) if extra else 0.0)) for f in fr_i}
-        lser = {k: fn((phase0 + k) % L) for k in fr_l}
+        lser = {k: fn(idx(k)) for k in fr_l}
         doc.set_prop(intro, oid, prop, bake(iser, fr_i))
         doc.set_prop(loop, oid, prop, bake(lser, fr_l))
     doc.rebuild_waiting(room)
@@ -223,6 +227,23 @@ def dip(t, f0, depth, T):
     """A single smooth dip that starts at frame f0, reaches `depth` halfway and is back at f0 + T: no overshoot, one turning point."""
     u = t - f0
     return depth * math.sin(math.pi * u / T) ** 2 if 0 < u < T else 0.0
+
+
+smooth_dip = dip
+
+
+def spring_fade(k, depth, down=3, tau=10.0, period=18.0, T=60.0):
+    """spring() without its abrupt cut: the tail dies away smoothly and is gone at T frames after the contact."""
+    if k <= 0:
+        return 0.0
+    if k <= down:
+        return depth * math.sin(0.5 * math.pi * k / down)
+    u = k - down
+    if u >= T:
+        return 0.0
+    w = 2 * math.pi / period
+    v = depth * math.exp(-u / tau) * (math.cos(w * u) + math.sin(w * u) / (w * tau))
+    return v * (1 - smooth((u - (T - 12.0)) / 12.0))
 
 
 def card2(doc, write):
@@ -1052,23 +1073,25 @@ def card4(doc, write):
     contact2 = pts2[-1]
     s_from2 = ((contact2[0] - leaf_n[0] * Rb) - leaf_edge[0][0]) * leaf_dir[0] + ((contact2[1] - leaf_n[1] * Rb) - leaf_edge[0][1]) * leaf_dir[1]
     s_len2 = math.dist(*leaf_edge)
-    sl2, s, v_s2 = [], s_from2, 1.0
+    # the landing hands its speed along the leaf (3 px a frame at most) and the slide eases from it to its old pace, with no stall
+    v_arr2 = (pts2[-2][0] - pts2[-3][0]) * leaf_dir[0] + (pts2[-2][1] - pts2[-3][1]) * leaf_dir[1]
+    sl2, s, v_s2 = [], s_from2, min(0.9 * v_arr2, 3.6)
     while s < s_len2:
+        s += v_s2                                     # the first slide frame already moves (no repeated frame at the landing)
         P = (leaf_edge[0][0] + s * leaf_dir[0], leaf_edge[0][1] + s * leaf_dir[1])
         sl2.append((P[0] + Rb * leaf_n[0], P[1] + Rb * leaf_n[1]))
-        v_s2 = min(v_s2 + 0.08, 1.9)
-        s += v_s2
-    F_LEAF_END = F_LEAF + len(sl2)
-    pts3, hit3 = sim_fall(sl2[-1], (leaf_dir[0] * v_s2 * 0.6, leaf_dir[1] * v_s2 * 0.6), G, [], Rb, stop_y=rim_c)
-    F_RIM = F_LEAF_END + len(pts3) - 1
+        v_s2 = 1.5 + (v_s2 - 1.5) * 0.8 if v_s2 > 1.5 else min(v_s2 + 0.08, 1.9)
+    F_LEAF_END = F_LEAF + 1 + len(sl2)
+    pts3, hit3 = sim_fall(sl2[-1], (leaf_dir[0] * v_s2 * 0.8, leaf_dir[1] * v_s2 * 0.8), G, [], Rb, stop_y=rim_c)
+    F_RIM = F_LEAF_END + len(pts3) - 2           # the fall starts on the slide's last frame (no repeated frame)
     rim_x0 = pts3[-1][0]
     # the rim: Wordle-style rolls and pauses
-    rim_ctrl = [(0, 0.0), (5, 0.0), (22, 30.0), (30, 30.0), (46, 8.0), (54, 8.0), (68, 28.0), (76, 28.0), (84, 2.0), (92, 2.0)]
+    rim_ctrl = [(0, 0.0), (5, 0.0), (22, 30.0), (30, 30.0), (46, 8.0), (54, 8.0), (68, 28.0), (76, 28.0), (90, 2.0), (92, 2.0)]
     F_RIM_END = F_RIM + rim_ctrl[-1][0]
     # the climb back: rim -> blue leaf (touch) -> hexagon -> crossword head
     leaf_touch = (729.8, 573.5)
     CL = [(24, 22), (30, 34), (30, 22)]
-    F_CL0 = F_RIM_END + 6
+    F_CL0 = max(F_RIM_END + 6, 477)            # the climb starts where it always did
     cl_leave, cl_land = [], []
     f = F_CL0
     for n, h in CL:
@@ -1084,13 +1107,13 @@ def card4(doc, write):
     cross_ev = [F_C, F_TOPL]
     hex_ev = [land[0], cl_land[1], F_HEX]
     leaf_ev = [land[1]]
-    sy_c = lambda t: 1 - dip(t, cross_ev, 0.06)
-    ph_c = lambda t: dip(t, cross_ev, 0.03)
+    sy_c = lambda t: 1 - dip(t, [F_C], 0.06) - smooth_dip(t, F_TOPL, 0.06, 28)
+    ph_c = lambda t: dip(t, [F_C], 0.03) + smooth_dip(t, F_TOPL, 0.03, 28)
     sy_h = lambda t: 1 - dip(t, hex_ev[:2], 0.06)
     ph_h = lambda t: dip(t, hex_ev[:2], -0.03) + spring(t - F_HEX, 0.05, down=3, tau=9.0, period=18.0)
     sy_l = lambda t: 1 - dip(t, leaf_ev, 0.06)
     ph_l = lambda t: dip(t, leaf_ev, 0.03)
-    bleaf = lambda t: spring(t - F_LEAF, -0.14, down=4, tau=10.0, period=20.0) + spring(t - cl_land[0], -0.10, down=3, tau=8.0, period=18.0)
+    bleaf = lambda t: spring_fade(t - F_LEAF, -0.14, down=4, tau=10.0, period=20.0) + spring_fade(t - cl_land[0], -0.10, down=3, tau=8.0, period=18.0)
 
     def th_head(t):
         if t <= F_H1 - 0:
@@ -1103,7 +1126,7 @@ def card4(doc, write):
             return th_roll(t) + spring(t - F_C, 0.03, down=3, tau=9.0, period=18.0) * (1 - smooth((t - F_ROLL) / N_ROLL))
         if t < F_TOPL:
             return release(t - F_OFF, 0.12, tau=7.0, period=20.0)
-        return spring(t - F_TOPL, 0.03, down=3, tau=9.0, period=18.0)
+        return smooth_dip(t, F_TOPL, 0.03, 28)
 
     def flower(t, p, base, sy, ph):
         x, y = p[0], base[1] + (p[1] - base[1]) * sy(t)
@@ -1152,9 +1175,9 @@ def card4(doc, write):
     for i, p in enumerate(pts2):
         b.put(F_HEX_END + i, p, "air")
     for i, p in enumerate(sl2):
-        b.put(F_LEAF + i, p, "roll")
+        b.put(F_LEAF + 1 + i, p, "roll")
     for i, p in enumerate(pts3):
-        b.put(F_LEAF_END + i, p, "air")
+        b.put(F_LEAF_END + i - 1, p, "air")
     for t in range(F_RIM, F_RIM_END + 1):
         b.put(t, (rim_x0 + smooth_path(rim_ctrl, t - F_RIM), rim_c), "roll")
     rim_end = b.c[F_RIM_END]
@@ -1188,21 +1211,41 @@ def card4(doc, write):
     resid = theta[L] - 2 * math.pi * round(theta[L] / (2 * math.pi))
     a_, z_ = cl_leave[2], cl_land[2]
     theta = [th - resid * (smooth((t - a_) / (z_ - a_)) if t <= z_ else 1.0) for t, th in enumerate(theta)]
+    # ---- a lead-in for the first visit: the pot and flowers ride in with the pan, so the ball is already rocking on the crossword head as the
+    # room slides into view (calm: 3 px each way, the head tilting like a scale); only the first visit plays it, the loop repeats the cycle above ----
+    S = T0                                                       # the cycle above used to start at intro frame S; it still does, the lead-in fills frames 0 to S
+    preA = [(0, 0.0), (6, 0.0), (30, 3.0), (40, 3.0), (64, -3.0), (74, -3.0), (S, 0.0)]
+    u_pre = lambda t: smooth_path(preA, t)
+    th_pre = lambda t: TILT * u_pre(t)
+    L_old, L = L, L + S
+    b2 = Ball(L)
+    for t in range(S):
+        b2.put(t, rot((H[0] + u_pre(t), head_top - Rb), H, th_pre(t)), "roll")
+    for t in range(L_old):
+        b2.c[t + S], b2.mode[t + S], b2.sx[t + S], b2.sy[t + S] = b.c[t], b.mode[t], b.sx[t], b.sy[t]
+    b2.c[L], b2.mode[L] = b2.c[S], b2.mode[S]
+    b2.kick = {f + S: w for f, w in b.kick.items()}
+    b = b2
+    theta = b.spin()
+    resid = (theta[L] - theta[S]) - 2 * math.pi * round((theta[L] - theta[S]) / (2 * math.pi))
+    a_, z_ = cl_leave[2] + S, cl_land[2] + S
+    theta = [th - resid * (smooth((t - a_) / (z_ - a_)) if t <= z_ else 1.0) for t, th in enumerate(theta)]
     top = min(c[1] for c in b.c.values()) - 17.6
+    T0 = 0
 
     # ---- numbers to check ---------------------------------------------------------------------------------------------------------------------------
-    tc = lambda t: (t + T0) / 60.0
+    tc = lambda t: (t + S + T0) / 60.0
     names = [("balance on the crossword head starts", 0), ("hop off the crossword head", leave[0]), ("lands on the yellow S hexagon", land[0]),
              ("lands on the purple leaf", land[1]), ("lands back on the crossword head", land[2]), ("second balance ends, rolls to the edge", F_EDGE0),
              ("leaves the head's right edge", F_OFF), ("lands on the hexagon's slope", F_HEX), ("drops onto the blue leaf (it bends)", F_LEAF),
              ("drops onto the pot's rim", F_RIM), ("rim rolls end", F_RIM_END)]
     names += [("climb: touches the blue leaf", cl_land[0]), ("climb: lands on the hexagon", cl_land[1]), ("climb: lands on the crossword head", cl_land[2])]
-    print(f"{room}: cycle {L} frames ({L / 60:.2f} s), loop {L + 1} frames, journey starts at intro frame {T0} ({T0 / 60:.2f} s); the loop starts at cycle frame {INTRO - 1 - T0}")
+    print(f"{room}: cycle {L} frames (lead-in {S} frames, then {L_old} frames that repeat: {L_old / 60:.2f} s), loop {L_old + 1} frames, journey starts at intro frame {T0}; the loop starts at cycle frame {INTRO - 1 - T0}")
     for name, t in sorted(names, key=lambda n: n[1]):
         print(f"  cycle {t:3d}  timecode {tc(t):5.2f} s  {name}")
     print(f"  highest point of the ball: y {top:.1f} ({phone_y(top):.0f} px on the phone frame); copy ends at {COPY_BOTTOM:.0f}: clearance {phone_y(top) - COPY_BOTTOM:.0f} px")
     print(f"  x range {min(c[0] for c in b.c.values()) - 17.6:.0f} to {max(c[0] for c in b.c.values()) + 17.6:.0f}, y to {max(c[1] for c in b.c.values()) + 17.6:.0f}")
-    print(f"  hops: {hops}; climb {CL}; spin {theta[L] / (2 * math.pi):.2f} turns (leftover {resid:+.2f} rad into the last hop)")
+    print(f"  lead-in: the ball rolls up to {max(abs(u_pre(t)) for t in range(S)):.1f} px each way on the head from frame 6; hops: {hops}; climb {CL}; spin {(theta[L] - theta[S]) / (2 * math.pi):.2f} turns (leftover {resid:+.2f} rad into the last hop)")
     if not write:
         return
 
@@ -1219,12 +1262,14 @@ def card4(doc, write):
     doc.drop_object(loop, "9:11138")
     ids["spin"], _ = doc.wrap_run("9:11190", "9:11196", f"{room} Ball Spin", 0.0, -17.572)
     pre = lambda fr: (b.c[0][0], b.c[0][1], 1.0, 1.0)
-    pieces = [(piv["head"], "rotation", th_head, 0.0, None),
-              (piv["cross"], "scaleY", sy_c, 1.0, None), (piv["cross"], "rotation", ph_c, 0.0, None),
-              (piv["hexa"], "scaleY", sy_h, 1.0, None), (piv["hexa"], "rotation", ph_h, 0.0, None),
-              (piv["leaf"], "scaleY", sy_l, 1.0, None), (piv["leaf"], "rotation", ph_l, 0.0, None),
-              (piv["bleaf"], "rotation", bleaf, 0.0, None)]
-    emit_room(doc, room, b, theta, T0, ids, pre, pieces)
+    W = lambda fn, lead: (lambda t: fn(t - S) if t >= S else lead(t))          # a piece's motion on the shifted cycle
+    one, zero = (lambda t: 1.0), (lambda t: 0.0)
+    pieces = [(piv["head"], "rotation", W(th_head, th_pre), 0.0, None),
+              (piv["cross"], "scaleY", W(sy_c, one), 1.0, None), (piv["cross"], "rotation", W(ph_c, zero), 0.0, None),
+              (piv["hexa"], "scaleY", W(sy_h, one), 1.0, None), (piv["hexa"], "rotation", W(ph_h, zero), 0.0, None),
+              (piv["leaf"], "scaleY", W(sy_l, one), 1.0, None), (piv["leaf"], "rotation", W(ph_l, zero), 0.0, None),
+              (piv["bleaf"], "rotation", W(bleaf, zero), 0.0, None)]
+    emit_room(doc, room, b, theta, T0, ids, pre, pieces, Ps=S)
 
 
 def main(argv):

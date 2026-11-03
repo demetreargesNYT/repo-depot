@@ -153,7 +153,7 @@ def contacts_report(pts, t_of, tmax_report):
         if si > 1.0 and so > 1.05 * si and A[4] == "flight" and not step:
             notes.append("FLAG leaves faster than it came")
             flags.append((t, f"contact at {t:.2f} s leaves faster than it arrived ({si:.1f} to {so:.1f})"))
-        if A[4] != "rest" and B[4] != "rest" and si > 0.8 and so > 0.3 and abs(so - si) > max(0.6, 0.25 * si) and not hidden:
+        if A[4] not in ("rest", "flight") and B[4] not in ("rest", "flight") and si > 0.8 and so > 0.3 and abs(so - si) > max(0.6, 0.25 * si) and not hidden:
             cosang = (vin[0] * vout[0] + vin[1] * vout[1]) / (si * so)
             if cosang > math.cos(math.radians(20)):
                 notes.append("FLAG lurch: speed jumps %.1f to %.1f with no turn" % (si, so))
