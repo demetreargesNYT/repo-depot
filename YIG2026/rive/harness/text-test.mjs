@@ -33,7 +33,7 @@ const QUICK_RUN = args.includes("--quick");
 const TIMES = flag("--times", QUICK_RUN ? "0.5,3.0" : "0.5,1.5,2.5,3.0").split(",").map(Number);
 const BASE = flag("--url", "http://127.0.0.1:8765/");
 const INTRO = 3.2, QUICK = 0.34, STEP = 0.12, TOL = 0.12;   // seconds; TOL covers the 40 ms sampling and page scheduling
-// When a room's first-visit copy arrives (the guide, section 8): FIRST everywhere, LOCKUP on a game's first card with its
+// When a room's first-visit copy arrives (the guide, section 6): FIRST everywhere, LOCKUP on a game's first card with its
 // lockup (the whole intro). The intros themselves stay INTRO long, so the waits for a room to finish use INTRO.
 const FIRST = 2.0, LOCKUP = 3.2;
 

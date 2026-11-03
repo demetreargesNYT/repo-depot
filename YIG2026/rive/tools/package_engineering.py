@@ -79,7 +79,7 @@ def example_page():
     page = re.sub(r"<!--\n  The whole experience, Loading through End.*?-->", """<!--
   The whole experience, Loading through End, on one stage, playing the three Rive files back to back with the example
   player data below. Serve the package folder with any static server and open /reference/example/ (engineering-guide.md,
-  section 13). Query:
+  section 9). Query:
   flow (subscriber is the default, or anon), player (wordle-only | midi-only | connections-only | several-games | all-seven | none), top (a game),
   goto (file:scene, for example 3:chapter-4), jump (a card index). All copy is placeholder.
 -->""", page, count=1, flags=re.S)
@@ -111,9 +111,9 @@ def readme():
     return """# Year in Games 2026: Rive files and guide for engineering
 
 Start here. You need the four things in `core/`: the three Rive files, the guide, the text CSS and the desktop arrow art.
-Read `core/engineering-guide.md` first: its opening section, "How the animation works, in plain English", is a one-page summary of the rules, and "What's new in this delivery" follows it.
+Read `core/engineering-guide.md` first: "The rules" is a one-page summary, and "What's new in this delivery" lists what changed since the last package.
 Everything in `reference/` is optional, a working example of the guide.
-`reference/timing-demo.html` is the visual companion to the guide's timing section (section 8): double-click it to see every wait and the Rive calls on each tap.
+`reference/timing-demo.html` is the visual companion to the guide's timing section (section 6): double-click it to see every wait and the Rive calls on each tap.
 """
 
 

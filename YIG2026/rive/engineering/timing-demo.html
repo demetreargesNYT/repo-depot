@@ -107,7 +107,7 @@
 
 <header class="top">
   <h1>Copy timing and navigation</h1>
-  <p class="lede">This page plays the rules from the engineering guide (<code>core/engineering-guide.md</code> in this package, sections 4, 8 and 9) with stand-in rooms. Tap through the cards, or click any card to open straight on it, and see the same few Rive calls and the one rule that sets the wait.</p>
+  <p class="lede">This page plays the rules from the engineering guide (<code>core/engineering-guide.md</code> in this package, sections 2, 6 and 7) with stand-in rooms. Tap through the cards, or click any card to open straight on it, and see the same few Rive calls and the one rule that sets the wait.</p>
   <div class="cssnote" id="cssnote" hidden>The text CSS wasn't found at <code>../core/yig-text-motion.css</code>. Open this page from the unzipped package folder.</div>
 
   <div class="stripbar">
@@ -208,7 +208,7 @@ function cssMs(name) {
 }
 const secs = (ms) => (ms / 1000).toFixed(2).replace(/0$/, "");
 
-// ---- card lists, from the guide's section 7 tables (worked examples 1 and 2, and the anonymous list)
+// ---- card lists, from the guide's section 5 tables (worked examples 1 and 2, and the anonymous list)
 function buildCards(kind) {
   const c = [];
   const add = (file, scene, label, extra = {}) => c.push({ file, scene, label, ...extra });
@@ -500,7 +500,7 @@ function reset(kind) {
      What you write for a tap. The page shows this block as it runs; lines starting "readout." only feed the readout.
      ============================================================================================================ -->
 <script id="tapcode">
-// The two first-visit times live in yig-text-motion.css (guide, section 8); the other waits are fixed numbers.
+// The two first-visit times live in yig-text-motion.css (guide, section 6); the other waits are fixed numbers.
 const FIRST_VISIT_MS = cssMs("--yig-first-visit");   // 2.0 s: a room's first visit
 const LOCKUP_MS = cssMs("--yig-lockup");             // 3.2 s: a Chapter 2 game's first card, with its lockup
 const CLEAR_MS = cssMs("--yig-clear");               // 0.34 s: the old copy has cleared
@@ -616,7 +616,7 @@ function go(step) {
   readout.paint();
 }
 
-// Opening straight on a card (guide, section 9): File 3 takes topGame and reveal first, then startScene, then scene.
+// Opening straight on a card (guide, section 8): File 3 takes topGame and reveal first, then startScene, then scene.
 function openOn(index) {
   clearTimeout(heldTimer); clearTimeout(swapTimer); clearTimeout(hopTimer); hopRun = null;
   const card = cards[index];

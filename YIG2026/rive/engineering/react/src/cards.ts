@@ -10,7 +10,7 @@ export const COMMUNITY_GAMES: Game[] = ['wordle', 'connections', 'spelling-bee',
 // Chapter 2.5's community cards: the community games in GAME_ORDER, leaving out the player's own game
 const communityGames = (own?: Game): Game[] => GAME_ORDER.filter((game) => COMMUNITY_GAMES.includes(game) && game !== own)
 
-// The whole card list for one player, in order. This is the logic of engineering-guide.md, section 6. A card that does not
+// The whole card list for one player, in order. This is the logic of engineering-guide.md, section 5. A card that does not
 // qualify is never added, so nothing is skipped when the player taps.
 export function buildCards(stats: Stats): Card[] {
   // a subscriber with no qualifying game gets the anonymous flow

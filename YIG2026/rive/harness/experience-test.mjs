@@ -25,7 +25,7 @@ const FLOWS = flag("--flows", "sub,anon").split(",");
 const SIZES = flag("--sizes", "phone,desktop").split(",");
 const PLAYERS = flag("--players", "wordle-only").split(",");                         // subscriber players to walk
 const INTRO = 3.2, PAN = 1.65;
-// When a card's copy arrives after a room change (the guide, section 8): a first visit FIRST, or LOCKUP on a Chapter 2
+// When a card's copy arrives after a room change (the guide, section 6): a first visit FIRST, or LOCKUP on a Chapter 2
 // game's first card with its lockup; a picture or a room coming back PAN; a two-move crossing adds a PAN.
 const FIRST = 2.0, LOCKUP = 3.2;
 const NO_INTRO = { 1: ["loading", "ad"], 2: ["from-chapter-1", "to-chapter-3", "bridge"], 3: ["ad"] };
@@ -165,7 +165,7 @@ for (const [flow, player, size] of runs) {
     };
     const delayOf = (i) => b.ev(`(() => { const e = document.querySelector('[data-copy-frame="${i}"]'); return e ? { delay: e.style.getPropertyValue('--yig-delay'), quick: e.classList.contains('yig-quick') } : null; })()`);
     const revealBad = [];
-    // the copy delay a Next sets on a room change, on this walk where every room is new (the guide, section 8)
+    // the copy delay a Next sets on a room change, on this walk where every room is new (the guide, section 6)
     const legsNext = (from, to) => (cards[to].file !== cards[from].file && cards[from].scene !== ENDS[cards[from].file] ? 2 : 1);
     const wantNextMs = (i) => {
       const legs = legsNext(i - 1, i), c = cards[i];

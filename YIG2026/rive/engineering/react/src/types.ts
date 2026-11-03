@@ -1,5 +1,5 @@
 // The card list is the one thing your page builds from the stats. A card names the Rive file and scene it shows, plus the
-// tags its copy needs. See engineering-guide.md, section 6.
+// tags its copy needs. See engineering-guide.md, section 5.
 
 export type FileNumber = 1 | 2 | 3
 
