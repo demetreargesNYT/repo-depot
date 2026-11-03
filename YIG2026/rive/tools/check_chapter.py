@@ -7,9 +7,8 @@ Exits 1 if anything fails. `tools/package_engineering.py` runs it first.
 import math
 import sys
 from rml_read import Scene, chapter_dir
-from delay_ball_rollin import ball_name
 
-INTRO_FRAMES = 192    # 3.2 s at 60 fps; the text CSS waits exactly this long
+INTRO_FRAMES = 192    # 3.2 s at 60 fps; a game's lockup is gone exactly then, and its first card's copy waits that long
 OUTRO_FRAMES = 96     # 1.6 s
 ARTBOARD = (1495, 1067)
 START_SCENE = "from-chapter-1"   # the empty Chapter 1 room File 2 opens on: colours only, no room
@@ -621,41 +620,7 @@ def run(chapter):
             bad = [o for (o, _p) in s.keys(a) if o in ("Shelf Ball", "Shelf Ball Spin")]
             check(not bad, f"{name} does not key the Shelf Ball or its Spin")
 
-    # a community card has no lockup, so its copy arrives when the room's intro has settled rather than at 3.2 s. The
-    # manifest records that moment per game (communityCopyMs, for the integration and the engineering guide); it must
-    # be the last frame at which anything but the lockup still moves in the room's intro, so tuning an intro in the
-    # finesse round flags a stale value here
-    for x in (m or {}).get("scenes", []):
-        if x.get("kind") != "game" or f'{x["room"]} Intro' not in A:
-            continue
-        settles = intro_settle_frame(s, A[f'{x["room"]} Intro'], s.node(f'{x["room"]} Lockup'))
-        want = math.ceil(settles * 1000 / s.fps(A[f'{x["room"]} Intro']))
-        check(x.get("communityCopyMs") == want,
-              f'{x["room"]}: a community card\'s copy arrives at {x.get("communityCopyMs")} ms, when its pieces have landed (the ball and the lockup left out) ({want} ms, frame {settles})')
     return results
-
-
-def intro_settle_frame(s, anim, lockup):
-    """The last frame at which a key in this intro still changes a value, leaving out everything inside the lockup and
-    the ball: a community card's copy comes in when the room's pieces have landed, even while the ball still rolls in
-    (Demetre, 2026-10-29)."""
-    parent = s.parent
-    by_id = {e.get("id"): e for e in s.artboard.iter() if e.get("id")}
-
-    def in_lockup(oid):
-        e = by_id.get(oid)
-        while e is not None and e is not lockup:
-            e = parent.get(e)
-        return e is lockup
-
-    last = 0
-    for ko in anim.findall("KeyedObject"):
-        if in_lockup(ko.get("objectId")) or ball_name(s, ko.get("objectId")):
-            continue
-        for kp in ko.findall("KeyedProperty"):
-            ks = sorted(kp, key=lambda k: int(k.get("frame", 0)))
-            last = max([last] + [int(k.get("frame", 0)) for p, k in zip(ks, ks[1:]) if p.get("value", "0") != k.get("value", "0")])
-    return last
 
 
 if __name__ == "__main__":

@@ -9,10 +9,10 @@
 //
 // Needs the harness server (npm start) and Google Chrome. Checks, per case:
 //   A  same-game tap T s into the game's intro: the old card goes at once, and the next card does not start
-//      rising before the intro ends (3.2 s after the game's first tap), so it never overlaps the lockup.
+//      rising before the lockup has gone (3.2 s after the game's first tap, LOCKUP), so it never overlaps the lockup.
 //      After the intro it rises about 0.34 s (--yig-clear) after the tap.
 //   B  tap to the next game: the old card and icon are gone or leaving at once, the new icon pops and the
-//      new first card rises 3.2 s after the tap, with its lines one step (120 ms) after the icon.
+//      new first card rises 3.2 s after the tap (LOCKUP: it shows its lockup), with its lines one step (120 ms) after the icon.
 //   C  the icon stays put on a game's later cards: no restart of its animation on a same-game tap.
 //   D-G Back, H Chapter 2.5 (the bridge and community cards), I starting words, L a tap during a community room's intro,
 //   K a full run-through of each of the page's example players,
@@ -33,9 +33,9 @@ const QUICK_RUN = args.includes("--quick");
 const TIMES = flag("--times", QUICK_RUN ? "0.5,3.0" : "0.5,1.5,2.5,3.0").split(",").map(Number);
 const BASE = flag("--url", "http://127.0.0.1:8765/");
 const INTRO = 3.2, QUICK = 0.34, STEP = 0.12, TOL = 0.12;   // seconds; TOL covers the 40 ms sampling and page scheduling
-// A community card's copy arrives when its room's intro settles (no lockup to wait for): per game, from the manifest.
-const MANIFEST = JSON.parse(fs.readFileSync(new URL("../chapters/ch2/chapter.json", import.meta.url), "utf8"));
-const COPY_AT = Object.fromEntries(MANIFEST.scenes.filter((x) => x.kind === "game").map((x) => [x.name, x.communityCopyMs / 1000]));
+// When a room's first-visit copy arrives (the guide, section 8): FIRST everywhere, LOCKUP on a game's first card with its
+// lockup (the whole intro). The intros themselves stay INTRO long, so the waits for a room to finish use INTRO.
+const FIRST = 2.0, LOCKUP = 3.2;
 
 const chrome = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const port = 9800 + Math.floor(Math.random() * 150);
@@ -165,8 +165,8 @@ for (const order of ["wc", "cw"]) {
     const label = `${first} then ${second}, same-game tap ${T.toFixed(1)} s into the intro`;
     // A: the next card never starts rising before the intro has ended
     const startedAt = rise2 ? rise2.at - taps[0] : null;
-    const expect = Math.max(INTRO, T + QUICK);
-    check(startedAt !== null && startedAt >= INTRO - TOL, `A  ${label}: card 2 starts rising ${fmt(startedAt)} after the game's first tap (not before ${INTRO} s)`);
+    const expect = Math.max(LOCKUP, T + QUICK);
+    check(startedAt !== null && startedAt >= LOCKUP - TOL, `A  ${label}: card 2 starts rising ${fmt(startedAt)} after the game's first tap (not before ${LOCKUP} s, the lockup)`);
     check(startedAt !== null && Math.abs(startedAt - expect) <= TOL + 0.1, `A  ${label}: ...and no later than ${expect.toFixed(1)} s (it was ${fmt(startedAt)})`);
     check(!!gone1 && gone1.at - taps[1] <= 0.15, `A  ${label}: card 1 is gone within ${fmt(gone1 ? gone1.at - taps[1] : null)} of the tap`);
 
@@ -187,8 +187,8 @@ for (const order of ["wc", "cw"]) {
     const cardRise = log2.find((e) => e.card === second + "#1" && e.cardRising);
     const nl = `${first} to ${second}, tap after the last card (tapped ${T.toFixed(1)} s into the first intro)`;
     check(!!oldGone && oldGone.at - t5 <= 0.15, `B  ${nl}: old card gone within ${fmt(oldGone ? oldGone.at - t5 : null)}`);
-    check(!!iconPop && Math.abs(iconPop.at - t5 - INTRO) <= TOL, `B  ${nl}: new icon pops ${fmt(iconPop ? iconPop.at - t5 : null)} after the tap (want ${INTRO} s)`);
-    check(!!cardRise && Math.abs(cardRise.at - t5 - (INTRO + STEP)) <= TOL, `B  ${nl}: new first card rises ${fmt(cardRise ? cardRise.at - t5 : null)} after the tap (want ${(INTRO + STEP).toFixed(2)} s, one step after the icon)`);
+    check(!!iconPop && Math.abs(iconPop.at - t5 - LOCKUP) <= TOL, `B  ${nl}: new icon pops ${fmt(iconPop ? iconPop.at - t5 : null)} after the tap (want ${LOCKUP} s, after the lockup)`);
+    check(!!cardRise && Math.abs(cardRise.at - t5 - (LOCKUP + STEP)) <= TOL, `B  ${nl}: new first card rises ${fmt(cardRise ? cardRise.at - t5 : null)} after the tap (want ${(LOCKUP + STEP).toFixed(2)} s, one step after the icon)`);
     check(!!iconPop && !!cardRise && cardRise.at >= iconPop.at - 0.03, `B  ${nl}: the card does not rise before the icon pops`);
   }
 }
@@ -219,7 +219,7 @@ for (const order of ["wc", "cw"]) {
   const noCopy = (await shownCopy()) === "";
   check(vmScene === "from-chapter-1" && noCopy, `G  ${first} first: Back on the empty Chapter 1 room does nothing (scene ${vmScene}, copy shown ${noCopy ? "none" : "some"})`);
 
-  // M: the first tap, empty Chapter 1 room to the opener: its copy rises 3.2 s later (the intro), like a game's first card
+  // M: the first tap, empty Chapter 1 room to the opener: its copy rises at the first-visit time (the opener has no lockup)
   await ev("window.__log.length = 0");
   await press("next");
   await wait(INTRO + 0.8);
@@ -227,7 +227,7 @@ for (const order of ["wc", "cw"]) {
   const tm = after(logM, "next")[0];
   const riseM = logM.find((e) => e.card === "opener#-" && e.cardRising);
   const sceneM = await ev(`${VM}.enum('scene').value`);
-  check(sceneM === "intro" && !!riseM && Math.abs(riseM.at - tm - INTRO) <= TOL, `M  ${first} first: the first tap pans to the opener (scene ${sceneM}); its copy rises ${fmt(riseM ? riseM.at - tm : null)} after the tap (want ${INTRO} s, the intro)`);
+  check(sceneM === "intro" && !!riseM && Math.abs(riseM.at - tm - FIRST) <= TOL, `M  ${first} first: the first tap pans to the opener (scene ${sceneM}); its copy rises ${fmt(riseM ? riseM.at - tm : null)} after the tap (want ${FIRST} s, a first visit)`);
 
   // G2: Back from the opener to the empty room, and Next again (no second intro: the copy comes back as the pan ends)
   await press("back"); await wait(PAN + 0.4);
@@ -298,8 +298,8 @@ section("D, E, F, G, G2, M (Back, and the first tap)");
 //      Strands (never the player's own), then the ending. A player with two or more qualifying games gets no bridge and
 //      no community cards, and a game under 10 completed puzzles is left out. Timing: the tap after the game's last
 //      card pans to the empty bridge room; the old card and icon leave at once and the bridge copy rises when the pan
-//      ends (1.65 s), with no icon. The first community card: lockup false, and as it has no lockup its icon pops as
-//      soon as the room's intro settles (communityCopyMs in chapter.json, not 3.2 s) and its lines one step later.
+//      ends (1.65 s), with no icon. The first community card: lockup false, and as it has no lockup its icon pops at
+//      the first-visit time (FIRST, not the 3.2 s a lockup needs) and its lines one step later.
 //      Back from it to the bridge: the bridge copy returns when the pan ends.
 //   I  the starting-words card: one line per word, singular label for one word, and left out when none repeated.
 const COMMUNITY = ["wordle", "connections", "spelling-bee", "mini", "strands"];
@@ -359,8 +359,8 @@ for (const order of ["wc", "cw"]) {
   const pop = log.find((e) => e.icon === "connections" && e.iconPopping);
   const rise = log.find((e) => e.card === "connections#-" && e.cardRising);
   check(sceneC === "connections" && flag === false, `H  bridge to the first community card: scene ${sceneC}, lockup ${flag} (want connections, false)`);
-  check(!!pop && Math.abs(pop.at - t0 - COPY_AT.connections) <= TOL, `H  ...its icon pops ${fmt(pop ? pop.at - t0 : null)} after the tap (want ${COPY_AT.connections} s, when the room settles; no lockup)`);
-  check(!!rise && Math.abs(rise.at - t0 - COPY_AT.connections - STEP) <= TOL, `H  ...its lines rise ${fmt(rise ? rise.at - t0 : null)} after the tap (want ${(COPY_AT.connections + STEP).toFixed(2)} s)`);
+  check(!!pop && Math.abs(pop.at - t0 - FIRST) <= TOL, `H  ...its icon pops ${fmt(pop ? pop.at - t0 : null)} after the tap (want ${FIRST} s, a first visit; no lockup)`);
+  check(!!rise && Math.abs(rise.at - t0 - FIRST - STEP) <= TOL, `H  ...its lines rise ${fmt(rise ? rise.at - t0 : null)} after the tap (want ${(FIRST + STEP).toFixed(2)} s)`);
 
   await ev("window.__log.length = 0");
   await press("back"); await wait(PAN + 1.0);
@@ -391,8 +391,8 @@ for (const n of [3, 2, 1, 0]) {
 section("I (starting words)");
 //   L  a tap during a community room's first-visit intro, T s in, on to the next community room (the Midi-only example
 //      player's Chapter 2.5: ... spelling-bee*, mini*, strands*). The pan to Strands starts at once: Rive is on strands
-//      with its lockup off, The Mini's card and icon leave at once, and Strands' copy waits for its own room to settle
-//      (its communityCopyMs from the tap): the icon pops then and the lines follow one step (0.12 s) after it.
+//      with its lockup off, The Mini's card and icon leave at once, and Strands' copy arrives at its own first-visit time
+//      (FIRST from the tap): the icon pops then and the lines follow one step (0.12 s) after it.
 //      Back: The Mini's card returns when the pan ends, and the scene is mini.
 for (const T of TIMES.filter((t) => t < INTRO)) {
   await load(null, "?player=midi-only");
@@ -407,7 +407,7 @@ for (const T of TIMES.filter((t) => t < INTRO)) {
   await press("next"); await wait(T);
   await press("next");
   const iconLeaving = await ev(`(() => { const i = document.querySelector('[data-icon-game="mini"]'); return i.hidden || i.classList.contains('yig-out'); })()`);
-  await wait(COPY_AT.strands + 1.2);
+  await wait(FIRST + 1.2);
   const log = await ev("window.__log");
   const t2 = log.filter((e) => e.label === "next")[1].at;
   const sceneL = await ev(`${VM}.enum('scene').value`);
@@ -421,7 +421,7 @@ for (const T of TIMES.filter((t) => t < INTRO)) {
   check(sceneL === "strands" && lockupL === false, `L  ${lL}: Rive moves to strands with its lockup off (scene ${sceneL}, lockup ${lockupL})`);
   check(!!goneL && goneL.at - t2 <= 0.15, `L  ${lL}: The Mini's card is gone within ${fmt(goneL ? goneL.at - t2 : null)} of the tap`);
   check(iconLeaving, `L  ${lL}: The Mini's icon leaves at once (${iconLeaving})`);
-  check(poppedAt !== null && Math.abs(poppedAt - COPY_AT.strands) <= TOL, `L  ${lL}: the Strands icon pops ${fmt(poppedAt)} after the tap (want ${COPY_AT.strands} s, when its room settles)`);
+  check(poppedAt !== null && Math.abs(poppedAt - FIRST) <= TOL, `L  ${lL}: the Strands icon pops ${fmt(poppedAt)} after the tap (want ${FIRST} s, a first visit)`);
   check(startedAt !== null && poppedAt !== null && Math.abs(startedAt - poppedAt - STEP) <= TOL, `L  ${lL}: its lines rise ${fmt(startedAt)} after the tap, one step after the icon (want ${poppedAt !== null ? (poppedAt + STEP).toFixed(2) + " s" : "the icon first"})`);
 
   await ev("window.__log.length = 0");
@@ -434,7 +434,7 @@ for (const T of TIMES.filter((t) => t < INTRO)) {
 
 section("L (tap during a community intro)");
 //   N  the ending: the tap after the last game's last card pans to the empty Chapter 3 backdrop (scene to-chapter-3). The game's
-//      card and icon leave at once; the ending's own copy (placeholder here) arrives 3.2 s later like a first visit.
+//      card and icon leave at once; the ending's own copy (placeholder here) arrives at the first-visit time (FIRST).
 //      Back returns to the last game's last card: its icon and card arrive when the pan ends (1.65 s).
 {
   await load({ player: basePlayer(), cards: timingCards(["wordle", "connections"]) });
@@ -459,7 +459,7 @@ section("L (tap during a community intro)");
   const riseN = logN.find((e) => e.card === "chapter3#1" && e.cardRising);
   check(sceneN === "to-chapter-3", `N  last game to the ending: Rive is on to-chapter-3, the empty Chapter 3 backdrop (scene ${sceneN})`);
   check(!!goneN && goneN.at - tn <= QUICK + TOL, `N  last game to the ending: the old card and icon are gone ${fmt(goneN ? goneN.at - tn : null)} after the tap`);
-  check(!!riseN && Math.abs(riseN.at - tn - INTRO) <= TOL, `N  last game to the ending: the ending's copy rises ${fmt(riseN ? riseN.at - tn : null)} after the tap (want ${INTRO} s)`);
+  check(!!riseN && Math.abs(riseN.at - tn - FIRST) <= TOL, `N  last game to the ending: the ending's copy rises ${fmt(riseN ? riseN.at - tn : null)} after the tap (want ${FIRST} s)`);
   await ev("window.__log.length = 0");
   await press("back");
   await wait(PAN + 1.0);
@@ -474,16 +474,14 @@ section("L (tap during a community intro)");
 
 section("N (the ending)");
 //   P  community card copy timing, room by room: the Midi-only example player's Chapter 2.5 has a community card in
-//      each of the five community rooms. Each card's icon pops when its room's intro settles (communityCopyMs in
-//      chapter.json, not the 3.2 s a lockup needs) and its lines one step later. The integration's table matches
-//      chapter.json for the five games that have community cards (The Midi and The Crossword have none).
+//      each of the five community rooms. Each card's icon pops at the first-visit time (FIRST, not the 3.2 s a lockup
+//      needs) and its lines one step later. The two times are named once, in the text CSS (--yig-first-visit and
+//      --yig-lockup), and the page reads them from there.
 {
-  const src = fs.readFileSync(new URL("../engineering/chapter-2-integration.js", import.meta.url), "utf8");
-  const table = JSON.parse(src.match(/const COMMUNITY_COPY_MS = (\{[^}]*\})/)[1].replace(/([\w-]+|"[^"]+"):/g, (k) => (k.startsWith('"') ? k : `"${k.slice(0, -1)}":`)));
-  const COMMUNITY_GAMES = ["wordle", "connections", "spelling-bee", "mini", "strands"];
-  const want = Object.fromEntries(COMMUNITY_GAMES.map((g) => [g, Math.round(COPY_AT[g] * 1000)]));
-  const sorted = (o) => JSON.stringify(Object.keys(o).sort().map((k) => [k, o[k]]));
-  check(sorted(table) === sorted(want), `P  the integration's COMMUNITY_COPY_MS matches chapter.json (${JSON.stringify(table)})`);
+  const css = fs.readFileSync(new URL("../engineering/yig-text-motion.css", import.meta.url), "utf8");
+  const named = (v) => (css.match(new RegExp(`--yig-${v}:\\s*([\\d.]+)s;`)) || [])[1];
+  check(Number(named("first-visit")) === FIRST && Number(named("lockup")) === LOCKUP,
+        `P  the text CSS names the two first-visit times: --yig-first-visit ${named("first-visit")} s, --yig-lockup ${named("lockup")} s (want ${FIRST} and ${LOCKUP})`);
   await load(null, "?player=midi-only");
   const cards = await ev("window.yigExample.cards.map((c) => c.game + (c.community ? '*' : ''))");
   await ev(INSTALL);
@@ -500,8 +498,8 @@ section("N (the ending)");
     const t0 = log.find((e) => e.label === "next").at;
     const pop = log.find((e) => e.icon === game && e.iconPopping);
     const rise = log.find((e) => e.card === game + "#-" && e.cardRising);
-    check(!!pop && Math.abs(pop.at - t0 - COPY_AT[game]) <= TOL && !!rise && Math.abs(rise.at - t0 - COPY_AT[game] - STEP) <= TOL,
-          `P  ${game} community card: icon ${fmt(pop ? pop.at - t0 : null)}, lines ${fmt(rise ? rise.at - t0 : null)} after the tap (want ${COPY_AT[game]} s and ${(COPY_AT[game] + STEP).toFixed(2)} s)`);
+    check(!!pop && Math.abs(pop.at - t0 - FIRST) <= TOL && !!rise && Math.abs(rise.at - t0 - FIRST - STEP) <= TOL,
+          `P  ${game} community card: icon ${fmt(pop ? pop.at - t0 : null)}, lines ${fmt(rise ? rise.at - t0 : null)} after the tap (want ${FIRST} s and ${(FIRST + STEP).toFixed(2)} s)`);
   }
 }
 

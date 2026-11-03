@@ -25,6 +25,10 @@ const FLOWS = flag("--flows", "sub,anon").split(",");
 const SIZES = flag("--sizes", "phone,desktop").split(",");
 const PLAYERS = flag("--players", "wordle-only").split(",");                         // subscriber players to walk
 const INTRO = 3.2, PAN = 1.65;
+// When a card's copy arrives after a room change (the guide, section 8): a first visit FIRST, or LOCKUP on a Chapter 2
+// game's first card with its lockup; a picture or a room coming back PAN; a two-move crossing adds a PAN.
+const FIRST = 2.0, LOCKUP = 3.2;
+const NO_INTRO = { 1: ["loading", "ad"], 2: ["from-chapter-1", "to-chapter-3", "bridge"], 3: ["ad"] };
 const chrome = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const results = [];
@@ -93,7 +97,7 @@ for (const [flow, player, size] of runs) {
     const RANGE = NEXT_RANGE || BACK_RANGE;
     await b.nav(`${BASE}${PATH}?flow=${flow}&player=${player}${RANGE ? `&jump=${RANGE[0]}` : ""}`);
     for (let i = 0; i < 150 && !(await b.ev("!!window.yigExperience")); i++) await sleep(100);
-    const cards = await b.ev("window.yigExperience.cards.map((c) => ({ file: c.file, scene: c.scene, reveal: c.reveal, icon: c.icon, ad: !!c.ad }))");
+    const cards = await b.ev("window.yigExperience.cards.map((c) => ({ file: c.file, scene: c.scene, reveal: c.reveal, icon: c.icon, ad: !!c.ad, community: !!c.community }))");
     const st = () => b.ev("window.yigExperience.state()");
     const tag = `${flow}${flow === "sub" ? " " + player : ""} · ${label} ${w}x${h}`;
     const want = expectedCards(flow, player);
@@ -132,6 +136,8 @@ for (const [flow, player, size] of runs) {
     await sleep(INTRO * 1000 + 500);
     let s = await st();
     check(s.frame === 1 && s.scenes[0] === "start", `${tag}: Loading hands over to Start (card ${s.frame}, scene ${s.scenes[0]})`);
+    const startDelay = await b.ev(`document.querySelector('[data-copy-frame="1"]')?.style.getPropertyValue('--yig-delay') ?? null`);
+    check(Math.abs(parseFloat(startDelay) - FIRST * 1000) <= 1, `${tag}: Start's copy waits ${startDelay} after the scene is set (want ${FIRST * 1000}ms, a first visit)`);
 
     const arrows = await b.ev(`(() => { const v = (id) => getComputedStyle(document.getElementById(id)).display !== 'none'; return { arrow: v('arrow-next'), tap: v('tap-next') }; })()`);
     if (label === "desktop") check(arrows.arrow && !arrows.tap, `${tag}: the arrows show and the tap zones don't (arrows ${arrows.arrow}, tap zones ${arrows.tap})`);
@@ -159,10 +165,24 @@ for (const [flow, player, size] of runs) {
     };
     const delayOf = (i) => b.ev(`(() => { const e = document.querySelector('[data-copy-frame="${i}"]'); return e ? { delay: e.style.getPropertyValue('--yig-delay'), quick: e.classList.contains('yig-quick') } : null; })()`);
     const revealBad = [];
+    // the copy delay a Next sets on a room change, on this walk where every room is new (the guide, section 8)
+    const legsNext = (from, to) => (cards[to].file !== cards[from].file && cards[from].scene !== ENDS[cards[from].file] ? 2 : 1);
+    const wantNextMs = (i) => {
+      const legs = legsNext(i - 1, i), c = cards[i];
+      if (NO_INTRO[c.file].includes(c.scene)) return PAN * legs * 1000;
+      const lockup = c.file === 2 && ORDER.includes(c.scene) && !c.community;
+      return ((legs - 1) * PAN + (lockup ? LOCKUP : FIRST)) * 1000;
+    };
+    const timingBad = [];
     // no fade: the copy swaps quickly, or, when the game icon changes, waits the 340 ms the old icon takes to lift (never the 1.45 s)
     const okNoFade = (d, iconChanges) => !!d && (d.quick || (iconChanges && d.delay === "340ms"));
     for (let i = 2; i < cards.length; i++) {
       await b.ev(`document.getElementById('${next}').click()`);
+      if (cards[i].file !== cards[i - 1].file || cards[i].scene !== cards[i - 1].scene) {
+        await sleep(60);
+        const d = await delayOf(i);
+        if (!d || Math.abs(parseFloat(d.delay) - wantNextMs(i)) > 1) timingBad.push(`Next to ${i} (${cards[i].file}:${cards[i].scene}${cards[i].community ? ", community" : ""}): ${d?.delay || "none"}, want ${wantNextMs(i)}ms`);
+      }
       if (cards[i].reveal !== undefined && cards[i - 1].reveal !== undefined && cards[i].scene === "chapter-4" && cards[i - 1].scene === "chapter-4") {
         await sleep(60);
         const d = await delayOf(i);
@@ -173,6 +193,7 @@ for (const [flow, player, size] of runs) {
       await verify(i, "Next");
     }
     check(!bad.length, `${tag}: Next through all ${cards.length} cards: the right file, scene and copy each time${bad.length ? ": " + bad.slice(0, 3).join(" / ") : ""}`);
+    check(!timingBad.length, `${tag}: every room change on the way waits the guide's time: ${FIRST} s on a first visit, ${LOCKUP} s with a lockup, ${PAN} s for a picture, plus ${PAN} s for a second move${timingBad.length ? ": " + timingBad.slice(0, 4).join(" / ") : ""}`);
     check(!revealBad.length, `${tag}: Chapter 4's reveal card waits 1.45 s for the wall's fade, forward and back; the video card does not${revealBad.length ? ": " + revealBad.join(" / ") : ""}`);
     check(JSON.stringify([...b.rivs].sort()) === JSON.stringify(["chapter-2.riv", "chapters-3-4-end.riv", "start-chapter-1.riv"]),
       `${tag}: each .riv was fetched once, the next ones ahead of time (${b.rivs.join(", ")})`);

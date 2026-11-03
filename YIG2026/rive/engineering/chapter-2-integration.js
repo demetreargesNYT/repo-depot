@@ -1,7 +1,7 @@
 // Cards name their game; this table turns the name into the Rive file's scene (a value of its "scene" enum). "chapter1" is this file's
 // first scene: the file loads on the empty Chapter 1 room (cream wall, orange floor, no ball), the same picture
 // File 1 ends on and Ad 2 plays over. Make it the first card; the first tap pans from it into the opener, which
-// plays its 3.2 s intro like a game does (without a lockup: the opener is not a game). "chapter3" is this file's last scene: after the player's last game, the room leaves and an empty Chapter 3
+// plays its 3.2 s intro like a game does (without a lockup: the opener is not a game, so its copy comes at 2.0 s). "chapter3" is this file's last scene: after the player's last game, the room leaves and an empty Chapter 3
 // backdrop pans in, the same way any game-to-game move does. It has no lockup and no ball; File 3 takes over from it
 // (and, for anonymous players, Ad 3 plays over it). Add it to the card list once, after the player's last game card.
 // "bridge" is Chapter 2.5's bridge card, for a player with exactly one qualifying game: an empty version of the
@@ -39,18 +39,19 @@ function setScene(name, step = 1, community = false) {
   yig.viewModelInstance.enum("scene").value = name;
 }
 
-const INTRO_MS = 3200; // every intro is exactly this long
-// A community card has no lockup, so its copy doesn't wait out the 3.2 s intro: it arrives when the room has settled
-// (the pieces have landed; the ball may still be rolling in). Measured per room from the file, in milliseconds after the tap; chapter.json
-// records the same numbers as communityCopyMs and our checks keep them in step with the intros.
-const COMMUNITY_COPY_MS = { wordle: 2334, connections: 2367, strands: 1967, "spelling-bee": 2017, mini: 2084 }; // The Midi and The Crossword have no community cards
+// A room's first visit: its copy arrives at the first-visit time after the tap, while the 3.2 s intro is still finishing.
+// The one exception is a game's first card with its lockup (lockup true, so not a community card): its copy waits the
+// lockup time, the whole intro, because the lockup is gone exactly at 3.2 s and the copy must never overlap it.
+// The two first-visit copy times live in yig-text-motion.css, as --yig-first-visit (2s) and --yig-lockup (3.2s), and are
+// read from there (cssMs) so the page and the CSS can't drift apart; change them there.
+const LOCKUP_GAMES = new Set(["wordle", "connections", "strands", "spelling-bee", "mini", "midi", "daily"]); // the rooms with a lockup
 const PAN_MS = 1650;   // a room change: the rooms' moves run 1.6 s (the pan itself is 0.05 to 1.55 s), plus a few frames
                        // so a held tap never lands on the frame a move hands over to its resting pose
 let cards = [];        // set by start()
 let frame = 0;
 let room = "chapter1";   // the room Rive is showing
-let introEndsAt = {};  // per game: when its first-visit copy may arrive (the intro and lockup finish, or for a community
-                       // card the room settles), in performance.now() time
+let introEndsAt = {};  // per game: when its first-visit copy may arrive (--yig-first-visit, or --yig-lockup with a
+                       // lockup), in performance.now() time
 let pan = { dir: 0, endsAt: 0 }; // the room change on screen: which way the camera is moving, and when it stops
 let heldTimer = 0;     // a tap waiting for a pan to end
 
@@ -111,14 +112,13 @@ function move(step) {
 }
 
 // What changes on a tap:
-//  - the room changes: the old game's icon and text leave at once, and the new game's text and icon arrive when
-//    the room has settled: 3.2 s after the tap on a game's first visit (the intro and its lockup; on a community card,
-//    which has no lockup, as soon as the room's intro settles, COMMUNITY_COPY_MS), at the end of
-//    the move (1.65 s) when the game comes back already built (or the room has no intro, like the bridge), or when
-//    that game's interrupted intro ends, if later.
+//  - the room changes: the old game's icon and text leave at once, and the new game's text and icon arrive at
+//    a fixed time: on a first visit 2.0 s after the tap (--yig-first-visit), or 3.2 s for a game's first
+//    card with its lockup (--yig-lockup); at the end of the move (1.65 s) when the game comes back already built (or
+//    the room has no intro, like the bridge), or when that game's interrupted first visit's copy time comes, if later.
 //  - the room stays (the game's next or previous card): only the text changes, and the icon stays put. The new
-//    card arrives right after the old one leaves (yig-quick), or, if the game's intro is still running, when the
-//    intro ends, so it never overlaps the lockup. Back moves the text down instead of up (yig-back).
+//    card arrives right after the old one leaves (yig-quick), or, if the room's first-visit copy time hasn't come yet,
+//    at that time, so it never overlaps the lockup. Back moves the text down instead of up (yig-back).
 function showCopy(n, gameChange, firstVisit, step) {
   const game = cards[n].game;
   const back = step < 0;
@@ -130,7 +130,7 @@ function showCopy(n, gameChange, firstVisit, step) {
   const now = performance.now();
   const introLeft = Math.max(0, (introEndsAt[room] ?? 0) - now); // the intro of the room on screen, not the card's game
   if (gameChange) {
-    const wait = firstVisit ? (cards[n].community ? copyDelay(cards[n]) : null) : Math.max(PAN_MS, introLeft); // null: the CSS default, the 3.2 s intro
+    const wait = firstVisit ? copyDelay(cards[n]) : Math.max(PAN_MS, introLeft);
     if (icon) enter(icon, { delay: wait, back });
     if (next) enter(next, { delay: wait, afterIcon: !!icon, back });
   } else if (next) {
@@ -138,9 +138,10 @@ function showCopy(n, gameChange, firstVisit, step) {
   }
 }
 
-// How long a first visit's copy waits after the tap: the whole intro, or for a community card until the room settles.
+// How long a first visit's copy waits after the tap: the whole intro for a game's first card with its lockup, the
+// first-visit constant for every other room (the opener, a community card).
 function copyDelay(card) {
-  return card.community && card.game in COMMUNITY_COPY_MS ? COMMUNITY_COPY_MS[card.game] : INTRO_MS;
+  return LOCKUP_GAMES.has(card.game) && !card.community ? cssMs("--yig-lockup", 3200) : cssMs("--yig-first-visit", 2000);
 }
 
 // Copy that has finished arriving leaves (up on Next, down on Back); copy that is still arriving, or still
@@ -158,9 +159,14 @@ function leave(el, back = false) {
 
 // How long old copy takes to dissolve, read from the CSS's --yig-clear so the two can't drift apart.
 function clearMs() {
-  const v = getComputedStyle(document.documentElement).getPropertyValue("--yig-clear").trim();
+  return cssMs("--yig-clear", 340);
+}
+
+// A time from yig-text-motion.css, in ms; the fallback (the stylesheet's own value) if it hasn't loaded.
+function cssMs(name, fallback) {
+  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   const ms = v.endsWith("ms") ? parseFloat(v) : parseFloat(v) * 1000;
-  return Number.isFinite(ms) ? ms : 340;   // 340 ms, the v3 value, if the stylesheet hasn't loaded
+  return Number.isFinite(ms) ? ms : fallback;
 }
 
 // Take yig-in and yig-out off, force a reflow, then add yig-in, so the CSS animation restarts every time this

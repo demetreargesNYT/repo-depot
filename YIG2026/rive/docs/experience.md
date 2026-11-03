@@ -71,6 +71,8 @@ Both flows use the same files; only the card list and the HTML copy differ. Full
 | File 3 | Chapter 3, Chapter 4 with all seven top-game versions, End |
 | How-to | `how-to-mobile.riv` (mobile only; desktop uses the arrow buttons) |
 
+**When the copy arrives (decided 2026-11-03).** Every room's intro is 3.2 s in Rive, but the copy doesn't wait for all of it. On a room's first visit the copy arrives at one constant, **2.0 s** after the scene is set, everywhere: Start, Chapter 1, the Chapter 2 opener, community cards, Chapter 3, Chapter 4's first card and End. The one exception is a Chapter 2 game's first card with its lockup: **3.2 s**, so the copy never overlaps the lockup. A room that comes back, or any picture: 1.65 s (the pan). Another card in the same room: 0.34 s. Chapter 4's reveal card: 1.45 s (the wall's fade). A two-move crossing adds 1.65 s (a subscriber's last Chapter 2 card to Chapter 3: 3.65 s).
+
 **Engineering's side.** They build one card list from the stats, each card naming the file and scene it shows plus the tags its HTML needs, and drive the three files from `docs/engineering-guide.md` (what to set and in what order, the copy timings, Back during a pan, switching files). `engineering/yig-integration.js` and the React example are working references.
 
 ## How engineering's 2026 code is built

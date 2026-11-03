@@ -15,10 +15,11 @@
 //     After that Back and Next skip it and land on the card on its other side; the move is worked out from the card landed on,
 //     so it can be one move in a file, or the two-move crossing (Ad 2 sits between Chapter 1 card 5 and the Chapter 2 opener).
 //   - A Back during a pan, or a Next during a Back pan, waits for the pan to end (the file can't turn a room around part-way).
-//   - Copy arrives when the room has settled: 3.2 s on a room's first visit (its intro), at the end of the pan (1.65 s)
-//     when the room comes back already built or is an empty room, 0.34 s within a room, and on a community card as soon
-//     as its room's intro settles (no lockup to wait for), and 1.45 s when Chapter 4's `reveal` changes (the wall fades first).
-//     A two-move crossing adds the first move's 1.65 s.
+//   - Copy arrives at fixed times: on a room's first visit 2.0 s after the scene is set (--yig-first-visit), or 3.2 s
+//     (--yig-lockup, the whole intro) on a Chapter 2 game's first card with its lockup, so the copy never
+//     overlaps the lockup; at the end of the pan (1.65 s) when the room comes back already built or is an empty room;
+//     0.34 s within a room; 1.45 s when Chapter 4's `reveal` changes (the wall fades first). A two-move crossing adds
+//     the first move's 1.65 s. The intros themselves stay 3.2 s: the copy arrives while a room is still finishing.
 
 import { Rive } from "@rive-app/canvas"; // pin the version you ship; 2.27.3 and later work, with `stateMachines` (plural)
 
@@ -33,12 +34,10 @@ const FILES = [
 // scene. COMMUNITY_GAMES are the games that have community cards (The Midi and The Crossword have none).
 const GAME_ORDER = ["wordle", "connections", "spelling-bee", "mini", "midi", "daily", "strands"];
 const COMMUNITY_GAMES = ["wordle", "connections", "spelling-bee", "mini", "strands"];
-const INTRO_MS = 3200; // every intro is exactly this long
+// The two first-visit copy times live in yig-text-motion.css, as --yig-first-visit (2s) and --yig-lockup (3.2s), and are
+// read from there (cssMs) so the page and the CSS can't drift apart; change them there.
 const REVEAL_FADE_MS = 1450; // Chapter 4: the wall fades to the top game's colour (or back to the lighter blue) this long after `reveal` changes
 const PAN_MS = 1650;   // a room change: the moves run 1.6 s (the pan itself 0.05 to 1.55 s), plus a few frames
-// File 2's community cards (The Midi and The Crossword have none): copy arrives when the room's pieces have landed, without waiting for the ball or the lockup (chapters/ch2/chapter.json,
-// communityCopyMs, measured from the file by our checks).
-const COMMUNITY_COPY_MS = { wordle: 2334, connections: 2367, strands: 1967, "spelling-bee": 2017, mini: 2084 };
 
 let stage = null;   // the element the canvases go in (engineering's full-bleed artboard box)
 let files = [];     // per file: { rive, canvas, ready (a promise), loaded }
@@ -57,7 +56,7 @@ let seenAds = new Set();   // indexes of the ad cards the player has reached; a 
 
 // Call once, before any tap, with the element to draw in and every card in order. A card is
 //   { file: 1 | 2 | 3, scene: "<a scene of that file>", ad?: true, community?: true, icon?: "<game>", topGame?: "<game>" }
-// file and scene drive Rive; ad marks Ad 1, Ad 2 and the anonymous Ad 3 (shown once, then skipped); community (File 2 only) leaves the game's lockup out and times the copy to the room;
+// file and scene drive Rive; ad marks Ad 1, Ad 2 and the anonymous Ad 3 (shown once, then skipped); community (File 2 only) leaves the game's lockup out, so its copy uses the first-visit time, not the lockup's;
 // icon names the small HTML icon the card's copy shows with (data-icon-game), kept while the next cards share it;
 // the first card with a topGame sets File 3's top game; reveal (File 3, Chapter 4) is false on the first Chapter 4 card
 // (the stack and the ball on the lighter wall) and true from the top-game card on (the wall fades to that game's colour
@@ -218,7 +217,7 @@ function move(step) {
   }
   if (firstVisit) {
     visited.add(key);
-    copyFrom[key] = now + (legs - 1) * PAN_MS + (to.community && to.scene in COMMUNITY_COPY_MS ? COMMUNITY_COPY_MS[to.scene] : INTRO_MS);
+    copyFrom[key] = now + (legs - 1) * PAN_MS + firstVisitCopyMs(to);
   }
   const iconChange = to.icon !== from.icon;
   const settleLeft = Math.max(0, (copyFrom[key] ?? 0) - now); // an interrupted first visit still waits for its room
@@ -227,6 +226,12 @@ function move(step) {
   else if (firstVisit) delay = copyFrom[key] - now;
   else delay = Math.max(PAN_MS * legs, settleLeft);
   showCopy(frame, { changed: roomChange || iconChange, delay, back: step < 0 });
+}
+
+// How long a first visit's copy waits after its scene is set: the whole intro when a Chapter 2 game's lockup shows (a
+// game's card that isn't a community card), the first-visit constant everywhere else.
+function firstVisitCopyMs(card) {
+  return card.file === 2 && GAME_ORDER.includes(card.scene) && !card.community ? cssMs("--yig-lockup", 3200) : cssMs("--yig-first-visit", 2000);
 }
 
 // The old copy (and its icon, when the icon changes) leaves at once; the new copy arrives after `delay` ms, or with
@@ -254,9 +259,14 @@ function leave(el, back = false) {
 }
 
 function clearMs() {
-  const v = getComputedStyle(document.documentElement).getPropertyValue("--yig-clear").trim();
+  return cssMs("--yig-clear", 340);
+}
+
+// A time from yig-text-motion.css, in ms; the fallback (the stylesheet's own value) if it hasn't loaded.
+function cssMs(name, fallback) {
+  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   const ms = v.endsWith("ms") ? parseFloat(v) : parseFloat(v) * 1000;
-  return Number.isFinite(ms) ? ms : 340;
+  return Number.isFinite(ms) ? ms : fallback;
 }
 
 function enter(el, { quick = false, delay = null, afterIcon = false, back = false } = {}) {

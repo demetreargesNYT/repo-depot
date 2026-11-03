@@ -2,7 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRive } from '@rive-app/react-canvas'
 import type { Rive } from '@rive-app/react-canvas'
 import { FILES, FILE_NUMBERS } from './files'
-import { CLEAR_MS, COMMUNITY_COPY_MS, INTRO_MS, PAN_MS, REVEAL_FADE_MS, RISE_SETTLED_MS } from './timing'
+import { CLEAR_MS, FIRST_VISIT_COPY_MS, LOCKUP_COPY_MS, PAN_MS, REVEAL_FADE_MS, RISE_SETTLED_MS } from './timing'
+import { GAME_ORDER } from './cards'
 import type { Card, CopyLayer, FileNumber, Game } from './types'
 
 type Step = 1 | -1
@@ -227,7 +228,9 @@ export function useYigStage(cards: Card[]) {
     }
     if (firstVisit) {
       mut.visited.add(key)
-      const wait = to.community && to.scene in COMMUNITY_COPY_MS ? COMMUNITY_COPY_MS[to.scene] ?? INTRO_MS : INTRO_MS
+      // a Chapter 2 game's lockup shows on its first card unless it is a community card: wait for the whole intro then
+      const lockupShows = to.file === 2 && (GAME_ORDER as readonly string[]).includes(to.scene) && !to.community
+      const wait = lockupShows ? LOCKUP_COPY_MS : FIRST_VISIT_COPY_MS
       mut.copyFrom[key] = now + (legs - 1) * PAN_MS + wait
     }
     const iconChange = to.icon !== from.icon
