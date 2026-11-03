@@ -10,6 +10,13 @@ flags what breaks the rules: a bounce that drops below 70 percent of its speed, 
 turn-round that no flat surface explains, a roll downhill that slows (or uphill that speeds up), and a flight whose gravity is not
 the project's 0.40. A landing that turns into a roll keeps the sideways part of the speed and is flagged only below 45 percent. A landing that pauses a few frames and pushes off again (the climb's steps) and a catch out of sight below the
 mug's rim are listed but not flagged. `--lo F` sets the first intro frame read (default 100).
+
+It also looks for jitter, on the ball and on every piece the room moves (rotation, x, y): a HITCH (a piece or the ball stops for one
+or two frames in the middle of a movement and then carries on the same way), a LURCH (the speed jumps from one frame to the next with
+no turn to explain it, or the ball's contact has no surface: speed changes more than 25 percent while the direction stays within 20
+degrees), and a BUZZ (swings back and forth shorter than 20 frames, i.e. faster than about 3 a second, one after another without dying
+away: each swing at least 0.6 of the one before). A swing is one way, from one end to the other. Stillness at a contact, at the end
+of a swing and at a real rest is fine. The loop's duplicated last frame is not read as a hitch.
 """
 import math
 import sys
@@ -146,6 +153,11 @@ def contacts_report(pts, t_of, tmax_report):
         if si > 1.0 and so > 1.05 * si and A[4] == "flight" and not step:
             notes.append("FLAG leaves faster than it came")
             flags.append((t, f"contact at {t:.2f} s leaves faster than it arrived ({si:.1f} to {so:.1f})"))
+        if A[4] != "rest" and B[4] != "rest" and si > 0.8 and so > 0.3 and abs(so - si) > max(0.6, 0.25 * si) and not hidden:
+            cosang = (vin[0] * vout[0] + vin[1] * vout[1]) / (si * so)
+            if cosang > math.cos(math.radians(20)):
+                notes.append("FLAG lurch: speed jumps %.1f to %.1f with no turn" % (si, so))
+                flags.append((t, f"LURCH: the ball's speed jumps from {si:.1f} to {so:.1f} at {t:.2f} s with no turn to explain it"))
         if abs(vin[0]) > 1.5 and abs(vout[0]) > 1.5 and vin[0] * vout[0] < 0:
             tilt = abs(math.degrees(math.atan2(dv[0], -dv[1]))) if math.hypot(*dv) > 0.5 else 0
             if tilt < 30 or tilt > 150:
@@ -155,6 +167,46 @@ def contacts_report(pts, t_of, tmax_report):
                 notes.append("turns round (surface tilted %d deg)" % round(tilt))
         row = f"{t:6.2f} ({pts[i][0]:5.0f},{pts[i][1]:4.0f})  {si:5.1f} @{ang(vin):5.0f}  {so:5.1f} @{ang(vout):5.0f}  {kept * 100:4.0f}%  {nrm:>7}  " + "; ".join(notes)
         print(row)
+    # a hitch on the ball: its speed drops to nearly nothing for one or two frames in the middle of a movement and then goes on the same way
+    near_contact = set()
+    for i_, d_, c0_, c1_ in contacts:
+        near_contact.update(range(c0_ - 2, c1_ + 3))
+    i = 1
+    while i < len(v) - 3:
+        sp0 = math.hypot(*v[i - 1])
+        if sp0 > 1.2 and math.hypot(*v[i]) < 0.2 * sp0 and not jump[i]:
+            k = 1
+            while i + k < len(v) - 1 and math.hypot(*v[i + k]) < 0.2 * sp0 and k < 3:
+                k += 1
+            sp1 = math.hypot(*v[i + k])
+            same = v[i - 1][0] * v[i + k][0] + v[i - 1][1] * v[i + k][1] > 0
+            if k <= 2 and sp1 >= 0.6 * sp0 and same and not any(j in near_contact for j in range(i - 1, i + k + 1)) and t_of(i) <= tmax_report:
+                flags.append((t_of(i), f"HITCH: the ball stops for {k} frame{'s' if k > 1 else ''} at {t_of(i):.2f} s in the middle of a movement"))
+            i += k
+        i += 1
+    # a lurch or a stall on the ball: its speed jumps or collapses from one frame to the next with no turn, not after a flight (a landing
+    # is a contact) and not a push-off into a flight
+    in_contact = set()                       # frames of a contact that a flight comes into or goes out of (a landing, a spring, a push-off)
+    for g_i, g_d, g_first, g_last, g_A, g_B in groups:
+        if g_A[4] == "flight" or g_B[4] == "flight":
+            in_contact.update(range(g_first - 1, g_last + 3))
+    is_flight = lambda i: 0 <= i < len(acc) and acc[i] is not None and abs(acc[i][0]) < 0.12 and 0.25 < acc[i][1] < 0.55
+    for i in range(2, len(v) - 2):
+        if jump[i] or jump[i - 1] or t_of(i) > tmax_report or pts[i][1] > 731:
+            continue
+        s0, s1 = math.hypot(*v[i - 1]), math.hypot(*v[i])
+        if min(s0, s1) < 0.3 or abs(s1 - s0) <= max(1.0, 0.4 * max(s0, s1)):
+            continue
+        if is_flight(i - 1) or i in in_contact or (i - 1) in in_contact:
+            continue
+        if is_flight(i + 1) and any(math.hypot(*v[j]) < 0.8 for j in range(max(0, i - 3), i)):      # a push-off from a pause
+            continue
+        if (v[i - 1][0] * v[i][0] + v[i - 1][1] * v[i][1]) / (s0 * s1) < math.cos(math.radians(25)):
+            continue
+        what = "LURCH" if s1 > s0 else "STALL"
+        flags.append((t_of(i), f"{what}: the ball's speed goes from {s0:.1f} to {s1:.1f} in one frame at {t_of(i):.2f} s with no turn to explain it"))
+    jitter_track("the ball", [p[0] for p in pts], "x", t_of, flags, hitch=False)
+    jitter_track("the ball", [p[1] for p in pts], "y", t_of, flags, hitch=False)
     kinds = {}
     for a0, a1, vs, a, kind in segs:
         kinds[kind] = kinds.get(kind, 0) + 1
@@ -167,6 +219,82 @@ def contacts_report(pts, t_of, tmax_report):
     else:
         print("no flags")
     return flags
+
+
+SWING = 20          # a swing (one way) shorter than this many frames, repeated without dying away, is a buzz
+AMP_MIN = {"rotation": 0.01, "x": 1.5, "y": 1.5}      # swings smaller than this are noise
+HITCH_MIN = {"rotation": 0.004, "x": 0.5, "y": 0.5}   # a movement of at least this much a frame on both sides of a stop
+
+
+def swings(vals, amp_min):
+    """[(frame, value)] of the turning points, ignoring wiggles smaller than amp_min."""
+    pts = []
+    direction = 0
+    ext = (0, vals[0])
+    for i, v in enumerate(vals):
+        if direction == 0:
+            if abs(v - ext[1]) >= amp_min:
+                pts.append(ext)
+                direction = 1 if v > ext[1] else -1
+                ext = (i, v)
+        elif direction == 1:
+            if v >= ext[1]:
+                ext = (i, v)
+            elif v <= ext[1] - amp_min:
+                pts.append(ext)
+                direction, ext = -1, (i, v)
+        else:
+            if v <= ext[1]:
+                ext = (i, v)
+            elif v >= ext[1] + amp_min:
+                pts.append(ext)
+                direction, ext = 1, (i, v)
+    pts.append(ext)
+    return pts
+
+
+def jitter_track(label, vals, kind, t_of, flags, skip=(), hitch=True):
+    """Hitches and buzz on one value-per-frame track (a piece's rotation, x or y)."""
+    amp, thr = AMP_MIN[kind], HITCH_MIN[kind]
+    n = len(vals)
+    d = [vals[i + 1] - vals[i] for i in range(n - 1)]
+    i = 1
+    while hitch and i < len(d) - 2:
+        if abs(d[i - 1]) >= thr and abs(d[i]) < 0.12 * abs(d[i - 1]) and i not in skip and i + 1 not in skip:
+            k = 1
+            while i + k < len(d) and abs(d[i + k]) < 0.12 * abs(d[i - 1]) and k < 3:
+                k += 1
+            if k <= 2 and i + k < len(d) and abs(d[i + k]) >= thr and d[i + k] * d[i - 1] > 0 and not any(j in skip for j in range(i, i + k + 1)):
+                flags.append((t_of(i), f"HITCH: {label} stops for {k} frame{'s' if k > 1 else ''} at {t_of(i):.2f} s in the middle of a movement"))
+            i += k
+        i += 1
+    pts = swings(vals, amp)
+    for a, b, c in zip(pts, pts[1:], pts[2:]):
+        s1, s2 = abs(b[1] - a[1]), abs(c[1] - b[1])
+        if b[0] - a[0] < SWING and c[0] - b[0] < SWING and s2 >= 0.6 * s1:
+            flags.append((t_of(a[0]), f"BUZZ: {label} swings back and forth every {b[0] - a[0]} to {c[0] - b[0]} frames from {t_of(a[0]):.2f} s"))
+            break
+
+
+def piece_jitter(sheet, scene, intro, loop, n, lo, t_of, flags, skip_nodes, repeat=True):
+    elems = {e.get("id"): e for e in scene.root.iter() if e.get("id")}
+    names = {k: e.get("name") or e.tag for k, e in elems.items()}
+    ik, lk = sheet.anim_keys(intro), sheet.anim_keys(loop)
+    for oid in sorted(set(ik) | set(lk)):
+        name = names.get(oid, oid)
+        if oid in skip_nodes or "Ball" in name:
+            continue
+        for prop in ("rotation", "x", "y"):
+            if prop not in ik.get(oid, {}) and prop not in lk.get(oid, {}):
+                continue
+            def val(anim_keys, fr, node=oid, p=prop):
+                k = anim_keys.get(node, {}).get(p)
+                if k is not None:
+                    return k.at(fr)
+                return float(elems[node].get(p, 0))
+            vals = [val(ik, fr) for fr in range(lo, 192)] + [val(lk, fr) for fr in range(n)] * 2
+            wrap = {192 - lo + n - 1, 192 - lo + n, 192 - lo + 2 * n - 1}     # the loop's duplicated frame
+            jitter_track(f"{name} {prop}", vals, prop, t_of, flags, skip=wrap)
 
 
 def main(argv):
@@ -189,7 +317,14 @@ def main(argv):
         seq = positions(sheet, intro, chain, range(lo, 192), 192) + positions(sheet, loop, chain, range(n), n) * 2
         # Finesse timecode of sequence index i: intro frame lo + i, or 192 + loop frame (first pass); the second pass repeats the loop
         t_of = lambda i: (lo + i) / 60.0
-        contacts_report(seq, t_of, (192 + n + 40) / 60.0)
+        flags = contacts_report(seq, t_of, (192 + n + 40) / 60.0)
+        jit = []
+        piece_jitter(sheet, s, intro, loop, n, lo, t_of, jit, {x.get("id") for x in chain})
+        tmax = (192 + n + 40) / 60.0
+        jit = sorted({(round(t, 3), m_) for t, m_ in jit if t <= tmax})
+        print(f"\njitter on the pieces: {len(jit)} flag{'s' if len(jit) != 1 else ''}")
+        for t, m_ in jit:
+            print("  -", m_)
         return 0
     lo = int(argv[argv.index("--from") + 1]) if "--from" in argv else 120
     hi = int(argv[argv.index("--to") + 1]) if "--to" in argv else None
