@@ -26,7 +26,6 @@ Full plan and detail: `docs/rive-plan.md` (start with its "Start here"). In shor
 - `harness/`: the review and test pages. `experience.html` (served at `/experience`) wraps `experience-stage.html` (the whole experience across the three files, framed as engineering frames it) and holds the Jump to menu and the Finesse panel; `index.html` is the Chapter 2 test page that the text test drives (written the way engineering would build it: example player data, `buildCards`, the copy, tap zones; its only test hook is `window.__yigTest`); `serve.mjs` is the server; the browser tests (`experience-test.mjs`, `text-test.mjs`, `finesse-test.mjs`) live here too.
 - `engineering/`: the integration code (`yig-integration.js`, the working reference; `chapter-2-integration.js` serves the Chapter 2 test page only), `yig-text-motion.css`, and the React example in `react/`.
 - `deliver/` (not in git): `python3 tools/package_engineering.py` writes `deliver/yig-engineering-package/` (`core/` with the three `.riv` files, the guide, the CSS and the arrow art; `reference/` with the React example, the integration and a demo page) and zips it to `deliver/yig-engineering-package.zip`, which Demetre sends. Compare viewers go in `deliver/compare/`.
-- `reference/`: the earlier HTML prototypes, kept as motion references only. They aren't the source of truth.
 
 ## How engineering uses the files (keep it this small)
 

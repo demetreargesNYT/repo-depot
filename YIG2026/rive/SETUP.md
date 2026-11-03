@@ -43,15 +43,6 @@ as-is, plus the HTML text layer with engineering/yig-text-motion.css. Serve it w
 server. It has to show the real file, with no stand-ins.
 ```
 
-5. **Restructure Chapter 2 for multiple games** (next) by following `docs/scene-restructure.md`:
-
-```
-Do docs/scene-restructure.md on chapters/ch2, in stages: backdrops and wall lag wrappers, then intros
-and outros, then the state machine. Verify, screenshot and push at each stage, and compare against
-reference/chapter-2-prototype.html. Then update engineering/chapter-2-integration.js and check it
-in the harness.
-```
-
 ## Day to day
 
 - **Adjusting motion:** ask Claude Code for the change ("make the pan 1.3 s and keep the intro at 3.2 s"), then look at it in the harness. Or tweak it by hand in the Editor, then ask Claude Code to `rive pull` and commit.

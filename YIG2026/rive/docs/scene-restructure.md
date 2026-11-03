@@ -2,8 +2,6 @@
 
 The Chapter 2 file, "yig-ch2" (Rive file 2677803; then named "YIG Chapter 2", at revision 48903415 "7 State machine"), handles one transition: the shelf room to the player's top game, driven by `game` and `frame`. A chapter runs through up to five games in the player's order, so this restructure lets any game follow any other. It's driven by one number, `scene`.
 
-The motion target is `prototype/chapter-2-prototype.html`. Choose either game order and tap through four frames: opener, first game, the same game again (only the text changes), then the second game.
-
 ## What changes
 
 1. **One value replaces two.** `scene` is now an enum (it began as a number: 0 the chapter opener, 1 Wordle, 2 Connections, 3 Strands, 4 Spelling Bee, 5 The Mini, 6 The Midi, 7 The Crossword; the names are `intro`, `wordle`, `connections`, `strands`, `spelling-bee`, `mini`, `midi`, `daily`). Keep whichever binding style the file already uses (it currently uses a view model with autoBind). Replace `game` and `frame` with a single number property, `scene`, default 0.
