@@ -94,7 +94,9 @@ function fromScenes(tool) {
 }
 
 // ---- "Send to Claude" on the Finesse panel: the pins go into one notes file per chapter, .cache/scratch.nosync/finesse-notes/ch<N>.md
-// (a new section per send, appended), with a JSON block of the exact values, and each pin's still next to it as ch<N>-pin-<n>.png.
+// (a new section per send, appended), with a JSON block of the exact values, and each pin's still next to it as
+// ch<N>-<sent>-pin-<n>.png. The notes keep the numbers the pins had in the panel when sent, so each send starts again at 1;
+// the send's time in the still's name keeps one send's stills from replacing another's.
 // A test may name its own folder (finesse-notes-<something>), so it never writes into Demetre's notes.
 const NOTES_HEAD = (ch) => `# Finesse notes · ${ch} (File ${ch.slice(2)})
 
@@ -102,7 +104,8 @@ Pins Demetre dropped on the stage in /experience (the Finesse panel's Comment mo
 A pin's moment is the Finesse panel's timecode: seconds since the scene was set. Positions are artboard units (1495 × 1067;
 the floor line is y 712). "Under the pin" comes from the build: each named piece hidden in turn, and the ones whose hiding
 changes the pixels at the pin (near: within 40 units, with the distance, the closest five here). Each still is the animation only (no HTML copy),
-one pixel per artboard unit, with the pin drawn as a ring and the window's crop as a dashed box.
+one pixel per artboard unit, with the pin drawn as a ring and the window's crop as a dashed box. Each send's notes are
+numbered as the pins were in the panel when it was sent, from 1.
 When a note is done, its Status line becomes "Status: done: <one-line reply>".
 `;
 const two = (v) => String(v).padStart(2, "0");
@@ -149,7 +152,8 @@ async function saveNotes(req, res) {
   const dir = path.join(SCRATCH_ROOT, folder);
   fs.mkdirSync(dir, { recursive: true });
   const files = {};
-  const sent = stamp(new Date());
+  const now = new Date(), sent = stamp(now);
+  const tag = `${now.getFullYear()}${two(now.getMonth() + 1)}${two(now.getDate())}-${two(now.getHours())}${two(now.getMinutes())}${two(now.getSeconds())}`;
   for (const ch of [...new Set(pins.map((p) => p.notes))].sort()) {
     const mine = pins.filter((p) => p.notes === ch).sort((a, b) => a.n - b.n);
     const values = [];
@@ -158,7 +162,7 @@ async function saveNotes(req, res) {
       const { still, ...rest } = p;
       let name = null;
       if (typeof still === "string" && still.startsWith("data:image/png;base64,")) {
-        name = `${ch}-pin-${p.n}.png`;
+        name = `${ch}-${tag}-pin-${p.n}.png`;
         fs.writeFileSync(path.join(dir, name), Buffer.from(still.slice("data:image/png;base64,".length), "base64"));
       }
       values.push({ ...rest, still: name });

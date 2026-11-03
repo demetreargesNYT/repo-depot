@@ -9,7 +9,8 @@
 //                         because touching any piece makes Rive update a little more than an untouched redraw does. It descends
 //                         into the pieces that change and names the deepest. No time passes in a redraw (the Finesse clock draws
 //                         the held frame again), and the last redraw puts the frame back.
-//   still(x, y, label)    the frame on screen as a PNG, one pixel per artboard unit, with the pin and the window's crop drawn on it.
+//   still()               the frame on screen as a PNG, one pixel per artboard unit, with the window's crop drawn on it (the panel
+//                         draws the pin on it when the notes are sent, with the pin's number then).
 //   rect()                where the artboard sits in the stage's window.
 (() => {
   if (!window.rive || window.__yigPins) return;
@@ -102,21 +103,7 @@
 
   const rect = () => document.getElementById("artboard").getBoundingClientRect();
 
-  // the pin as drawn on the stills and on the stage: a ring around the point (so what is under it still shows) and its number
-  function drawPin(g, x, y, label) {
-    g.save();
-    g.lineWidth = 7; g.strokeStyle = "#FFFFFF";
-    g.beginPath(); g.arc(x, y, 26, 0, 2 * Math.PI); g.stroke();
-    g.lineWidth = 3.5; g.strokeStyle = "#C2570A";
-    g.beginPath(); g.arc(x, y, 26, 0, 2 * Math.PI); g.stroke();
-    g.fillStyle = "#C2570A"; g.strokeStyle = "#FFFFFF"; g.lineWidth = 3;
-    g.beginPath(); g.arc(x + 34, y - 34, 17, 0, 2 * Math.PI); g.fill(); g.stroke();
-    g.fillStyle = "#FFFFFF"; g.font = "700 20px Helvetica, Arial, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
-    g.fillText(label, x + 34, y - 33);
-    g.restore();
-  }
-
-  function still(x, y, label) {
+  function still() {
     const src = window.__yigClock?.frameCanvas?.() || onScreen()?.canvas;
     if (!src || !src.width) return null;
     const out = document.createElement("canvas");
@@ -130,7 +117,6 @@
     g.setLineDash([14, 9]); g.lineWidth = 3; g.strokeStyle = "rgba(18, 18, 18, .6)";
     g.strokeRect(cx0 + 1.5, cy0 + 1.5, cx1 - cx0 - 3, cy1 - cy0 - 3);
     g.restore();
-    drawPin(g, x, y, label);
     return out.toDataURL("image/png");
   }
 

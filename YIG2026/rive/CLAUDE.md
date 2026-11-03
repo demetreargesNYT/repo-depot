@@ -34,7 +34,7 @@ Full plan and detail: `docs/rive-plan.md` (start with its "Start here"). In shor
 - After each approved push, commit locally, so little work sits uncommitted.
 
 **Pinned notes ("read my notes")**
-- Demetre pins notes on the stage in `/experience` (Finesse panel, Comment or the C key) and sends them with "Send to Claude". Each chapter's notes go to `.cache/scratch.nosync/finesse-notes/ch<N>.md` (one section per send, a JSON block with the exact values), with a still per pin next to it (`ch<N>-pin-<n>.png`: the animation only, the pin as a ring, the window's crop dashed).
+- Demetre pins notes on the stage in `/experience` (Finesse panel, Comment or the C key) and sends them with "Send to Claude". Each chapter's notes go to `.cache/scratch.nosync/finesse-notes/ch<N>.md` (one section per send, a JSON block with the exact values), with a still per pin next to it (`ch<N>-<sent>-pin-<n>.png`: the animation only, the pin as a ring, the window's crop dashed). Each send's notes are numbered from 1.
 - When he says "read my notes", read your chapter's file and look at the stills of every note whose line says `Status: open`. Apply each as a normal finesse change (the rules above). After `npm run finesse` passes, change that note's line to `Status: done: <one-line reply>`.
 - In the report, list each note number with what you did (or why not).
 
