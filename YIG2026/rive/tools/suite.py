@@ -35,7 +35,7 @@ LOGS = REPO / "test-logs"
 LIMIT = 15 * 60                      # seconds per piece
 HARNESS = "http://127.0.0.1:8765"    # the review server (harness/serve.mjs); the suite starts it if it isn't running and leaves it running
 PACKAGE_PORT = 8900                  # the suite's own port for the unzipped-package demo, so it never touches a server of yours
-PACKAGE_DIR = REPO / "deliver" / "yig-engineering-package"
+PACKAGE_DIR = REPO / ".cache" / "scratch.nosync" / "yig-engineering-package"   # where package_engineering.py builds the unzipped package
 PACKAGE = f"http://127.0.0.1:{PACKAGE_PORT}"
 
 STATE = REPO / ".cache" / "suite-state.json"   # what passed, and the inputs it passed with (git-ignored)

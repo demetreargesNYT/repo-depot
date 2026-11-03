@@ -2,8 +2,9 @@
 
     python3 tools/package_engineering.py
 
-Writes deliver/yig-engineering-package/ and deliver/yig-engineering-package.zip (deliver/ is not in git). Nothing is sent
-anywhere. In order:
+Builds the unzipped package in .cache/scratch.nosync/yig-engineering-package/ and writes only the zip to deliver/
+(deliver/yig-engineering-package.zip; neither is in git). The unzipped folder stays out of the iCloud-synced Desktop, so a rebuild
+leaves no "core 2"-style conflict copies; its path is printed at the end, to open the demos from. Nothing is sent anywhere. In order:
   1. the quick rule check must pass for ch1, ch2 and ch3
   2. each file is built from a scratch copy of its project; File 2's working artboard, Bridge Art, is taken out of the
      scratch copy first, so the delivered .riv has only the main artboard. The built files are checked: the artboard,
@@ -30,7 +31,7 @@ import scratch  # noqa: E402  scratch output goes in .cache/scratch.nosync/, nev
 from xml_fragments import parse, ser  # noqa: E402
 
 RIVE = os.path.expanduser("~/.rive/bin/rive")
-OUT = REPO / "deliver" / "yig-engineering-package"
+OUT = scratch.SCRATCH / "yig-engineering-package"     # the unzipped package (out of iCloud); only the zip goes in deliver/
 ZIP = REPO / "deliver" / "yig-engineering-package.zip"
 RIVS = {"ch1": "start-chapter-1.riv", "ch2": "chapter-2.riv", "ch3": "chapters-3-4-end.riv"}
 RUNTIME = "2.27.3"
@@ -116,6 +117,7 @@ Start here. You need the four things in `core/`: the three Rive files, the guide
 Read `core/engineering-guide.md` first: "The rules" is a one-page summary, and "What's new in this delivery" lists what changed since the last package.
 Everything in `reference/` is optional, a working example of the guide.
 `reference/timing-demo.html` is the visual companion to the guide's timing section (section 6): double-click it to see every wait and the Rive calls on each tap.
+`reference/text-motion.html` shows how the copy moves on each card, per line (the guide's section 9): double-click it too.
 """
 
 
@@ -133,6 +135,7 @@ def assemble(files):
     (core / "ui-desktop-button.svg").chmod(0o644)
     (ref / "yig-integration.js").write_text(reference_integration())
     shutil.copy(REPO / "engineering" / "timing-demo.html", ref / "timing-demo.html")      # opens from a double-click; links ../core/yig-text-motion.css
+    shutil.copy(REPO / "engineering" / "text-motion.html", ref / "text-motion.html")      # the same; also links example/yig-framing.css and its icons
     shutil.copytree(REPO / "engineering" / "react", ref / "react", ignore=shutil.ignore_patterns("node_modules", "dist"))
     main = ref / "react" / "src" / "main.tsx"
     main.write_text(main.read_text().replace("'../../yig-text-motion.css'", "'../../../core/yig-text-motion.css'"))
@@ -175,13 +178,17 @@ def main():
     if problems:
         print("\n".join(problems))
         fail("the package mentions internal versions, git or names (above)")
+    copies = [p for p in OUT.rglob("*") if re.search(r" \d+(\.[A-Za-z]+)?$", p.name)]
+    if copies:
+        fail(f"the package has copies with a number in the name (iCloud conflict copies?): {[str(p.relative_to(OUT)) for p in copies]}")
+    ZIP.parent.mkdir(parents=True, exist_ok=True)
     if ZIP.exists():
         ZIP.unlink()
     with zipfile.ZipFile(ZIP, "w", zipfile.ZIP_DEFLATED) as z:
         for path in sorted(OUT.rglob("*")):
             if path.is_file() and path.name != ".DS_Store":
                 z.write(path, Path("yig-engineering-package") / path.relative_to(OUT))
-    print(f"\npackage: {OUT}\nzip:     {ZIP} ({ZIP.stat().st_size:,} bytes)")
+    print(f"\nzip:     {ZIP} ({ZIP.stat().st_size:,} bytes)\nunzipped (open the demos from here): {OUT}")
 
 
 if __name__ == "__main__":

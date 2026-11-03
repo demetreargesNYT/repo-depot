@@ -224,7 +224,7 @@ Don't change `startScene` afterwards. The copy can show as soon as the canvas is
 
 ### The text CSS
 
-`yig-text-motion.css` animates the copy with no JavaScript. Put `yig-in` on a `yig-text` block, and set `--yig-delay` on it from section 6. There are three levels of detail; pick one:
+`yig-text-motion.css` animates the copy with no JavaScript. Put `yig-in` on a `yig-text` block, and set `--yig-delay` on it from section 6. Every card uses per-line motion, with each designed line as its own piece. Block and per element are fallbacks if a card can't be split yet:
 
 1. **Block:** the whole block rises as one piece.
 2. **Per element:** wrap each piece in `<span class="yig-mask"><span class="yig-line">…</span></span>`; they rise 120 ms apart. An icon uses `yig-pop`.
@@ -244,6 +244,7 @@ The game icon is its own block, one per game: `<div class="yig-icon"><span class
 | Path | What it is |
 |---|---|
 | `reference/timing-demo.html` | The copy timing and the Rive calls, with stand-in rooms. Opens with a double-click. |
+| `reference/text-motion.html` | How the copy moves on each card, per line. Opens with a double-click. |
 | `reference/example/` | The whole experience with the real files. |
 | `reference/react/` | React 18 + TypeScript example. `src/useYigStage.ts` has every rule in one hook; `src/cards.ts` builds the card list. |
 | `reference/yig-integration.js` | The same rules in plain JavaScript. |
