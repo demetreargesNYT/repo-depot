@@ -80,6 +80,8 @@ This is the intent for every scene. **The details are set per scene, by Demetre,
 
 **The ball's role.** The ball is a continuous device, a quiet metaphor for the player's Year in Games, carried from room to room. Its job is to keep each frame alive while the viewer reads their stats, never to steal the show. It has weight and plays with the room it's in: loops start as soon as the room has arrived, with no waiting for the copy, and play while the copy animates in; the ball keeps the frame alive without pulling focus. Pieces the ball touches react a little (a small dip, tilt or wobble that settles), in proportion to the impact, as in Wordle. Not every piece on every contact: choose the moments that add interest, and leave the rest still, so it never feels busy. The ball and its arcs never reach the copy. On the phone frame, keep the top of the ball's highest point well clear of the lowest line of the card's HTML copy. The details are set room by room.
 
+**The ball rotates.** When it rolls, it turns in step with the distance it travels (one full turn per circumference), in the direction of travel: rolling right turns it clockwise, rolling left anticlockwise. In the air it keeps the spin it left the surface with, and a bounce can add a little. At rest it stops turning. Its white dot travels around with the turn, which is what makes the motion read as rolling, not sliding.
+
 ## State machine pattern (per chapter)
 
 - Two enums, `scene` and `direction`, and a boolean, `lockup` (true shows the lockup). Three layers per room, plus a Lockup layer per game, so layers never key the same property:

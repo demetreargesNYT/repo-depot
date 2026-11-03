@@ -143,6 +143,12 @@ class Doc:
         if found:
             del self.lines[found[0]:found[1] + 1]
 
+    def drop_clipping(self, shape_id):
+        """Remove the ClippingShape lines inside a shape."""
+        i = self.idx(shape_id)
+        j = self.end(i)
+        self.lines[i:j + 1] = [l for l in self.lines[i:j + 1] if "<ClippingShape" not in l]
+
     def clear(self, anim_name):
         a, b = self.anim(anim_name)
         del self.lines[a + 1:b]
