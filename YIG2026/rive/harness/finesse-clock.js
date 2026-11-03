@@ -25,6 +25,8 @@
     time: 0,                         // virtual milliseconds since the page started
     view: 0,                         // 0: live; n: showing the copy n frames behind the live frame
     onFrame: null,                   // called after each virtual frame is drawn
+    stopAt: null,                    // a virtual time to stop on exactly (a pin's moment): the clock pauses itself there
+    stopped: false,                  // set when it did, for the panel to notice
   };
 
   // ---- the frame queue: only the Rive runtime's own scheduler (a bound function) is held; the page's callbacks stay real
@@ -113,7 +115,15 @@
     }
     if (steps > 0) { while (steps-- > 0) runFrame(FRAME_MS); steps = 0; return; }
     if (clock.paused) return;
-    runFrame(real * clock.speed);
+    const dt = real * clock.speed;
+    if (clock.stopAt !== null && clock.time + dt >= clock.stopAt) {
+      const last = Math.max(0, clock.stopAt - clock.time);
+      clock.stopAt = null;
+      clock.paused = clock.stopped = true;
+      if (last > 0) runFrame(last);
+      return;
+    }
+    runFrame(dt);
   }
   nativeRaf(tick);
 
@@ -128,6 +138,18 @@
   };
   clock.stepsBehind = () => clock.view;
   clock.available = () => ring.length - 1 - clock.view;      // frames still to step back through
+  // draw the held frame again at the same moment (no time passes, nothing is kept in the history): the pin comments use it to
+  // redraw a paused frame with one piece hidden (finesse-pins.js). False when there is no frame to draw.
+  clock.redraw = () => {
+    const batch = queue;
+    if (!batch.length) return false;
+    queue = [];
+    for (const e of batch) {
+      try { e.cb(t0 + clock.time); } catch (err) { console.error(err); }
+    }
+    return true;
+  };
+  clock.frameCanvas = () => (clock.view > 0 && ghost && ghost.style.display === "block" ? ghost : liveCanvas());
   clock.shownTime = () => (clock.view > 0 && ring.length ? ring[Math.max(0, ring.length - 1 - clock.view)].time : clock.time);
   window.__yigClock = clock;
 })();

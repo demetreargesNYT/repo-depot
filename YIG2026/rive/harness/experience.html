@@ -65,6 +65,26 @@ body { background: var(--paper); color: var(--ink); font: 500 13px/1.3 var(--ui)
 #seam-flash.small { background: #2F6FB0; }
 #seam-flash.on { opacity: 1; transition: none; }
 #seam-flash:not(.on) { transition: opacity .35s ease-out; }
+/* pin comments: the click catcher (Comment mode only), the pins over the stage (each shows only near its moment) and the note box */
+#pin-catch { position: absolute; inset: 0; z-index: 6; cursor: crosshair; }
+#pin-layer { position: absolute; inset: 0; z-index: 7; pointer-events: none; overflow: hidden; }
+.pin { position: absolute; width: 0; height: 0; }
+.pin .ring { position: absolute; left: -17px; top: -17px; width: 34px; height: 34px; border-radius: 50%; border: 3px solid #C2570A; box-shadow: 0 0 0 2px #FFF, inset 0 0 0 2px #FFF; }
+.pin .num { position: absolute; left: 10px; top: -38px; min-width: 24px; height: 24px; padding: 0 5px; border-radius: 12px; border: 2px solid #FFF; background: #C2570A; color: #FFF;
+  font: 700 12px/20px var(--ui); text-align: center; pointer-events: auto; cursor: pointer; }
+#pin-edit { position: absolute; z-index: 8; width: 250px; display: grid; gap: 6px; padding: 8px; font-size: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 9px; box-shadow: 0 6px 20px rgba(0, 0, 0, .18); }
+#pin-edit small { color: var(--muted); line-height: 1.35; }
+#pin-edit textarea, .pin-row textarea { font: 500 12px/1.35 var(--ui); color: var(--ink); width: 100%; resize: vertical; border: 1px solid var(--line); border-radius: 6px; padding: 5px 6px; }
+#pin-edit .row { display: flex; gap: 6px; }
+#pin-edit button { font: 500 12px var(--ui); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 7px; padding: 4px 9px; cursor: pointer; }
+#pin-edit button:hover { border-color: var(--ink); }
+.fin-pins { border-top: 1px solid var(--line); padding-top: 10px; display: grid; gap: 8px; }
+.pin-row { display: grid; gap: 4px; }
+.pin-head { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.pin-head .n { flex: none; min-width: 22px; height: 22px; border-radius: 11px; background: #C2570A; color: #FFF; font: 700 11px/22px var(--ui); text-align: center; }
+.pin-head span { flex: 1; color: var(--muted); }
+.pin-head span b { color: var(--ink); }
+#finesse .pin-head button { padding: 0 7px; }
 </style>
 </head>
 <body>
@@ -99,7 +119,11 @@ body { background: var(--paper); color: var(--ink); font: 500 13px/1.3 var(--ui)
 </div>
 <div class="status" id="status">Loading…</div>
 <div class="main">
-<div class="area window" id="area"><iframe class="frame" id="frame" title="The experience"></iframe><div id="seam-flash"></div></div>
+<div class="area window" id="area"><iframe class="frame" id="frame" title="The experience"></iframe><div id="seam-flash"></div>
+  <div id="pin-catch" hidden title="Click to pin a note here"></div><div id="pin-layer"></div>
+  <div id="pin-edit" hidden><b id="pin-edit-title"></b><small id="pin-edit-under"></small><textarea id="pin-edit-text" rows="3" placeholder="Your note (Esc or ⌘↩ closes)"></textarea>
+    <div class="row"><button id="pin-edit-done">Done</button><button id="pin-edit-delete">Delete pin</button></div></div>
+</div>
 <aside id="finesse" hidden aria-label="Finesse">
   <div class="fin-head"><b>Finesse</b><small>F shows or hides it</small><button id="fin-fold" title="Fold the panel">–</button></div>
   <div class="fin-body">
@@ -116,6 +140,13 @@ body { background: var(--paper); color: var(--ink); font: 500 13px/1.3 var(--ui)
     </div>
     <div class="fin-hist" id="fin-hist"></div>
     <div class="fin-list" id="fin-list"></div>
+    <div class="fin-pins">
+      <div class="fin-ctl"><button id="fin-comment" aria-pressed="false" title="Comment mode (C): pauses the room; click the stage to pin a note">Comment</button>
+        <button id="fin-send" title="Save every pin to .cache/scratch.nosync/finesse-notes/ch&lt;N&gt;.md with a still each, then clear them here">Send to Claude</button></div>
+      <div class="fin-note" id="pin-help"></div>
+      <div id="pin-list"></div>
+      <div class="fin-hist" id="pin-status"></div>
+    </div>
     <p class="fin-note">The clock runs the Rive animation only. The copy's own timers keep real time, so tap on the stage only when the pan has ended at 0.5×. Stepping back shows the last 2 s at reduced size.</p>
   </div>
 </aside>
@@ -142,6 +173,7 @@ function remember() {
   const p = new URLSearchParams();
   for (const f of fields) p.set(f, $(f).value);
   if (fin.on) p.set("finesse", "1");
+  if (q.get("notes-folder")) p.set("notes-folder", q.get("notes-folder"));   // a test's own notes folder (serve.mjs)
   history.replaceState(null, "", `?${p}${riveOnly ? "&rive-only" : ""}`);
 }
 function layout() {
@@ -190,7 +222,7 @@ addEventListener("resize", layout);
 // keys pressed outside the frame still move the experience
 addEventListener("keydown", (e) => {
   const x = $("frame").contentWindow?.yigExperience;
-  if (!x) return;
+  if (!x || e.target.closest?.("input, textarea")) return;
   if (e.key === "ArrowRight") { e.preventDefault(); x.onTap(); }
   if (e.key === "ArrowLeft") { e.preventDefault(); x.onBack(); }
   if ((e.key === "h" || e.key === "H") && !e.metaKey && !e.ctrlKey && !e.altKey && !e.target.closest?.("select, input, textarea")) x.setRiveOnly(!x.riveOnly());
@@ -276,6 +308,7 @@ setInterval(async () => {
 // Turning the panel on or off reloads the stage on the same card, with or without the clock.
 function loadTiming() {
   fetch("/room-timing", { cache: "no-store" }).then((r) => r.json()).then((t) => { fin.timing = t; }).catch(() => {});
+  fetch("/room-pieces", { cache: "no-store" }).then((r) => r.json()).then((t) => { fin.pieces = t; }).catch(() => {});
 }
 function showFinesse() {
   $("finesse").hidden = !fin.on;
@@ -283,6 +316,7 @@ function showFinesse() {
 }
 function setFinesse(on) {
   fin.on = on;
+  if (!on) setComment(false);
   showFinesse();
   const x = $("frame").contentWindow?.yigExperience;
   const at = x ? x.state().frame : 0;
@@ -323,7 +357,9 @@ function finesseKeys(e) {
   if (e.metaKey || e.ctrlKey || e.altKey) return;
   if (e.target.closest?.("select, input, textarea")) return;
   if (e.key === "f" || e.key === "F") { e.preventDefault(); setFinesse(!fin.on); return; }
+  if (e.key === "c" || e.key === "C") { e.preventDefault(); setComment(!fin.comment); return; }
   if (!fin.on) return;
+  if (e.key === "Escape") { if (fin.editing) closeEditor(); else if (fin.comment) setComment(false); }
   if (e.key === " " && e.target.tagName !== "BUTTON") { e.preventDefault(); $("fin-play").click(); }
   if (e.key === ",") $("fin-back").click();
   if (e.key === ".") $("fin-fwd").click();
@@ -356,6 +392,7 @@ function panelTick() {
   const fw = $("frame").contentWindow, x = fw?.yigExperience, clk = fw?.__yigClock;
   if (!x || !clk) return;
   if (clk.speed !== fin.speed) clk.setSpeed(fin.speed);
+  if (clk.stopped) { clk.stopped = false; fin.seek = null; setPaused(true); }   // it stopped on a pin's moment (gotoPin)
   if (clk.paused !== fin.paused) clk.setPaused(fin.paused);
   const s = x.state();
   const scene = s.scenes[s.shown - 1] ?? "";
@@ -407,7 +444,241 @@ function panelTick() {
     + `Loop ${intro ? "restarts" : "seams"}: <b>${list(intro ? loops.slice(1) : loops)}</b> s (every ${t.loop.toFixed(2)} s).`
     + (t.small ? `<br>Small loops restart: <b>${list(seams.small)}</b> s (every ${t.small.toFixed(2)} s).` : "")
     + `<br>Seams passed: <b>${fin.passed}</b>`;
+  pinsTick(key, tc, clk);
 }
+
+// ---- Pin comments: the Comment button or the C key. Comment mode pauses the room, and a click on the stage drops a numbered pin
+// there and opens a box for the note; play, step and Replay work as usual in between. Each pin keeps the chapter, the room, the
+// card, the timecode, the point in artboard units, the pieces under it (finesse-pins.js tests them on the build) and a still.
+// Pins stay in this browser (localStorage; the stills in IndexedDB) until "Send to Claude" saves them (serve.mjs, into
+// .cache/scratch.nosync/finesse-notes/ch<N>.md) and clears them here. A pin shows on the stage only within PIN_NEAR of its moment.
+const PIN_KEY = "yig-finesse-pins", PIN_NEAR = 0.25, AB_W = 1495, AB_H = 1067;
+const pinStore = (() => { try { return JSON.parse(localStorage.getItem(PIN_KEY)); } catch { return null; } })() || { next: 1, list: [] };
+const savePins = () => localStorage.setItem(PIN_KEY, JSON.stringify(pinStore));
+const pinOf = (n) => pinStore.list.find((p) => p.n === n);
+const stills = (() => {
+  let db = null;
+  const open = () => (db ??= new Promise((resolve, reject) => {
+    const r = indexedDB.open("yig-finesse-pins", 1);
+    r.onupgradeneeded = () => r.result.createObjectStore("stills");
+    r.onsuccess = () => resolve(r.result);
+    r.onerror = () => reject(r.error);
+  }));
+  const run = async (mode, fn) => {
+    const d = await open();
+    return new Promise((resolve, reject) => {
+      const t = d.transaction("stills", mode);
+      const req = fn(t.objectStore("stills"));
+      t.oncomplete = () => resolve(req.result);
+      t.onerror = () => reject(t.error);
+    });
+  };
+  return { put: (n, v) => run("readwrite", (s) => s.put(v, n)), get: (n) => run("readonly", (s) => s.get(n)), del: (n) => run("readwrite", (s) => s.delete(n)) };
+})();
+Object.assign(fin, { comment: false, pieces: null, editing: 0, seek: null });
+const escHtml = (v) => String(v).replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[ch]);
+
+// where the artboard is drawn, in the stage area's pixels (the frame may be scaled to fit a device size)
+function stageGeom() {
+  const frame = $("frame"), ab = frame.contentWindow?.__yigPins?.rect();
+  if (!ab || !frame.offsetWidth) return null;
+  const fr = frame.getBoundingClientRect(), area = $("area").getBoundingClientRect(), k = fr.width / frame.offsetWidth;
+  return { left: fr.left - area.left + ab.left * k, top: fr.top - area.top + ab.top * k, w: ab.width * k, h: ab.height * k,
+    frame: { l: fr.left - area.left, t: fr.top - area.top, r: fr.right - area.left, b: fr.bottom - area.top } };
+}
+const fromArtboard = (g, x, y) => ({ x: g.left + (x / AB_W) * g.w, y: g.top + (y / AB_H) * g.h });
+
+function setComment(on) {
+  if (on && !fin.on) setFinesse(true);           // the panel comes on first (the stage reloads with the clock), then pins drop as usual
+  else if (on) setPaused(true);
+  fin.comment = on;
+  if (!on) closeEditor();
+  $("pin-catch").hidden = !on;
+  $("fin-comment").setAttribute("aria-pressed", String(on));
+  $("pin-help").textContent = on ? "Comment mode: click the stage to pin a note. Play, step or Replay as usual; C or Esc ends it." : "";
+}
+$("fin-comment").addEventListener("click", () => { setComment(!fin.comment); $("fin-comment").blur(); });
+
+// the room's own clock at a timecode: in the intro, or how far into which pass of the loop (first visits only: a room that came
+// back already built keeps its first-visit timing)
+function loopPos(t, tc) {
+  if (!fin.first || !t?.loop) return null;
+  const intro = t.intro ?? 0;
+  if (tc < intro) return { part: "intro", at: +tc.toFixed(3), of: intro };
+  const into = tc - intro;
+  return { part: "loop", at: +(into % t.loop).toFixed(3), of: +t.loop.toFixed(3), pass: Math.floor(into / t.loop) + 1 };
+}
+
+$("pin-catch").addEventListener("click", async (e) => {
+  const g = stageGeom(), area = $("area").getBoundingClientRect();
+  const fw = $("frame").contentWindow, x = fw?.yigExperience, P = fw?.__yigPins, clk = fw?.__yigClock;
+  if (!g || !x || !P || !clk || fin.loading) return;
+  const ax = e.clientX - area.left, ay = e.clientY - area.top;
+  if (ax < g.frame.l || ax > g.frame.r || ay < g.frame.t || ay > g.frame.b) return;      // outside the screen
+  setPaused(true);                                                                        // the pin's moment is the frame on screen
+  const px = ((ax - g.left) / g.w) * AB_W, py = ((ay - g.top) / g.h) * AB_H;
+  const s = x.state(), card = x.cards[s.frame], scene = s.scenes[s.shown - 1] ?? "", key = `${s.shown}:${scene}`;
+  const tc = Math.max(0, (clk.shownTime() - fin.zero) / 1000);
+  const entry = SCENES.find((v) => v.goto.split(":").slice(0, 2).join(":") === key && v.goto.includes(":community") === !!card.community);
+  const n = pinStore.next++;
+  const still = P.still(px, py, String(n));
+  const pin = {
+    n, notes: `ch${s.shown}`, file: s.shown, chapter: entry ? entry.group.replace(/ \(File \d\)$/, "") : `File ${s.shown}`,
+    scene, room: fin.timing[key]?.room ?? null, key,
+    card: { index: s.frame + 1, of: x.cards.length, label: (card.copy?.find((l) => l[1])?.[1] ?? "").slice(0, 80), community: !!card.community },
+    tc: +tc.toFixed(3), frame: Math.round(tc * 60), firstVisit: !!fin.first, loop: loopPos(fin.timing[key], tc), historyFrame: clk.stepsBehind() > 0,
+    x: +px.toFixed(1), y: +py.toFixed(1), pieces: P.piecesAt(px, py, fin.pieces?.[String(s.shown)]),
+    size: $("size").selectedOptions[0].textContent, riveOnly: x.riveOnly(), settings: { flow: $("flow").value, player: $("player").value, top: $("top").value },
+    note: "", at: new Date().toISOString(),
+  };
+  pinStore.list.push(pin);
+  savePins();
+  renderPins();
+  openEditor(n);
+  if (still) await stills.put(n, still);
+});
+
+function openEditor(n) {
+  const p = pinOf(n);
+  if (!p) return;
+  fin.editing = n;
+  $("pin-edit").hidden = false;
+  $("pin-edit-title").textContent = `Pin ${n} · ${p.room || p.scene} · ${p.tc.toFixed(2)} s`;
+  $("pin-edit-under").textContent = !p.pieces ? "Pieces under the pin: not worked out for this frame."
+    : `Under: ${p.pieces.under.map((v) => v.name).join(", ") || "no named piece"}${p.pieces.near.length ? ` · near: ${p.pieces.near.slice(0, 4).map((v) => v.name).join(", ")}` : ""}`;
+  $("pin-edit-text").value = p.note;
+  placeEditor();
+  $("pin-edit-text").focus();
+}
+function closeEditor() {
+  fin.editing = 0;
+  $("pin-edit").hidden = true;
+}
+function placeEditor() {
+  const p = pinOf(fin.editing), g = stageGeom(), box = $("pin-edit"), area = $("area");
+  if (!p || !g) return;
+  const at = fromArtboard(g, p.x, p.y);
+  const left = Math.min(Math.max(8, at.x + 24), area.clientWidth - box.offsetWidth - 8);
+  const top = Math.min(Math.max(8, at.y + 16), area.clientHeight - box.offsetHeight - 8);
+  box.style.left = `${left}px`;
+  box.style.top = `${top}px`;
+}
+$("pin-edit-text").addEventListener("input", (e) => {
+  const p = pinOf(fin.editing);
+  if (!p) return;
+  p.note = e.target.value;
+  savePins();
+  const row = document.querySelector(`.pin-row[data-n="${p.n}"] textarea`);
+  if (row) row.value = p.note;
+});
+$("pin-edit-text").addEventListener("keydown", (e) => {
+  if (e.key === "Escape" || (e.key === "Enter" && (e.metaKey || e.ctrlKey))) { e.preventDefault(); closeEditor(); }
+});
+$("pin-edit-done").addEventListener("click", closeEditor);
+$("pin-edit-delete").addEventListener("click", () => deletePin(fin.editing));
+
+async function deletePin(n) {
+  pinStore.list = pinStore.list.filter((p) => p.n !== n);
+  savePins();
+  if (fin.editing === n) closeEditor();
+  renderPins();
+  await stills.del(n).catch(() => {});
+}
+
+// go to a pin: open its room's first card (as Replay room does: a first visit, the intro from the start), play to the pin's
+// timecode at the current speed, and stop on it exactly (the clock's stopAt). The flow and player switch to the pin's own.
+function gotoPin(p) {
+  closeEditor();
+  for (const f of ["flow", "player", "top"]) $(f).value = p.settings[f];
+  load(0, `${p.file}:${p.scene}${p.card.community ? ":community" : ""}`);
+  fin.seek = { n: p.n, key: p.key, tc: p.tc, armed: false };
+  $("pin-status").textContent = `Going to pin ${p.n}: the room plays from its first card and stops at ${p.tc.toFixed(2)} s.`;
+}
+
+const pinEls = new Map();
+function renderPins() {
+  const list = $("pin-list");
+  list.innerHTML = pinStore.list.length ? "" : '<div class="fin-note">No pins yet.</div>';
+  for (const p of pinStore.list) {
+    const row = document.createElement("div");
+    row.className = "pin-row";
+    row.dataset.n = p.n;
+    row.innerHTML = `<div class="pin-head" title="Go to this room and moment"><span class="n">${p.n}</span><span><b>${escHtml(p.room || p.scene)}</b> · ${p.notes} · ${p.tc.toFixed(2)} s</span>`
+      + `<button class="del" title="Delete this pin">×</button></div><textarea rows="2" placeholder="Note"></textarea>`;
+    const text = row.querySelector("textarea");
+    text.value = p.note;
+    text.addEventListener("input", () => {
+      p.note = text.value;
+      savePins();
+      if (fin.editing === p.n) $("pin-edit-text").value = p.note;
+    });
+    row.querySelector(".pin-head").addEventListener("click", (e) => { if (!e.target.closest(".del")) gotoPin(p); });
+    row.querySelector(".del").addEventListener("click", () => deletePin(p.n));
+    list.append(row);
+  }
+  $("fin-send").disabled = !pinStore.list.length;
+  // the pins on the stage
+  for (const [n, el] of pinEls) if (!pinOf(n)) { el.remove(); pinEls.delete(n); }
+  for (const p of pinStore.list) {
+    if (pinEls.has(p.n)) continue;
+    const el = document.createElement("div");
+    el.className = "pin";
+    el.hidden = true;
+    el.innerHTML = `<div class="ring"></div><div class="num" title="Pin ${p.n}: edit the note">${p.n}</div>`;
+    el.querySelector(".num").addEventListener("click", () => openEditor(p.n));
+    $("pin-layer").append(el);
+    pinEls.set(p.n, el);
+  }
+}
+
+// each frame of the panel: arm a pending jump once its scene is set, and show the pins near this moment
+function pinsTick(key, tc, clk) {
+  if (fin.seek && !fin.seek.armed && key === fin.seek.key && fin.first) {
+    clk.stopAt = fin.zero + fin.seek.tc * 1000;
+    fin.seek.armed = true;
+  }
+  const g = stageGeom();
+  for (const p of pinStore.list) {
+    const el = pinEls.get(p.n);
+    if (!el) continue;
+    const show = !!g && p.key === key && (fin.editing === p.n || Math.abs(p.tc - tc) <= PIN_NEAR);
+    if (el.hidden === show) el.hidden = !show;
+    if (show) {
+      const at = fromArtboard(g, p.x, p.y);
+      el.style.left = `${at.x}px`;
+      el.style.top = `${at.y}px`;
+    }
+  }
+  if (fin.editing) placeEditor();
+}
+
+// Send to Claude: every pin, with its still, to the server, which writes the chapter notes files; the ones it saved are cleared here
+$("fin-send").addEventListener("click", async () => {
+  if (!pinStore.list.length) return;
+  $("fin-send").disabled = true;
+  $("pin-status").textContent = "Sending…";
+  try {
+    const pins = await Promise.all(pinStore.list.map(async (p) => ({ ...p, still: (await stills.get(p.n).catch(() => null)) ?? null })));
+    const r = await fetch("/finesse-notes", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ folder: q.get("notes-folder") || undefined, pins }) });
+    if (!r.ok) throw new Error(`${r.status} ${await r.text()}`);
+    const res = await r.json();
+    const sent = new Set(res.saved);
+    pinStore.list = pinStore.list.filter((p) => !sent.has(p.n));
+    savePins();
+    closeEditor();
+    renderPins();
+    for (const n of sent) await stills.del(n).catch(() => {});
+    $("pin-status").textContent = `Sent ${sent.size} pin${sent.size === 1 ? "" : "s"}: ${Object.values(res.files).map((f) => `${f.notes} (${f.count})`).join(", ")}.`;
+  } catch (err) {
+    // the server would not take them (an old server still running?): the pins stay here, and their values go to the clipboard
+    const plain = JSON.stringify(pinStore.list, null, 1);
+    const copied = await navigator.clipboard?.writeText(plain).then(() => true, () => false);
+    $("pin-status").textContent = `The server did not save the notes (${err.message}). The pins are kept here${copied ? ", and their values are on the clipboard as JSON" : ""}.`;
+    $("fin-send").disabled = false;
+  }
+});
+renderPins();
+
 requestAnimationFrame(panelTick);
 if (fin.on) { showFinesse(); loadTiming(); }
 

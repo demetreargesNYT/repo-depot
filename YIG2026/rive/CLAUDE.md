@@ -33,6 +33,11 @@ Full plan and detail: `docs/rive-plan.md` (start with its "Start here"). In shor
 - Ask him before any Rive push. Run `python3 tools/rive_compare.py <ch>` first (it pulls Rive's revision into scratch and reports Editor edits since the last push, and what the push would change) and give him its result with the request.
 - After each approved push, commit locally.
 
+**Pinned notes ("read my notes")**
+- Demetre pins notes on the stage in `/experience` (Finesse panel, Comment or the C key) and sends them with "Send to Claude". Each chapter's notes go to `.cache/scratch.nosync/finesse-notes/ch<N>.md` (one section per send, a JSON block with the exact values), with a still per pin next to it (`ch<N>-pin-<n>.png`: the animation only, the pin as a ring, the window's crop dashed).
+- When he says "read my notes", read your chapter's file and look at the stills of every note whose line says `Status: open`. Apply each as a normal finesse change (the rules above). After `npm run finesse` passes, change that note's line to `Status: done: <one-line reply>`.
+- In the report, list each note number with what you did (or why not).
+
 **Parallel sessions (one Claude Code session per chapter)**
 - Each session works only on its own chapter's files: its `.riv` source, rooms and chapter tools.
 - Never edit shared files: `CLAUDE.md`, `docs/rive-plan.md`, the guide, the harness, the package script, the shared tools in `tools/`. If a shared file needs a change, stop and tell Demetre.
