@@ -233,9 +233,11 @@ Don't change `startScene` afterwards. The copy can show as soon as the canvas is
 | Class | When | What it does |
 |---|---|---|
 | `yig-quick` | the tap stayed in the same room | Rises right after the old copy clears (0.34 s). |
-| `yig-after-icon` | a game's first card | Lines start one step after the icon pops. |
+| `yig-after-icon` | the game icon arrives with this card | Lines start one step after the icon pops. |
 | `yig-out` | the old copy leaves | Lifts out; hide it after 340 ms. Copy still rising should just be hidden. |
 | `yig-back` | Back | Mirrors the motion: copy comes down into place. |
+
+The stagger covers the first 8 pieces of a block; no card should need more.
 
 The game icon is its own block, one per game: `<div class="yig-icon"><span class="yig-pop">…</span></div>`. It pops in with the game's first card and stays while that game's cards change. With reduced motion, every move becomes a 200 ms fade; the timings don't change.
 

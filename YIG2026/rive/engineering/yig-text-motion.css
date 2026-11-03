@@ -4,7 +4,8 @@
   Copy rises in from behind a mask, one line after another, and lifts out and dissolves when it leaves. An icon or image
   pops in instead. Everything is timed from the variables below.
 
-  Classes (engineering-guide.md, section 9, has the three levels of markup and when to add each class):
+  Classes (engineering-guide.md, section 9, has the markup: per line on every card, with block and per element as fallbacks,
+  and when to add each class):
     yig-text         a card's copy block
     yig-icon         a game's icon block, with the icon inside yig-pop
     yig-mask > yig-line   one line (or one piece of copy); each rises inside its own mask
