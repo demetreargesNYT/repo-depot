@@ -9,7 +9,8 @@
   The whole experience, Loading through End, on one stage, framed like engineering's staging page (yig-framing.css).
   Our review page, not an engineering file: /experience wraps it in a frame per screen size. It runs on its own too, at
   the window's size: /experience-stage?flow=anon. All copy is placeholder. Query: flow (sub | anon), player
-  (wordle-only | midi-only | several-games | all-seven), top (a game), jump (a card index), goto (file:scene).
+  (wordle-only | midi-only | several-games | all-seven), top (a game), jump (a card index), goto (file:scene),
+  rive-only (hide all the HTML; the H key and the pill do the same).
 -->
 <!-- the Rive runtime: engineering's version -->
 <script src="https://cdn.jsdelivr.net/npm/@rive-app/canvas@2.27.3/rive.js"></script>
@@ -105,6 +106,15 @@ body.on-splash .nav-logo, body.on-splash .nav-progress { opacity: 0; }
 .yig-arrow:focus-visible { outline: 2px solid #1F1F1F; outline-offset: 3px; }
 /* the video card: the top game's colour, flat, over the stage (the Figma frame shows no stack or floor behind the video) */
 .video-bg { position: fixed; inset: 0; z-index: 0; opacity: 0; pointer-events: none; transition: opacity .6s ease; }
+/* Viewing options (display only). The HTML on top is hidden with visibility, not display, so the copy's animations keep running
+   underneath and it comes back exactly where it was. The tap zones stay (and show on desktop too, where the arrow buttons are
+   hidden), so the player is never stuck. The pill is page chrome and is never hidden. */
+body.html-off .yig-column, body.html-off .yig-arrow, body.html-off .video-bg { visibility: hidden; }
+@media (min-width: 1025px) { body.html-off .yig-tap { display: block; } }
+.rive-only-pill { position: fixed; right: 10px; bottom: 10px; z-index: 10; margin: 0; padding: 4px 10px; border: 0; border-radius: 999px; cursor: pointer;
+  background: rgba(18, 18, 18, .55); color: #FFF; font: 600 11px / 1.4 "NYT Franklin", Arial, sans-serif; opacity: .7; }
+.rive-only-pill:hover, .rive-only-pill:focus-visible { opacity: 1; }
+.rive-only-pill[aria-pressed="true"] { background: #121212; opacity: 1; }
 .curtain { position: fixed; inset: 0; z-index: 9; background: #F1ECC0; display: grid; place-items: center; font: 600 14px "NYT Franklin", Arial, sans-serif; }
 </style>
 </head>
@@ -130,6 +140,7 @@ body.on-splash .nav-logo, body.on-splash .nav-progress { opacity: 0; }
 <button class="yig-tap" data-zone="next" id="tap-next" aria-label="Next"></button>
 <button class="yig-arrow" data-dir="back" id="arrow-back" aria-label="Back"><img src="/art/global/ui-desktop-button.svg" alt=""></button>
 <button class="yig-arrow" data-dir="next" id="arrow-next" aria-label="Next"><img src="/art/global/ui-desktop-button.svg" alt=""></button>
+<button class="rive-only-pill" id="rive-only-pill" aria-pressed="false" title="Hide all the HTML and show only the animation (H)">Rive only</button>
 <div class="curtain" id="curtain" hidden>Skipping ahead…</div>
 
 <script type="module">
@@ -291,6 +302,31 @@ addEventListener("keydown", (e) => {
 });
 addEventListener("resize", () => resize());
 
+// Two viewing options, display only (navigation, timing and the Rive files are untouched):
+//   - a card tagged `ad` shows no HTML, just the stage;
+//   - "Rive only" (the H key, the pill, or ?rive-only in the address) hides all the HTML on every card.
+// /experience and the package example are this same page, so they behave the same.
+let riveOnly = q.has("rive-only"), htmlOff = null;
+const pill = document.getElementById("rive-only-pill");
+function showHtml() {
+  const off = riveOnly || !!cards[state().frame]?.ad;
+  if (off !== htmlOff) { htmlOff = off; document.body.classList.toggle("html-off", off); }
+  pill.setAttribute("aria-pressed", String(riveOnly));
+}
+(function watch() { showHtml(); requestAnimationFrame(watch); })();      // follows the card the moment it changes, even for a held Back
+function setRiveOnly(on) {
+  riveOnly = !!on;
+  const p = new URLSearchParams(location.search); p.delete("rive-only");
+  const rest = p.toString();
+  history.replaceState(null, "", `${location.pathname}${riveOnly ? (rest ? `?${rest}&rive-only` : "?rive-only") : (rest ? `?${rest}` : "")}${location.hash}`);
+  showHtml();
+}
+pill.addEventListener("click", () => { setRiveOnly(!riveOnly); pill.blur(); });
+addEventListener("keydown", (e) => {
+  if (e.metaKey || e.ctrlKey || e.altKey || e.target.closest?.("select, input, textarea")) return;
+  if (e.key === "h" || e.key === "H") setRiveOnly(!riveOnly);
+});
+
 // Loading and Start on desktop: keep the block in the top part of the window, clear of the ball and the bird. The block spans 197 to 527 px
 // of the 375 x 812 frame (330 px tall). The highest the animation reaches is the bird's hop on Start, artboard y 525 (the Loading bounce tops
 // out at 568, the resting bird and ball at 600, the floor line is 712); the bird's drop starts above the artboard and falls through the top part
@@ -322,7 +358,7 @@ setInterval(() => {
   videoBg.style.opacity = k.kind === "video" ? 1 : 0;
 }, 100);
 
-window.yigExperience = { cards, onTap, onBack, state, flow: FLOW, top: TOP };
+window.yigExperience = { cards, onTap, onBack, state, flow: FLOW, top: TOP, setRiveOnly, riveOnly: () => riveOnly };
 </script>
 </body>
 </html>

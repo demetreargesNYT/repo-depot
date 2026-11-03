@@ -81,7 +81,8 @@ def example_page():
   player data below. Serve the package folder with any static server and open /reference/example/ (engineering-guide.md,
   section 9). Query:
   flow (subscriber is the default, or anon), player (wordle-only | midi-only | connections-only | several-games | all-seven | none), top (a game),
-  goto (file:scene, for example 3:chapter-4), jump (a card index). All copy is placeholder.
+  goto (file:scene, for example 3:chapter-4), jump (a card index), rive-only (hide all the HTML; the H key and the pill do the same).
+  Ad cards show no HTML. All copy is placeholder.
 -->""", page, count=1, flags=re.S)
     page = re.sub(r"<!-- the Rive runtime: engineering's version -->", "<!-- the Rive runtime, pinned -->", page)
     return page

@@ -104,7 +104,7 @@ body { background: var(--paper); color: var(--ink); font: 500 13px/1.3 var(--ui)
   <div class="fin-head"><b>Finesse</b><small>F shows or hides it</small><button id="fin-fold" title="Fold the panel">–</button></div>
   <div class="fin-body">
     <div class="fin-room" id="fin-room">Waiting for the stage…</div>
-    <div><button id="fin-replay" title="Reload the experience on this room's first card and play its intro again, then its loop">Replay room</button></div>
+    <div><button id="fin-replay" title="Reload the experience on this room's first card and play its intro again, then its loop">Replay room</button> <button id="fin-rive" aria-pressed="false" title="Hide all the HTML and show only the animation (H)">Rive only</button></div>
     <div class="fin-tc"><span id="fin-time">0.0</span><small>s</small><span id="fin-frame"></span></div>
     <div class="fin-track" id="fin-track"></div>
     <div class="fin-scale"><span>0</span><span id="fin-span"></span></div>
@@ -126,6 +126,7 @@ const q = new URLSearchParams(location.search);
 const $ = (id) => document.getElementById(id);
 const fields = ["flow", "player", "top", "size"];
 for (const f of fields) if (q.get(f) !== null) $(f).value = q.get(f);
+let riveOnly = q.has("rive-only");            // the "Rive only" viewing option; the stage page owns the display (see experience-stage.html)
 const fin = { on: q.get("finesse") === "1", speed: 1, timing: {}, key: "", zero: 0, first: true, visited: new Set(), lastTc: 0, passed: 0, paused: false };
 
 function stageUrl(jump, goto) {
@@ -134,13 +135,14 @@ function stageUrl(jump, goto) {
   if (goto) p.set("goto", goto);
   else if (jump) p.set("jump", jump);
   if (fin.on) p.set("finesse", "1");          // the server then adds the Finesse clock to the stage page
+  if (riveOnly) p.set("rive-only", "");
   return `/experience-stage?${p}`;
 }
 function remember() {
   const p = new URLSearchParams();
   for (const f of fields) p.set(f, $(f).value);
   if (fin.on) p.set("finesse", "1");
-  history.replaceState(null, "", `?${p}`);
+  history.replaceState(null, "", `?${p}${riveOnly ? "&rive-only" : ""}`);
 }
 function layout() {
   const area = $("area"), frame = $("frame");
@@ -191,7 +193,18 @@ addEventListener("keydown", (e) => {
   if (!x) return;
   if (e.key === "ArrowRight") { e.preventDefault(); x.onTap(); }
   if (e.key === "ArrowLeft") { e.preventDefault(); x.onBack(); }
+  if ((e.key === "h" || e.key === "H") && !e.metaKey && !e.ctrlKey && !e.altKey && !e.target.closest?.("select, input, textarea")) x.setRiveOnly(!x.riveOnly());
 });
+// Rive only: the stage page does the hiding. The button and the address follow it, whether it was switched here, by the H key or by the stage's own pill.
+$("fin-rive").addEventListener("click", () => { $("frame").contentWindow?.yigExperience?.setRiveOnly(!riveOnly); $("fin-rive").blur(); });
+setInterval(() => {
+  const x = $("frame").contentWindow?.yigExperience;
+  if (!x?.riveOnly || x.riveOnly() === riveOnly) return;
+  riveOnly = x.riveOnly();
+  $("fin-rive").setAttribute("aria-pressed", String(riveOnly));
+  remember();
+}, 200);
+$("fin-rive").setAttribute("aria-pressed", String(riveOnly));
 
 // the status line and the Jump menu read the experience in the frame
 // the fixed game order (GAME_ORDER in the integration file): Wordle, Connections, Spelling Bee, The Mini, The Midi, The Crossword, Strands

@@ -248,7 +248,7 @@ The game icon is its own block, one per game: `<div class="yig-icon"><span class
 | `reference/react/` | React 18 + TypeScript example. `src/useYigStage.ts` has every rule in one hook; `src/cards.ts` builds the card list. |
 | `reference/yig-integration.js` | The same rules in plain JavaScript. |
 
-To run the example, start any static server from the package folder (`python3 -m http.server 8000`) and open `http://localhost:8000/reference/example/`. It loads the Rive runtime from a CDN. Useful options: `?flow=anon`, `?player=connections-only` (or `several-games`, `midi-only`, `all-seven`, `none`), `?goto=3:chapter-4`, `?jump=12`.
+To run the example, start any static server from the package folder (`python3 -m http.server 8000`) and open `http://localhost:8000/reference/example/`. It loads the Rive runtime from a CDN. Useful options: `?flow=anon`, `?player=connections-only` (or `several-games`, `midi-only`, `all-seven`, `none`), `?goto=3:chapter-4`, `?jump=12`, `?rive-only` (or the H key) hides all the HTML.
 
 ## Checklist
 
