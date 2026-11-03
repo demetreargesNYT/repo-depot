@@ -1,7 +1,7 @@
 """Interrupted-tap test: no browser, no wall-clock timing.
 
     python3 tools/tap_test.py ch2                      every order (Wordle then Connections and back, the opener then Wordle, the last game then the Chapter 3 ending), tap 2 at 0.5, 1.5, 2.5 and 3.0 s into the intro
-    python3 tools/tap_test.py ch2 --times 0.5 --orders cw --keep /tmp/frames
+    python3 tools/tap_test.py ch2 --times 0.5 --orders cw --keep .cache/scratch/frames
 
 Scenario: from the opener, tap 1 starts the first game at t = 0. Tap 2 starts the second game T seconds later,
 while the first game's intro is still running.
@@ -21,12 +21,12 @@ import os
 import shutil
 import subprocess
 import sys
-import tempfile
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
 from PIL import Image, ImageChops
 from rml_read import Scene, chapter_dir
+import scratch  # scratch output goes in .cache/scratch/, never /tmp
 
 RIVE = os.path.expanduser("~/.rive/bin/rive")
 # the orders to run, by scene name: letters name the first and second game; "x" as the second is the Chapter 3 ending
@@ -39,7 +39,7 @@ DTS = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.5, 3.4]   # s after tap 2
 
 def prepare(src, first, second, T, hide):
     """Copy the project with tap 2 emulated at T seconds. Returns the project dir."""
-    dst = Path(tempfile.mkdtemp()) / "p"
+    dst = scratch.mkdtemp("tap-test-") / "p"
     shutil.copytree(src, dst, ignore=shutil.ignore_patterns("build"))
     tree = ET.parse(dst / "scene.rml")
     root = tree.getroot()
@@ -134,7 +134,7 @@ def run_case(chapter, order, T, keep):
     rooms = {x["name"]: x["room"] for x in Scene(src / "scene.rml").manifest["scenes"] if "room" in x}
     first, second = rooms[scene], rooms.get(other)
     full, second_only, bare = (prepare(src, first, second, T, h) for h in ((), (first,), tuple(g for g in (first, second) if g)))
-    tmp = Path(tempfile.mkdtemp())
+    tmp = scratch.mkdtemp("tap-frames-")
     rows = []
     try:
         for dt in DTS:

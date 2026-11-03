@@ -1,4 +1,9 @@
-"""Tests for tools/import_room.py. Run: python3 -m unittest discover -s tools/tests
+"""FROZEN (2026-11-03): import_room.py is a history tool (it brought each room in once; never re-run it on a room that is in).
+These tests are kept but left out of every default run (npm run smoke, npm run suite and
+python3 -m unittest discover -s tools/tests), so they never slow a round. Run them by name when import_room.py
+is used again (the bridge room): python3 -m unittest discover -s tools/tests_frozen
+
+Tests for tools/import_room.py.
 
 The illustrator's side is a small synthetic artboard built here, so each behaviour has a known right answer. The
 chapter side is the real chapters/ch2/scene.rml (read, never written), since the importer copies Wordle's structure.

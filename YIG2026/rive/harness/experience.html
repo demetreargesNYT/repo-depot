@@ -412,7 +412,8 @@ requestAnimationFrame(panelTick);
 if (fin.on) { showFinesse(); loadTiming(); }
 
 // the builds are asked for first, so the frame always loads the current ones
-fetch("/builds", { cache: "no-store" }).then((r) => r.json()).then((j) => { builds = JSON.stringify(j); }).catch(() => {}).finally(() => { if (!started) load(); });
+// ?goto=<file>:<scene> (what npm run finesse prints) opens on that scene's first card, the way Jump to does
+fetch("/builds", { cache: "no-store" }).then((r) => r.json()).then((j) => { builds = JSON.stringify(j); }).catch(() => {}).finally(() => { if (!started) load(0, q.get("goto") || ""); });
 </script>
 </body>
 </html>

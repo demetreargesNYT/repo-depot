@@ -1,9 +1,16 @@
 """Run the tests in short pieces, one at a time.
 
-    npm run suite       every test, once, before a Rive push or an engineering handoff
-    npm run smoke       the short set to run after a meaningful change
+    npm run suite       every test, once: when Demetre asks, or before a delivery that changes Rive files
+    npm run smoke       the short set, before a delivery
+    npm run smoke -- --all / npm run suite -- --all     run everything, skipping nothing (below)
     python3 tools/suite.py --list [--smoke]     print the pieces and stop
     python3 tools/suite.py --from 19            start at piece 19 (resume a run that stopped there)
+
+What is skipped (both kept in .cache/suite-state.json, written only when a piece or a whole smoke run passes):
+  - a chapter's own pieces (its rule checks, loop motion, tap and back) when nothing they read has changed since that piece last
+    passed: the chapter's folder (scene.rml, chapter.json, rive.yaml; not build/), its rooms sheet, and the tools in tools/;
+  - the whole smoke run when the reference code (engineering/), the harness (harness/, not node_modules), the guide
+    (docs/engineering-guide.md) and this runner are all unchanged since the last smoke run that passed. It says why it ran or skipped.
 
 Both npm scripts run under `caffeinate -i`, so the Mac cannot sleep mid-run. Each piece runs alone with a 15 minute limit;
 the browser tests also fail on their own, with a message, when Chrome closes or stops answering for 60 seconds. Before every
@@ -11,6 +18,8 @@ piece, the headless Chrome windows and the package web server that this suite st
 touched: ours all run with a profile folder named yig-*). The run stops at the first failing piece and says which piece, why,
 and where its log is. Logs are in test-logs/ (git-ignored) and are overwritten by each run.
 """
+import hashlib
+import json
 import os
 import re
 import shutil
@@ -29,12 +38,47 @@ PACKAGE_PORT = 8900                  # the suite's own port for the unzipped-pac
 PACKAGE_DIR = REPO / "deliver" / "yig-engineering-package"
 PACKAGE = f"http://127.0.0.1:{PACKAGE_PORT}"
 
+STATE = REPO / ".cache" / "suite-state.json"   # what passed, and the inputs it passed with (git-ignored)
+SHEETS = {"ch1": "docs/rooms-ch1.md", "ch2": "docs/rooms.md", "ch3": "docs/rooms-ch3.md"}
+SMOKE_INPUTS = {"the reference code": "engineering", "the harness": "harness", "the guide": "docs/engineering-guide.md", "the test runner": "tools/suite.py"}
+
 PLAYERS = ["wordle-only", "midi-only", "connections-only", "several-games", "all-seven", "none"]
 
 
-def piece(name, cmd, tier="full", needs=None):
-    """tier: "full" (only in npm run suite), "smoke" (only in npm run smoke) or "both"."""
-    return {"name": name, "cmd": cmd, "tier": tier, "needs": needs}
+def piece(name, cmd, tier="full", needs=None, chapter=None):
+    """tier: "full" (only in npm run suite), "smoke" (only in npm run smoke) or "both". chapter: the piece only reads that
+    chapter's file, so it is skipped while the chapter is unchanged since the piece last passed."""
+    return {"name": name, "cmd": cmd, "tier": tier, "needs": needs, "chapter": chapter}
+
+
+def files_hash(paths):
+    """One hash over every file under the given paths (relative to the repo), skipping build/, node_modules/ and caches."""
+    h = hashlib.sha256()
+    for rel in paths:
+        root = REPO / rel
+        files = [root] if root.is_file() else sorted(f for f in root.rglob("*") if f.is_file()) if root.exists() else []
+        for f in files:
+            parts = set(f.relative_to(REPO).parts)
+            if parts & {"build", "node_modules", "__pycache__", ".DS_Store"} or f.name == ".DS_Store":
+                continue
+            h.update(str(f.relative_to(REPO)).encode() + b"\0" + f.read_bytes() + b"\0")
+    return h.hexdigest()
+
+
+def chapter_hash(p):
+    return files_hash([f"chapters/{p['chapter']}", SHEETS[p["chapter"]], "tools"]) + " " + " ".join(p["cmd"])
+
+
+def load_state():
+    try:
+        return json.loads(STATE.read_text())
+    except (OSError, ValueError):
+        return {}
+
+
+def save_state(state):
+    STATE.parent.mkdir(parents=True, exist_ok=True)
+    STATE.write_text(json.dumps(state, indent=1, sort_keys=True))
 
 
 def experience(url, path, flow, size, player):
@@ -47,14 +91,14 @@ def experience(url, path, flow, size, player):
 def pieces():
     out = []
     for ch in ("ch1", "ch2", "ch3"):
-        out.append(piece(f"rule checks {ch}", ["python3", "tools/check.py", ch], tier="both"))
+        out.append(piece(f"rule checks {ch}", ["python3", "tools/check.py", ch], tier="both", chapter=ch))
     out.append(piece("unit tests", ["python3", "-m", "unittest", "discover", "-s", "tools/tests"], tier="both"))
     for ch in ("ch1", "ch2", "ch3"):
-        out.append(piece(f"loop motion {ch}", ["python3", "tools/loop_motion.py", ch], tier="both"))
+        out.append(piece(f"loop motion {ch}", ["python3", "tools/loop_motion.py", ch], tier="both", chapter=ch))
     for ch in ("ch1", "ch2", "ch3"):
-        out.append(piece(f"tap {ch}", ["python3", "tools/tap_test.py", ch]))
+        out.append(piece(f"tap {ch}", ["python3", "tools/tap_test.py", ch], chapter=ch))
     for ch in ("ch1", "ch2", "ch3"):
-        out.append(piece(f"back {ch}", ["python3", "tools/back_test.py", ch]))
+        out.append(piece(f"back {ch}", ["python3", "tools/back_test.py", ch], chapter=ch))
     # the Chapter 2 page's text timing: the whole test in the full run, the shorter set of tap times in smoke
     out.append(piece("text timing (Chapter 2 page)", ["node", "harness/text-test.mjs"], needs="harness"))
     out.append(piece("text timing, short", ["node", "harness/text-test.mjs", "--quick"], tier="smoke", needs="harness"))
@@ -79,7 +123,7 @@ def sh(args):
 
 def kill_leftovers():
     """Headless Chrome windows from our tests (their profile folders are yig-*) and our package web server."""
-    for pid in sh(["pgrep", "-f", r"headless=new.*user-data-dir=[^ ]*yig-"]).split():
+    for pid in sh(["pgrep", "-f", r"headless=new.*user-data-dir=.*yig-"]).split():     # the profile path has a space in it ("My Stuff")
         if int(pid) != os.getpid():
             try:
                 os.kill(int(pid), signal.SIGKILL)
@@ -167,14 +211,38 @@ def fmt(seconds):
     return f"{int(seconds // 60)} min {int(seconds % 60):02d} s" if seconds >= 60 else f"{seconds:.1f} s"
 
 
+def smoke_gate(state):
+    """(run?, why) for the whole smoke run, from the inputs it covers."""
+    now = {label: files_hash([rel]) for label, rel in SMOKE_INPUTS.items()}
+    last = state.get("smoke")
+    if not last:
+        return True, "no smoke run has passed yet", now
+    changed = [label for label in SMOKE_INPUTS if last["inputs"].get(label) != now[label]]
+    if changed:
+        return True, ", ".join(changed) + (" has" if len(changed) == 1 else " have") + " changed since the last smoke pass (" + last["at"] + ")", now
+    return False, "the reference code, the harness, the guide and the test runner are unchanged since the last smoke pass (" + last["at"] + ")", now
+
+
 def main():
     smoke = "--smoke" in sys.argv
+    every = "--all" in sys.argv
+    state = load_state()
     chosen = [p for p in pieces() if p["tier"] in ("both", "smoke" if smoke else "full")]
     first = int(sys.argv[sys.argv.index("--from") + 1]) if "--from" in sys.argv else 1     # resume a run that stopped: the pieces before it are skipped
     if "--list" in sys.argv:
         for i, p in enumerate(chosen, 1):
             print(f"{i:2}. {p['name']}   {' '.join(p['cmd'])}")
         return
+    smoke_inputs = None
+    if smoke:
+        run, why, smoke_inputs = smoke_gate(state)
+        if every:
+            print("smoke: running everything (--all)" + ("" if run else "; " + why), flush=True)
+        elif not run:
+            print(f"smoke: skipped: {why}.\nnpm run smoke -- --all runs it anyway.")
+            return
+        else:
+            print(f"smoke: running because {why}.", flush=True)
     if LOGS.exists():
         shutil.rmtree(LOGS)
     LOGS.mkdir()
@@ -185,6 +253,11 @@ def main():
     for n, p in enumerate(chosen, 1):
         if n < first:
             continue
+        key = chapter_hash(p) if p["chapter"] else None
+        if key and not every and state.get("pieces", {}).get(p["name"]) == key:
+            print(f"[{n}/{len(chosen)}] {p['name']} ... skipped ({p['chapter']} and its tools are unchanged since this piece last passed)", flush=True)
+            done.append((p["name"], True, 0.0, "skipped"))
+            continue
         kill_leftovers()
         log_path = LOGS / f"{n:02d}-{re.sub(r'[^a-z0-9]+', '-', p['name'].lower()).strip('-')}.log"
         print(f"[{n}/{len(chosen)}] {p['name']} ...", end=" ", flush=True)
@@ -192,18 +265,26 @@ def main():
         ok, why = run_piece(p, log_path)
         dt = time.time() - t0
         kill_leftovers()
-        done.append((p["name"], ok, dt))
+        done.append((p["name"], ok, dt, ""))
         print(("pass" if ok else "FAIL") + f"  ({fmt(dt)})", flush=True)
+        if ok and key:
+            state.setdefault("pieces", {})[p["name"]] = key
+            save_state(state)
         if not ok:
             print(f"\nSTOPPED at piece {n} of {len(chosen)}: {p['name']}\n  why:  {why}\n  log:  {log_path.relative_to(REPO)}\n  last lines:\n{tail_of(log_path)}\n")
             break
     print("\nSummary")
-    for name, ok, dt in done:
-        print(f"  {'pass' if ok else 'FAIL'}  {fmt(dt):>10}  {name}")
+    for name, ok, dt, note in done:
+        print(f"  {'skip' if note else 'pass' if ok else 'FAIL'}  {'' if note else fmt(dt):>10}  {name}")
     for p in chosen[first - 1 + len(done):]:
         print(f"  not run             {p['name']}")
-    print(f"\n{label}: {'all ' + str(len(done)) + ' pieces passed' if all(ok for _, ok, _ in done) and first - 1 + len(done) == len(chosen) else 'FAILED'} in {fmt(time.time() - started)}")
-    sys.exit(0 if all(ok for _, ok, _ in done) and first - 1 + len(done) == len(chosen) else 1)
+    passed = all(ok for _, ok, _, _ in done) and first - 1 + len(done) == len(chosen)
+    skipped = sum(1 for d in done if d[3])
+    if passed and smoke and first == 1:
+        state["smoke"] = {"inputs": smoke_inputs, "at": time.strftime("%Y-%m-%d %H:%M")}
+        save_state(state)
+    print(f"\n{label}: {'all ' + str(len(done)) + ' pieces passed' + (f' ({skipped} skipped, unchanged)' if skipped else '') if passed else 'FAILED'} in {fmt(time.time() - started)}")
+    sys.exit(0 if passed else 1)
 
 
 if __name__ == "__main__":

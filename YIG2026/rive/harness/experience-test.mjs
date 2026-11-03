@@ -11,8 +11,8 @@
 // reverse; no console errors.
 import { spawn } from "node:child_process";
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
+import { chromeProfile } from "./scratch.mjs";   // Chrome's profile goes in .cache/scratch/, never /tmp
 
 const args = process.argv.slice(2);
 const flag = (n, d) => (args.includes(n) ? args[args.indexOf(n) + 1] : d);
@@ -37,7 +37,7 @@ const check = (ok, text) => { results.push(ok); console.log(`${ok ? "PASS" : "FA
 async function browser(width, height) {
   const port = 9650 + Math.floor(Math.random() * 140);
   const proc = spawn(chrome, ["--headless=new", `--remote-debugging-port=${port}`, `--window-size=${width},${height}`, "--hide-scrollbars",
-    `--user-data-dir=${fs.mkdtempSync(path.join(os.tmpdir(), "yig-exp-"))}`, "about:blank"], { stdio: "ignore" });
+    `--user-data-dir=${chromeProfile("yig-exp-")}`, "about:blank"], { stdio: "ignore" });
   let targets;
   for (let i = 0; i < 60; i++) { try { targets = await (await fetch(`http://127.0.0.1:${port}/json`)).json(); if (targets.length) break; } catch {} await sleep(200); }
   const ws = new WebSocket(targets.find((t) => t.type === "page").webSocketDebuggerUrl);

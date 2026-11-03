@@ -11,13 +11,13 @@ import os
 import shutil
 import subprocess
 import sys
-import tempfile
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
 from PIL import Image, ImageChops
 
 from rml_read import Scene, chapter_dir
+import scratch  # scratch output goes in .cache/scratch/, never /tmp
 
 RIVE = os.path.expanduser("~/.rive/bin/rive")
 SAFE = (560, 935, 0, 812)          # x0, x1, y0, y1
@@ -60,7 +60,7 @@ def render(project, scene, out):
 def survey(chapter, only=None, log=print):
     src = chapter_dir(chapter)
     s = Scene(src / "scene.rml")
-    work = Path(tempfile.mkdtemp()) / "p"
+    work = scratch.mkdtemp("safe-area-") / "p"
     shutil.copytree(src, work, ignore=shutil.ignore_patterns("build"))
     rows = []
     try:

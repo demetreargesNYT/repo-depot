@@ -11,8 +11,10 @@ const SCENE = {
   mini: "mini", midi: "midi", daily: "daily", chapter3: "to-chapter-3", chapter1: "from-chapter-1", bridge: "bridge",
 };
 
-// Rooms with nothing to build, so no intro: their copy arrives when the pan ends (1.65 s), even on the first visit.
-const NO_INTRO = new Set(["bridge"]);
+// Rooms with nothing to build, so no intro: their copy arrives when the pan ends (1.65 s), even on the first visit. These are the
+// file's empty rooms (yig-integration.js lists the same scenes as File 2's noIntro): the bridge, the ending (to-chapter-3) and the
+// empty Chapter 1 room the file opens on.
+const NO_INTRO = new Set(["bridge", "chapter3", "chapter1"]);
 
 import { Rive } from "@rive-app/canvas"; // pin the version you ship
 

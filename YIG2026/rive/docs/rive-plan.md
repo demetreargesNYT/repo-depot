@@ -10,9 +10,9 @@
 
 | Tier | Command | Covers | Takes |
 |---|---|---|---|
-| While iterating | `npm run check <ch>` | The rule checks for one file: Waiting poses equal their intro's first keys, every intro is exactly 3.2 s, every loop starts and ends on one pose, nothing is left on the stage, no piece strays beyond the room's bounds. | 1 to 5 seconds |
-| After a meaningful change | `npm run smoke` | The rule checks for all three files, the unit tests, the Chapter 2 page's text timing in its short form, and the experience harness for one subscriber player and the anonymous flow on phone. | about 10 minutes (9 min 52 s measured) |
-| Before a Rive push or an engineering handoff | `npm run suite` | Everything, in short pieces one at a time: rule checks, unit tests, tap and back for each file, the full text test, the experience harness (subscriber and anon, phone and desktop), the Finesse panel, and the package demo for every example player. | about 1 hour (58 min measured before the Finesse piece was added) |
+| After a finesse change | `npm run finesse <ch> "<room>"` | The rule checks for that chapter, the room's ball physics and jitter check (`tools/ball_speed.py --contacts`, with the flags accepted on purpose in `tools/ball_speed_accepted.json`), and the `/experience` address that opens on the room with the Finesse panel on. No renders, no smoke. | about 2.5 s (2.5 s measured for Chapter 1 card 4) |
+| Before a delivery | `npm run smoke` | The rule checks for all three files, the unit tests, the Chapter 2 page's text timing in its short form, and the experience harness for one subscriber player and the anonymous flow on phone. It runs only when the reference code, the harness, the guide or the runner changed since its last pass, says why it ran or skipped, and skips a chapter's own pieces when that chapter is unchanged (`-- --all` forces everything). | about 12 minutes (11 min 35 s measured with the chapter pieces skipped; about 2 minutes more when they run) |
+| When Demetre asks, or a delivery changes Rive files | `npm run suite` | Everything, in short pieces one at a time: rule checks, unit tests, tap and back for each file, the full text test, the experience harness (subscriber and anon, phone and desktop), the Finesse panel, and the package demo for every example player. A chapter's pieces are skipped while it is unchanged since they last passed (`-- --all` forces everything). | about 1 hour (58 min measured before the Finesse piece was added) |
 
 **Standing rules.**
 

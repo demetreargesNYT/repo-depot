@@ -12,6 +12,7 @@
     "scaffold": "python3 tools/scaffold_chapter.py",
     "experience": "node harness/experience-test.mjs",
     "suite": "caffeinate -i python3 tools/suite.py",
-    "smoke": "caffeinate -i python3 tools/suite.py --smoke"
+    "smoke": "caffeinate -i python3 tools/suite.py --smoke",
+    "finesse": "python3 tools/finesse.py"
   }
 }

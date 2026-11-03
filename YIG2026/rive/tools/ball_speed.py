@@ -17,9 +17,15 @@ no turn to explain it, or the ball's contact has no surface: speed changes more 
 degrees), and a BUZZ (swings back and forth shorter than 20 frames, i.e. faster than about 3 a second, two in a row (three turning points) without dying
 away: the second between 0.6 and 1.5 times the first). A swing is one way, from one end to the other. Stillness at a contact, at the end
 of a swing and at a real rest is fine. The repeated frame where the intro hands over to the loop and where the loop wraps (every room has them) is not read as a hitch.
+
+Flags Demetre accepted on purpose are listed in tools/ball_speed_accepted.json: they are still reported, marked ACCEPTED, and
+only the other flags make `--contacts` exit with 1. Adding to that list needs his approval.
 """
+import json
 import math
+import re
 import sys
+from pathlib import Path
 
 from rml_read import Scene, chapter_dir
 from rooms_sheet import Sheet
@@ -210,14 +216,7 @@ def contacts_report(pts, t_of, tmax_report):
     for a0, a1, vs, a, kind in segs:
         kinds[kind] = kinds.get(kind, 0) + 1
     print(f"\n{len([c for c in contacts if t_of(c[0]) <= tmax_report])} contacts; segments: " + ", ".join(f"{n} {k}" for k, n in kinds.items()))
-    flags = sorted({(round(t, 3), m_) for t, m_ in flags if t <= tmax_report})
-    if flags:
-        print(f"{len(flags)} FLAGS:")
-        for t, msg in flags:
-            print("  -", msg)
-    else:
-        print("no flags")
-    return flags
+    return sorted({(round(t, 3), m_) for t, m_ in flags if t <= tmax_report})
 
 
 SWING = 20          # a swing (one way) shorter than this many frames, repeated without dying away, is a buzz
@@ -296,6 +295,44 @@ def piece_jitter(sheet, scene, intro, loop, n, lo, t_of, flags, skip_nodes, repe
             jitter_track(f"{name} {prop}", vals, prop, t_of, flags, skip=wrap)
 
 
+ACCEPTED = Path(__file__).resolve().parent / "ball_speed_accepted.json"
+
+
+def accepted_for(chapter, room):
+    try:
+        entries = json.loads(ACCEPTED.read_text())["accepted"]
+    except (OSError, ValueError, KeyError):
+        return []
+    return [e for e in entries if e.get("chapter") == chapter and e.get("room") == room]
+
+
+def acceptance(msg, entries):
+    """The entry that accepts this flag, or None."""
+    for e in entries:
+        m = re.search(e["pattern"], msg)
+        if not m:
+            continue
+        if m.groups() and ("min" in e or "max" in e):
+            v = float(m.group(1))
+            if v < e.get("min", float("-inf")) or v > e.get("max", float("inf")):
+                continue
+        return e
+    return None
+
+
+def print_flags(title, flags, entries):
+    """Prints the flags, the accepted ones marked; returns how many are not accepted."""
+    if not flags:
+        print(f"{title}: no flags")
+        return 0
+    marked = [(msg, acceptance(msg, entries)) for _, msg in flags]
+    open_ = sum(1 for _, e in marked if e is None)
+    print(f"{title}: {len(flags)} flag{'s' if len(flags) != 1 else ''}, {len(flags) - open_} accepted, {open_} open")
+    for msg, e in marked:
+        print(f"  - {msg}" + (f"   ACCEPTED ({e['why']}; {e['approved']})" if e else ""))
+    return open_
+
+
 def main(argv):
     chapter, room = argv[0], argv[1]
     s = Scene(chapter_dir(chapter) / "scene.rml")
@@ -317,14 +354,16 @@ def main(argv):
         # Finesse timecode of sequence index i: intro frame lo + i, or 192 + loop frame (first pass); the second pass repeats the loop
         t_of = lambda i: (lo + i) / 60.0
         flags = contacts_report(seq, t_of, (192 + n + 40) / 60.0)
+        entries = accepted_for(chapter, room)
+        print()
+        open_ = print_flags("the ball", flags, entries)
         jit = []
         piece_jitter(sheet, s, intro, loop, n, lo, t_of, jit, {x.get("id") for x in chain})
         tmax = (192 + n + 40) / 60.0
         jit = sorted({(round(t, 3), m_) for t, m_ in jit if t <= tmax})
-        print(f"\njitter on the pieces: {len(jit)} flag{'s' if len(jit) != 1 else ''}")
-        for t, m_ in jit:
-            print("  -", m_)
-        return 0
+        open_ += print_flags("jitter on the pieces", jit, entries)
+        print(f"\n{'PASS' if not open_ else 'FAIL'}  {room}: {open_} open flag{'s' if open_ != 1 else ''}" + ("" if not open_ else " (fix them, or ask Demetre to accept them in tools/ball_speed_accepted.json)"))
+        return 1 if open_ else 0
     lo = int(argv[argv.index("--from") + 1]) if "--from" in argv else 120
     hi = int(argv[argv.index("--to") + 1]) if "--to" in argv else None
     seq = [("intro", f, p) for f, p in zip(range(lo, 192), positions(sheet, intro, chain, range(lo, 192), 192))]

@@ -17,7 +17,6 @@ import os
 import shutil
 import subprocess
 import sys
-import tempfile
 import time
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -25,6 +24,7 @@ from pathlib import Path
 from PIL import Image, ImageChops
 import check_chapter
 from rml_read import Scene, chapter_dir
+import scratch  # scratch output goes in .cache/scratch/, never /tmp
 
 RIVE = os.path.expanduser("~/.rive/bin/rive")
 
@@ -63,7 +63,7 @@ def lockup_off_hides_lockup(project):
     if first_game(project) is None:
         return True, "no game lockups in this file, so there is no lockup to hide"
     scene_name, room = first_game(project)
-    tmp = Path(tempfile.mkdtemp())
+    tmp = scratch.mkdtemp("check-")
     try:
         shots = {}
         for name, data, hide in (("off", ["--data=lockup=false"], False), ("on", [], False), ("bare", [], True)):
@@ -95,7 +95,7 @@ def opener_clears(project):
     if opener is None or first_game(project) is None:
         return True, "no opener in this file, so there is no opener to clear"
     game = first_game(project)[0]
-    tmp = Path(tempfile.mkdtemp())
+    tmp = scratch.mkdtemp("check-")
     try:
         dst = tmp / "p"
         shutil.copytree(project, dst, ignore=shutil.ignore_patterns("build"))

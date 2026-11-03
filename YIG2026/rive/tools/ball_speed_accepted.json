@@ -1,0 +1,14 @@
+{
+  "_about": "Flags from tools/ball_speed.py --contacts that Demetre accepted on purpose. The check still reports them, marked ACCEPTED, and only the others make it fail. Each entry: chapter, room (as ball_speed names it), pattern (a regular expression matched against the flag's text), optional min and max for the first number the pattern captures, why, and who approved it and when. Add an entry only with Demetre's approval.",
+  "accepted": [
+    {
+      "chapter": "ch1",
+      "room": "Chapter 1 Card 4",
+      "pattern": "^flight at .* falls at ([0-9.]+) per frame squared",
+      "min": 0.15,
+      "max": 0.36,
+      "why": "card 4's softer gravity: its hops float, kept on purpose",
+      "approved": "Demetre, 2026-11-03"
+    }
+  ]
+}

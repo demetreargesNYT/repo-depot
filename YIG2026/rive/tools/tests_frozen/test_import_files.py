@@ -1,5 +1,10 @@
 """Tests for what bringing rooms into a brand-new file needs: the scaffold, a fixed backdrop, a room with no intro,
-work-area and tiled loops, and the exact ping-pong reversal. Run: python3 -m unittest discover -s tools/tests"""
+work-area and tiled loops, and the exact ping-pong reversal (they drive import_room.py and scaffold_chapter.py).
+
+FROZEN (2026-11-03): import_room.py is a history tool (it brought each room in once; never re-run it on a room that is in).
+These tests are kept but left out of every default run (npm run smoke, npm run suite and
+python3 -m unittest discover -s tools/tests), so they never slow a round. Run them by name when import_room.py
+is used again (the bridge room): python3 -m unittest discover -s tools/tests_frozen"""
 import copy
 import json
 import sys

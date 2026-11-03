@@ -25,10 +25,10 @@ import re
 import shutil
 import subprocess
 import sys
-import tempfile
 from pathlib import Path
 
 from rml_read import Scene, chapter_dir
+import scratch  # scratch output goes in .cache/scratch/, never /tmp
 
 RIVE = os.path.expanduser("~/.rive/bin/rive")
 ROOMS, EMPTY, NAMES, SPOTS, START = {}, {}, {}, [], 0   # set from the chapter's manifest by configure()
@@ -64,7 +64,7 @@ TOP_SPEED = pan_peak() * 1.1     # a snap moves a room faster than any frame of 
 
 def instrument(src):
     """Copy the project with tap boxes and room-x readouts. Returns (dir, {(scene, direction): (x, y)})."""
-    dst = Path(tempfile.mkdtemp()) / "p"
+    dst = scratch.mkdtemp("back-test-") / "p"
     shutil.copytree(src, dst, ignore=shutil.ignore_patterns("build"))
     p = dst / "scene.rml"
     t = p.read_text()

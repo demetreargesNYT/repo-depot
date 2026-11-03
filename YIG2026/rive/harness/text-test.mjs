@@ -23,8 +23,8 @@
 // first spend a tap on the opener (openerStep below), so they start where a player does.
 import { spawn } from "node:child_process";
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
+import { chromeProfile } from "./scratch.mjs";   // Chrome's profile goes in .cache/scratch/, never /tmp
 
 const args = process.argv.slice(2);
 const flag = (n, d) => (args.includes(n) ? args[args.indexOf(n) + 1] : d);
@@ -40,7 +40,7 @@ const FIRST = 2.0, LOCKUP = 3.2;
 const chrome = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const port = 9800 + Math.floor(Math.random() * 150);
 const proc = spawn(chrome, ["--headless=new", `--remote-debugging-port=${port}`, "--window-size=1300,1000", "--hide-scrollbars",
-  `--user-data-dir=${fs.mkdtempSync(path.join(os.tmpdir(), "yig-text-"))}`, "about:blank"], { stdio: "ignore" });
+  `--user-data-dir=${chromeProfile("yig-text-")}`, "about:blank"], { stdio: "ignore" });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 let targets;
 for (let i = 0; i < 60; i++) { try { targets = await (await fetch(`http://127.0.0.1:${port}/json`)).json(); if (targets.length) break; } catch {} await sleep(200); }
@@ -434,7 +434,8 @@ for (const T of TIMES.filter((t) => t < INTRO)) {
 
 section("L (tap during a community intro)");
 //   N  the ending: the tap after the last game's last card pans to the empty Chapter 3 backdrop (scene to-chapter-3). The game's
-//      card and icon leave at once; the ending's own copy (placeholder here) arrives at the first-visit time (FIRST).
+//      card and icon leave at once; the ending is an empty room with no intro, so its own copy (placeholder here) arrives when
+//      the pan ends (PAN, 1.65 s), as the Rive file and yig-integration.js have it.
 //      Back returns to the last game's last card: its icon and card arrive when the pan ends (1.65 s).
 {
   await load({ player: basePlayer(), cards: timingCards(["wordle", "connections"]) });
@@ -459,7 +460,7 @@ section("L (tap during a community intro)");
   const riseN = logN.find((e) => e.card === "chapter3#1" && e.cardRising);
   check(sceneN === "to-chapter-3", `N  last game to the ending: Rive is on to-chapter-3, the empty Chapter 3 backdrop (scene ${sceneN})`);
   check(!!goneN && goneN.at - tn <= QUICK + TOL, `N  last game to the ending: the old card and icon are gone ${fmt(goneN ? goneN.at - tn : null)} after the tap`);
-  check(!!riseN && Math.abs(riseN.at - tn - FIRST) <= TOL, `N  last game to the ending: the ending's copy rises ${fmt(riseN ? riseN.at - tn : null)} after the tap (want ${FIRST} s)`);
+  check(!!riseN && Math.abs(riseN.at - tn - PAN) <= TOL, `N  last game to the ending: the ending's copy rises ${fmt(riseN ? riseN.at - tn : null)} after the tap (want ${PAN} s, the end of the pan: an empty room has no intro)`);
   await ev("window.__log.length = 0");
   await press("back");
   await wait(PAN + 1.0);

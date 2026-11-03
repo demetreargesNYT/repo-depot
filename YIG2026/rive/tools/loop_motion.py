@@ -17,10 +17,10 @@ import re
 import shutil
 import subprocess
 import sys
-import tempfile
 from pathlib import Path
 
 from rml_read import Scene, chapter_dir
+import scratch  # scratch output goes in .cache/scratch/, never /tmp
 
 RIVE = os.path.expanduser("~/.rive/bin/rive")
 PROPS = {"x": 13, "y": 14, "rotation": 15, "scaleX": 16, "scaleY": 17, "opacity": 18}   # Rive's property keys for a node or shape
@@ -47,7 +47,7 @@ def loop_pieces(s, room):
 def instrument(src, pieces, taps):
     """Copy the project with one tap box per (scene, direction) in taps and a view model readout per piece.
     Returns (dir, {(scene, direction): (x, y)}, {readout name: (object id, property)})."""
-    dst = Path(tempfile.mkdtemp()) / "p"
+    dst = scratch.mkdtemp("loop-motion-") / "p"
     shutil.copytree(src, dst, ignore=shutil.ignore_patterns("build"))
     p = dst / "scene.rml"
     t = p.read_text()

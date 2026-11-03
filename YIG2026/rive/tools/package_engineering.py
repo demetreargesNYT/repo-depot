@@ -26,6 +26,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import check_chapter  # noqa: E402
 from rml_read import REPO, Scene, chapter_dir  # noqa: E402
+import scratch  # noqa: E402  scratch output goes in .cache/scratch/, never /tmp
 from xml_fragments import parse, ser  # noqa: E402
 
 RIVE = os.path.expanduser("~/.rive/bin/rive")
@@ -166,7 +167,8 @@ def main():
         if failed:
             fail(f"{chapter} fails its rule check: {failed[0]}")
     print(f"rule checks pass for {', '.join(RIVS)}")
-    with tempfile.TemporaryDirectory(prefix="yig-package-") as tmp:
+    scratch.SCRATCH.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="package-", dir=scratch.SCRATCH) as tmp:
         files = {c: build(c, Path(tmp)) for c in RIVS}
     assemble(files)
     problems = scrub()
