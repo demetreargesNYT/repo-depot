@@ -24,7 +24,7 @@ Full plan and detail: `docs/rive-plan.md` (start with its "Start here"). In shor
 
 - `chapters/chN/`: one Rive CLI project per chapter. Each is linked to its file (`yig-ch1`, `yig-ch2`, `yig-ch3`) in the 2026 folder of the Games Year in Games project (1559255) through its `rive.yaml`.
 - `art/chN/`: import SVGs, original exports and reference PNGs.
-- `docs/`: per-chapter animation specs, plus restructure notes.
+- `docs/`: the plan, the product picture, the rooms sheets and the engineering guide.
 - `harness/`: the review and test pages. `experience.html` (served at `/experience`) wraps `experience-stage.html` (the whole experience across the three files, framed as engineering frames it) and holds the Jump to menu and the Finesse panel; `index.html` is the Chapter 2 test page that the text test drives (written the way engineering would build it: example player data, `buildCards`, the copy, tap zones; its only test hook is `window.__yigTest`); `serve.mjs` is the server; the browser tests (`experience-test.mjs`, `text-test.mjs`, `finesse-test.mjs`) live here too.
 - `engineering/`: the integration code (`yig-integration.js`, the working reference; `chapter-2-integration.js` serves the Chapter 2 test page only), `yig-text-motion.css`, and the React example in `react/`.
 - `deliver/` (not in git): `python3 tools/package_engineering.py` writes `deliver/yig-engineering-package/` (`core/` with the three `.riv` files, the guide, the CSS and the arrow art; `reference/` with the React example, the integration and a demo page) and zips it to `deliver/yig-engineering-package.zip`, which Demetre sends. Compare viewers go in `deliver/compare/`.
@@ -95,7 +95,6 @@ This is the intent for every scene. **The details are set per scene, by Demetre,
   - `<Room> Lockup` (games): Shown ↔ Hidden on lockup, read only while scene == n
 - A `Backdrop` layer holds the colors: from AnyState, scene == n goes to `<Room> Colors` (a one-frame pose of the backdrop's wall and floor color) with a 1450 ms power1.inOut blend and early exit on. Rive mixes the two states over the blend, which is the crossfade; no other timeline keys the backdrop.
 - The moves key only `<Room>` x and `<Room> Wall Lag` x; the draw rule is keyed only by the Draw layer's two poses.
-- Details are in `docs/scene-restructure.md`.
 
 ## Build rules
 

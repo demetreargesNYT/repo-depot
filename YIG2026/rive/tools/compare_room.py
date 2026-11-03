@@ -30,6 +30,7 @@ from PIL import Image, ImageChops, ImageDraw
 
 import room_timing
 from rml_read import REPO, Scene, chapter_dir
+import scratch
 
 import xml.etree.ElementTree as ET
 
@@ -40,7 +41,7 @@ BORDER = 30
 FLOOR_ROWS = (709, 715)
 CROP = (330, 250, 1170, 860)
 SCALE = 0.6
-CACHE = REPO / ".cache" / "view"
+CACHE = scratch.SCRATCH / "compare-room"     # its working copies and frames (scratch: .cache/scratch/, never /tmp)
 
 
 def slug(text):

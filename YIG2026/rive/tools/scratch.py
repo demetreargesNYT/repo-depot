@@ -7,6 +7,7 @@ Tools and tests put their throwaway copies, renders and screenshots here, never 
     out = fresh("frames-ch1")          # a fixed folder, emptied first, for output you want to look at afterwards
 """
 import shutil
+import time
 import tempfile
 from pathlib import Path
 
@@ -14,8 +15,17 @@ SCRATCH = Path(__file__).resolve().parent.parent / ".cache" / "scratch"
 
 
 def mkdtemp(prefix="yig-"):
-    """A new, empty folder under .cache/scratch/ (like tempfile.mkdtemp, but in the scratch folder)."""
+    """A new, empty folder under .cache/scratch/ (like tempfile.mkdtemp, but in the scratch folder). The callers remove their
+    folders when done, but a removal can leave a few empty folders behind; so folders with the same prefix older than an hour
+    (no run of ours takes that long) are cleared first."""
     SCRATCH.mkdir(parents=True, exist_ok=True)
+    cutoff = time.time() - 3600
+    for old in SCRATCH.glob(f"{prefix}*"):
+        try:
+            if old.is_dir() and old.stat().st_mtime < cutoff:
+                shutil.rmtree(old, ignore_errors=True)
+        except OSError:
+            pass
     return Path(tempfile.mkdtemp(prefix=prefix, dir=SCRATCH))
 
 

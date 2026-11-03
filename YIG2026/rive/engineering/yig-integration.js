@@ -1,7 +1,8 @@
 // The whole experience on one stage: the three Rive files, Loading through End, switched on the empty rooms they share.
 // A working reference for driving the files (you write your own code; engineering-guide.md says the same in words,
 // and react/ is the same rules as a React hook). The rules, applied to every file:
-//   - Every card names its file and the scene it shows. Setting a scene sets direction (and, in File 2, lockup) first.
+//   - Every card names its file and the scene it shows. Setting a scene sets direction, then lockup (File 2), then reveal
+//     (File 3), then scene.
 //   - Every file starts and ends on an empty room, and neighbouring files share that picture: File 1's last ("ad", the
 //     empty Chapter 1 room) is File 2's first ("from-chapter-1"); File 2's last ("to-chapter-3") is File 3's first ("ad").
 //     So Next across files shows the next file, already sitting on that picture, and sets its scene on the same frame;

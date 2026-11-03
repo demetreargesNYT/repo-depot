@@ -9,6 +9,27 @@
       "max": 0.36,
       "why": "card 4's softer gravity: its hops float, kept on purpose",
       "approved": "Demetre, 2026-11-03"
+    },
+    {
+      "chapter": "ch1",
+      "room": "Chapter 1 Card 4",
+      "pattern": "^contact at 3\\.95 s leaves faster than it arrived",
+      "why": "the 3.95 s contact leaves faster than it arrives: kept on purpose, card 4 is approved",
+      "approved": "Demetre, 2026-11-03"
+    },
+    {
+      "chapter": "ch1",
+      "room": "Chapter 1 Card 4",
+      "pattern": "^turn-round at 3\\.95 s .* off a surface tilted only",
+      "why": "the 3.95 s turn-round off the 22 degree surface: the same contact, kept on purpose",
+      "approved": "Demetre, 2026-11-03"
+    },
+    {
+      "chapter": "ch1",
+      "room": "Chapter 1 Card 4",
+      "pattern": "^contact at 10\\.57 s leaves faster than it arrived",
+      "why": "the 10.57 s contact leaves faster than it arrives: kept on purpose, card 4 is approved",
+      "approved": "Demetre, 2026-11-03"
     }
   ]
 }

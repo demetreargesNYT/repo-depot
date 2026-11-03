@@ -1,4 +1,4 @@
-"""One time (2026-11-02, history like loading_start.py): new ball loops for Chapter 1 cards 2, 3 and 4 (finesse round 4), and the rest-window fix to card 1's spin.
+"""One time (2026-11-02, kept for the finesse round): new ball loops for Chapter 1 cards 2, 3 and 4 (finesse round 4), and the rest-window fix to card 1's spin.
 
     python3 tools/ch1_cards_234.py --cards 2            dry run: prints each beat and the clearances, writes nothing
     python3 tools/ch1_cards_234.py --cards 2 --write    rewrite chapters/ch1/scene.rml
