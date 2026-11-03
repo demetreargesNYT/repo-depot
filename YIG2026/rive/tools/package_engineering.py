@@ -2,7 +2,7 @@
 
     python3 tools/package_engineering.py
 
-Builds the unzipped package in .cache/scratch.nosync/yig-engineering-package/ and writes only the zip to deliver/
+Builds the unzipped package in .cache/scratch.nosync/shared/yig-engineering-package/ and writes only the zip to deliver/
 (deliver/yig-engineering-package.zip; neither is in git). The unzipped folder stays out of the iCloud-synced Desktop, so a rebuild
 leaves no "core 2"-style conflict copies; its path is printed at the end, to open the demos from. Nothing is sent anywhere. In order:
   1. the quick rule check must pass for ch1, ch2 and ch3
@@ -31,7 +31,7 @@ import scratch  # noqa: E402  scratch output goes in .cache/scratch.nosync/, nev
 from xml_fragments import parse, ser  # noqa: E402
 
 RIVE = os.path.expanduser("~/.rive/bin/rive")
-OUT = scratch.SCRATCH / "yig-engineering-package"     # the unzipped package (out of iCloud); only the zip goes in deliver/
+OUT = scratch.ROOT / "shared" / "yig-engineering-package"     # the unzipped package (out of iCloud; the shared-files session's); only the zip goes in deliver/
 ZIP = REPO / "deliver" / "yig-engineering-package.zip"
 RIVS = {"ch1": "start-chapter-1.riv", "ch2": "chapter-2.riv", "ch3": "chapters-3-4-end.riv"}
 RUNTIME = "2.27.3"

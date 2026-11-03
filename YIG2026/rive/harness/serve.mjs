@@ -8,7 +8,7 @@ import os from "node:os";
 import path from "node:path";
 import { execFile } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { SCRATCH } from "./scratch.mjs";
+import { ROOT as SCRATCH_ROOT } from "./scratch.mjs";   // the finesse notes live in its finesse-notes/, shared by every session
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repo = path.resolve(here, "..");
@@ -146,7 +146,7 @@ async function saveNotes(req, res) {
   for (const p of pins) {
     if (!/^ch[123]$/.test(p.notes) || !Number.isInteger(p.n) || p.n < 1) throw new Error(`bad pin ${JSON.stringify({ notes: p.notes, n: p.n })}`);
   }
-  const dir = path.join(SCRATCH, folder);
+  const dir = path.join(SCRATCH_ROOT, folder);
   fs.mkdirSync(dir, { recursive: true });
   const files = {};
   const sent = stamp(new Date());

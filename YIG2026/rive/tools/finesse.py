@@ -19,6 +19,8 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
+import scratch
+
 REPO = Path(__file__).resolve().parent.parent
 HARNESS = "http://127.0.0.1:8765"
 LIMITS = {"check": 300, "ball": 120}      # seconds per step
@@ -70,10 +72,10 @@ def up():
         return False
 
 
-def ensure_server():
+def ensure_server(ch):
     if up():
         return "the review server is running"
-    log = REPO / ".cache" / "scratch.nosync" / "harness-server.log"
+    log = scratch.ROOT / ch / "harness-server.log"     # in the calling chapter's scratch subfolder
     log.parent.mkdir(parents=True, exist_ok=True)
     subprocess.Popen(["node", "serve.mjs"], cwd=REPO / "harness", stdout=open(log, "w"), stderr=subprocess.STDOUT, start_new_session=True)
     for _ in range(50):
@@ -107,7 +109,7 @@ def main(argv):
     else:
         ok, dt = step(f"the ball's physics and jitter in {room}", [sys.executable, "tools/ball_speed.py", ch, room, "--contacts"], LIMITS["ball"])
         results.append((f"ball check {room}", ok, dt))
-    print(f"\n== review\n{ensure_server()}")
+    print(f"\n== review\n{ensure_server(ch)}")
     url = address(ch, scene)
     print(f"open: {url}\n(the Finesse panel is on; Replay room plays the intro again)")
     if "--open" in argv:

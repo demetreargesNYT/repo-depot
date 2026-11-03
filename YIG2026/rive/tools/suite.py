@@ -13,9 +13,10 @@ What is skipped (both kept in .cache/suite-state.json, written only when a piece
     (docs/engineering-guide.md) and this runner are all unchanged since the last smoke run that passed. It says why it ran or skipped.
 
 Both npm scripts run under `caffeinate -i`, so the Mac cannot sleep mid-run. Each piece runs alone with a 15 minute limit;
-the browser tests also fail on their own, with a message, when Chrome closes or stops answering for 60 seconds. Before every
-piece, the headless Chrome windows and the package web server that this suite started are killed (your own Chrome is never
-touched: ours all run with a profile folder named yig-*). The run stops at the first failing piece and says which piece, why,
+the browser tests also fail on their own, with a message, when Chrome closes or stops answering for 60 seconds. Before and
+after every piece, what this run started is killed, and nothing else (other sessions run their own tests alongside): the
+piece's own process group, the package web server it started, and the headless Chrome windows whose profile folder is under
+this run's own folder (YIG_CHROME_ROOT, which harness/scratch.mjs uses). The review server is never stopped. The run stops at the first failing piece and says which piece, why,
 and where its log is. Logs are in test-logs/ (git-ignored) and are overwritten by each run.
 """
 import hashlib
@@ -30,13 +31,17 @@ import time
 import urllib.request
 from pathlib import Path
 
+import scratch
+
 REPO = Path(__file__).resolve().parent.parent
 LOGS = REPO / "test-logs"
 LIMIT = 15 * 60                      # seconds per piece
 HARNESS = "http://127.0.0.1:8765"    # the review server (harness/serve.mjs); the suite starts it if it isn't running and leaves it running
 PACKAGE_PORT = 8900                  # the suite's own port for the unzipped-package demo, so it never touches a server of yours
-PACKAGE_DIR = REPO / ".cache" / "scratch.nosync" / "yig-engineering-package"   # where package_engineering.py builds the unzipped package
+PACKAGE_DIR = scratch.ROOT / "shared" / "yig-engineering-package"   # where package_engineering.py builds the unzipped package
 PACKAGE = f"http://127.0.0.1:{PACKAGE_PORT}"
+CHROME_RUN = scratch.SCRATCH / "chrome" / f"suite-{os.getpid()}"     # this run's Chrome profiles, so its cleanup can tell them apart
+started = []                         # the process groups this run started and cleans up (its package web servers)
 
 STATE = REPO / ".cache" / "suite-state.json"   # what passed, and the inputs it passed with (git-ignored)
 SHEETS = {"ch1": "docs/rooms-ch1.md", "ch2": "docs/rooms.md", "ch3": "docs/rooms-ch3.md"}
@@ -122,21 +127,18 @@ def sh(args):
 
 
 def kill_leftovers():
-    """Headless Chrome windows from our tests (their profile folders are yig-*) and our package web server."""
-    for pid in sh(["pgrep", "-f", r"headless=new.*user-data-dir=.*yig-"]).split():     # the profile path has a space in it ("My Stuff")
-        if int(pid) != os.getpid():
+    """Only what this run started: Chrome windows with a profile under CHROME_RUN, and the package web servers in `started`."""
+    mark = f"--user-data-dir={CHROME_RUN}{os.sep}"     # a substring test: the profile path has a space in it ("My Stuff")
+    for line in sh(["ps", "-axo", "pid=,command="]).splitlines():
+        pid, _, cmd = line.strip().partition(" ")
+        if mark in cmd and int(pid) != os.getpid():
             try:
                 os.kill(int(pid), signal.SIGKILL)
             except ProcessLookupError:
                 pass
-    for pid in sh(["pgrep", "-f", f"http.server {PACKAGE_PORT}"]).split():
+    while started:
         try:
-            os.kill(int(pid), signal.SIGKILL)
-        except ProcessLookupError:
-            pass
-    for pid in sh(["pgrep", "-f", r"vite.*YIG2026/rive"]).split():     # a Vite dev server started from this repo
-        try:
-            os.kill(int(pid), signal.SIGKILL)
+            os.killpg(started.pop(), signal.SIGKILL)
         except ProcessLookupError:
             pass
 
@@ -165,8 +167,9 @@ def serve_package():
     if not (PACKAGE_DIR / "reference" / "example" / "index.html").exists():
         return "the package folder is missing (the 'build the package' piece makes it)"
     log = open(LOGS / "package-server.log", "w")
-    subprocess.Popen([sys.executable, "-m", "http.server", str(PACKAGE_PORT), "--bind", "127.0.0.1"], cwd=PACKAGE_DIR,
-                     stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
+    server = subprocess.Popen([sys.executable, "-m", "http.server", str(PACKAGE_PORT), "--bind", "127.0.0.1"], cwd=PACKAGE_DIR,
+                              stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
+    started.append(server.pid)
     for _ in range(50):
         if up(f"{PACKAGE}/reference/example/"):
             return None
@@ -184,12 +187,19 @@ def run_piece(p, log_path):
         err = serve_package()
         if err:
             return False, err
+    # the pieces write their scratch where this run does, and their Chrome profiles in this run's own folder
+    env = {**os.environ, "YIG_SESSION": scratch.SCRATCH.name, "YIG_CHROME_ROOT": str(CHROME_RUN)}
     with open(log_path, "w") as log:
-        proc = subprocess.Popen(p["cmd"], cwd=REPO, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
+        proc = subprocess.Popen(p["cmd"], cwd=REPO, env=env, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
         try:
             rc = proc.wait(timeout=LIMIT)
         except subprocess.TimeoutExpired:
-            os.killpg(proc.pid, signal.SIGKILL)
+            rc = None
+        try:
+            os.killpg(proc.pid, signal.SIGKILL)       # whatever the piece left running in its own process group
+        except ProcessLookupError:
+            pass
+        if rc is None:
             return False, f"hit the {LIMIT // 60} minute limit"
     if rc == 0:
         return True, ""
@@ -273,6 +283,7 @@ def main():
         if not ok:
             print(f"\nSTOPPED at piece {n} of {len(chosen)}: {p['name']}\n  why:  {why}\n  log:  {log_path.relative_to(REPO)}\n  last lines:\n{tail_of(log_path)}\n")
             break
+    shutil.rmtree(CHROME_RUN, ignore_errors=True)
     print("\nSummary")
     for name, ok, dt, note in done:
         print(f"  {'skip' if note else 'pass' if ok else 'FAIL'}  {'' if note else fmt(dt):>10}  {name}")
