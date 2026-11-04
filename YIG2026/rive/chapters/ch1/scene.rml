@@ -5090,7 +5090,7 @@
                                         <Fill id="9:12340">
                                             <SolidColor colorValue="FFFF5959" id="9:12341"/>
                                         </Fill>
-                                        <Stroke thickness="1.8659" cap="round" join="round" transformAffectsStroke="false" id="9:12342">
+                                        <Stroke thickness="1.5" cap="round" join="round" transformAffectsStroke="false" id="9:12342">
                                             <SolidColor colorValue="FF1F1F1F" id="9:12343"/>
                                         </Stroke>
                                     </Shape>
@@ -7722,8 +7722,9 @@
                     <KeyFrameDouble value="1423.52" interpolationType="linear" frame="565" id="15:4141"/>
                     <KeyFrameDouble value="1463.21" interpolationType="linear" frame="571" id="15:4142"/>
                     <KeyFrameDouble value="1504.52" interpolationType="linear" frame="577" id="15:4143"/>
-                    <KeyFrameDouble value="1518.83" frame="579" id="15:4144"/>
-                    <KeyFrameDouble value="635.93001" frame="580" id="15:4145"/>
+                    <KeyFrameDouble value="1518.83" interpolationType="linear" frame="579" id="15:4144"/>
+                    <KeyFrameDouble value="1533.14" frame="581" id="21:1"/>
+                    <KeyFrameDouble value="635.93001" frame="582" id="15:4145"/>
                     <KeyFrameDouble value="635.93001" frame="762" id="15:4146"/>
                 </KeyedProperty>
                 <KeyedProperty property="y" id="15:4314">
@@ -7891,8 +7892,9 @@
                     <KeyFrameDouble value="692.82" interpolationType="linear" frame="565" id="15:4308"/>
                     <KeyFrameDouble value="692.82" interpolationType="linear" frame="571" id="15:4309"/>
                     <KeyFrameDouble value="692.82" interpolationType="linear" frame="577" id="15:4310"/>
-                    <KeyFrameDouble value="692.82" frame="579" id="15:4311"/>
-                    <KeyFrameDouble value="443.27" frame="580" id="15:4312"/>
+                    <KeyFrameDouble value="692.82" interpolationType="linear" frame="579" id="15:4311"/>
+                    <KeyFrameDouble value="692.82" frame="581" id="21:2"/>
+                    <KeyFrameDouble value="443.27" frame="582" id="15:4312"/>
                     <KeyFrameDouble value="443.27" frame="762" id="15:4313"/>
                 </KeyedProperty>
                 <KeyedProperty property="scaleX" id="15:4481">
@@ -8060,8 +8062,9 @@
                     <KeyFrameDouble value="1" interpolationType="linear" frame="565" id="15:4475"/>
                     <KeyFrameDouble value="1" interpolationType="linear" frame="571" id="15:4476"/>
                     <KeyFrameDouble value="1" interpolationType="linear" frame="577" id="15:4477"/>
-                    <KeyFrameDouble value="1" frame="579" id="15:4478"/>
-                    <KeyFrameDouble value="1" frame="580" id="15:4479"/>
+                    <KeyFrameDouble value="1" interpolationType="linear" frame="579" id="15:4478"/>
+                    <KeyFrameDouble value="1" frame="581" id="21:3"/>
+                    <KeyFrameDouble value="1" frame="582" id="15:4479"/>
                     <KeyFrameDouble value="1" frame="762" id="15:4480"/>
                 </KeyedProperty>
                 <KeyedProperty property="scaleY" id="15:4648">
@@ -8229,8 +8232,9 @@
                     <KeyFrameDouble value="1" interpolationType="linear" frame="565" id="15:4642"/>
                     <KeyFrameDouble value="1" interpolationType="linear" frame="571" id="15:4643"/>
                     <KeyFrameDouble value="1" interpolationType="linear" frame="577" id="15:4644"/>
-                    <KeyFrameDouble value="1" frame="579" id="15:4645"/>
-                    <KeyFrameDouble value="1" frame="580" id="15:4646"/>
+                    <KeyFrameDouble value="1" interpolationType="linear" frame="579" id="15:4645"/>
+                    <KeyFrameDouble value="1" frame="581" id="21:4"/>
+                    <KeyFrameDouble value="1" frame="582" id="15:4646"/>
                     <KeyFrameDouble value="1" frame="762" id="15:4647"/>
                 </KeyedProperty>
             </KeyedObject>
@@ -8703,7 +8707,9 @@
                     <KeyFrameDouble value="49.185" interpolationType="linear" frame="577" id="9:15087"/>
                     <KeyFrameDouble value="49.5897" interpolationType="linear" frame="578" id="9:15088"/>
                     <KeyFrameDouble value="49.9943" interpolationType="linear" frame="579" id="9:15089"/>
-                    <KeyFrameDouble value="-2.0164" interpolationType="linear" frame="580" id="9:15090"/>
+                    <KeyFrameDouble value="50.3976" interpolationType="linear" frame="580" id="21:5"/>
+                    <KeyFrameDouble value="50.8037" interpolationType="linear" frame="581" id="21:6"/>
+                    <KeyFrameDouble value="-2.0164" interpolationType="linear" frame="582" id="9:15090"/>
                     <KeyFrameDouble value="-2.0164" interpolationType="linear" frame="761" id="9:15091"/>
                 </KeyedProperty>
             </KeyedObject>

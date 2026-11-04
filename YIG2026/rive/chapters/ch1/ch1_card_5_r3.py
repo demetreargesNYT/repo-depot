@@ -741,8 +741,8 @@ def main(argv):
     i = doc.idx("9:12326")                                  # the ball's size for this scene
     doc.lines[i] = re.sub(r'scaleY="[0-9.]+" scaleX="[0-9.]+"', f'scaleY="{num(BALL_SCALE)}" scaleX="{num(BALL_SCALE)}"', doc.lines[i])
     round_ball(doc, intro, ("9:12328", "9:12336", "9:12337", "9:12339"))
-    i = doc.idx("9:12342")                                  # its outline at the cube's weight (round 6): at 1.5 it was the scene's thinnest
-    doc.lines[i] = re.sub(r'thickness="[0-9.]+"', f'thickness="{num(CUBE_LINE)}"', doc.lines[i])   # line and drew unevenly beside 1.87 and 2.33
+    i = doc.idx("9:12342")                                  # its outline at 1.5, as in every room (Demetre, 2026-11-04; round 6 had 1.87)
+    doc.lines[i] = re.sub(r'thickness="[0-9.]+"', 'thickness="1.5"', doc.lines[i])
     spin_id = next(e.get("id") for e in root.iter("Node") if e.get("name") == f"{ROOM} Ball Spin")
 
     def tile_colour(side):
