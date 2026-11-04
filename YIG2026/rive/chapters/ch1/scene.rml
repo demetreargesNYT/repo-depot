@@ -4893,7 +4893,7 @@
                                     <StraightVertex x="847.58" y="711.68" id="9:36485"/>
                                     <StraightVertex x="647" y="711.68" id="9:36486"/>
                                 </PointsPath>
-                                <Stroke transformAffectsStroke="false" thickness="1.8659" cap="butt" join="round" id="9:36487">
+                                <Stroke transformAffectsStroke="false" thickness="1.8659" join="round" id="9:36487">
                                     <SolidColor colorValue="FF1F1F1F" id="9:36488"/>
                                 </Stroke>
                             </Shape>
@@ -4921,7 +4921,7 @@
                                     <Fill id="9:36505">
                                         <SolidColor colorValue="FF05CE7C" id="9:36506"/>
                                     </Fill>
-                                    <Stroke transformAffectsStroke="false" thickness="1.8659" cap="butt" join="round" id="9:36507">
+                                    <Stroke transformAffectsStroke="false" thickness="1.8659" join="round" id="9:36507">
                                         <SolidColor colorValue="FF1F1F1F" id="9:36508"/>
                                     </Stroke>
                                     <ClippingShape sourceId="9:36480" name="Cube Clip" id="9:36509"/>
@@ -4954,7 +4954,7 @@
                                     <Fill id="9:36529">
                                         <SolidColor colorValue="FFE4E93B" id="9:36530"/>
                                     </Fill>
-                                    <Stroke transformAffectsStroke="false" thickness="1.8659" cap="butt" join="round" id="9:36531">
+                                    <Stroke transformAffectsStroke="false" thickness="1.8659" join="round" id="9:36531">
                                         <SolidColor colorValue="FF1F1F1F" id="9:36532"/>
                                     </Stroke>
                                     <ClippingShape sourceId="9:36480" name="Cube Clip" id="9:36533"/>
@@ -4991,7 +4991,7 @@
                                     <Fill id="9:36556">
                                         <SolidColor colorValue="FFDFDBD7" id="9:36557"/>
                                     </Fill>
-                                    <Stroke transformAffectsStroke="false" thickness="1.8659" cap="butt" join="round" id="9:36558">
+                                    <Stroke transformAffectsStroke="false" thickness="1.8659" join="round" id="9:36558">
                                         <SolidColor colorValue="FF1F1F1F" id="9:36559"/>
                                     </Stroke>
                                     <ClippingShape sourceId="9:36480" name="Cube Clip" id="9:36560"/>
@@ -5017,7 +5017,7 @@
                                     <Fill id="9:36574">
                                         <SolidColor colorValue="FF05CE7C" id="9:36575"/>
                                     </Fill>
-                                    <Stroke transformAffectsStroke="false" thickness="1.8659" cap="butt" join="round" id="9:36576">
+                                    <Stroke transformAffectsStroke="false" thickness="1.8659" join="round" id="9:36576">
                                         <SolidColor colorValue="FF1F1F1F" id="9:36577"/>
                                     </Stroke>
                                     <ClippingShape sourceId="9:36480" name="Cube Clip" id="9:36578"/>
@@ -5049,7 +5049,7 @@
                                     <Fill id="9:36597">
                                         <SolidColor colorValue="FFDFDBD7" id="9:36598"/>
                                     </Fill>
-                                    <Stroke transformAffectsStroke="false" thickness="1.8659" cap="butt" join="round" id="9:36599">
+                                    <Stroke transformAffectsStroke="false" thickness="1.8659" join="round" id="9:36599">
                                         <SolidColor colorValue="FF1F1F1F" id="9:36600"/>
                                     </Stroke>
                                     <ClippingShape sourceId="9:36480" name="Cube Clip" id="9:36601"/>
@@ -21953,6 +21953,14 @@
                     <KeyFrameDouble value="643.4044" interpolationType="linear" frame="160" id="9:38479"/>
                     <KeyFrameDouble value="643.4044" interpolationType="linear" frame="191" id="9:38480"/>
                 </KeyedProperty>
+                <KeyedProperty property="y" id="9:38920">
+                    <KeyFrameDouble value="-230" interpolationType="cubic" id="9:38723" frame="81">
+                        <CubicEaseInterpolator x2="0.71885598" y2="0.13148418" id="9:38724"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="375.03" interpolationType="cubic" frame="114" id="9:38725">
+                        <CubicEaseInterpolator x2="0.71885598" y2="0.13148418" id="9:38726"/>
+                    </KeyFrameDouble>
+                </KeyedProperty>
             </KeyedObject>
             <KeyedObject objectId="9:36608" id="9:38511">
                 <KeyedProperty property="rotation" id="9:38512">
@@ -21986,6 +21994,11 @@
                     <KeyFrameDouble value="0.0003" interpolationType="linear" frame="172" id="9:38540"/>
                     <KeyFrameDouble value="0.0014" interpolationType="linear" frame="173" id="9:38541"/>
                     <KeyFrameDouble interpolationType="linear" frame="191" id="9:38542"/>
+                </KeyedProperty>
+                <KeyedProperty property="y" id="9:38926">
+                    <KeyFrameDouble value="13.34" interpolationType="linear" frame="114" id="9:38736"/>
+                    <KeyFrameDouble value="16" interpolationType="linear" frame="116" id="9:38737"/>
+                    <KeyFrameDouble value="13.341762" interpolationType="linear" frame="129" id="9:38738"/>
                 </KeyedProperty>
             </KeyedObject>
             <KeyedObject objectId="9:36478" id="9:38595">
@@ -22209,16 +22222,6 @@
                     <KeyFrameDouble value="21" interpolationType="linear" frame="115" id="9:38716"/>
                 </KeyedProperty>
             </KeyedObject>
-            <KeyedObject objectId="9:36607" id="9:38919">
-                <KeyedProperty property="y" id="9:38920">
-                    <KeyFrameDouble value="-230" interpolationType="cubic" id="9:38723" frame="81">
-                        <CubicEaseInterpolator x2="0.71885598" y2="0.13148418" id="9:38724"/>
-                    </KeyFrameDouble>
-                    <KeyFrameDouble value="375.03" interpolationType="cubic" frame="114" id="9:38725">
-                        <CubicEaseInterpolator x2="0.71885598" y2="0.13148418" id="9:38726"/>
-                    </KeyFrameDouble>
-                </KeyedProperty>
-            </KeyedObject>
             <KeyedObject objectId="9:36779" id="9:38921">
                 <KeyedProperty property="rotation" id="9:38922">
                     <KeyFrameDouble value="0.4537856" interpolationType="linear" frame="112" id="9:38727"/>
@@ -22231,13 +22234,6 @@
                 <KeyedProperty property="x" id="9:38924">
                     <KeyFrameDouble value="12" interpolationType="linear" frame="112" id="9:38731"/>
                     <KeyFrameDouble value="14.5" interpolationType="linear" frame="115" id="9:38732"/>
-                </KeyedProperty>
-            </KeyedObject>
-            <KeyedObject objectId="9:36608" id="9:38925">
-                <KeyedProperty property="y" id="9:38926">
-                    <KeyFrameDouble value="13.34" interpolationType="linear" frame="114" id="9:38736"/>
-                    <KeyFrameDouble value="16" interpolationType="linear" frame="116" id="9:38737"/>
-                    <KeyFrameDouble value="13.341762" interpolationType="linear" frame="129" id="9:38738"/>
                 </KeyedProperty>
             </KeyedObject>
             <KeyedObject objectId="9:36660" id="9:38927">
