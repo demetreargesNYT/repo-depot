@@ -46,6 +46,7 @@ body { background: var(--paper); color: var(--ink); font: 500 13px/1.3 var(--ui)
 .fin-tc { display: flex; align-items: baseline; gap: 6px; }
 .fin-tc #fin-time { font: 700 34px/1 var(--ui); font-variant-numeric: tabular-nums; }
 .fin-tc small { color: var(--muted); }
+.fin-tc #fin-part { font: 700 13px var(--ui); align-self: center; }
 .fin-tc #fin-frame { margin-left: auto; color: var(--muted); font-variant-numeric: tabular-nums; }
 .fin-track { position: relative; height: 26px; background: #EEF1EA; border-radius: 6px; overflow: hidden; }
 .fin-track .intro { position: absolute; top: 0; bottom: 0; left: 0; background: #DDE6D4; }
@@ -134,7 +135,7 @@ body { background: var(--paper); color: var(--ink); font: 500 13px/1.3 var(--ui)
   <div class="fin-body">
     <div class="fin-room" id="fin-room">Waiting for the stage…</div>
     <div><button id="fin-replay" title="Reload the experience on this room's first card and play its intro again, then its loop">Replay room</button> <button id="fin-rive" aria-pressed="false" title="Hide all the HTML and show only the animation (H)">Rive only</button></div>
-    <div class="fin-tc"><span id="fin-time">0.0</span><small>s</small><span id="fin-frame"></span></div>
+    <div class="fin-tc"><span id="fin-part"></span><span id="fin-time">0.0</span><small>s</small><span id="fin-frame"></span></div>
     <div class="fin-track" id="fin-track"></div>
     <div class="fin-scale"><span>0</span><span id="fin-span"></span></div>
     <div class="fin-ctl">
@@ -163,7 +164,8 @@ const $ = (id) => document.getElementById(id);
 const fields = ["flow", "player", "top", "size"];
 for (const f of fields) if (q.get(f) !== null) $(f).value = q.get(f);
 let riveOnly = q.has("rive-only");            // the "Rive only" viewing option; the stage page owns the display (see experience-stage.html)
-const fin = { on: q.get("finesse") === "1", speed: 1, timing: {}, key: "", zero: 0, first: true, visited: new Set(), lastTc: 0, passed: 0, paused: false };
+const fin = { on: q.get("finesse") === "1", speed: 1, timing: {}, key: "", zero: 0, first: true, visited: new Set(), lastTc: 0, paused: false,
+  fileTime: {}, lastClk: null, roomSet: {}, lastPos: null, lastSmall: undefined };
 
 function stageUrl(jump, goto) {
   const p = new URLSearchParams({ flow: $("flow").value, player: $("player").value });
@@ -203,13 +205,17 @@ let started = false;
 function load(jump = 0, goto = "") {
   started = true;
   fin.key = ""; fin.visited.clear(); fin.paused = false;     // a fresh stage: its clock starts again, unpaused
+  freshClocks();
   fin.loading = true;                                        // the old stage is still alive until the new one loads: the panel ignores it, so it cannot mark rooms visited again
   if (fin.on) loadTiming();
   remember();
   layout();
   $("frame").src = stageUrl(jump, goto);
 }
-$("frame").addEventListener("load", () => { fin.key = ""; fin.visited.clear(); fin.loading = false; });   // the new stage is in: the panel starts clean
+$("frame").addEventListener("load", () => { fin.key = ""; fin.visited.clear(); fin.loading = false; freshClocks(); });   // the new stage is in: the panel starts clean
+// each file's own running time on the Finesse clock (ms, counted only while that file is on screen), and, per room, that
+// file's time when the room was first set (its intro, then its loop, run from there)
+function freshClocks() { fin.fileTime = {}; fin.lastClk = null; fin.roomSet = {}; fin.lastPos = null; fin.lastSmall = undefined; }
 for (const f of fields) $(f).addEventListener("change", () => (f === "size" ? (remember(), layout()) : load()));
 $("restart").addEventListener("click", () => load());
 $("jump").addEventListener("change", () => {
@@ -409,53 +415,78 @@ function panelTick() {
   const s = x.state();
   const scene = s.scenes[s.shown - 1] ?? "";
   const key = `${s.shown}:${scene}`;
+  // each file's own running time: it counts only while that file is the one on screen (a hidden file is paused, and Rive resumes
+  // it where it stopped, so its rooms' loops stop with it)
+  if (fin.lastClk !== null && clk.time > fin.lastClk) fin.fileTime[s.shown] = (fin.fileTime[s.shown] ?? 0) + clk.time - fin.lastClk;
+  fin.lastClk = clk.time;
   if (key !== fin.key) {                                  // a new scene was set: its time starts at 0
-    fin.key = key; fin.zero = clk.time; fin.first = !fin.visited.has(key); fin.visited.add(key); fin.lastTc = 0; fin.passed = 0;
+    fin.key = key; fin.zero = clk.time; fin.first = !fin.visited.has(key); fin.visited.add(key); fin.lastTc = 0; fin.lastPos = null; fin.lastSmall = undefined;
+    if (fin.first) fin.roomSet[key] = fin.fileTime[s.shown] ?? 0;
   }
   const tc = Math.max(0, (clk.shownTime() - fin.zero) / 1000);
   const t = fin.timing[key] ?? {};
   const room = !!t.loop;
-  const seams = fin.first ? seamTimes(t, tc) : { loop: [], small: [] };
-  if (tc > fin.lastTc) {                                  // a seam passed since the last look
-    if (seams.loop.some((v) => v > fin.lastTc && v <= tc)) { flash("loop"); fin.passed++; }
-    else if (seams.small.some((v) => v > fin.lastTc && v <= tc)) { flash("small"); fin.passed++; }
+  // how long the room's own animation has run: on a first visit, the time since the scene was set (loopPos); on a return visit,
+  // this file's running time since the room was first set; null when that was never seen (the room's loop frame is unknown)
+  const behindMs = clk.time - clk.shownTime();
+  const since = fin.first ? tc : fin.roomSet[key] === undefined ? null : Math.max(0, ((fin.fileTime[s.shown] ?? 0) - behindMs - fin.roomSet[key]) / 1000);
+  const pos = !room || since === null ? null : fin.first ? loopPos(t, tc) : roomPos(t, since);
+  // the small loops' own time (they hold until the pan ends, then loop): null while holding, undefined when not tracked
+  const small = room && t.small && since !== null ? (since < t.smallStart ? null : (since - t.smallStart) % t.small) : undefined;
+  if (tc > fin.lastTc && pos && fin.lastPos) {             // a seam passed since the last look: the intro ended, or a loop restarted
+    if ((fin.lastPos.part === "intro" && pos.part === "loop") || (pos.part === "loop" && fin.lastPos.part === "loop" && pos.at < fin.lastPos.at)) flash("loop");
+    else if (typeof small === "number" && (fin.lastSmall === null || (typeof fin.lastSmall === "number" && small < fin.lastSmall))) flash("small");
   }
-  fin.lastTc = tc;
+  fin.lastTc = tc; fin.lastPos = pos; fin.lastSmall = small;
 
   $("fin-room").innerHTML = `<b>File ${s.shown} · ${scene}</b>${t.room ? ` · ${t.room}` : ""}<br>`
-    + (!room ? "An empty picture: no intro and no loop." : fin.first ? "First visit: the intro plays, then the loop." : "Back again: the room was already built, so its loop keeps its first-visit timing and its seams are not tracked. Use Replay room for a clean run.");
+    + (!room ? "An empty picture: no intro and no loop." : fin.first ? "First visit: the intro plays, then the loop."
+      : since === null ? "Back again, but this room's start was never seen here: loop frame unknown, use Replay room."
+      : "Back again: the room was already built; its loop frame comes from this file's running time since the room was first set.");
   $("fin-replay").disabled = !room;
-  $("fin-time").textContent = fmt1(tc);
-  $("fin-frame").textContent = `frame ${Math.round(tc * 60)}`;
+  // the big time: the room's own frame within its intro or its loop (0 at each restart, as the loop animation's frame in Rive);
+  // pictures, and rooms whose start was never seen, show the time since the scene was set
+  if (pos) {
+    const N = Math.round(pos.of * 60);
+    $("fin-part").textContent = pos.part === "intro" ? "Intro" : "Loop";
+    $("fin-time").textContent = pos.at.toFixed(2);
+    $("fin-frame").textContent = `frame ${Math.round(pos.at * 60) % N} of ${N}`;
+  } else {
+    $("fin-part").textContent = "";
+    $("fin-time").textContent = fmt1(tc);
+    $("fin-frame").textContent = room ? "loop frame unknown, use Replay room" : `frame ${Math.round(tc * 60)}`;
+  }
 
-  // the strip: the intro, a mark where each loop restarts (orange) and where each small loop restarts (blue), and the playhead
+  // the strip, one intro and one loop long: the intro shaded, the loop's start (orange), the small loops' restarts within that span
+  // on a first visit (blue), and the playhead, which goes back to the loop's start at each restart
   const intro = t.intro ?? 0;
-  const loop = t.loop ?? 10;
-  const span = room ? intro + loop * Math.max(2, Math.ceil((tc - intro) / loop) + 1) : 10;
+  const span = room ? intro + t.loop : 10;
   const sig = `${key}|${span}|${fin.first}`;
   const track = $("fin-track");
   if (track.dataset.sig !== sig) {
     track.dataset.sig = sig;
     const pct = (v) => `${(100 * v) / span}%`;
-    const all = seamTimes(t, span);
+    const smallTicks = room && fin.first && t.small ? seamTimes(t, span).small.filter((v) => v < span) : [];
     track.innerHTML = (intro ? `<div class="intro" style="width:${pct(intro)}"></div>` : "")
-      + (fin.first ? all.loop.filter((v) => v < span).map((v) => `<div class="tick" style="left:${pct(v)}"></div>`).join("")
-        + all.small.filter((v) => v < span).map((v) => `<div class="tick small" style="left:${pct(v)}"></div>`).join("") : "")
+      + (room ? `<div class="tick" style="left:${pct(intro)}"></div>` : "")
+      + smallTicks.map((v) => `<div class="tick small" style="left:${pct(v)}"></div>`).join("")
       + '<div class="head" id="fin-head"></div>';
     $("fin-span").textContent = `${fmt1(span)} s`;
   }
   const head = $("fin-head");
-  if (head) head.style.left = `${Math.min(100, (100 * tc) / span)}%`;
+  if (head) {
+    head.hidden = room && !pos;
+    const at = pos ? (pos.part === "intro" ? pos.at : intro + pos.at) : tc;
+    head.style.left = `${Math.min(100, (100 * at) / span)}%`;
+  }
 
   const behind = clk.stepsBehind();
   $("fin-hist").textContent = behind > 0 ? `Showing a frame ${behind} behind live (${fmt1(behind / 60)} s). ${clk.available()} frames of history left.` : fin.paused ? "Paused. Step with ◀| and |▶ (or , and .)." : "";
-  const list = (a) => a.slice(0, 6).map(fmt1).join(", ") + (a.length > 6 ? ", …" : "");
-  const loops = seams.loop;
-  $("fin-list").innerHTML = !room ? "" : !fin.first ? "" :
-    (intro ? `Intro ends at <b>${fmt1(intro)} s</b>.<br>` : "")
-    + `Loop ${intro ? "restarts" : "seams"}: <b>${list(intro ? loops.slice(1) : loops)}</b> s (every ${t.loop.toFixed(2)} s).`
-    + (t.small ? `<br>Small loops restart: <b>${list(seams.small)}</b> s (every ${t.small.toFixed(2)} s).` : "")
-    + `<br>Seams passed: <b>${fin.passed}</b>`;
+  const sN = t.small ? Math.round(t.small * 60) : 0;
+  $("fin-list").innerHTML = !room ? "" :
+    (intro ? `Intro ends at <b>${fmt1(intro)} s</b>.` : "")
+    + (small === null ? `<br>Small loops: holding until the pan ends (${fmt1(t.smallStart)} s).`
+      : typeof small === "number" ? `<br>Small loops: frame <b>${Math.round(small * 60) % sN}</b> of ${sN} (${small.toFixed(2)} s).` : "");
   pinsTick(key, tc, clk);
 }
 
@@ -524,11 +555,22 @@ $("fin-comment").addEventListener("click", () => { setComment(!fin.comment); $("
 // the room's own clock at a timecode: in the intro, or how far into which pass of the loop (first visits only: a room that came
 // back already built keeps its first-visit timing)
 function loopPos(t, tc) {
-  if (!fin.first || !t?.loop) return null;
+  return fin.first && t?.loop ? roomPos(t, tc) : null;
+}
+// where a room is after running `el` seconds from when its scene was first set: in the intro, or how far into which loop pass
+function roomPos(t, el) {
   const intro = t.intro ?? 0;
-  if (tc < intro) return { part: "intro", at: +tc.toFixed(3), of: intro };
-  const into = tc - intro;
+  if (el < intro) return { part: "intro", at: +el.toFixed(3), of: intro };
+  const into = el - intro;
   return { part: "loop", at: +(into % t.loop).toFixed(3), of: +t.loop.toFixed(3), pass: Math.floor(into / t.loop) + 1 };
+}
+// a pin's moment for the box, the list and the notes: the room's own frame first, when known, then the time since the scene was set
+// in brackets (serve.mjs writes the notes heading the same way)
+function pinWhen(p) {
+  const tcs = `${p.tc.toFixed(2)} s`;
+  if (!p.loop) return tcs;
+  const N = Math.round(p.loop.of * 60);
+  return `${p.loop.part === "intro" ? "Intro" : "Loop"} frame ${Math.round(p.loop.at * 60) % N} of ${N} (${p.loop.at.toFixed(2)} s) [${tcs}]`;
 }
 
 $("pin-catch").addEventListener("click", async (e) => {
@@ -567,7 +609,7 @@ function openEditor(id) {
   if (!p) return;
   fin.editing = id;
   $("pin-edit").hidden = false;
-  $("pin-edit-title").textContent = `Pin ${numOf(p)} · ${p.room || p.scene} · ${p.tc.toFixed(2)} s`;
+  $("pin-edit-title").textContent = `Pin ${numOf(p)} · ${p.room || p.scene} · ${pinWhen(p)}`;
   $("pin-edit-under").textContent = !p.pieces ? "Pieces under the pin: not worked out for this frame."
     : `Under: ${p.pieces.under.map((v) => v.name).join(", ") || "no named piece"}${p.pieces.near.length ? ` · near: ${p.pieces.near.slice(0, 4).map((v) => v.name).join(", ")}` : ""}`;
   $("pin-edit-text").value = p.note;
@@ -636,7 +678,7 @@ function renderPins() {
     row.dataset.id = p.id;
     row.title = "Go to this moment and open the note";
     const first = p.note.split("\n")[0].trim();
-    row.innerHTML = `<div class="pin-head"><span class="n">${i + 1}</span><span><b>${escHtml(p.room || p.scene)}</b> · ${p.notes} · ${p.tc.toFixed(2)} s</span>`
+    row.innerHTML = `<div class="pin-head"><span class="n">${i + 1}</span><span><b>${escHtml(p.room || p.scene)}</b> · ${p.notes} · ${pinWhen(p)}</span>`
       + `<button class="del" title="Delete this pin">×</button></div><div class="pin-text">${first ? escHtml(first) : "<i>no note yet</i>"}</div>`;
     row.addEventListener("click", (e) => { if (!e.target.closest(".del")) gotoPin(p); });
     row.querySelector(".del").addEventListener("click", () => removePin(p.id));

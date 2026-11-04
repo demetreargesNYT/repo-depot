@@ -119,7 +119,10 @@ function noteMd(p, still) {
     : (p.pieces.under.length ? p.pieces.under.map(piece).join(", ") : "no named piece")
       + (p.pieces.near.length ? ` · near: ${p.pieces.near.slice(0, 5).map((v) => `${piece(v)} (${v.d})`).join(", ")}${p.pieces.near.length > 5 ? ", … (all in the JSON)" : ""}` : "");
   const quote = (p.note || "(no note)").split("\n").map((l) => `> ${l}`).join("\n");
-  return `### Note ${p.n} · ${p.room || p.scene} · ${p.tc.toFixed(2)} s
+  // the room's own frame first, then the time since the scene was set in brackets (as pinWhen() in experience.html)
+  const frames = p.loop ? Math.round(p.loop.of * 60) : 0;
+  const when = p.loop ? `${p.loop.part === "intro" ? "Intro" : "Loop"} frame ${Math.round(p.loop.at * 60) % frames} of ${frames} (${p.loop.at.toFixed(2)} s) [${p.tc.toFixed(2)} s]` : `${p.tc.toFixed(2)} s`;
+  return `### Note ${p.n} · ${p.room || p.scene} · ${when}
 Status: open
 
 ${quote}
