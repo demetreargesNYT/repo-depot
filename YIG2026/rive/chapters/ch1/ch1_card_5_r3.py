@@ -1,7 +1,8 @@
 """One time (2026-11-04, round 3): Chapter 1 card 5 restaged from Figma: one cube that turns in, Wordle Bot on top, the ball's three tries.
 
-    python3 chapters/ch1/ch1_card_5_r3.py            dry run: the beats, the contacts and the clearances
-    python3 chapters/ch1/ch1_card_5_r3.py --write    rewrite chapters/ch1/scene.rml
+    python3 chapters/ch1/ch1_card_5_r3.py                                dry run: the beats, the contacts and the clearances
+    python3 chapters/ch1/ch1_card_5_r3.py --scene <copy> --write         rebuild the room in a copy (a helper's scratch scene.rml)
+    python3 chapters/ch1/ch1_card_5_r3.py --write --real                 rewrite chapters/ch1/scene.rml (the session only)
 
 It runs on the file as round 2 left it (commit 3596ae7: the six blocks, the bot on the floor): it removes round 2's blocks and bot, and
 writes the room's Intro and Loop fresh. It refuses to run twice. The bot is read from a pull of his Rive file (2702548, read only) in
@@ -85,7 +86,12 @@ DOWN_X = HOME - 6.0                                        # where the hop back 
 T0, PS = 3, 100
 T1 = 132                                                   # try 1 starts (2.25 s): he landed at 1.9 s and settled at 2.15 s
 PAUSE = 40                                                 # gathering itself between tries
-BEAT = 92                                                  # on top, while his tiles go green and he taps his foot three times
+# on top (round 7, "see what I did?"): it settles, rolls a little toward him and holds there, a sideways glance, while his tiles go
+# yellow; it rolls back as his foot taps follow, then gives one tiny hop in place, pleased with itself, and a beat later hops down
+SETTLE, GLANCE, GLANCE_N, GLANCE_HOLD = 8, 8.0, 14, 26     # frames, px toward him, frames each way, frames held
+HOP_V = -2.0                                               # the tiny hop: 5 px high at 0.40 (v^2 / 2g), 10 frames
+TAP_N = 3
+AFTER_HOP = 12
 HIDDEN, N_OUT, HOME_WAIT = 54, 46, 46
 E_N, E_T = 0.80, 0.95                                      # restitution along the contact normal, and along the surface
 BUBBLE_BOTTOM = 365.0                                      # the speech bubble's lowest edge (Figma 367, in artboard units on the phone)
@@ -250,7 +256,18 @@ def ball_track():
     _, p, n, v = hop(tr, (s3, FLOOR_C), sol, "top", "try 3", notes)
     tr.events["land3"] = tr.t
     top_c = (p[0], Y0 - RB)
-    tr.rest(top_c, BEAT)
+    tr.rest(top_c, SETTLE)
+    near = (top_c[0] + GLANCE, top_c[1])
+    tr.add(GLANCE_N, lambda u, a=top_c[0]: (a + GLANCE * smooth(u / GLANCE_N), top_c[1]), "roll")
+    tr.events["look"] = tr.t                              # it faces him: his tiles go yellow from here
+    tr.rest(near, GLANCE_HOLD)
+    tr.add(GLANCE_N, lambda u, a=near[0]: (a - GLANCE * smooth(u / GLANCE_N), top_c[1]), "roll")
+    taps_end = tr.events["look"] + 4 + 27 + 18 * (TAP_N - 1) + 10
+    tr.rest(top_c, max(1.0, taps_end + 3 - tr.t))
+    tr.events["hop"] = tr.t
+    _, q, _, _ = hop(tr, top_c, (0.0, HOP_V), "top", "pleased hop", notes)
+    tr.events["land5"] = tr.t
+    tr.rest(top_c, AFTER_HOP)
     # ---- back down (round 4): it hops down off the cube's left side to the floor by its spot, and its tries start again ----
     tr.events["off"] = tr.t
     down = None
@@ -379,7 +396,7 @@ class Build:
         return self.doc.new_id()
 
     def stroke(self, w, cap="round"):
-        s = el("Stroke", transformAffectsStroke="false", thickness=w, cap=cap, join="round", id=self.nid())
+        s = el("Stroke", transformAffectsStroke="false", thickness=w, **({} if cap == "butt" else {"cap": cap}), join="round", id=self.nid())
         s.append(el("SolidColor", colorValue=INK if w == CUBE_LINE else "FF000000", id=self.nid()))
         return s
 
@@ -479,7 +496,7 @@ class Bot(Build):
         return i
 
     def stroke(self, w=LINE, cap="round"):
-        s = el("Stroke", transformAffectsStroke="false", thickness=w, cap=cap, join="round", id=self.nid())
+        s = el("Stroke", transformAffectsStroke="false", thickness=w, **({} if cap == "butt" else {"cap": cap}), join="round", id=self.nid())
         s.append(el("SolidColor", colorValue="FF000000", id=self.nid()))
         return s
 
@@ -616,6 +633,28 @@ def add_keys(doc, anim_name, objs):
     doc.lines[b:b] = keyed_lines(doc, objs)
 
 
+def merge_keyed_objects(doc, anim_name):
+    """One KeyedObject per object, as Rive stores it: a second one for the same object gives its properties to the first (appended
+    after the first's own) and goes, so a pull after a push reads back the same."""
+    while True:
+        a, b = doc.anim(anim_name)
+        blocks, seen, dup = [], {}, None
+        for i in range(a + 1, b):
+            m = re.match(r'^(\s*)<KeyedObject objectId="([^"]+)"', doc.lines[i])
+            if m:
+                j = next(k for k in range(i + 1, b) if doc.lines[k] == f"{m.group(1)}</KeyedObject>")
+                if m.group(2) in seen:
+                    dup = (seen[m.group(2)], (i, j))
+                    break
+                seen[m.group(2)] = (i, j)
+        if dup is None:
+            return
+        (i0, j0), (i1, j1) = dup
+        inner = doc.lines[i1 + 1:j1]
+        del doc.lines[i1:j1 + 1]
+        doc.lines[j0:j0] = inner
+
+
 def pose(doc, src_name, dst_name, last):
     a, b = doc.anim(src_name)
     root = ET.fromstring("\n".join(doc.lines[a:b + 1]))
@@ -669,7 +708,10 @@ def colour_keys(fn, L):
 
 def main(argv):
     write = "--write" in argv
-    doc = Doc(SCENE)
+    scene = Path(argv[argv.index("--scene") + 1]).resolve() if "--scene" in argv else SCENE
+    if write and scene == SCENE.resolve() and "--real" not in argv:
+        raise SystemExit("refusing to write chapters/ch1/scene.rml without --real (helpers build in a copy: --scene <path>)")
+    doc = Doc(scene)
     tr, L, notes, (k1, k2) = ball_track()
     b, jump = to_ball(tr, L)
     theta, left = spin(b, tr, L, jump)
@@ -689,10 +731,11 @@ def main(argv):
             flips += [("left", h + 2 + 6 * k, x), ("middle", h + 2 + 6 * k, y), ("right", h + 2 + 6 * k, z)]
         flips.append((side, h + 20, colour))
         state[("left", "middle", "right").index(side)] = colour
-    flips += [("left", land3 + 3, YELLOW), ("middle", land3 + 11, YELLOW), ("right", land3 + 19, YELLOW)]   # all yellow on top (round 6)
+    look = round(ev["look"])                          # his tiles answer its glance (round 7): all yellow while it looks at him
+    flips += [("left", look + 4, YELLOW), ("middle", look + 12, YELLOW), ("right", look + 20, YELLOW)]
     flips += [("left", land4 + 1, TILES["left"]), ("middle", land4 + 8, TILES["middle"]), ("right", land4 + 16, TILES["right"])]   # back to rest as it lands
     FADE = 2                                          # quick, so the lights stay clean colours (no muddy in-betweens)
-    taps = [(land3 + 30 + 18 * k, land3 + 40 + 18 * k) for k in range(3)]     # three foot taps while the ball idles on top
+    taps = [(look + 31 + 18 * k, look + 41 + 18 * k) for k in range(TAP_N)]   # three foot taps follow the tiles, as it rolls back
     cheer = taps[0]
     print(f"{ROOM}: cycle {L} frames, the loop repeats cycle {PS} to {L} ({(L - PS) / 60:.2f} s), the journey starts at intro frame {T0}")
     print(f"  cube: x {X0} to {X0 + W:.2f}, y {Y0} to {Y0 + H:.2f}, rest turn {T_REST:.1f} degrees, turns at {TURN[0] / 60:.2f} to {TURN[1] / 60:.2f} s")
@@ -702,7 +745,9 @@ def main(argv):
         print(f"  {name:11s} contact ({kind}) at cycle {t:6.1f}, timecode {tc(t):5.2f} s, centre ({p[0]:.1f}, {p[1]:.1f}); "
               f"its top y {top:.1f}; clear of the bot by {cb:.1f}")
     print(f"  contacts keep: try 1 {k1:.0%}, try 2 {k2:.0%}")
-    for k in ("try2", "try3", "off", "land4", "home"):
+    print(f"  glance: toward him {GLANCE} px to x {tr.at(ev['look'])[0][0] + R_VIS:.1f} (its right edge; his left shoe's edge "
+          f"{SHOE_LEFT - LINE / 2:.1f}); held {GLANCE_HOLD} frames")
+    for k in ("try3", "land3", "look", "hop", "land5", "off", "land4", "home"):
         print(f"  {k:7s} cycle {ev[k]:6.1f}  timecode {tc(ev[k]):5.2f} s")
     print(f"  tile fades: " + ", ".join(f"{s} {tc(t0):.2f} s" for s, t0, _ in flips) + f"; cheer {tc(cheer[0]):.2f} s")
     xs = [c[0] for c in b.c.values()]
@@ -807,11 +852,13 @@ def main(argv):
     add_keys(doc, loop, l_keys)
     pose(doc, intro, f"{ROOM} Waiting", last=False)
     pose(doc, intro, f"{ROOM} Built", last=True)
+    for name in (intro, loop, f"{ROOM} Waiting", f"{ROOM} Built"):
+        merge_keyed_objects(doc, name)
     for n, l in enumerate(doc.lines):
         if re.match(r"^\s*<KeyFrame\w+\b(?![^>]*\bid=)", l):
             doc.lines[n] = re.sub(r"(/?>)\s*$", f' id="{doc.new_id()}"\\1', l, count=1)
     doc.save()
-    print("wrote", SCENE)
+    print("wrote", scene)
     return 0
 
 
