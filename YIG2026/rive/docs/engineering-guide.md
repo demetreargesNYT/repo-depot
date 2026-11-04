@@ -102,7 +102,7 @@ A **room** has an intro on its first visit, then loops. An **empty room** has on
 2. When the stats have arrived and File 1 has loaded, set `direction = forward`, then `scene = 'start'`. Start's HTML arrives 2.0 s later.
 3. "Let's go" is an ordinary Next to `ad` (Ad 1). Show the ad when the pan ends (1.65 s).
 4. **Desktop (1025 px and wider):** keep the Loading and Start HTML above artboard y 525, clear of the ball and the bird. Artboard y sits at `artboardTop + y / 1067 * artboardHeight` on screen. At 1440 × 900 that's 442 px from the top of the window; at 1280 × 720, 353 px. The bird drops in past the block once, quickly; that's expected. `layoutSplash()` in `reference/example/` is a working version. Below 1025 px, keep the layout as designed.
-5. **Chapter 1 card 5's speech bubble** points its tail at Wordle Bot's head. In artboard units, the head is at x 868.4, y 533.4 (the dome's centre x, and the top of the antenna tips; the dome's top is y 545.5). Place it the same way as item 4: x sits at `artboardLeft + x / 1495 * artboardWidth` on screen, y as above. *Card 5 is still being finessed; this may move.*
+5. **Chapter 1 card 5's speech bubble** points its tail at Wordle Bot's head. In artboard units, the head is at x 755.7, y 376.5 (the dome's centre x, and the top of the antenna tips). Place it the same way as item 4: x sits at `artboardLeft + x / 1495 * artboardWidth` on screen, y as above. *Card 5 is still being finessed; this may move.*
 
 ## 5. Building the card list
 
