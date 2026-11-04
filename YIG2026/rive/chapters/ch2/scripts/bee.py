@@ -17,7 +17,8 @@ from sim import World
 ROOM = "Spelling Bee"
 T0 = 110                                   # 1.83 s: the mug landed at 1.50 s and its squash is over at 1.82 s
 IN_MUG = (807.0, 710.0)                    # the ball's centre low in the mug: wholly behind its front wall
-POP = (-0.2, -12.8)                        # its top stays under y 482, clear of the lockup (gone at 3.20 s anyway)
+POP = (-0.24, -12.8)                       # its top stays under y 482, clear of the lockup (gone at 3.20 s anyway); the sideways
+                                           # drift sets the idle roll on the right hex: 1.11 s (Demetre, 2026-11-04; -0.2 gave 1.67 s)
 PAUSE = 40                                 # frames low in the mug before the next shot
 
 
