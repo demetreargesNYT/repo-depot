@@ -26,10 +26,17 @@ SRC = RIVE_DIR / ".cache/scratch.nosync/ch2/illustrator-pull/scene.rml"     # a 
 ROOM = "Shelf"
 DX, DY = -14.0, 0.0
 L = 420
-T0 = 93                                  # their frame 0 on this intro frame, so their ball's first move (their frame 32) is at intro
-                                         # frame 125, when the crown shelf, the last piece the journey needs, has landed and settled
+T0 = 115                                 # their frame 0 on this intro frame: the door starts to open on their frame 10 = intro frame 125
+                                         # (2.08 s), when the crown shelf, the last piece the journey needs, has landed and settled;
+                                         # 22 frames later than their own start, so the door and the roll-out have time (their frame 60
+                                         # is where the ball comes to rest on the floor, then c2s1 carries on as drawn)
+DOOR_OPEN = (10, 34)                     # the door swings open to its drawn pose (power2.out)
+DOOR_CLOSE = (330, 360)                  # and shuts again in the quiet end, with the ball out of sight, so the next cycle opens it again
+ROLL = (20, 60)                          # the ball rolls from inside the doorway (hidden) to their rest spot, slowing evenly to a stop
+WAIT_X = 540.0                           # where it waits, inside the doorway behind the closed door (room x; hidden by the doorway mask)
 BACK = 300                               # out of sight in the trophy: the ball steps back to its start (behind the doorway) after this
 TROPHY_ON, TROPHY_OFF = 247, 310         # their Trophy_F shows from 247; the slot goes off once the ball is behind the doorway
+TROPHY_SLOT_DY = 4.5                     # the trophy front slot, moved down so only a stroke's width of black shows under the ball
 PUPILS_BACK = 384                        # the quiet end: the pupils ease back to where the cycle starts, 384 to 420
 FLOOR = "1:1093"
 PLANE = (756.71997, 650.09998)           # the Shelf Floor Plane where the intro leaves it
@@ -362,12 +369,12 @@ def hole_shape(doc, d, name, path_lines, x=0.0, y=0.0, rotation=None, sx=None, s
     return hid, out + [f"{pad}</Shape>"]
 
 
-def copy_paths(doc, scene_byid, shape_id, d):
+def copy_paths(doc, scene_byid, shape_id, d, idmap=None):
     """Our shape's own path elements (PointsPath with vertices, Ellipse, Rectangle), fresh ids, at depth d."""
     out = []
     for c in scene_byid[shape_id]:
         if c.tag in ("PointsPath", "Ellipse", "Rectangle"):
-            out += xml_lines(doc, c, d, {})
+            out += xml_lines(doc, c, d, idmap if idmap is not None else {})
     return out
 
 
@@ -438,6 +445,7 @@ def build(doc, scene, sheet):
         cl = xml_lines(doc, c, da, {})
         if c.get("id") == "1:1084":                               # the body: named as in the other rooms, so the ball check follows it
             cl[0] = cl[0].replace("<Shape ", '<Shape name="Ball_01_Base" ', 1)
+        cl = [l.replace("<Stroke ", '<Stroke transformAffectsStroke="false" ', 1) if "<Stroke " in l and "transformAffectsStroke" not in l else l for l in cl]
         lines += cl
     lines.append(f'{" " * 4 * da}<ClippingShape sourceId="{mask}" name="Doorway Mask" id="{doc.new_id()}"/>')
     doc.lines[ai + 1:aj] = lines
@@ -450,8 +458,11 @@ def build(doc, scene, sheet):
     bm = props_of(ball_anim, "1:13638")
     fx = lambda v: v + DX - PLANE[0]
     fy = lambda v: v + DY - PLANE[1]
-    T.keys("1:1245", "x", bm["x"], fx)
-    T.keys("1:1245", "y", bm["y"], fy)
+    roll = (1 / 3, 2 / 3, 2 / 3, 1)                              # x steady in time, the position easing out: an even slow-down to a stop
+    xs = [{"fr": 0, "v": WAIT_X - PLANE[0], "it": "hold", "c": None}, {"fr": ROLL[0], "v": WAIT_X - PLANE[0], "it": "cubic", "c": roll}]
+    xs += [k for k in specs_of(bm["x"], fx) if k["fr"] >= ROLL[1]]
+    ys = [{"fr": 0, "v": fy(712.0), "it": "hold", "c": None}] + [k for k in specs_of(bm["y"], fy) if k["fr"] >= ROLL[1]]
+    T.items += [["1:1245", "x", "keys", xs], ["1:1245", "y", "keys", ys]]
     keyed += [("1:1245", "x", fx(value_at(bm["x"], 0))), ("1:1245", "y", fy(value_at(bm["y"], 0)))]
 
     # ---- size and squash: their joystick, baked. y picks a frame of Ball_Scale (Ball_01's scale, 0.7 to 2), x a frame of Ball_Squash
@@ -459,7 +470,8 @@ def build(doc, scene, sheet):
     # about the contact point: size times squash, every frame. Their highlight's keys don't come over (our dot is the highlight).
     from common import bake
     js = props_of(ball_anim, "1:15194")
-    jx = lambda f: value_at(js["x"], f) if "x" in js else -1.0
+    jx0 = lambda f: value_at(js["x"], f) if "x" in js else -1.0
+    jx = lambda f: -1.0 if f <= ROLL[1] else (-1.0 + 2.0 * (f - ROLL[1]) / 3 if f < 63 else jx0(f))
     jy = lambda f: value_at(js["y"], f) if "y" in js else 0.0
     sc_kp = props_of(scale_anim, "1:13658")["scaleX"]
     sq = {k: props_of(squash_anim, k) for k in ("1:13668", "1:13669", "1:13671")}
@@ -479,22 +491,20 @@ def build(doc, scene, sheet):
     # Their ball is in the air nearly all the time (hops between the floor, the cat tree, the shelves): at each contact it grips (the
     # turn rate becomes its sideways speed over its radius), in the air it keeps that rate, at rest and while hidden it does not turn.
     # Contacts are their Ball_Move key frames. Hidden: before it shows over the door (frame 38) and once it is in the trophy (247).
-    cxs = {f: value_at(bm["x"], f) for f in range(L + 1)}
+    cxs = {f: spec_value(xs, f) for f in range(L + 1)}
     contacts = sorted({int(float(k.get("frame", 0))) for k in bm["x"]} | {int(float(k.get("frame", 0))) for k in bm["y"]})
-    rest = set(range(60, 63))                                     # their hold on the floor after the landing
-    hidden = lambda f: f < 38 or f >= 247
+    contacts = [c for c in contacts if c >= 63]
     th = [0.0]
     w = 0.0
     for f in range(L):
         r = 17.678 * size[f]
         dx = cxs[f + 1] - cxs[f]
-        if f in contacts:
-            w = dx / r
-        if f in rest or hidden(f) or abs(dx) < 1e-9 and f >= contacts[-1]:
-            th.append(th[-1])
-            if f in rest:
-                w = 0.0
-            continue
+        if ROLL[0] <= f < ROLL[1]:
+            w = dx / r                                            # rolling out of the doorway: the turn is the travel over the radius
+        elif f < 63 or f >= 247 or (abs(dx) < 1e-9 and f >= contacts[-1]):
+            w = 0.0                                               # waiting, at rest on the floor, or in the trophy
+        elif f in contacts:
+            w = dx / r                                            # grips at each contact, then keeps that rate in the air
         th.append(th[-1] + w)
     total = th[-1]
     want = round(total / (2 * math.pi)) * 2 * math.pi
@@ -507,6 +517,7 @@ def build(doc, scene, sheet):
 
     # ---- draw order: slots for what they draw above the ball -----------------------------------------------------------------------
     slot_clips = []
+    slot_vmap = {}
     # the open door panel (their Door_open) and the crown shelf (their Shelf_Bottom): always above the ball
     for name, shapes in (("Door Panel", ["1:1228"]),
                          ("Crown Shelf", [s.get("id") for s in byid["9:10706"].iter("Shape") if s.get("name") != "crown-sparkle"])):
@@ -515,7 +526,7 @@ def build(doc, scene, sheet):
             par = scene.parent[e]
             pi = doc.idx(par.get("id"))
             d = indent_of(doc, pi) + 1
-            hid, lines = hole_shape(doc, d, f"Shelf {name} Slot", copy_paths(doc, byid, sid, d + 1), float(e.get("x", 0)), float(e.get("y", 0)),
+            hid, lines = hole_shape(doc, d, f"Shelf {name} Slot", copy_paths(doc, byid, sid, d + 1, slot_vmap), float(e.get("x", 0)), float(e.get("y", 0)),
                                     float(e.get("rotation", 0)), float(e.get("scaleX", 1)), float(e.get("scaleY", 1)))
             doc.lines[pi + 1:pi + 1] = lines
             slot_clips.append(hid)
@@ -554,7 +565,7 @@ def build(doc, scene, sheet):
     dc = indent_of(doc, doc.idx("1:1247")) + 1
     doc.lines[ci:ci] = [f'{" " * 4 * dc}<ClippingShape sourceId="{h}" fillRule="evenOdd" name="Draw Order Slot" id="{doc.new_id()}"/>' for h in slot_clips]
     # Trophy_F's opacity (0 to 1 between frames 246 and 247) as the trophy slot's switch; Trophy_B's fade is not needed, ours stays under
-    T.frames(tnode, "y", {f: (0.0 if TROPHY_ON <= f < TROPHY_OFF else -3000.0) for f in range(L + 1)})   # off: 3000 px up
+    T.frames(tnode, "y", {f: (TROPHY_SLOT_DY if TROPHY_ON <= f < TROPHY_OFF else -3000.0) for f in range(L + 1)})   # off: 3000 px up
 
     # ---- the bursts: their scale keys on our sparkles, and on the sparkles' slots -------------------------------------------------
     for sid, burst in (("1:1779", "1:14501"), ("1:1895", "1:15491")):
@@ -567,6 +578,8 @@ def build(doc, scene, sheet):
         for prop in ("scaleX", "scaleY"):
             T.keys(pid, prop, bp_[prop])
             keyed.append((pid, prop, value_at(bp_[prop], 0)))
+
+    pieces_react(doc, scene, byid, T, slot_vmap, bm, size, notes)
 
     # ---- the cat tree: their two moving shapes turn about their own pivots ------------------------------------------------------
     ts = world(scene, "1:1244")              # Toy Stand
@@ -671,3 +684,130 @@ def build(doc, scene, sheet):
 
 def indent_of_line(l):
     return (len(l) - len(l.lstrip())) // 4
+
+
+# ---- Demetre's notes on the opener (2026-11-04) ------------------------------------------------------------------------------------
+THETA0 = math.acos(70.0 / 92.5)          # the drawn door is open by this much: its free edge at 70 of the doorway's 92.5 px
+SHEAR0 = 24.95 / 92.5                    # and its free edge has dropped 24.95 px (the near side of an open door)
+
+
+def door_theta(f):
+    a, b = DOOR_OPEN
+    c, d = DOOR_CLOSE
+    if f < a or f >= d:
+        return 0.0
+    if f < b:
+        u = (f - a) / (b - a)
+        return THETA0 * (1 - (1 - u) ** 2)
+    if f < c:
+        return THETA0
+    u = (f - c) / (d - c)
+    return THETA0 * (1 - (u * u * (3 - 2 * u)))
+
+
+def door_map(X, Y, th):
+    """A point of the drawn (open) panel, in Door Panel space, on the panel swung to th: the hinge (x -35) stays; the free edge comes in
+    by cos and drops by sin, which at 0 is the closed door filling the doorway and at THETA0 is the drawing itself."""
+    dxc = (X + 35.0) / math.cos(THETA0)
+    yc = Y - SHEAR0 / math.sin(THETA0) * math.sin(THETA0) * dxc
+    return (-35.0 + math.cos(th) * dxc, yc + SHEAR0 / math.sin(THETA0) * math.sin(th) * dxc)
+
+
+def unwrap(a, near):
+    while a - near > math.pi:
+        a -= 2 * math.pi
+    while near - a > math.pi:
+        a += 2 * math.pi
+    return a
+
+
+def to_local(m, p):
+    a, b, c, d, tx, ty = m
+    det = a * d - b * c
+    x, y = p[0] - tx, p[1] - ty
+    return ((d * x - c * y) / det, (-b * x + a * y) / det)
+
+
+def pts_world(scene, byid, shape_id):
+    m = world(scene, shape_id)
+    out = []
+    for c in byid[shape_id]:
+        if c.tag == "PointsPath":
+            for v in c:
+                if "Vertex" in v.tag:
+                    x, y = float(v.get("x", 0)), float(v.get("y", 0))
+                    out.append((m[0] * x + m[2] * y + m[4], m[1] * x + m[3] * y + m[5]))
+    return out
+
+
+def pieces_react(doc, scene, byid, T, slot_vmap, bm, size, notes):
+    # ---- note 1: the door is shut until the room has settled, then swings open to its drawing; every part of the panel (fill, slits,
+    # knob, and the slot that hides the ball behind it) moves as one, vertex by vertex, handles included
+    shapes = [c for c in byid["1:1191"] if c.tag == "Shape" and c.get("name") not in ("Shelf Door Panel Slot", "door-knob")]
+    # the knob is drawn round on the open door; it rides with the panel (its centre follows the swing) and stays round
+    knob = byid["1:1220"]
+    kx0, ky0 = float(knob.get("x", 0)), float(knob.get("y", 0))
+    kpos = {f: door_map(kx0, ky0, door_theta(f)) for f in range(L + 1)}
+    T.frames("1:1220", "x", {f: kpos[f][0] for f in kpos})
+    T.frames("1:1220", "y", {f: kpos[f][1] for f in kpos})
+    verts = []
+    for sh in shapes:
+        sx, sy = float(sh.get("x", 0)), float(sh.get("y", 0))
+        for pth in sh:
+            if pth.tag == "PointsPath":
+                for v in pth:
+                    if "Vertex" in v.tag:
+                        verts.append((v, sx, sy, [v.get("id")] + ([slot_vmap[v.get("id")]] if v.get("id") in slot_vmap else [])))
+    for v, sx, sy, ids in verts:
+        X, Y = sx + float(v.get("x", 0)), sy + float(v.get("y", 0))
+        cubic = v.tag == "CubicDetachedVertex"
+        vals = {q: {} for q in ("x", "y", "inRotation", "inDistance", "outRotation", "outDistance")}
+        for f in range(L + 1):
+            th = door_theta(f)
+            px, py = door_map(X, Y, th)
+            vals["x"][f], vals["y"][f] = px - sx, py - sy
+            if cubic:
+                for side in ("in", "out"):
+                    r0, d0 = float(v.get(side + "Rotation", 0)), float(v.get(side + "Distance", 0))
+                    hx, hy = door_map(X + d0 * math.cos(r0), Y + d0 * math.sin(r0), th)
+                    vals[side + "Rotation"][f] = unwrap(math.atan2(hy - py, hx - px), r0)
+                    vals[side + "Distance"][f] = math.hypot(hx - px, hy - py)
+        for q, d in vals.items():
+            if d:
+                for oid in ids:
+                    T.frames(oid, q, d)
+    notes.append(f"door shut until {DOOR_OPEN[0]}, open {DOOR_OPEN[0]}-{DOOR_OPEN[1]}, shuts {DOOR_CLOSE[0]}-{DOOR_CLOSE[1]} (cycle frames)")
+
+    # ---- note 3: the trophy shakes a little as the ball drops in, about its base, dying away fast (each swing 0.55 of the one before)
+    base = pts_world(scene, byid, "1:1980")
+    bx = sum(p[0] for p in base) / len(base)
+    by = max(p[1] for p in base)
+    tpx, tpy = to_local(world(scene, "1:1894"), (bx, by))
+    tpiv, _ = doc.wrap("1:1914", "Shelf Trophy Shake", tpx, tpy)
+    rim = pts_world(scene, byid, "1:1915") or [(0, 420)]
+    rim_y = sum(p[1] for p in rim) / len(rim)
+    ent = next(f for f in range(TROPHY_ON - 20, 300) if value_at(bm["y"], f) + DY > rim_y + 2 and value_at(bm["y"], f + 1) >= value_at(bm["y"], f))
+    P, r_ = 10.0, 0.55
+    tau = (P / 2) / math.log(1 / r_)
+    shake = {f: (-0.03 * math.exp(-(f - ent) / tau) * math.sin(2 * math.pi * (f - ent) / P) if 0 <= f - ent < 40 else 0.0) for f in range(L + 1)}
+    T.frames(tpiv, "rotation", shake)
+    notes.append(f"trophy shake from cycle {ent}")
+
+    # ---- note 4: the crown dips and tilts a little where the ball bounces off it, quick down, slow back, no overshoot
+    cb = pts_world(scene, byid, "1:1842")
+    cx_ = sum(p[0] for p in cb) / len(cb)
+    cy_ = max(p[1] for p in cb)
+    cpx, cpy = to_local(world(scene, "1:1778"), (cx_, cy_))
+    cpiv, _ = doc.wrap("1:1805", "Shelf Crown Bump", cpx, cpy)
+    hit = 225
+    vy = abs(value_at(bm["y"], hit) - value_at(bm["y"], hit - 1))
+    vx = value_at(bm["x"], hit) - value_at(bm["x"], hit - 1)
+    depth = max(1.0, min(2.0, 0.25 * vy))
+    tilt = math.copysign(0.03, vx if vx else 1.0)
+    def g(u):
+        if u < 0 or u >= 35:
+            return 0.0
+        return math.sin(0.5 * math.pi * u / 5) if u <= 5 else 0.5 + 0.5 * math.cos(math.pi * (u - 5) / 30)
+    T.frames(cpiv, "y", {f: cpy + depth * g(f - hit) for f in range(L + 1)})
+    T.frames(cpiv, "rotation", {f: tilt * g(f - hit) for f in range(L + 1)})
+    notes.append(f"crown dips {depth:.1f} px and tilts {math.degrees(tilt):.1f} deg at cycle {hit}")
