@@ -89,6 +89,14 @@ body.on-splash .nav-logo, body.on-splash .nav-progress { opacity: 0; }
   border: calc(2 * var(--u)) dashed #1F1F1F; border-radius: calc(10 * var(--u)); background: rgba(255, 255, 255, .78);
   font: 700 calc(16 * var(--u)) / 1.3 "NYT Franklin", Arial, sans-serif; padding: calc(16 * var(--u)); }
 .panel-video { height: calc(420 * var(--u)); width: calc(240 * var(--u)); background: rgba(31, 31, 31, .82); color: #FFF; border-color: #FFF; }
+/* Chapter 1 card 5: the Wordle Bot's speech bubble (Figma "Ch1 05 – Bot" 12759:54013: 280 wide, 24 px padding, 2 px line). It sits above
+   the bot's head with its tail tip on --bub-tail-x, placed by layoutBubble() from where the head is on screen (artboard 868.4, 533.4). */
+.blk-bubble { left: var(--bub-left, 47px); right: auto; top: var(--bub-top, 140px); width: 280px; justify-items: stretch; text-align: left;
+  transform: scale(var(--bub-k, 1)); transform-origin: var(--bub-tail-x, 100px) calc(100% + 20px); }
+.bubble { position: relative; box-sizing: border-box; width: 280px; padding: 24px; background: #FFF; border: 2px solid #1F1F1F; border-radius: 14px;
+  font: 500 16px / 1.38 "NYT Franklin", Arial, sans-serif; color: #121212; }
+.bubble b { font-weight: 700; }
+.bubble svg { position: absolute; top: 100%; left: calc(var(--bub-tail-x, 100px) - 2px - 22px); display: block; overflow: visible; }
 
 /* tap zones below the desktop breakpoint: Back on the left, Next on the right (shares in yig-framing.css) */
 .yig-tap { position: fixed; top: 0; bottom: 0; z-index: 2; margin: 0; padding: 0; border: 0; background: transparent; cursor: pointer;
@@ -185,7 +193,7 @@ function buildCards() {
   const out = [
     c(1, "loading", "Loading", [["loader", ""]], { slot: "loader" }),      // the lockup and Supported by are the page's own (.splash); the stats load from the Games API
     c(1, "start", "Start", [["btn", "Let’s go"]], { slot: "start" }),
-    c(1, "ad", "Ad 1", [["panel", "AD 1 · T-MOBILE · PLACEHOLDER"], ["t-small", "Plays over the empty Chapter 1 room"]], { ad: true }),
+    c(1, "ad", "Ad 1", [], { ad: true }),         // an ad card has no copy: the ad is the page's own, and this review shows only the stage
   ];
   // Chapter 1 never skips a card: both flows always show all five
   const ch1 = anon
@@ -193,19 +201,19 @@ function buildCards() {
        [["t-serif", "Together, you all completed X million puzzles."], ["t-small", "That’s some serious puzzle power."]],
        [["t-serif", "The most popular Wordle starting word was ADIEU."], ["t-small", "Oh là là!"]],
        [["t-serif", "And the word that stumped the most players was PSHAW."], ["t-small", "(n) An expression of disapproval or disbelief."]],
-       [["t-tag", "Did you know"], ["panel", "DID YOU KNOW · ROBOT CARD · PLACEHOLDER"]]]
+       [["bubble", "Did you know: Over XXX players achieved 100-day Wordle streaks this year. That’s a lot, even for this clever bot!"]]]
     : [[["t-serif", "This year, you turned downtime into playtime."]],
        [["t-serif", "You played a total of X puzzles."], ["t-small", "Cheers, super solver."]],
        [["t-serif", "Your first puzzle was [game icon + name], [date, time]."]],
        [["t-serif", "And your longest streak was in [game] at X days."], ["t-small", "Keep the wins coming."]],
-       [["t-tag", "Did you know"], ["panel", "DID YOU KNOW · ROBOT CARD · PLACEHOLDER"]]];
-  ch1.forEach((copy, i) => out.push(c(1, `chapter-1-card-${i + 1}`, i ? "" : "Chapter 1", copy)));
-  out.push(c(1, "ad", "Ad 2", [["panel", "AD 2 · T-MOBILE · PLACEHOLDER"], ["t-small", "The last picture of File 1; File 2 opens on it"]], { ad: true }));
+       [["bubble", "Did you know: Over XXX players achieved 100-day Wordle streaks this year. That’s a lot, even for this clever bot!"]]];
+  ch1.forEach((copy, i) => out.push(c(1, `chapter-1-card-${i + 1}`, i ? "" : "Chapter 1", copy, i === 4 ? { slot: "bubble" } : {})));
+  out.push(c(1, "ad", "Ad 2", [], { ad: true }));          // the last picture of File 1; File 2 opens on it
   out.push(c(2, "intro", "Chapter 2", [["t-serif", "But that’s not all"], ["t-small", "PLACEHOLDER · the Chapter 2 opener"]]));
   const community = (g, why) => c(2, g, "", [["t-tag", why], ["t-serif", `In ${NAME[g]}, all players…`], ["t-big", "Community stat"]], { community: true, icon: g });
   if (anon) {
     ANON_COMMUNITY.forEach((g) => out.push(community(g, "Community card · no lockup")));
-    out.push(c(2, "to-chapter-3", "Ad 3", [["panel", "AD 3 · T-MOBILE · PLACEHOLDER"], ["t-small", "Anons only: plays over the empty Chapter 3 room"]], { ad: true }));
+    out.push(c(2, "to-chapter-3", "Ad 3", [], { ad: true }));      // anons only: plays over the empty Chapter 3 room
   } else {
     for (const g of own) {
       for (let i = 1; i <= CARDS_PER_GAME[g]; i++) {
@@ -249,6 +257,11 @@ const cards = buildCards();
 const esc = (v) => String(v).replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch]);
 function lineHtml([cls, text]) {
   if (cls.startsWith("panel")) return `<span class="yig-pop ${esc(cls)}">${esc(text)}</span>`;
+  if (cls === "bubble") {                          // the lead ("Did you know:") is bold; the tail is a 26 x 22 wedge pointing down at the bot
+    const [lead, ...rest] = text.split(":");
+    return `<span class="yig-pop bubble"><b>${esc(lead)}:</b>${esc(rest.join(":"))}<svg width="26" height="22" viewBox="0 0 26 22" aria-hidden="true">`
+      + `<path d="M0 0 L22 22 L18 0" fill="#FFF" stroke="#1F1F1F" stroke-width="2" stroke-linejoin="round"/><path d="M1.5 1 H17" stroke="#FFF" stroke-width="2.6"/></svg></span>`;
+  }
   if (cls === "btn") return `<span class="yig-pop btn">${esc(text)}</span>`;   // pops like a panel: a text mask would clip the pill
   if (cls === "icons") return `<span class="yig-pop icons">${text.split(",").map((g) => `<img src="/art/global/${ICON[g]}-icon.svg" alt="">`).join("")}</span>`;
   if (cls === "loader") return `<span class="yig-pop loader"><span id="loader-fill"></span></span>`;
@@ -259,7 +272,7 @@ for (const g of new Set(cards.map((k) => k.icon).filter(Boolean))) {
   html += `<div class="yig-icon blk blk-icon" data-icon-game="${esc(g)}" hidden><span class="yig-pop t-icon"><img src="/art/global/${ICON[g]}-icon.svg" alt=""></span></div>`;
 }
 cards.forEach((k, i) => {
-  html += `<div class="yig-text blk blk-copy${k.icon ? " after-icon-slot" : ""}${k.slot ? ` blk-${k.slot}` : ""}" data-copy-frame="${i}" hidden>${k.copy.map(lineHtml).join("")}</div>`;
+  html += `<div class="yig-text blk blk-copy${k.icon ? " after-icon-slot" : ""}${k.slot ? ` blk-${k.slot}` : ""}" data-copy-frame="${i}" hidden>${k.copy.map(lineHtml).join("")}</div>`;     // an ad's block is an empty shell: the integration still finds card i's element, and there is nothing in it to show while it leaves
 });
 document.getElementById("overlay").insertAdjacentHTML("beforeend", html);
 
@@ -346,6 +359,29 @@ addEventListener("load", layoutSplash);
 layoutSplash();
 setTimeout(layoutSplash, 300);
 
+// Chapter 1 card 5: the speech bubble sits above Wordle Bot's head with its tail tip 10 px above his antennae (artboard x 868.4, y 533.4; his
+// dome's top is y 545.5). Wherever the crop puts him, the bubble follows; if that would push its top under the nav (134 px), it shrinks
+// toward its tail tip instead. Runs on resize and from the 100 ms tick below (the block has no height while it is hidden).
+const BOT_HEAD_X = 868.4, BOT_HEAD_Y = 533.4, BUB_GAP = 10, BUB_TAIL = 20, BUB_TOP_MIN = 142;
+function layoutBubble() {
+  const blk = document.querySelector(".blk-bubble");
+  if (!blk || blk.hidden) return;
+  const r = document.getElementById("artboard").getBoundingClientRect();
+  const col = blk.offsetParent.getBoundingClientRect();
+  const hx = r.left + (BOT_HEAD_X / 1495) * r.width - col.left, hy = r.top + (BOT_HEAD_Y / 1067) * r.height - col.top;
+  const w = blk.offsetWidth, h = blk.offsetHeight;
+  const left = Math.max(8, Math.min(col.width - w - 8, hx - 70));
+  const tail = Math.max(30, Math.min(w - 30, hx - left));
+  const tip = hy - BUB_GAP, top = tip - BUB_TAIL - h;
+  const k = top < BUB_TOP_MIN ? Math.max(0.6, (tip - BUB_TOP_MIN) / (h + BUB_TAIL)) : 1;
+  const s = blk.style;
+  s.setProperty("--bub-left", `${left.toFixed(1)}px`);
+  s.setProperty("--bub-top", `${top.toFixed(1)}px`);
+  s.setProperty("--bub-tail-x", `${tail.toFixed(1)}px`);
+  s.setProperty("--bub-k", k.toFixed(4));
+}
+addEventListener("resize", layoutBubble);
+
 // exposed for the browser test
 // the progress bar: how far through the cards the player is
 const progress = document.getElementById("progress");
@@ -356,6 +392,7 @@ setInterval(() => {
   const k = cards[state().frame];
   if (k.bg) videoBg.style.background = k.bg;
   videoBg.style.opacity = k.kind === "video" ? 1 : 0;
+  layoutBubble();
 }, 100);
 
 window.yigExperience = { cards, onTap, onBack, state, flow: FLOW, top: TOP, setRiveOnly, riveOnly: () => riveOnly };
