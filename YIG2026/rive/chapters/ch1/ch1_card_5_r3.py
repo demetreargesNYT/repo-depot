@@ -52,21 +52,22 @@ X0, Y0, W, H = 647.0, 584.18, 200.58, 127.5
 CUBE_LINE = 1.8659
 SIDE = 73.08
 T_REST = math.degrees(math.atan2(W - SIDE, SIDE))          # 60.2: the rest pose's turn
-TURN = (48, 81)                                            # intro frames of the two quarter turns (0.8 to 1.35 s)
+TURN = (51, 93)                                            # intro frames of the three quarter turns (0.85 to 1.55 s, once the cube is on the stage)
 # the faces in the order the turn shows them: (name, fill, letter shape id, letter's share of the face's width, letter height)
-FACES = [("D", "FFE4E93B", "9:12197", 0.598, 83.0), ("R", "FFDFDBD7", "9:12184", 0.50, 84.0),
+FACES = [("L", "FF05CE7C", "9:12262", 0.416, 88.0), ("D", "FFE4E93B", "9:12197", 0.598, 83.0), ("R", "FFDFDBD7", "9:12184", 0.50, 84.0),
          ("O", "FF05CE7C", "9:12300", 0.535, 90.31), ("W", "FFDFDBD7", "9:12291", 0.625, 86.63)]
-FIRST = -2                                                 # the index of the first face (D); O is 0
+FIRST = -3                                                 # the index of the first face (L); O is 0
 
 # ---- the bot ----------------------------------------------------------------------------------------------------------------
 K = 137.0 / 22.0366                                        # Figma body width / his body's width in his own units
 LINE = 2.3258                                              # Figma's line at his Figma size (he is that size here)
 FEET = 33.642
-BOT_CX = 119.0 + 68.5 + 560.0                              # Figma body centre x
+BOT_SHIFT = 6.0                                            # right of Figma's place (round 5): room on top for the larger ball beside his shoe
+BOT_CX = 119.0 + 68.5 + 560.0 + BOT_SHIFT                  # Figma body centre x
 BOT_X = BOT_CX - K * 17.709
 BOT_Y = Y0 - K * FEET                                      # feet on the cube's top line
 BOT_Y0 = -230.0
-BOT_IN = TURN[1]                                           # his drop starts as the turn settles; lands 33 frames later (1.9 s)
+BOT_IN = 81                                                # his drop starts during the last quarter turn, so he lands at 1.9 s, before the copy
 BODY = (BOT_CX - K * 11.018, BOT_Y + K * 6.079, BOT_CX + K * 11.018, BOT_Y + K * 26.403)
 HEAD = (BOT_CX + K * 0.351, BOT_Y + K * 0.23)              # dome centre x, antenna tips' top
 SHOE_LEFT = BOT_CX + K * (13.53 - 17.709) - K * 3.70 - 0.75 * 0   # his left shoe's left edge (centreline)
@@ -74,16 +75,17 @@ TILES = {"left": "FF77A76A", "middle": "FFE9C342", "right": "FF787C7E"}
 GREY, YELLOW, GREEN = "FF787C7E", "FFE9C342", "FF77A76A"
 
 # ---- the ball -------------------------------------------------------------------------------------------------------------
-RB = 17.1
-R_VIS = 17.7
+BALL_SCALE = 1.15                                          # a little larger than cards 2 to 4 (0.96), for this scene (round 5)
+RB = 17.678 * BALL_SCALE + 0.13                            # centre to the line it rests on
+R_VIS = 17.678 * BALL_SCALE + 0.75                         # its drawn radius with the line
 G = 0.40
 FLOOR_C = 712.0 - RB
 HOME = 605.0
-HIDE_X = X0 + 23.0                                         # where it waits out of sight, behind the cube's base
+DOWN_X = HOME - 6.0                                        # where the hop back down lands, by its spot
 T0, PS = 3, 100
 T1 = 132                                                   # try 1 starts (2.25 s): he landed at 1.9 s and settled at 2.15 s
 PAUSE = 40                                                 # gathering itself between tries
-BEAT = 72                                                  # on top, while his tiles go green and he cheers
+BEAT = 92                                                  # on top, while his tiles go green and he taps his foot three times
 HIDDEN, N_OUT, HOME_WAIT = 54, 46, 46
 E_N, E_T = 0.80, 0.95                                      # restitution along the contact normal, and along the surface
 BUBBLE_BOTTOM = 365.0                                      # the speech bubble's lowest edge (Figma 367, in artboard units on the phone)
@@ -225,7 +227,7 @@ def ball_track():
     s3 = run
     tr.rest((s3, FLOOR_C), PAUSE // 2)
     # ---- try 3: lands on top beside his left shoe ----
-    target = X0 + 26.0
+    target = X0 + 24.0                                    # beside his left shoe, its left edge inside the cube's
     sol = None
     for i in range(0, 300):
         vy = -11.0 - i * 0.01
@@ -249,15 +251,30 @@ def ball_track():
     tr.events["land3"] = tr.t
     top_c = (p[0], Y0 - RB)
     tr.rest(top_c, BEAT)
-    # ---- off the back: it drops behind the cube's top edge ----
+    # ---- back down (round 4): it hops down off the cube's left side to the floor by its spot, and its tries start again ----
     tr.events["off"] = tr.t
-    u_hid = math.sqrt(2 * (Y0 + CUBE_LINE / 2 + R_VIS - top_c[1]) / G)     # its top below the cube's top line
-    n_drop = math.ceil(u_hid) + 2                         # two frames more, so the whole frame it is put back on is out of sight
-    tr.add(n_drop, lambda u: (top_c[0], top_c[1] + 0.5 * G * u * u), "air")
-    tr.events["hidden"] = tr.t
-    tr.rest((HIDE_X, FLOOR_C), HIDDEN)
-    tr.events["out"] = tr.t
-    tr.add(N_OUT, lambda u: (HIDE_X + (HOME - HIDE_X) * smooth(u / N_OUT), FLOOR_C), "roll")
+    down = None
+    for i in range(0, 200):
+        vy = -1.5 - i * 0.02
+        lo, hi = -4.0, -0.3                               # the vx that lands it on the floor at DOWN_X, clear of the cube
+        for _ in range(40):
+            mid = (lo + hi) / 2
+            t, q, kind, nn = fly(top_c, (mid, vy))
+            if kind == "floor" and q[0] < DOWN_X:
+                lo = mid
+            else:
+                hi = mid
+        t, q, kind, nn = fly(top_c, (lo, vy))
+        pts = [flight(top_c, (lo, vy), u * 0.25) for u in range(int(t * 4) + 1)]
+        if kind == "floor" and abs(q[0] - DOWN_X) < 1.5 and min(rect_dist(z, BLOCK) for z in pts[6:]) >= RB + 2.0:
+            down = (lo, vy)
+            break
+    assert down, "no hop down clears the cube"
+    _, p4, _, v4 = hop(tr, top_c, down, "floor", "down", notes)
+    tr.events["land4"] = tr.t
+    s4 = floor_roll(tr, p4[0], v4[0] * 0.8, 16)
+    tr.events["settle"] = tr.t
+    tr.add(30, lambda u, s4=s4: (s4 + (HOME - s4) * smooth(u / 30), FLOOR_C), "roll")
     tr.events["home"] = tr.t
     L = math.ceil(tr.t) + HOME_WAIT - (T1 - PS)
     tr.rest((HOME, FLOOR_C), L - tr.t + 1)
@@ -278,20 +295,26 @@ def to_ball(tr, L):
             b.mode[f] = "rest"
         elif b.mode[f] == "rest":
             b.mode[f] = tr.at(f + 0.5)[1]
-    jump = math.floor(tr.events["hidden"])               # the drop's last whole frame, already out of sight
-    b.mode[jump] = "rest"                                 # put back out of sight: no turn
-    for key in ("land1", "land2", "land3"):
+    for key in ("land1", "land2", "land3", "land4"):
         b.squash(math.ceil(tr.events[key]), 0.05)
-    return b, jump
+    return b, None
 
 
 def spin(b, tr, L, jump):
-    theta = b.spin(r=16.9)
+    """The turn on every cycle frame. The loop must close on whole turns and nothing hides the ball any more, so the turn left over is
+    shared by its leftward flights (the falls back from tries 1 and 2, the hop down) as a little more spin in the air, anticlockwise, the
+    way they travel."""
+    theta = b.spin(r=17.678 * BALL_SCALE)
     turns = theta[L] - theta[PS]
-    left = round(turns / (2 * math.pi)) * 2 * math.pi - turns
-    h0, h1 = jump + 2, math.floor(tr.events["out"])
-    for t in range(h0, L + 1):
-        theta[t] += left * (smooth((t - h0) / (h1 - h0)) if t < h1 else 1.0)
+    left = math.floor(turns / (2 * math.pi)) * 2 * math.pi - turns          # anticlockwise: the way the leftward flights turn
+    air = [f for f in range(PS, L) if b.mode[f] == "air" and b.c[f + 1][0] < b.c[f][0]]
+    add, k = 0.0, 0
+    for t in range(PS, L + 1):
+        theta[t] += add
+        if t in air:
+            k += 1
+            add = left * k / len(air)
+    theta[L] = theta[L - 1] + (theta[L] - theta[L - 1])
     return theta, left
 
 
@@ -306,7 +329,7 @@ def ease(u):
 
 
 def phi_at(f):
-    return T_REST - 180.0 + 180.0 * ease((f - TURN[0]) / (TURN[1] - TURN[0]))
+    return T_REST - 270.0 + 270.0 * ease((f - TURN[0]) / (TURN[1] - TURN[0]))
 
 
 def faces_at(phi):
@@ -620,35 +643,33 @@ def doubles(values, frames):
     return keys
 
 
+def mix(c0, c1, u):
+    """Two colours (AARRGGBB) mixed, u of the way from c0 to c1."""
+    a = [int(c0[i:i + 2], 16) for i in range(0, 8, 2)]
+    b = [int(c1[i:i + 2], 16) for i in range(0, 8, 2)]
+    return "".join(f"{round(x + (y - x) * u):02X}" for x, y in zip(a, b))
+
+
 def colour_keys(fn, L):
-    """Hold keys for a colour that steps in cycle time: (intro keys, loop keys)."""
-    ik = [el("KeyFrameColor", value=fn(0), frame="0")]
-    prev = fn(0)
-    for f in range(T0, INTRO):
-        c = fn(f - T0)
-        if c != prev:
-            ik.append(el("KeyFrameColor", value=c, frame=str(f)))
-            prev = c
+    """Keys for a colour on cycle frames (it holds, or fades over a few frames): (intro keys, loop keys), linear, one at each frame where
+    it starts or stops changing."""
+    def keys(vals):
+        out = []
+        n = len(vals)
+        for f in range(n):
+            if f in (0, n - 1) or vals[f] != vals[f - 1] or vals[f] != vals[f + 1]:
+                out.append(el("KeyFrameColor", value=vals[f], interpolationType="linear", frame=str(f)))
+        return out
+    ivals = [fn(max(f - T0, 0)) for f in range(INTRO)]
     lp = L - PS
-    lk = [el("KeyFrameColor", value=fn(INTRO - 1 - T0), frame="0")]
-    prev = fn(INTRO - 1 - T0)
-    for k in range(1, lp + 1):
-        t = PS + ((INTRO - 1 - T0 - PS + k) % lp)
-        c = fn(t)
-        if c != prev:
-            lk.append(el("KeyFrameColor", value=c, frame=str(k)))
-            prev = c
-    if lk[-1].get("frame") != str(lp):
-        lk.append(el("KeyFrameColor", value=prev, frame=str(lp)))
-    assert lk[0].get("value") == lk[-1].get("value")
-    return ik, lk
+    lvals = [fn(PS + ((INTRO - 1 - T0 - PS + k) % lp)) for k in range(lp + 1)]
+    assert lvals[0] == lvals[-1] and ivals[-1] == lvals[0]
+    return keys(ivals), keys(lvals)
 
 
 def main(argv):
     write = "--write" in argv
     doc = Doc(SCENE)
-    if any(f'name="{ROOM} Cube"' in l for l in doc.lines):
-        raise SystemExit(f"{ROOM} already has the cube: run this on the file as round 2 left it (see the docstring)")
     tr, L, notes, (k1, k2) = ball_track()
     b, jump = to_ball(tr, L)
     theta, left = spin(b, tr, L, jump)
@@ -657,14 +678,22 @@ def main(argv):
     ev = {k: v for k, v in tr.events.items()}
     seam = INTRO - 1 - T0
     assert ev["land1"] + 16 < seam < ev["try2"], ("the loop's seam must fall in the pause after try 1", ev["land1"], ev["try2"])
-    # the bot's tiles and his cheer, in cycle frames
-    flips = []                                        # (tile, start, colour after)
-    hit1, hit2, land3, hid = round(ev["hit1"]), round(ev["hit2"]), round(ev["land3"]), round(ev["hidden"])
-    flips += [("left", hit1 + 4, GREY), ("middle", hit2 + 4, YELLOW)]
-    flips += [("left", land3 + 3, GREEN), ("middle", land3 + 11, GREEN), ("right", land3 + 19, GREEN)]
-    flips += [("left", hid + 6, TILES["left"]), ("middle", hid + 14, TILES["middle"]), ("right", hid + 22, TILES["right"])]
-    FLIP = 10
-    cheer = (land3 + 34, land3 + 52)
+    # the bot's tiles (lights: they change colour with a quick fade, they don't flip; round 4) and his cheer, in cycle frames
+    flips = []                                        # (tile, start of the fade, colour after)
+    hit1, hit2, land3, land4 = round(ev["hit1"]), round(ev["hit2"]), round(ev["land3"]), round(ev["land4"])
+    # each hit annoys him (round 5): his tiles' colours go round twice, quickly, then the try's colour comes up
+    state = [TILES["left"], TILES["middle"], TILES["right"]]
+    for h, side, colour in ((hit1, "left", GREY), (hit2, "middle", YELLOW)):
+        a, bb, c = state
+        for k, (x, y, z) in enumerate(((c, a, bb), (bb, c, a), (a, bb, c))):
+            flips += [("left", h + 2 + 6 * k, x), ("middle", h + 2 + 6 * k, y), ("right", h + 2 + 6 * k, z)]
+        flips.append((side, h + 20, colour))
+        state[("left", "middle", "right").index(side)] = colour
+    flips += [("left", land3 + 3, YELLOW), ("middle", land3 + 11, YELLOW), ("right", land3 + 19, YELLOW)]   # all yellow on top (round 6)
+    flips += [("left", land4 + 1, TILES["left"]), ("middle", land4 + 8, TILES["middle"]), ("right", land4 + 16, TILES["right"])]   # back to rest as it lands
+    FADE = 2                                          # quick, so the lights stay clean colours (no muddy in-betweens)
+    taps = [(land3 + 30 + 18 * k, land3 + 40 + 18 * k) for k in range(3)]     # three foot taps while the ball idles on top
+    cheer = taps[0]
     print(f"{ROOM}: cycle {L} frames, the loop repeats cycle {PS} to {L} ({(L - PS) / 60:.2f} s), the journey starts at intro frame {T0}")
     print(f"  cube: x {X0} to {X0 + W:.2f}, y {Y0} to {Y0 + H:.2f}, rest turn {T_REST:.1f} degrees, turns at {TURN[0] / 60:.2f} to {TURN[1] / 60:.2f} s")
     print(f"  bot: scale {K:.4f}, body x {BODY[0]:.1f} to {BODY[2]:.1f}, y {BODY[1]:.1f} to {BODY[3]:.1f}; head x {HEAD[0]:.1f}, antenna tips y "
@@ -673,16 +702,12 @@ def main(argv):
         print(f"  {name:11s} contact ({kind}) at cycle {t:6.1f}, timecode {tc(t):5.2f} s, centre ({p[0]:.1f}, {p[1]:.1f}); "
               f"its top y {top:.1f}; clear of the bot by {cb:.1f}")
     print(f"  contacts keep: try 1 {k1:.0%}, try 2 {k2:.0%}")
-    for k in ("try2", "try3", "off", "hidden", "out", "home"):
+    for k in ("try2", "try3", "off", "land4", "home"):
         print(f"  {k:7s} cycle {ev[k]:6.1f}  timecode {tc(ev[k]):5.2f} s")
-    print(f"  flips: " + ", ".join(f"{s} {tc(t0):.2f} s" for s, t0, _ in flips) + f"; cheer {tc(cheer[0]):.2f} s")
+    print(f"  tile fades: " + ", ".join(f"{s} {tc(t0):.2f} s" for s, t0, _ in flips) + f"; cheer {tc(cheer[0]):.2f} s")
     xs = [c[0] for c in b.c.values()]
     print(f"  ball x {min(xs) - R_VIS:.1f} to {max(xs) + R_VIS:.1f}; its highest point y {min(c[1] for c in b.c.values()) - R_VIS:.1f} "
-          f"(the bubble's lowest edge {BUBBLE_BOTTOM}); turn taken up out of sight {left:+.2f} rad")
-    hidden_ok = all(rect_dist(b.c[f], BLOCK) == 0 and b.c[f][1] - R_VIS >= Y0 for f in range(jump, math.floor(ev["out"]) + 1)) \
-        or all((X0 + R_VIS <= b.c[f][0] <= X0 + W - R_VIS and b.c[f][1] - R_VIS >= Y0 + CUBE_LINE / 2) for f in range(jump, math.floor(ev["out"]) + 1))
-    print(f"  hidden behind the cube from the drop to rolling out: {'yes' if hidden_ok else 'NO'}")
-    assert hidden_ok
+          f"(the bubble's lowest edge {BUBBLE_BOTTOM}); spin added to the hop down {left:+.2f} rad")
     if not write:
         return 0
 
@@ -694,42 +719,74 @@ def main(argv):
     for oid in ("9:12733", "9:12734"):
         o = doc._object(a, z, oid)
         plane_lines += doc.lines[o[0]:o[1] + 1]
-    for name in ("Blocks", "Bot"):
-        i = next(n for n, l in enumerate(doc.lines) if f'name="{ROOM} {name}"' in l and "<Node" in l)
-        del doc.lines[i:doc.end(i) + 1]
+    for name in ("Blocks", "Bot", "Cube"):                # round 2's blocks, or an earlier build of this one: the room is rebuilt
+        i = next((n for n, l in enumerate(doc.lines) if f'name="{ROOM} {name}"' in l and "<Node" in l), None)
+        if i is not None:
+            del doc.lines[i:doc.end(i) + 1]
     doc.clear(intro)
     doc.clear(loop)
     _, z = doc.anim(intro)
     doc.lines[z:z] = plane_lines
     # ---- the cube and the bot in the front plane: the bot first (over the cube), the cube behind him ----
     bd = Build(doc)
-    cube_node, face_ids = cube(bd, root)
+    import subprocess                                   # the letters' art, from round 2's blocks (commit 3596ae7)
+    old = subprocess.run(["git", "show", "3596ae7:YIG2026/rive/chapters/ch1/scene.rml"], cwd=RIVE_ROOT, capture_output=True, text=True, check=True)
+    cube_node, face_ids = cube(bd, ET.fromstring(old.stdout))
     bot = Bot(doc)
     bot_node = bot.build()
     i = doc.idx("9:12734")
     ind = len(doc.lines[i]) - len(doc.lines[i].lstrip()) + 4
     doc.lines[i + 1:i + 1] = ser(bot_node, ind) + ser(cube_node, ind)
     # ---- the ball (the size of cards 2 to 4 already), its pieces: tiles' flips, his cheer, the cube's give ----
+    i = doc.idx("9:12326")                                  # the ball's size for this scene
+    doc.lines[i] = re.sub(r'scaleY="[0-9.]+" scaleX="[0-9.]+"', f'scaleY="{num(BALL_SCALE)}" scaleX="{num(BALL_SCALE)}"', doc.lines[i])
     round_ball(doc, intro, ("9:12328", "9:12336", "9:12337", "9:12339"))
+    i = doc.idx("9:12342")                                  # its outline at the cube's weight (round 6): at 1.5 it was the scene's thinnest
+    doc.lines[i] = re.sub(r'thickness="[0-9.]+"', f'thickness="{num(CUBE_LINE)}"', doc.lines[i])   # line and drew unevenly beside 1.87 and 2.33
     spin_id = next(e.get("id") for e in root.iter("Node") if e.get("name") == f"{ROOM} Ball Spin")
 
-    def tile_scale(side):
-        mine = [t0 for s, t0, _ in flips if s == side]
-        return lambda t: next((abs(math.cos(math.pi * (t - t0) / FLIP)) for t0 in mine if t0 <= t <= t0 + FLIP), 1.0)
-
     def tile_colour(side):
+        """Its colour on a cycle frame: each change fades in over FADE frames from the colour before it."""
         mine = sorted((t0, c) for s, t0, c in flips if s == side)
-        rest = TILES[side]
-        return lambda t: next((c for t0, c in reversed(mine) if t >= t0 + FLIP / 2), rest) if t < hid + 40 else rest
+
+        def at(t):
+            now = TILES[side]
+            for t0, c in mine:
+                if t < t0:
+                    break
+                now = mix(now, c, min(1.0, (t - t0) / FADE))
+            return now
+        return at
 
     def toe(vid, y0, y1):
-        return lambda t: y1 if cheer[0] <= t < cheer[1] else y0
+        return lambda t: y1 if any(a <= t < z for a, z in taps) else y0
 
-    give = lambda t: 1.0 - dip(t, hit1, 0.008, 12)
-    pieces = [(bot.tile_shape[s], "scaleY", tile_scale(s), 1.0, None) for s in TILES]
-    pieces += [(vid, "y", toe(vid, y0, y1), y0, None) for vid, y0, y1 in bot.toe]
+    give = lambda t: 1.0 - dip(t, hit1, 0.008, 12) - dip(t, hit2, 0.006, 12)          # the cube gives a little on both hits
+
+    def antenna(sign, oid):
+        """His own Idle twitch (0.52 radians out and back over 17 frames) on each hit; in the intro, his drop's flick as well."""
+        flick = [(29, 0.0), (32, sign * 0.6457718), (46, 0.0)]
+        def drop(f):
+            g = f - BOT_IN
+            for (a, va), (z, vz) in zip(flick, flick[1:]):
+                if a <= g <= z:
+                    return va + (vz - va) * (g - a) / (z - a)
+            return 0.0
+        tw = lambda t: sum(sign * 0.5235988 * math.sin(math.pi * (t - h - 2) / 17) for h in (hit1, hit2) if 0 <= t - h - 2 <= 17)
+        return (bot.ids[oid], "rotation", tw, 0.0, drop)
+
+    pieces = [(vid, "y", toe(vid, y0, y1), y0, None) for vid, y0, y1 in bot.toe]
+    pieces += [antenna(1.0, "6:2671"), antenna(-1.0, "6:2681")]
+    # he rides the cube's give (round 6): his node moves with the cube's top under his feet, and his body tilts back a little and settles
+    pieces.append((bot.ids["6:2669"], "x", lambda t: BOT_X + (BOT_CX - (X0 + W)) * (give(t) - 1.0), BOT_X, None))
+
+    def body_drop(f):                                       # his drop's own body tilt, as in the Wordle Bot file
+        g = f - BOT_IN
+        return 0.06981317 if g <= 33 else (0.06981317 * (35 - g) / 2 if g <= 35 else 0.0)
+    lean = lambda t: sum(-c234.spring_fade(t - h, a, down=3, tau=8.0, period=16.0, T=34.0) for h, a in ((hit1, 0.045), (hit2, 0.035)))
+    pieces.append((bot.ids["6:2670"], "rotation", lean, 0.0, body_drop))
     pieces += [(cube_node.get("id"), "scaleX", give, 1.0, None)]
-    c234.BALL_CENTER = 16.78
+    c234.BALL_CENTER = (17.572 - 0.096) * BALL_SCALE
     ids = dict(ball="9:12325", scale="9:12327", spin=spin_id)
     pre = lambda f: (b.c[0][0], b.c[0][1], 1.0, 1.0)
     emit_room(doc, ROOM, b, theta, T0, ids, pre, pieces, Ps=PS)
@@ -740,7 +797,8 @@ def main(argv):
         ss = {f: faces_at(phi_at(f))[idx][1] for f in range(INTRO)}
         i_keys += [(fid, "x", doubles(xs, range(INTRO))), (fid, "scaleX", doubles(ss, range(INTRO)))]
     drop = {("6:2669", "y"): lambda v: BOT_Y0 + (v + 105.0) * (BOT_Y - BOT_Y0) / (4.65 + 105.0)}
-    i_keys += bot.keyed(bot.anim("Intro"), BOT_IN, drop)
+    ants = {(bot.ids[o], "rotation") for o in ("6:2671", "6:2681", "6:2670")}   # the antennas' flick and the body's tilt are pieces above
+    i_keys += [k for k in bot.keyed(bot.anim("Intro"), BOT_IN, drop) if (k[0], k[1]) not in ants]
     for side in TILES:
         ik, lk = colour_keys(tile_colour(side), L)
         i_keys.append((bot.tile_colour[side], "colorValue", ik))
