@@ -92,6 +92,12 @@ SETTLE, GLANCE, GLANCE_N, GLANCE_HOLD = 8, 8.0, 14, 26     # frames, px toward h
 HOP_V = -2.0                                               # the tiny hop: 5 px high at 0.40 (v^2 / 2g), 10 frames
 TAP_N = 3
 AFTER_HOP = 12
+HOLD_AFTER_TAPS = 24                                       # note 3 (2026-11-04 14:25): it stays 0.4 s longer once his foot has stopped tapping
+BLINKS = 3                                                 # note 2: his lights go green, then blink off and on this many times
+BLINK_HALF = 6                                             # frames lit, frames dark
+DOT_LANDING = 88.0                                         # note 1: the dot looks up at him; degrees above the +x axis when it lands on top
+                                                           # (the glance's 8 px roll turns it clockwise 22 degrees, to about 65, toward his head)
+HIGHLIGHT_DEG = 44.5                                       # where the art draws the dot at no turn: up and to the right of centre
 HIDDEN, N_OUT, HOME_WAIT = 54, 46, 46
 E_N, E_T = 0.80, 0.95                                      # restitution along the contact normal, and along the surface
 BUBBLE_BOTTOM = 365.0                                      # the speech bubble's lowest edge (Figma 367, in artboard units on the phone)
@@ -263,7 +269,7 @@ def ball_track():
     tr.rest(near, GLANCE_HOLD)
     tr.add(GLANCE_N, lambda u, a=near[0]: (a - GLANCE * smooth(u / GLANCE_N), top_c[1]), "roll")
     taps_end = tr.events["look"] + 4 + 27 + 18 * (TAP_N - 1) + 10
-    tr.rest(top_c, max(1.0, taps_end + 3 - tr.t))
+    tr.rest(top_c, max(1.0, taps_end + 3 + HOLD_AFTER_TAPS - tr.t))
     tr.events["hop"] = tr.t
     _, q, _, _ = hop(tr, top_c, (0.0, HOP_V), "top", "pleased hop", notes)
     tr.events["land5"] = tr.t
@@ -318,20 +324,29 @@ def to_ball(tr, L):
 
 
 def spin(b, tr, L, jump):
-    """The turn on every cycle frame. The loop must close on whole turns and nothing hides the ball any more, so the turn left over is
-    shared by its leftward flights (the falls back from tries 1 and 2, the hop down) as a little more spin in the air, anticlockwise, the
-    way they travel."""
-    theta = b.spin(r=17.678 * BALL_SCALE)
-    turns = theta[L] - theta[PS]
-    left = math.floor(turns / (2 * math.pi)) * 2 * math.pi - turns          # anticlockwise: the way the leftward flights turn
-    air = [f for f in range(PS, L) if b.mode[f] == "air" and b.c[f + 1][0] < b.c[f][0]]
-    add, k = 0.0, 0
+    """The turn on every cycle frame. Try 3's flight gets the extra spin that puts the dot where DOT_LANDING says when it lands (round 8,
+    note 1: it looks up at him). The loop must still close on whole turns, so the turn left over goes into the hop down, the one leftward
+    flight after that, the short way round (the hop down is the only flight whose spin nobody has asked about)."""
+    base = b.spin(r=17.678 * BALL_SCALE)
+    f0, f1 = math.ceil(tr.events["try3"]), math.ceil(tr.events["land3"])
+    flight = [f for f in range(f0, f1) if b.mode[f] == "air"]
+    want = math.radians(HIGHLIGHT_DEG - DOT_LANDING)                       # the turn (clockwise positive) that puts the dot there
+    extra = (want - base[f1] + math.pi) % (2 * math.pi) - math.pi          # the shortest extra turn on try 3's flight
+    theta = list(base)
     for t in range(PS, L + 1):
+        theta[t] += extra * min(1.0, sum(1 for f in flight if f < t) / len(flight))
+    rest = (theta[L] - theta[PS]) % (2 * math.pi)                          # what the loop is short of whole turns, 0 to 2 pi
+    left = -rest if rest <= math.pi else 2 * math.pi - rest                # the short way round (positive = clockwise)
+    air = [f for f in range(f1, L) if b.mode[f] == "air" and b.c[f + 1][0] < b.c[f][0]]
+    add, k = 0.0, 0
+    for t in range(f1, L + 1):
         theta[t] += add
         if t in air:
             k += 1
             add = left * k / len(air)
     theta[L] = theta[L - 1] + (theta[L] - theta[L - 1])
+    print(f"  dot: try 3's flight turns {math.degrees(extra):+.0f} degrees more, so it looks up at {HIGHLIGHT_DEG - math.degrees(theta[f1]):.1f} degrees "
+          f"as it lands; the hop down turns {math.degrees(left):+.0f} degrees to close the loop")
     return theta, left
 
 
@@ -732,7 +747,11 @@ def main(argv):
         flips.append((side, h + 20, colour))
         state[("left", "middle", "right").index(side)] = colour
     look = round(ev["look"])                          # his tiles answer its glance (round 7): all yellow while it looks at him
-    flips += [("left", look + 4, YELLOW), ("middle", look + 12, YELLOW), ("right", look + 20, YELLOW)]
+    flips += [("left", look + 4, GREEN), ("middle", look + 12, GREEN), ("right", look + 20, GREEN)]   # round 8: green, then they blink
+    for k in range(BLINKS):
+        t_off = look + 30 + 2 * BLINK_HALF * k
+        flips += [(s, t_off, GREY) for s in ("left", "middle", "right")]
+        flips += [(s, t_off + BLINK_HALF, GREEN) for s in ("left", "middle", "right")]
     flips += [("left", land4 + 1, TILES["left"]), ("middle", land4 + 8, TILES["middle"]), ("right", land4 + 16, TILES["right"])]   # back to rest as it lands
     FADE = 2                                          # quick, so the lights stay clean colours (no muddy in-betweens)
     taps = [(look + 31 + 18 * k, look + 41 + 18 * k) for k in range(TAP_N)]   # three foot taps follow the tiles, as it rolls back
