@@ -1,52 +1,122 @@
-"""The Mini: the ball comes out of the upper cube (an open box: its dark top is the inside) and goes behind the box with the lid.
+"""The Mini (Demetre's note 5, 2026-11-04): every piece 15% smaller, and a longer loop that plays hide and seek with two boxes.
 
-The cube faces are all in the Front Plane, drawn above the ball, and the dark tops in the Floor Plane below it, so a ball low in the
-upper cube is hidden by its front face and a ball rising out of it shows over its dark inside; no clip is needed. The box with the lid
-reaches x 987, past the safe area, so the ball never goes in it: it stops behind it, on the floor line, where its faces hide it.
+Scale: each of the room's planes holds its pieces in a pivot at (747.5, 711.5), the room's middle on the floor line, scaled 0.85, so
+everything still stands on the floor line; the ball is 1.7 (was 2). The cubes that drop in fall 800/0.85 in their own space, so on
+screen they still drop 800 from above the artboard on the same timing and land where they now stand; their strokes are 1/0.85 thicker
+in their own space, so the lines keep the weight they have in every other room. The lockup is not touched.
 
-The journey: as soon as the upper cube's top has landed (1.83 s) the ball peeks up out of it and drops back in (the lockup is above and
-to the left, so it stays clear of it); once the lockup has gone it jumps out over the box's back-left corner, hops along the floor line,
-bounces off the side of the left box (which gives a little), rolls right under the upper cube and comes to rest behind the box with the
-lid. Out of sight it is put back in the upper cube, and the cycle starts again.
+Hiding: the cube faces are in the Front Plane, drawn above the ball, and the boxes' dark insides in the Floor Plane, below it. So a
+ball low in a box is hidden by the box's front, and a ball rising out of it shows over its dark inside; the room's own drawing order is
+the mask, cut exactly to each box (no clip shape is needed, so nothing can cut the ball anywhere else).
+
+The journey (times on a first visit, from the scene being set):
+  1.83 s  as soon as the upper cube's dark top has landed, the ball peeks up out of the upper cube (an open box) and drops back in;
+          the lockup is above it, so it stays well below it
+  3.03 s  once the lockup has gone it jumps out over the box's back-left corner, hops along the floor line, bounces off the side of the
+          left box (which gives a little), hops and rolls right under the upper cube and stops behind the box with the lid
+  then    out of sight it drops into that box; the lid slides open, the ball pops straight up out of it and falls back in (caught: a
+          box's inside is soft), and the lid slides shut
+  then    out of sight it goes back to the upper cube, and after a pause peeks again
+The upper cube sits flush on the lid box's front-left, so a ball leaving the lid box can't go left over it (its edge would be 4 px
+from the cube's side until it had risen past the cube's top): it goes straight up and down.
 """
 import math
+import re
 
-from common import INTRO, BallArt, Cycle, dip, emit, plane_x, prepare_ball
+from common import CENTER_IN_SCALE, BallArt, Cycle, _set_attrs, dip, emit, plane_x, prepare_ball
 
 ROOM = "The Mini"
 T0 = 110                                   # 1.83 s: the upper cube's top lands at 1.50 s and its squash is over at 1.82 s
-IN_BOX = (843.0, 620.0)                    # the ball's centre low in the upper cube: wholly behind its front face
-PEEK_VY = -7.75                            # rises 75 px: its top shows over the box, well below the lockup
-JUMP_AT = 72                               # cycle frame of the jump out: it reaches the lockup's height after the lockup is gone (3.20 s)
-JUMP = (-2.1, -13.5)                       # over the box's back-left corner (757, 524) with 38 px to spare (R 35.4); top at y 357
-REST_X = 895.0                             # behind the box with the lid (its right edge at 930, inside the safe area)
-PAUSE = 30                                 # frames back in the upper cube before the next peek
+A = (747.5, 711.5)                         # the scale's anchor: the room's middle, on the floor line
+K = 0.85
+PLANES = {"Front": "9:5695", "Floor": "9:5694", "Wall": "9:5697"}
+CUBES = ("9:5206", "9:5208", "9:5210", "9:5212")    # the four drop-ins (their Art offsets are -760)
+BALL_SCALE = 1.7
+IN_UP = (829.0, 632.0)                     # low in the upper cube (front 788.5 to 870, 590 to 671): wholly behind its front face
+IN_LID = (904.0, 712.0)                    # low in the box with the lid (front 870 to 951, 671 to 753); right edge 934, in the safe area
+PEEK_VY = -7.75                            # the peek rises 75 px (its top at y 527)
+JUMP_AT = 72                               # the jump out: it reaches the lockup's height at 3.32 s, after the lockup has gone (3.20 s)
+JUMP = (-2.1, -11.9)                       # over the upper cube's back-left corner (755.6, 552.1) with 32 px to spare (R 30.05); top at y 425
+REST_X = 895.0                             # behind the box with the lid, on the floor line
+LID_OPEN = 20                              # frames for the lid to slide open (as the old loop did), and 18 to slide shut
+POP_VY = -11.0                             # the pop out of the lid box rises 151 px (its top at y 531)
+PAUSE = 40                                 # frames back in the upper cube before the next peek
+LID_REST, LID_OUT = (920.177, 641.987), (958.5, 686.5)   # the lid's own position shut and slid open (its space; as the old loop had)
 FLOOR = 711.5
-LEFT_BOX_X = 637.0                         # the left box's right side
+LEFT_BOX_X = 637.0                         # the left box's right side (its own space)
+
+
+def S(x, y):
+    return (A[0] + K * (x - A[0]), A[1] + K * (y - A[1]))
+
+
+def scale_room(doc, scene):
+    """The planes' pieces into 0.85 pivots, the drop-ins' falls and the strokes compensated, the ball at 1.7."""
+    root = scene.root
+    byid = {e.get("id"): e for e in root.iter() if e.get("id")}
+    for name, pid in PLANES.items():
+        kids = [c for c in byid[pid] if c.tag in ("Node", "Shape")]
+        if not kids:
+            continue
+        piv, _ = doc.wrap_run(kids[0].get("id"), kids[-1].get("id"), f"{ROOM} {name} Scale", *A)
+        _set_attrs(doc, piv, {"scaleX": K, "scaleY": K})
+    a, b = doc.anim(f"{ROOM} Intro")
+    for cid in CUBES:                       # the first y key of each drop: as far above its rest on screen as before, so /K in its own space
+        i = next(j for j in range(a, b) if f'objectId="{cid}"' in doc.lines[j])
+        e = doc.end(i)
+        j = next(j for j in range(i, e) if 'property="y"' in doc.lines[j])
+        je = doc.end(j)
+        ks = [m for m in range(j, je) if "<KeyFrameDouble" in doc.lines[m]]
+        val = lambda m: float(re.search(r' value="([^"]+)"', doc.lines[m]).group(1)) if ' value="' in doc.lines[m] else 0.0
+        v0, v1 = val(ks[0]), val(ks[-1])             # the start, and where it lands
+        doc.lines[ks[0]] = re.sub(r' value="[^"]+"', f' value="{v1 + (v0 - v1) / K:.4f}"', doc.lines[ks[0]])
+    strokes = [s for pid in PLANES.values() for s in byid[pid].iter("Stroke") if s.get("transformAffectsStroke") != "false"]
+    sids = {s.get("id") for s in strokes}
+    for s in strokes:
+        _set_attrs(doc, s.get("id"), {"thickness": float(s.get("thickness", 1)) / K})
+    for an in ("Intro", "Loop", "Waiting", "Built"):
+        a, b = doc.anim(f"{ROOM} {an}")
+        j = a
+        while j < b:
+            m = re.search(r'objectId="([^"]+)"', doc.lines[j])
+            if m and m.group(1) in sids and "<KeyedObject" in doc.lines[j]:
+                e = doc.end(j)
+                for q in range(j, e):
+                    v = re.search(r' value="([^"]+)"', doc.lines[q])
+                    if "<KeyFrameDouble" in doc.lines[q] and v:
+                        doc.lines[q] = doc.lines[q].replace(v.group(0), f' value="{float(v.group(1)) / K:.4f}"')
+                j = e
+            j += 1
+    return len(sids)
 
 
 def build(doc, scene, sheet):
     art = BallArt(scene, ROOM)
+    n_strokes = scale_room(doc, scene)
+    _set_attrs(doc, art.b01, {"scaleX": BALL_SCALE, "scaleY": BALL_SCALE})
+    art.k = BALL_SCALE
+    art.R, art.Rc = 17.678 * art.k, 17.2 * art.k
+    sx, sy = -0.072021484, 0.096008301
+    art.dc = (art.ox + art.k * (sx + CENTER_IN_SCALE[0]), art.oy + art.k * (sy + CENTER_IN_SCALE[1]))
     spin = prepare_ball(doc, art)
-    doc.drop_object(f"{ROOM} Loop", "9:5176")          # the old loop's lid slide (the lid stays shut now)
     Rc = art.Rc
     fy = FLOOR - Rc
-
-    # the peek: straight up and back down into the box (caught: the box's inside is soft), during the lockup and well below it
-    n_peek = round(2 * -PEEK_VY / 0.40)
     cyc_frames = {}
-    for f in range(n_peek + 1):
-        cyc_frames[f] = ((IN_BOX[0], IN_BOX[1] + PEEK_VY * f + 0.20 * f * f), "air" if 0 < f < n_peek else "hidden")
-    for f in range(n_peek + 1, JUMP_AT):
-        cyc_frames[f] = (IN_BOX, "hidden")
 
-    # the jump out and the hops (journey below: flights at 0.40, the first floor bounce keeping 74% and the rest 71%, the left box's side 70% sideways), until a
-    # landing turns into a roll; from there it rolls right and friction stops it behind the box with the lid
-    fr, hits, (t_r, x_r, v_r) = journey(IN_BOX, JUMP, fy, LEFT_BOX_X + Rc, e_floor=0.71, e_wall=0.70, e_first=0.74)
+    # 1. the peek out of the upper cube, and the wait before the jump
+    n_peek = round(2 * -PEEK_VY / 0.40)
+    for f in range(n_peek + 1):
+        cyc_frames[f] = ((IN_UP[0], IN_UP[1] + PEEK_VY * f + 0.20 * f * f), "air" if 0 < f < n_peek else "hidden")
+    for f in range(n_peek + 1, JUMP_AT):
+        cyc_frames[f] = (IN_UP, "hidden")
+
+    # 2. the jump out, the hops and the left box (journey below), then a roll right that friction stops behind the box with the lid
+    wall_x = S(LEFT_BOX_X, 0)[0] + Rc
+    fr, hits, (t_r, x_r, v_r) = journey(IN_UP, JUMP, fy, wall_x, e_floor=0.71, e_wall=0.70, e_first=0.74)
     t_rf = math.ceil(t_r)
     for f in range(t_rf):
         cyc_frames[JUMP_AT + f] = ((fr[f][0], fr[f][1]), "air")
-    cyc_frames[JUMP_AT] = (IN_BOX, "hidden")
+    cyc_frames[JUMP_AT] = (IN_UP, "hidden")
     x0 = x_r + v_r * (t_rf - t_r)
     a = v_r * v_r / (2 * (REST_X - x0))
     t_stop = v_r / a
@@ -58,12 +128,26 @@ def build(doc, scene, sheet):
         u += 1
     f_rest = f
     cyc_frames[f_rest] = ((REST_X, fy), "rest")
-    f_in = f_rest + 1                                   # out of sight: back into the upper cube
-    L = f_in + PAUSE
+
+    # 3. out of sight into the box with the lid; the lid slides open, the ball pops up and falls back in, the lid slides shut
+    f_lid = f_rest + 6
+    f_pop = f_lid + 16
+    n_pop = round(2 * -POP_VY / 0.40)
+    for g in range(f_rest + 1, f_pop):
+        cyc_frames[g] = (IN_LID, "hidden")
+    for u in range(n_pop + 1):
+        cyc_frames[f_pop + u] = ((IN_LID[0], IN_LID[1] + POP_VY * u + 0.20 * u * u), "air" if 0 < u < n_pop else "hidden")
+    f_shut = f_pop + n_pop + 4
+    f_shut_end = f_shut + 18
+    for g in range(f_pop + n_pop + 1, f_shut_end + 1):
+        cyc_frames[g] = (IN_LID, "hidden")
+
+    # 4. out of sight back to the upper cube, and the pause before the next peek
+    L = f_shut_end + 1 + PAUSE
     cyc = Cycle(L)
     for g in range(L + 1):
-        cyc.put(g, *(cyc_frames[g] if g in cyc_frames else (IN_BOX, "hidden")))
-    cyc.put(L, IN_BOX, "hidden")
+        cyc.put(g, *(cyc_frames[g] if g in cyc_frames else (IN_UP, "hidden")))
+    cyc.put(L, IN_UP, "hidden")
 
     contacts = [(JUMP_AT + t, name, None, vout, vin) for t, name, vin, vout in hits]
     for t, name, p, vout, vin in contacts:
@@ -90,23 +174,41 @@ def build(doc, scene, sheet):
         th.append(th[-1] + w_now)
     total = th[-1]
     want = round(total / (2 * math.pi)) * 2 * math.pi
-    for g in range(f_in, L + 1):
-        th[g] += (want - total) * min(1.0, (g - f_in) / 20)
+    for g in range(f_rest + 1, L + 1):
+        th[g] += (want - total) * min(1.0, (g - f_rest - 1) / 20)
 
-    # the left box gives a little where the ball hits it
+    # pieces: the left box gives a little where the ball hits it; the lid slides open and shut around the pop
     t_w = next(t for t, name, *_ in contacts if name == "left box")
     box_x = lambda g: -174.91251 + dip(g - t_w, -2.0, 16)
 
+    def lid(g, i):
+        if f_lid <= g < f_lid + LID_OPEN:
+            s = smooth((g - f_lid) / LID_OPEN)
+        elif f_lid + LID_OPEN <= g < f_shut:
+            s = 1.0
+        elif f_shut <= g < f_shut_end:
+            s = 1 - smooth((g - f_shut) / 18)
+        else:
+            s = 0.0
+        return LID_REST[i] + (LID_OUT[i] - LID_REST[i]) * s
     px = plane_x(scene, sheet, ROOM, "Front")
 
     def pre(f):
-        return (IN_BOX[0] + px(f), IN_BOX[1]), 1.0, 1.0
+        return (IN_UP[0] + px(f), IN_UP[1]), 1.0, 1.0
+    pieces = [("9:5276", "x", box_x, None), ("9:5176", "x", lambda g: lid(g, 0), None), ("9:5176", "y", lambda g: lid(g, 1), None)]
     with colour_keys_kept(doc, ROOM):
-        emit(doc, art, spin, cyc, th, T0, pre, [("9:5276", "x", box_x, None)])
+        emit(doc, art, spin, cyc, th, T0, pre, pieces)
     sec = lambda g: f"{(T0 + g) / 60:.2f} s"
     times = ", ".join(f"{name} {sec(t)}" for t, name, *_ in contacts)
-    return (f"{ROOM}: peeks out of the upper cube {sec(0)} to {sec(n_peek)}; jumps out {sec(JUMP_AT)}; {times}; rolls right and stops "
-            f"behind the box with the lid {sec(f_rest)}; back in the upper cube (unseen), peeks again {PAUSE / 60:.2f} s later; loop {L / 60:.2f} s")
+    return (f"{ROOM}: scaled {K} about {A} ({n_strokes} strokes kept at their weight), ball {BALL_SCALE}; peeks out of the upper cube "
+            f"{sec(0)} to {sec(n_peek)}; jumps out {sec(JUMP_AT)}; {times}; rolls right and stops behind the lid box {sec(f_rest)}; lid "
+            f"opens {sec(f_lid)}, pops out {sec(f_pop)}, back in {sec(f_pop + n_pop)}, lid shut {sec(f_shut_end)}; peeks again "
+            f"{(L - f_shut_end) / 60:.2f} s after; loop {L / 60:.2f} s")
+
+
+def smooth(t):
+    t = min(1.0, max(0.0, t))
+    return t * t * (3 - 2 * t)
 
 
 class colour_keys_kept:

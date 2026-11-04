@@ -216,6 +216,9 @@ def emit(doc, art, spin_id, cyc, theta, T0, pre, pieces):
         lsx[k], lsy[k] = cyc.sx[idx(k)], cyc.sy[idx(k)]
         lth[k] = theta[idx(k)] + wraps(k) * turns
     doc.set_duration(loop, L + 1)
+    # the old loop's Editor work area (workStart/workEnd) would make the Finesse panel's timing read the old length; it is not in use
+    li, _ = doc.anim(loop)
+    doc.lines[li] = re.sub(r' work(Start|End)="[^"]*"', "", doc.lines[li])
     for oid, prop, i_ser, l_ser in ((art.id, "x", ix, lx), (art.id, "y", iy, ly), (art.scale, "scaleX", isx, lsx),
                                     (art.scale, "scaleY", isy, lsy), (spin_id, "rotation", ith, lth)):
         doc.set_prop(intro, oid, prop, bake(i_ser, fr_i))

@@ -20,7 +20,7 @@ What had to be fitted, and nothing else:
 import math
 import xml.etree.ElementTree as ET
 
-from common import INTRO, RIVE_DIR, num, rebuild_built
+from common import G, INTRO, RIVE_DIR, num, rebuild_built
 
 SRC = RIVE_DIR / ".cache/scratch.nosync/ch2/illustrator-pull/scene.rml"     # a read-only pull of their file
 ROOM = "Shelf"
@@ -31,7 +31,7 @@ T0 = 115                                 # their frame 0 on this intro frame: th
                                          # 22 frames later than their own start, so the door and the roll-out have time (their frame 60
                                          # is where the ball comes to rest on the floor, then c2s1 carries on as drawn)
 DOOR_OPEN = (10, 34)                     # the door swings open to its drawn pose (power2.out)
-DOOR_CLOSE = (330, 360)                  # and shuts again in the quiet end, with the ball out of sight, so the next cycle opens it again
+DOOR_CLOSE = (194, 218)                  # and swings shut again (the same swing, reversed) when the ball bounces on the cat shelf above it
 ROLL = (20, 60)                          # the ball rolls from inside the doorway (hidden) to their rest spot, slowing evenly to a stop
 WAIT_X = 540.0                           # where it waits, inside the doorway behind the closed door (room x; hidden by the doorway mask)
 BACK = 300                               # out of sight in the trophy: the ball steps back to its start (behind the doorway) after this
@@ -476,6 +476,8 @@ def build(doc, scene, sheet):
     sc_kp = props_of(scale_anim, "1:13658")["scaleX"]
     sq = {k: props_of(squash_anim, k) for k in ("1:13668", "1:13669", "1:13671")}
     size = {f: value_at(sc_kp, (jy(f) + 1) / 2 * 60) for f in range(L + 1)}
+    for f in range(ROLL[1]):                                      # it rolls out at the size it has on reaching the floor (their frame 60)
+        size[f] = size[ROLL[1]]
     def squash(f):
         t = (jx(f) + 1) / 2 * 60
         top = value_at(sq["1:13668"]["y"], t)
@@ -670,8 +672,13 @@ def build(doc, scene, sheet):
     # ---- the loop and the join: the loop is their 420 frames; the intro holds what the loop starts on --------------------------------
     # ---- the seam (their frame 420 back to 0): out of sight, the ball, its size and squash go back to where the cycle starts (the
     # step happens in the trophy, the trophy's slot switches off once the ball is behind the doorway); in sight, the pupils ease back
-    for oid, prop in (("1:1245", "x"), ("1:1245", "y"), ("1:1245", "scaleX"), ("1:1245", "scaleY"), (rmap["1:20599"], "x"), (rmap["1:20599"], "y")):
+    # the position steps (hold keys) on BACK + 1, while the trophy slot still hides the ball; the size steps a frame later, once the
+    # ball is behind the doorway mask, because a size baked frame by frame eases over the frame in between, and that in-between must
+    # never be seen in the trophy (a display faster than 60 fps samples it)
+    for oid, prop in (("1:1245", "x"), ("1:1245", "y"), (rmap["1:20599"], "x"), (rmap["1:20599"], "y")):
         T.hidden_return(oid, prop, BACK)
+    for prop in ("scaleX", "scaleY"):
+        T.hidden_return("1:1245", prop, BACK + 1)
     for oid in ("1:1710", "1:1693"):
         for prop in ("x", "y"):
             T.ease_back(oid, prop, PUPILS_BACK)
@@ -702,7 +709,7 @@ def door_theta(f):
     if f < c:
         return THETA0
     u = (f - c) / (d - c)
-    return THETA0 * (1 - (u * u * (3 - 2 * u)))
+    return THETA0 * (1 - u * u)                                   # the opening swing played backwards
 
 
 def door_map(X, Y, th):
@@ -777,6 +784,25 @@ def pieces_react(doc, scene, byid, T, slot_vmap, bm, size, notes):
                 for oid in ids:
                     T.frames(oid, q, d)
     notes.append(f"door shut until {DOOR_OPEN[0]}, open {DOOR_OPEN[0]}-{DOOR_OPEN[1]}, shuts {DOOR_CLOSE[0]}-{DOOR_CLOSE[1]} (cycle frames)")
+
+    # the slam: the umbrella in the bin next to the door jumps a little as the door shuts (4 px at the ball's gravity, then one small
+    # rebound of 1 px), with a slight tilt, back at rest a quarter second later
+    slam = DOOR_CLOSE[1]
+    um = byid["1:1151"]
+    uy0, ur0 = float(um.get("y", 0)), float(um.get("rotation", 0))
+    def hop(u):
+        out = 0.0
+        t = u
+        for h in (4.0, 1.0):
+            v0 = math.sqrt(2 * G * h)
+            dur = 2 * v0 / G
+            if 0 <= t < dur:
+                return -(v0 * t - 0.5 * G * t * t)
+            t -= dur
+        return out
+    T.frames("1:1151", "y", {f: uy0 + hop(f - slam) for f in range(L + 1)})
+    T.frames("1:1151", "rotation", {f: ur0 + (0.02 * math.sin(math.pi * (f - slam) / 9) ** 2 if 0 <= f - slam < 9 else 0.0) for f in range(L + 1)})
+    notes.append(f"umbrella hop from cycle {slam}")
 
     # ---- note 3: the trophy shakes a little as the ball drops in, about its base, dying away fast (each swing 0.55 of the one before)
     base = pts_world(scene, byid, "1:1980")
