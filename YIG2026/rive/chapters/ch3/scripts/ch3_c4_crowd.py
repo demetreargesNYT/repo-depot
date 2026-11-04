@@ -1,11 +1,17 @@
 """Chapter 4: when reveal turns true, a few more balls join the player's, building towards End's pile (Demetre, 2026-11-03).
 
     python3 chapters/ch3/scripts/ch3_c4_crowd.py --write      once, on the scene as committed in 9871650
+    python3 chapters/ch3/scripts/ch3_c4_crowd.py --retime     rewrites the crowd's keys (Away, Wait, Arrive, Idle, Leave) in place
+
+Retimed 2026-11-04 (Demetre: the arrival took 6.6 s; shorter, with a tighter stagger, keeping the bounce rule): the third ball no
+longer falls from the top; it comes in first, from off the right edge on a low arc (its top at y 515, outside the phone frame), and
+bounces five times keeping 70 percent of its speed (the floor takes 15 percent of its drift each time), smaller as it moves left,
+then rolls on to rest. The rolls take 1.25 s, and the four start 0, 0.17, 0.42 and 1.0 s apart.
 
 Four standard balls (Chapter 1 card 3's art and dot) in End's red, 0.7 to 1.1 times, drawn in front of the stack in its floor plane.
 A layer of their own, "Chapter 4 Crowd", reads reveal (engineering changes nothing):
 - reveal turns true on chapter-4: they wait for the wall's fade (1.45 s), then come in one at a time: one rolls in from the left, one
-  from the right, one drops from above just outside the phone frame (so it never crosses the copy) and bounces down, keeping 70
+  from the right, one bounces in from the right on a low arc outside the phone frame (so it never crosses the copy), keeping 70
   percent of its speed each time, then rolls into place; the last, the smallest, rolls in from the left and taps the first, which
   gives a little and settles. They settle at the base of the stack at the frame's sides (card 3's video covers the centre).
 - settled, they idle: small hops at different times, never together; the 6 s loop ends on its first pose.
@@ -32,8 +38,11 @@ VM = "1:14"
 SCENE_P, DIR_P, REVEAL_P, START_P = "1:2713", "1:2855", "1:3310", "1:3400"
 CH4, BACK = "1:9102", "1:9201"
 # name, size, rest x, how it comes in, when it starts (frames after the wait), which way it leaves
-BALLS = [("A", 0.7, None, "left", 75, "left"), ("B", 1.0, 614.0, "left", 0, "left"),
-         ("C", 1.1, 878.0, "right", 25, "right"), ("D", 0.8, 914.0, "drop", 45, "right")]
+BALLS = [("A", 0.7, None, "left", 60, "left"), ("B", 1.0, 614.0, "left", 10, "left"),
+         ("C", 1.1, 878.0, "right", 25, "right"), ("D", 0.8, 914.0, "drop", 0, "right")]
+ROLL_T, A_T = 75, 85                                     # frames: a roll in; the last ball's roll to its tap
+# the bounce-in: where it starts (off the right edge), its speed, the share a bounce keeps, the drift a bounce keeps, when it rolls
+DROP_X, DROP_Y, DROP_VX, DROP_VY, DROP_E, DROP_FR, DROP_STOP = 1520.0, 560.0, -4.75, -6.0, 0.7, 0.85, 2.0
 HOPS = {"A": [(35, 5.0)], "B": [(170, 7.0)], "C": [(95, 8.0), (290, 6.0)], "D": [(230, 5.0)]}
 
 
@@ -57,7 +66,7 @@ def build():
         if how in ("left", "right"):
             if name == "A":
                 contact_x = 614.0 - rB - rA
-                T = 110
+                T = A_T
                 fn = roll_in(-30.0, contact_x, start, T, v_end=1.2)
                 meet = start + T
                 for f in range(0, meet + 60):
@@ -69,13 +78,13 @@ def build():
                 tapB = meet
             else:
                 x0 = -30.0 if how == "left" else 1525.0
-                fn = roll_in(x0, rest, start, 110)
-                for f in range(0, start + 170):
+                fn = roll_in(x0, rest, start, ROLL_T)
+                for f in range(0, start + ROLL_T + 2):
                     xs[f] = fn(f)
             for f in xs:
                 ys[f] = FLOOR
-        else:                                                   # drops from above, outside the phone frame, and bounces down
-            x, y, vx, vy = 1028.0, -2.0, -0.32, 0.0
+        else:                                                   # bounces in from off the right edge, outside the phone frame
+            x, y, vx, vy = DROP_X, DROP_Y, DROP_VX, DROP_VY
             f = start
             xs[f], ys[f] = x, y
             for f0 in range(start):
@@ -88,17 +97,18 @@ def build():
                 y += vy
                 if y >= FLOOR:
                     y = FLOOR
-                    vy = -0.7 * vy
-                    vx *= 0.95
+                    sqs[f] = min(0.10, 0.006 * abs(vy))
+                    vy = -DROP_E * vy
+                    vx *= DROP_FR
                     bounces += 1
-                    sqs[f] = min(0.10, 0.006 * abs(vy / 0.7))
-                    if abs(vy) < 2.0:
+                    if abs(vy) < DROP_STOP:
                         break
                 xs[f], ys[f] = x, y
             xs[f], ys[f] = x, FLOOR
             land = f
-            fn = roll_in(x, rest, land, 40)
-            for g in range(land, land + 60):
+            T = round(2 * (x - rest) / abs(vx))             # it rolls on with the speed it has and slows evenly to rest
+            fn = roll_in(x, rest, land, T)
+            for g in range(land, land + T + 2):
                 xs[g], ys[g] = fn(g), FLOOR
         out[name] = dict(size=size, r=r, xs=xs, ys=ys, sqs=sqs)
     # B gives a little when A taps it, and settles
@@ -170,33 +180,11 @@ def cond_bool(n, prop, value):
             '</TransitionViewModelCondition>']
 
 
-def main():
-    arrive, A_len = build()
-    doc = Doc(SCENE)
-    n = doc.new_id
-    sc = Scene(SCENE)
-    room = next(e for e in sc.root.iter("Node") if e.get("name") == f"{ROOM} Room")
-    plane = next(c for c in room if c.get("name") == f"{ROOM} Floor Plane").get("id")
-    pi = doc.idx(plane)
-    p = " " * (len(doc.lines[pi]) - len(doc.lines[pi].lstrip()) + 4)
-    ids, lines = {}, []
-    for name, size, *_ in BALLS:
-        i = ((n(), f"{ROOM} Crowd Ball {name}"), n(), n(), n(), n(), n(), n(), n)
-        ids[name] = i
-        lines += ball_lines(p, i, size, arrive[name]["xs"][0], AWAY_Y)
-    doc.lines[pi + 1:pi + 1] = lines                           # first in the floor plane: drawn in front of the stack
-    # ---- the animations
+def write_keys(doc, ids, arrive, A_len):
+    """Every crowd ball's keys in Away, Wait, Arrive, Idle and Leave (and Arrive's length)."""
     names = {k: f"{ROOM} Crowd {k}" for k in ("Away", "Wait", "Arrive", "Idle", "Leave")}
     lengths = {"Away": 1, "Wait": WAIT, "Arrive": A_len, "Idle": IDLE, "Leave": LEAVE}
-    loops = {"Idle": "loop"}
-    aids = {}
-    li = doc.idx(next(e.get("id") for e in sc.root.iter("LinearAnimation") if e.get("name") == f"{ROOM} Loop"))
-    new = []
-    for k, nm in names.items():
-        aids[k] = n()
-        lv = f' loopValue="{loops.get(k, "oneShot")}"'
-        new += [f'        <LinearAnimation fps="60" duration="{lengths[k]}"{lv} name="{nm}" id="{aids[k]}">', "        </LinearAnimation>"]
-    doc.lines[li:li] = new
+    doc.set_duration(names["Arrive"], A_len)
     for name, size, rest, how, start, leave in BALLS:
         ball, b01, b01s, spin, *_ = ids[name]
         a = arrive[name]
@@ -219,7 +207,7 @@ def main():
         fr = range(A_len + 1)
         yv = {f: (AWAY_Y if f < start else ys[f]) for f in fr}       # out of play until its start; there x is off the stage
         doc.set_prop(names["Arrive"], ball[0], "x", bake(xs, fr))
-        doc.set_prop(names["Arrive"], ball[0], "y", [(0, AWAY_Y, "hold")] + [k for k in bake(yv, fr) if k[0] >= start - 1])
+        doc.set_prop(names["Arrive"], ball[0], "y", bake(yv, fr))
         doc.set_prop(names["Arrive"], spin, "rotation", bake({f: th[f] for f in fr}, fr))
         doc.set_prop(names["Arrive"], b01, "scaleX", bake({f: size * sx[f] for f in fr}, fr))
         doc.set_prop(names["Arrive"], b01, "scaleY", bake({f: size * sy[f] for f in fr}, fr))
@@ -250,6 +238,53 @@ def main():
         doc.set_prop(names["Leave"], spin, "rotation", bake({f: th_rest + (lx[f] - rest_x) / r for f in fl}, fl))
         for prop in ("scaleX", "scaleY"):
             doc.set_prop(names["Leave"], b01, prop, [(0, size, "hold")])
+
+
+def retime():
+    """Rewrite the existing crowd's keys from build(), in place."""
+    arrive, A_len = build()
+    sc = Scene(SCENE)
+    ids = {}
+    for name, *_ in BALLS:
+        node = next(e for e in sc.root.iter("Node") if e.get("name") == f"{ROOM} Crowd Ball {name}")
+        b01 = next(e for e in node.iter("Node") if e.get("name") == "Ball_01")
+        spin = next(e for e in node.iter("Node") if e.get("name") == f"{ROOM} Crowd Ball {name} Spin")
+        ids[name] = ((node.get("id"), node.get("name")), b01.get("id"), None, spin.get("id"))
+    doc = Doc(SCENE)
+    write_keys(doc, ids, arrive, A_len)
+    doc.save()
+    print(f"retimed {SCENE}: {ROOM} Crowd: Arrive {A_len} frames ({A_len / 60:.2f} s after the {WAIT / 60:.2f} s wait); rests "
+          + ", ".join(f"{k} x {arrive[k]['xs'][A_len]:.1f} ({arrive[k]['size']}x)" for k in arrive))
+
+
+def main():
+    arrive, A_len = build()
+    doc = Doc(SCENE)
+    n = doc.new_id
+    sc = Scene(SCENE)
+    room = next(e for e in sc.root.iter("Node") if e.get("name") == f"{ROOM} Room")
+    plane = next(c for c in room if c.get("name") == f"{ROOM} Floor Plane").get("id")
+    pi = doc.idx(plane)
+    p = " " * (len(doc.lines[pi]) - len(doc.lines[pi].lstrip()) + 4)
+    ids, lines = {}, []
+    for name, size, *_ in BALLS:
+        i = ((n(), f"{ROOM} Crowd Ball {name}"), n(), n(), n(), n(), n(), n(), n)
+        ids[name] = i
+        lines += ball_lines(p, i, size, arrive[name]["xs"][0], AWAY_Y)
+    doc.lines[pi + 1:pi + 1] = lines                           # first in the floor plane: drawn in front of the stack
+    # ---- the animations
+    names = {k: f"{ROOM} Crowd {k}" for k in ("Away", "Wait", "Arrive", "Idle", "Leave")}
+    lengths = {"Away": 1, "Wait": WAIT, "Arrive": A_len, "Idle": IDLE, "Leave": LEAVE}
+    loops = {"Idle": "loop"}
+    aids = {}
+    li = doc.idx(next(e.get("id") for e in sc.root.iter("LinearAnimation") if e.get("name") == f"{ROOM} Loop"))
+    new = []
+    for k, nm in names.items():
+        aids[k] = n()
+        lv = f' loopValue="{loops.get(k, "oneShot")}"'
+        new += [f'        <LinearAnimation fps="60" duration="{lengths[k]}"{lv} name="{nm}" id="{aids[k]}">', "        </LinearAnimation>"]
+    doc.lines[li:li] = new
+    write_keys(doc, ids, arrive, A_len)
     # ---- the layer
     sid = {k: n() for k in ("Boot", "Away", "Wait", "Arrive", "Idle", "Leave")}
     anim_of = {"Boot": "Away", "Away": "Away", "Wait": "Wait", "Arrive": "Arrive", "Idle": "Idle", "Leave": "Leave"}
@@ -291,6 +326,9 @@ def main():
 
 
 if __name__ == "__main__":
-    if "--write" not in sys.argv:
+    if "--retime" in sys.argv:
+        retime()
+    elif "--write" in sys.argv:
+        main()
+    else:
         raise SystemExit(__doc__)
-    main()
