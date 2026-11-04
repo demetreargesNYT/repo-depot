@@ -1,55 +1,330 @@
-"""The Mini (Demetre's note 5, 2026-11-04): every piece 15% smaller, and a longer loop that plays hide and seek with two boxes.
+"""The Mini, "the speed solve" (Demetre's brief, 2026-11-04): the cubes are the crossword grid and they come to life with the ball.
 
-Scale: each of the room's planes holds its pieces in a pivot at (747.5, 711.5), the room's middle on the floor line, scaled 0.85, so
-everything still stands on the floor line; the ball is 1.7 (was 2). The cubes that drop in fall 800/0.85 in their own space, so on
-screen they still drop 800 from above the artboard on the same timing and land where they now stand; their strokes are 1/0.85 thicker
-in their own space, so the lines keep the weight they have in every other room. The lockup is not touched.
+Scale (note 5, kept): each of the room's planes holds its pieces in a pivot at (747.5, 711.5), the room's middle on the floor line,
+scaled 0.85; the ball is 1.7. The cubes that drop in fall 800/0.85 in their own space so on screen they drop as before; strokes are
+1/0.85 thicker in their own space so the lines keep their weight. The lockup is not touched.
 
-Hiding: the cube faces are in the Front Plane, drawn above the ball, and the boxes' dark insides in the Floor Plane, below it. So a
-ball low in a box is hidden by the box's front, and a ball rising out of it shows over its dark inside; the room's own drawing order is
-the mask, cut exactly to each box (no clip shape is needed, so nothing can cut the ball anywhere else).
+The mouth: the upper cube's dark top is its open mouth, and it now has a lid (a new piece, the same parallelogram as the lid box's
+lid, light). The lid is hinged on the top's back edge: shut it lies over the mouth; open it stands up behind it, leaning back a
+little. Its two front corners are keyed: front = back + (38.33 cos a, 44.68 cos a - 95.83 sin a) in its own space, a the opening
+angle (the cube's depth seen at the room's slant, and its true height). The lid is in the Floor Plane, under the ball, so the ball
+passes in front of it, and above the mouth's dark inside. The ball hides in the mouth behind the cube's front and side faces (Front
+Plane), as before: the room's own drawing order is the mask. The intro is unchanged: the cubes drop in, the upper cube with its lid
+shut and the ball already inside it.
 
-The journey (times on a first visit, from the scene being set):
-  1.83 s  as soon as the upper cube's dark top has landed, the ball peeks up out of the upper cube (an open box) and drops back in;
-          the lockup is above it, so it stays well below it
-  3.03 s  once the lockup has gone it jumps out over the box's back-left corner, hops along the floor line, bounces off the side of the
-          left box (which gives a little), hops and rolls right under the upper cube and stops behind the box with the lid
-  then    out of sight it drops into that box; the lid slides open, the ball pops straight up out of it and falls back in (caught: a
-          box's inside is soft), and the lid slides shut
-  then    out of sight it goes back to the upper cube, and after a pause peeks again
-The upper cube sits flush on the lid box's front-left, so a ball leaving the lid box can't go left over it (its edge would be 4 px
-from the cube's side until it had risen past the cube's top): it goes straight up and down.
+The cube turns (the shared move, Chapter 1 card 5's 2D trick): each turning cube's front square gets two faces, the colour it has
+and the other one (black or white), each a full-size square in a node scaled sideways and masked to the square. The face it shows
+is anchored on the square's left edge, the other on its right edge, so a turn keys only scaleX: the edge they share sweeps across
+at width x cos t / (cos t + sin t), t eased from 0 to 90 degrees in TURN frames, the outgoing face squeezing to its side as the
+incoming one grows. A cube turns there and back (the second turn the other way), so each cube is back on its drawn colour at the
+loop's seam. Their lines are 1.5 on screen and never scale (transformAffectsStroke off). They turn only while the ball is not
+touching them, one at a time, in short bursts at uneven moments.
+
+The journey (one gravity, 0.40; every flight a parabola; mini_paths.py): the lid pops open and flings the ball out three times a loop.
+  1. hop: a short hop straight up and back in (while the lockup is on screen, so it stays well below it)
+  2. gap: out over the gap to the left, off the left box's side and the floor beside it (3 frames apart), and straight back in
+  3. rim: up and down onto the mouth's back left corner, two light bounces on it, and in
+Each time it drops in out of sight, the lid snaps shut, a beat, and the lid pops open again. The loop's seam is inside the mouth with
+the lid shut. The lid is the only piece that adds speed (it flings from rest); every contact keeps 80 to 100 percent.
+Why only these: the upper cube is flush on the lid box, so nothing can leave or enter the lid box sideways, and with the ball's top
+held at y 425 or lower, a fling has just enough energy to come back over the mouth's rim after one floor bounce. Back into the mouth
+from the gap needs a turn round, and the left box's side is the only surface that gives one: its hit lands within 3 frames of the
+floor bounce, which ball_speed.py reads as one contact (see the report).
 """
 import math
 import re
 
-from common import CENTER_IN_SCALE, BallArt, Cycle, _set_attrs, dip, emit, plane_x, prepare_ball
+from common import CENTER_IN_SCALE, BallArt, Cycle, _set_attrs, dip, emit, plane_x, prepare_ball, smooth
+from mini_paths import RC, fly, spin_rate
+from rml_edit import num
 
 ROOM = "The Mini"
-T0 = 110                                   # 1.83 s: the upper cube's top lands at 1.50 s and its squash is over at 1.82 s
+T0 = 110                                   # 1.83 s: the upper cube's top (with its lid) has landed and its squash is over at 1.82 s
 A = (747.5, 711.5)                         # the scale's anchor: the room's middle, on the floor line
 K = 0.85
 PLANES = {"Front": "9:5695", "Floor": "9:5694", "Wall": "9:5697"}
 CUBES = ("9:5206", "9:5208", "9:5210", "9:5212")    # the four drop-ins (their Art offsets are -760)
 BALL_SCALE = 1.7
-IN_UP = (829.0, 632.0)                     # low in the upper cube (front 788.5 to 870, 590 to 671): wholly behind its front face
-IN_LID = (904.0, 712.0)                    # low in the box with the lid (front 870 to 951, 671 to 753); right edge 934, in the safe area
-PEEK_VY = -7.75                            # the peek rises 75 px (its top at y 527)
-JUMP_AT = 72                               # the jump out: it reaches the lockup's height at 3.32 s, after the lockup has gone (3.20 s)
-JUMP = (-2.1, -11.9)                       # over the upper cube's back-left corner (755.6, 552.1) with 32 px to spare (R 30.05); top at y 425
-REST_X = 895.0                             # behind the box with the lid, on the floor line
-LID_OPEN = 20                              # frames for the lid to slide open (as the old loop did), and 18 to slide shut
-POP_VY = -11.0                             # the pop out of the lid box rises 151 px (its top at y 531)
-PAUSE = 40                                 # frames back in the upper cube before the next peek
-LID_REST, LID_OUT = (920.177, 641.987), (958.5, 686.5)   # the lid's own position shut and slid open (its space; as the old loop had)
-FLOOR = 711.5
-LEFT_BOX_X = 637.0                         # the left box's right side (its own space)
+IN_UP = (829.0, 632.0)                     # the ball's rest in the mouth: wholly behind the upper cube's front face
+HIDDEN_Y = 621.0                           # a centre below this, inside the mouth, is wholly hidden (its top under the rim, y 590)
+CATCH = 6                                  # frames to settle at rest in the mouth, out of sight
+LAUNCH_LAG = 2                             # the ball leaves this many frames after the lid starts to pop
+LEFT_BOX = "9:5276"                        # the left box's node (its own space)
+LEFT_BOX_REST = (-174.91251, -26.963499)
+
+# the three flings: launch velocity from IN_UP, (e, kt) for each contact in turn, and the contacts it must make
+FLINGS = [
+    ("hop", (-0.15, -9.0), [], []),
+    ("gap", (-2.5, -11.5), [(0.9, 1.0), (0.9, 1.0)], ["left box side", "floor"]),
+    ("rim", (-1.92, -10.02), [(0.8, 0.9), (0.85, 0.95)], ["upper cube corner", "upper cube corner"]),
+]
+POP_AT = [0, 92, 256]                      # cycle frames the lid pops for each fling
+END_BEAT = 60                              # frames shut after the last catch before the loop starts again
+
+# the lid (the upper cube's top's shape, in its group 9:5155): its corners shut, back right, front right, front left, back left
+LID_AT = (226.3465, 23.235)
+LID_SHUT = [(28.7485, -22.341), (67.0805, 22.341), (-28.7495, 22.341), (-67.0805, -22.341)]
+DEPTH, HEIGHT = (38.332, 44.682), 95.829
+LID_OPEN, LID_POP = 97.0, 107.0            # degrees: open (leaning back a little), and the pop's overshoot
+POP_T, SETTLE_T, SNAP_T = 6, 8, 6          # frames
+
+# the turning cubes: the front square's shape (its own position and half sizes, in its parent's space), its colour and the other
+LIGHT, DARK = "FFDFDBD7", "FF1F1F1F"
+SQUARES = {
+    "left box": ("9:5277", (14.307, -0.249, 50.747, 50.7915), LIGHT),
+    "lower cube": ("9:5246", (-100.478, 116.142, 47.9145, 47.873), LIGHT),
+    "upper cube": ("9:5215", (337.08151, 93.455, 47.9145, 47.873), LIGHT),
+    "lid box": ("9:5186", (939.41248, 712.203, 47.9145, 47.873), DARK),
+}
+TURN = 14                                  # frames: 0.23 s
+TURNS = []                                 # (cube, cycle frame the turn starts): set in build() from the ball's timeline
 
 
 def S(x, y):
     return (A[0] + K * (x - A[0]), A[1] + K * (y - A[1]))
 
 
+def ease(u):
+    u = min(1.0, max(0.0, u))
+    return 4 * u ** 3 if u < 0.5 else 1 - (-2 * u + 2) ** 3 / 2
+
+
+# ---- new art ------------------------------------------------------------------------------------------------------------------
+def _pad(doc, i):
+    return " " * (len(doc.lines[i]) - len(doc.lines[i].lstrip()))
+
+
+def _rect_shape(doc, pad, name, pts, colour, clip_id):
+    out = [f'{pad}<Shape name="{name}" id="{doc.new_id()}">', f'{pad}    <PointsPath isClosed="true" id="{doc.new_id()}">']
+    out += [f'{pad}        <StraightVertex x="{num(x)}" y="{num(y)}" id="{doc.new_id()}"/>' for x, y in pts]
+    out += [f"{pad}    </PointsPath>",
+            f'{pad}    <Fill id="{doc.new_id()}">', f'{pad}        <SolidColor colorValue="{colour}" id="{doc.new_id()}"/>', f"{pad}    </Fill>",
+            f'{pad}    <Stroke thickness="1.5" join="round" transformAffectsStroke="false" id="{doc.new_id()}">',
+            f'{pad}        <SolidColor colorValue="FF1F1F1F" id="{doc.new_id()}"/>', f"{pad}    </Stroke>"]
+    if clip_id:
+        out.append(f'{pad}    <ClippingShape sourceId="{clip_id}" name="{name.rsplit(" Face", 1)[0]} Clip" id="{doc.new_id()}"/>')
+    return out + [f"{pad}</Shape>"]
+
+
+def add_faces(doc, cube, square_id, sq, colour):
+    """The two faces of a cube's front square, drawn over it in its parent, and the mask (the square, 1 unit larger all round, so
+    the faces' own outlines show whole). Returns (the face it shows, anchored left; the other, anchored right)."""
+    cx, cy, hw, hh = sq
+    x0, x1, y0, y1, W = cx - hw, cx + hw, cy - hh, cy + hh, 2 * hw
+    other = DARK if colour == LIGHT else LIGHT
+    i = doc.idx(square_id)
+    pad = _pad(doc, i)
+    clip = doc.new_id()
+    shown, hidden = doc.new_id(), doc.new_id()
+    name = f"{ROOM} {cube.title()}"
+    lines = [f'{pad}<Node x="{num(x0)}" name="{name} Face Shown" id="{shown}">']
+    lines += _rect_shape(doc, pad + "    ", f"{name} Face Shown Fill", [(0, y0), (W, y0), (W, y1), (0, y1)], colour, clip)
+    lines += [f"{pad}</Node>", f'{pad}<Node x="{num(x1)}" scaleX="0" name="{name} Face Turned" id="{hidden}">']
+    lines += _rect_shape(doc, pad + "    ", f"{name} Face Turned Fill", [(-W, y0), (0, y0), (0, y1), (-W, y1)], other, clip)
+    lines += [f"{pad}</Node>", f'{pad}<Shape name="{name} Clip" id="{clip}">', f'{pad}    <PointsPath isClosed="true" id="{doc.new_id()}">']
+    lines += [f'{pad}        <StraightVertex x="{num(x)}" y="{num(y)}" id="{doc.new_id()}"/>'
+              for x, y in ((x0 - 1, y0 - 1), (x1 + 1, y0 - 1), (x1 + 1, y1 + 1), (x0 - 1, y1 + 1))]
+    lines += [f"{pad}    </PointsPath>", f"{pad}</Shape>"]
+    doc.lines[i:i] = lines
+    return shown, hidden
+
+
+def add_lid(doc):
+    """The mouth's lid, shut, over the upper cube's dark top (9:5166) in its group. Returns its four corners' ids."""
+    i = doc.idx("9:5166")
+    pad = _pad(doc, i)
+    vids = [doc.new_id() for _ in LID_SHUT]
+    lines = [f'{pad}<Shape x="{num(LID_AT[0])}" y="{num(LID_AT[1])}" name="{ROOM} Lid" id="{doc.new_id()}">',
+             f'{pad}    <PointsPath isClosed="true" id="{doc.new_id()}">']
+    lines += [f'{pad}        <StraightVertex x="{num(x)}" y="{num(y)}" id="{v}"/>' for (x, y), v in zip(LID_SHUT, vids)]
+    lines += [f"{pad}    </PointsPath>",
+              f'{pad}    <Fill id="{doc.new_id()}">', f'{pad}        <SolidColor colorValue="{LIGHT}" id="{doc.new_id()}"/>', f"{pad}    </Fill>",
+              f'{pad}    <Stroke thickness="1.5" cap="round" join="round" transformAffectsStroke="false" id="{doc.new_id()}">',
+              f'{pad}        <SolidColor colorValue="FF1F1F1F" id="{doc.new_id()}"/>', f"{pad}    </Stroke>", f"{pad}</Shape>"]
+    doc.lines[i:i] = lines
+    return vids
+
+
+# ---- the ball's timeline ------------------------------------------------------------------------------------------------------
+def in_mouth(p, v):
+    return v[1] > 0 and p[1] >= HIDDEN_Y and 790 < p[0] < 850
+
+
+def journey():
+    """The cycle frame by frame: {frame: (centre, mode)}, the contacts [(cycle time, name, centre, v in, v out, normal)], and per
+    fling (pop frame, launch frame, the frame it is out of sight, the frame it is at rest)."""
+    frames, contacts, spans = {}, [], []
+    for (label, v0, rules, names), pop in zip(FLINGS, POP_AT):
+        f_go = pop + LAUNCH_LAG
+        path, cons = fly(IN_UP, v0, rules, in_mouth)
+        got = [c[1] for c in cons]
+        assert got == names, (label, got)
+        assert not frames or max(frames) < f_go, label
+        n = len(path) - 1                                   # the frame it is out of sight in the mouth
+        for k, p in enumerate(path):
+            frames[f_go + k] = (p, "air" if 0 < k < n else "hidden")
+        p1 = path[-1]
+        for u in range(1, CATCH + 1):
+            s = smooth(u / CATCH)
+            frames[f_go + n + u] = ((p1[0] + (IN_UP[0] - p1[0]) * s, p1[1] + (IN_UP[1] - p1[1]) * s), "hidden")
+        contacts += [(f_go + t, name, p, vin, vout, nrm) for t, name, p, vin, vout, nrm in cons]
+        spans.append((label, pop, f_go, f_go + n, f_go + n + CATCH, v0, path))
+    L = spans[-1][4] + END_BEAT
+    for g in range(L + 1):
+        frames.setdefault(g, (IN_UP, "hidden"))
+    for k in range(len(spans) - 1):
+        assert spans[k][4] + 10 < spans[k + 1][1], ("a beat too short", spans[k][0])
+    return frames, contacts, spans, L
+
+
+def lid_angle(g, spans):
+    """The lid's opening angle on cycle frame g: pops open (overshoot, settle), open while the ball is out, snaps shut once it is
+    out of sight in the mouth."""
+    for label, pop, f_go, f_in, f_rest, v0, path in spans:
+        snap = f_in + 1
+        if pop <= g < pop + POP_T:
+            u = (g - pop) / POP_T
+            return LID_POP * (1 - (1 - u) ** 3)
+        if pop + POP_T <= g < pop + POP_T + SETTLE_T:
+            return LID_POP + (LID_OPEN - LID_POP) * smooth((g - pop - POP_T) / SETTLE_T)
+        if pop + POP_T + SETTLE_T <= g < snap:
+            return LID_OPEN
+        if snap <= g < snap + SNAP_T:
+            return LID_OPEN * (1 - ((g - snap) / SNAP_T) ** 2)
+    return 0.0
+
+
+def lid_corner(k, a_deg):
+    a = math.radians(a_deg)
+    x, y = LID_SHUT[k]
+    if k in (1, 2):                                          # the front corners swing about the back edge
+        bx, by = LID_SHUT[0] if k == 1 else LID_SHUT[3]
+        return (bx + DEPTH[0] * math.cos(a), by + DEPTH[1] * math.cos(a) - HEIGHT * math.sin(a))
+    return (x, y)
+
+
+def build(doc, scene, sheet):
+    art = BallArt(scene, ROOM)
+    n_strokes = scale_room(doc, scene)
+    _set_attrs(doc, art.b01, {"scaleX": BALL_SCALE, "scaleY": BALL_SCALE})
+    art.k = BALL_SCALE
+    art.R, art.Rc = 17.678 * art.k, 17.2 * art.k
+    assert abs(art.Rc - RC) < 1e-9
+    sx, sy = -0.072021484, 0.096008301
+    art.dc = (art.ox + art.k * (sx + CENTER_IN_SCALE[0]), art.oy + art.k * (sy + CENTER_IN_SCALE[1]))
+    spin = prepare_ball(doc, art)
+    for oid in ("9:5176", "9:5196", LEFT_BOX):               # the old loop's lid slide and box give (re-keyed below where used)
+        doc.drop_object(f"{ROOM} Loop", oid)
+
+    frames, contacts, spans, L = journey()
+    cyc = Cycle(L)
+    for g in range(L + 1):
+        cyc.put(g, *frames[g])
+    cyc.put(L, IN_UP, "hidden")
+    for t, name, p, vin, vout, nrm in contacts:
+        if name == "floor":
+            cyc.squash(round(t), min(0.12, 0.010 * abs(vin[1]) + 0.01), T=8)
+
+    # turn: from rest a little with the push, at each contact the turn the contact leaves it with (it grips), in the air it keeps
+    # it, hidden still; the last beat takes up what is left over to a whole number of turns
+    r = art.R
+    at_contact = {round(t): spin_rate(vout, nrm, r) for t, name, p, vin, vout, nrm in contacts}
+    launches = {f_go: 0.25 * v0[0] / r for label, pop, f_go, f_in, f_rest, v0, path in spans}
+    th = [0.0]
+    w = 0.0
+    for g in range(L):
+        if g in launches:
+            w = launches[g]
+        if g in at_contact:
+            w = at_contact[g]
+        if cyc.mode[g] == "hidden" and g not in launches:
+            w = 0.0
+        th.append(th[-1] + w)
+    total = th[-1]
+    want = round(total / (2 * math.pi)) * 2 * math.pi
+    a0 = spans[-1][4] + 1
+    for g in range(a0, L + 1):
+        th[g] += (want - total) * smooth((g - a0) / (L - a0))
+
+    # the cube turns: one at a time, while the ball is away from the cube, in short bursts
+    global TURNS
+    TURNS = [("lower cube", 58), ("lid box", 74),               # the beat after the hop (the lockup still on), the ball in the mouth
+             ("upper cube", 112), ("upper cube", 134),           # the ball out over the gap: a flick there and back
+             ("lower cube", 170),                                # it is on its way back up from the floor
+             ("lid box", 222), ("left box", 236),                # the next beat
+             ("left box", 318),                                  # it rattles on the mouth's edge
+             ("lid box", 360), ("lid box", 384)]                 # the last beat: a flick there and back
+    touches = {"left box": ("left box side", "left box corner"), "upper cube": ("upper cube corner",)}
+    for cube, s in TURNS:
+        for t, name, *_ in contacts:
+            assert not (name in touches.get(cube, ()) and s - 6 <= t <= s + TURN + 16), ("a turn while the ball touches", cube, s)
+        if cube == "upper cube":
+            assert all(cyc.mode[g] == "air" for g in range(s - 4, s + TURN + 4)), ("the upper cube turns with the ball in it", s)
+    counts = {}
+    for cube, s in TURNS:
+        counts[cube] = counts.get(cube, 0) + 1
+    odd = [c for c, k in counts.items() if k % 2]
+    assert not odd, f"a cube turns an odd number of times: {odd}"
+    starts = sorted(s for _, s in TURNS)
+    for a_, b_ in zip(starts, starts[1:]):
+        assert b_ - a_ >= TURN, ("two turns at once", a_, b_)
+    assert starts[-1] + TURN < L
+
+    def face_scale(cube, shown):
+        mine = sorted(s for c, s in TURNS if c == cube)
+
+        def fn(g):
+            on_shown = True                                   # which face is up
+            for k, s in enumerate(mine):
+                there = k % 2 == 0
+                if g < s:
+                    break
+                if g < s + TURN:
+                    t = math.radians(90 * ease((g - s) / TURN))
+                    c, si = math.cos(t), math.sin(t)
+                    out_w = c / (c + si)                      # the outgoing face's share, in from the incoming's side
+                    sh = out_w if there else 1 - out_w
+                    return sh if shown else 1 - sh
+                on_shown = not there
+            return (1.0 if on_shown else 0.0) if shown else (0.0 if on_shown else 1.0)
+        return fn
+
+    # the left box gives a little where the ball hits it: its side pushes it left, its top corner down
+    side_hits = [t for t, name, *_ in contacts if name == "left box side"]
+    corner_hits = [t for t, name, *_ in contacts if name == "left box corner"]
+    box_x = lambda g: LEFT_BOX_REST[0] + sum(dip(g - t, -2.0, 16) for t in side_hits) + sum(dip(g - t, -0.8, 14) for t in corner_hits)
+    box_y = lambda g: LEFT_BOX_REST[1] + sum(dip(g - t, 1.6, 14) for t in corner_hits)
+
+    # new art, then its keys
+    lid_ids = add_lid(doc)
+    faces = {cube: add_faces(doc, cube, sid, sq, col) for cube, (sid, sq, col) in SQUARES.items()}
+    pieces = [(LEFT_BOX, "x", box_x, None), (LEFT_BOX, "y", box_y, None)]
+    for k in (1, 2):
+        for i, prop in enumerate(("x", "y")):
+            pieces.append((lid_ids[k], prop, (lambda g, k=k, i=i: lid_corner(k, lid_angle(g, spans))[i]), None))
+    for cube, (shown, turned) in faces.items():
+        pieces.append((shown, "scaleX", face_scale(cube, True), None))
+        pieces.append((turned, "scaleX", face_scale(cube, False), None))
+    px = plane_x(scene, sheet, ROOM, "Front")
+
+    def pre(f):
+        return (IN_UP[0] + px(f), IN_UP[1]), 1.0, 1.0
+    with colour_keys_kept(doc, ROOM):
+        emit(doc, art, spin, cyc, th, T0, pre, pieces)
+
+    sec = lambda g: f"{(T0 + g) / 60:.2f} s"
+    parts = []
+    for label, pop, f_go, f_in, f_rest, v0, path in spans:
+        hits = ", ".join(f"{name} {sec(t)}" for t, name, *_ in contacts if f_go <= t <= f_in)
+        top = min(p[1] for p in path) - 30.8
+        parts.append(f"{label}: lid pops {sec(pop)}, out {sec(f_go)}" + (f", {hits}" if hits else "") +
+                     f", back in {sec(f_in)}, lid shut {sec(f_in + 1 + SNAP_T)} (ball top {top:.0f})")
+    turns = ", ".join(f"{c} {sec(s)}" for c, s in sorted(TURNS, key=lambda x: x[1]))
+    return (f"{ROOM}: scaled {K} about {A} ({n_strokes} strokes kept at their weight), ball {BALL_SCALE}; " + "; ".join(parts) +
+            f"; turns: {turns}; loop {L / 60:.2f} s ({L} frames)")
+
+
+# ---- the room's scale (note 5) ------------------------------------------------------------------------------------------------
 def scale_room(doc, scene):
     """The planes' pieces into 0.85 pivots, the drop-ins' falls and the strokes compensated, the ball at 1.7."""
     root = scene.root
@@ -90,127 +365,6 @@ def scale_room(doc, scene):
     return len(sids)
 
 
-def build(doc, scene, sheet):
-    art = BallArt(scene, ROOM)
-    n_strokes = scale_room(doc, scene)
-    _set_attrs(doc, art.b01, {"scaleX": BALL_SCALE, "scaleY": BALL_SCALE})
-    art.k = BALL_SCALE
-    art.R, art.Rc = 17.678 * art.k, 17.2 * art.k
-    sx, sy = -0.072021484, 0.096008301
-    art.dc = (art.ox + art.k * (sx + CENTER_IN_SCALE[0]), art.oy + art.k * (sy + CENTER_IN_SCALE[1]))
-    spin = prepare_ball(doc, art)
-    Rc = art.Rc
-    fy = FLOOR - Rc
-    cyc_frames = {}
-
-    # 1. the peek out of the upper cube, and the wait before the jump
-    n_peek = round(2 * -PEEK_VY / 0.40)
-    for f in range(n_peek + 1):
-        cyc_frames[f] = ((IN_UP[0], IN_UP[1] + PEEK_VY * f + 0.20 * f * f), "air" if 0 < f < n_peek else "hidden")
-    for f in range(n_peek + 1, JUMP_AT):
-        cyc_frames[f] = (IN_UP, "hidden")
-
-    # 2. the jump out, the hops and the left box (journey below), then a roll right that friction stops behind the box with the lid
-    wall_x = S(LEFT_BOX_X, 0)[0] + Rc
-    fr, hits, (t_r, x_r, v_r) = journey(IN_UP, JUMP, fy, wall_x, e_floor=0.71, e_wall=0.70, e_first=0.74)
-    t_rf = math.ceil(t_r)
-    for f in range(t_rf):
-        cyc_frames[JUMP_AT + f] = ((fr[f][0], fr[f][1]), "air")
-    cyc_frames[JUMP_AT] = (IN_UP, "hidden")
-    x0 = x_r + v_r * (t_rf - t_r)
-    a = v_r * v_r / (2 * (REST_X - x0))
-    t_stop = v_r / a
-    f = JUMP_AT + t_rf
-    u = 0
-    while u < t_stop:
-        cyc_frames[f] = ((x0 + v_r * u - 0.5 * a * u * u, fy), "roll")
-        f += 1
-        u += 1
-    f_rest = f
-    cyc_frames[f_rest] = ((REST_X, fy), "rest")
-
-    # 3. out of sight into the box with the lid; the lid slides open, the ball pops up and falls back in, the lid slides shut
-    f_lid = f_rest + 6
-    f_pop = f_lid + 16
-    n_pop = round(2 * -POP_VY / 0.40)
-    for g in range(f_rest + 1, f_pop):
-        cyc_frames[g] = (IN_LID, "hidden")
-    for u in range(n_pop + 1):
-        cyc_frames[f_pop + u] = ((IN_LID[0], IN_LID[1] + POP_VY * u + 0.20 * u * u), "air" if 0 < u < n_pop else "hidden")
-    f_shut = f_pop + n_pop + 4
-    f_shut_end = f_shut + 18
-    for g in range(f_pop + n_pop + 1, f_shut_end + 1):
-        cyc_frames[g] = (IN_LID, "hidden")
-
-    # 4. out of sight back to the upper cube, and the pause before the next peek
-    L = f_shut_end + 1 + PAUSE
-    cyc = Cycle(L)
-    for g in range(L + 1):
-        cyc.put(g, *(cyc_frames[g] if g in cyc_frames else (IN_UP, "hidden")))
-    cyc.put(L, IN_UP, "hidden")
-
-    contacts = [(JUMP_AT + t, name, None, vout, vin) for t, name, vin, vout in hits]
-    for t, name, p, vout, vin in contacts:
-        n = abs(vin[0]) if name == "left box" else abs(vin[1])
-        cyc.squash(round(t), min(0.14, 0.012 * n + 0.01), T=12)
-
-    # turn: rolling with the distance, in the air the turn it had when it last touched (grip), from rest a little from the push
-    r = art.R
-    contact_w = {round(t): vout[0] / r for t, name, p, vout, vin in contacts}
-    th = [0.0]
-    w_now = 0.0
-    for g in range(L):
-        m = cyc.mode[g]
-        dx = cyc.c[g + 1][0] - cyc.c[g][0]
-        if g in contact_w:
-            w_now = contact_w[g]
-        if m == "roll":
-            w_now = dx / r
-        elif m == "air":
-            if cyc.mode.get(g - 1) == "hidden":
-                w_now = 0.25 * dx / r
-        else:
-            w_now = 0.0
-        th.append(th[-1] + w_now)
-    total = th[-1]
-    want = round(total / (2 * math.pi)) * 2 * math.pi
-    for g in range(f_rest + 1, L + 1):
-        th[g] += (want - total) * min(1.0, (g - f_rest - 1) / 20)
-
-    # pieces: the left box gives a little where the ball hits it; the lid slides open and shut around the pop
-    t_w = next(t for t, name, *_ in contacts if name == "left box")
-    box_x = lambda g: -174.91251 + dip(g - t_w, -2.0, 16)
-
-    def lid(g, i):
-        if f_lid <= g < f_lid + LID_OPEN:
-            s = smooth((g - f_lid) / LID_OPEN)
-        elif f_lid + LID_OPEN <= g < f_shut:
-            s = 1.0
-        elif f_shut <= g < f_shut_end:
-            s = 1 - smooth((g - f_shut) / 18)
-        else:
-            s = 0.0
-        return LID_REST[i] + (LID_OUT[i] - LID_REST[i]) * s
-    px = plane_x(scene, sheet, ROOM, "Front")
-
-    def pre(f):
-        return (IN_UP[0] + px(f), IN_UP[1]), 1.0, 1.0
-    pieces = [("9:5276", "x", box_x, None), ("9:5176", "x", lambda g: lid(g, 0), None), ("9:5176", "y", lambda g: lid(g, 1), None)]
-    with colour_keys_kept(doc, ROOM):
-        emit(doc, art, spin, cyc, th, T0, pre, pieces)
-    sec = lambda g: f"{(T0 + g) / 60:.2f} s"
-    times = ", ".join(f"{name} {sec(t)}" for t, name, *_ in contacts)
-    return (f"{ROOM}: scaled {K} about {A} ({n_strokes} strokes kept at their weight), ball {BALL_SCALE}; peeks out of the upper cube "
-            f"{sec(0)} to {sec(n_peek)}; jumps out {sec(JUMP_AT)}; {times}; rolls right and stops behind the lid box {sec(f_rest)}; lid "
-            f"opens {sec(f_lid)}, pops out {sec(f_pop)}, back in {sec(f_pop + n_pop)}, lid shut {sec(f_shut_end)}; peeks again "
-            f"{(L - f_shut_end) / 60:.2f} s after; loop {L / 60:.2f} s")
-
-
-def smooth(t):
-    t = min(1.0, max(0.0, t))
-    return t * t * (3 - 2 * t)
-
-
 class colour_keys_kept:
     """Workaround (the shared helpers assume every key is a number): rml_edit's rebuild_waiting crashes on the intro's colour key
     (the inner top's SolidColor, 9:5203) and common.rebuild_built drops it. While emit runs, first_values skips non-number keys; after
@@ -238,7 +392,6 @@ class colour_keys_kept:
         import rml_edit
         self.saved = {n: self._colour_blocks(f"{self.room} {n}") for n in ("Waiting", "Built")}
         self.orig = rml_edit.Doc.first_values
-        orig = self.orig
 
         def first_values(doc, anim_name):
             import xml.etree.ElementTree as ET
@@ -264,52 +417,3 @@ class colour_keys_kept:
                     self.doc.lines[b:b] = block
                     _, b = self.doc.anim(f"{self.room} {n}")
         return False
-
-
-# ---- the journey after the jump, by hand -------------------------------------------------------------------------------------
-# The Mini's journey after the jump, by hand: parabola flights at 0.40, floor bounces, the left box's side as a vertical wall.
-# A floor landing becomes a roll once the ball would keep at least half of its speed sideways (lands and rolls).
-
-G_ = 0.40                                   # the project's one gravity, per frame squared
-
-
-def segdist(p, a, b):
-    dx, dy = b[0] - a[0], b[1] - a[1]
-    t = max(0.0, min(1.0, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / (dx * dx + dy * dy)))
-    return math.dist(p, (a[0] + t * dx, a[1] + t * dy))
-
-
-def journey(p0, v0, fy, wall_x, e_floor=0.72, e_wall=0.8, kt=0.97, sub=16, e_first=None):
-    """Frames from the jump: [(x, y, mode)] until the landing that turns into a roll; contacts [(t, name, vin, vout)]; the roll's start
-    (t, x, vx)."""
-    x, y = p0
-    vx, vy = v0
-    dt = 1.0 / sub
-    t = 0.0
-    out = [(x, y, "air")]
-    contacts = []
-    nxt = 1
-    while t < 600:
-        x += vx * dt
-        vy += G_ * dt
-        y += vy * dt - 0.5 * G_ * dt * dt
-        t += dt
-        if vx < 0 and x <= wall_x:
-            x = wall_x + (wall_x - x)
-            vin = (vx, vy)
-            vx = -e_wall * vx
-            vy = kt * vy
-            contacts.append((t, "left box", vin, (vx, vy)))
-        if vy > 0 and y >= fy:
-            y = fy - (y - fy)
-            vin = (vx, vy)
-            if abs(vx) >= 0.5 * math.hypot(vx, vy) * 1.0 and abs(vy) < 4.0:
-                contacts.append((t, "floor (rolls)", vin, (kt * vx, 0.0)))
-                return out, contacts, (t, x, kt * vx)
-            e = e_first if (e_first and not any(c[1] == "floor" for c in contacts)) else e_floor
-            vx, vy = kt * vx, -e * vy
-            contacts.append((t, "floor", vin, (vx, vy)))
-        if t >= nxt - 1e-9:
-            out.append((x, y, "air"))
-            nxt += 1
-    raise RuntimeError("never settled")
