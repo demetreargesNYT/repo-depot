@@ -362,7 +362,9 @@ setTimeout(layoutSplash, 300);
 // Chapter 1 card 5: the speech bubble sits above Wordle Bot's head with its tail tip 10 px above his antennae (artboard x 868.4, y 533.4; his
 // dome's top is y 545.5). Wherever the crop puts him, the bubble follows; if that would push its top under the nav (134 px), it shrinks
 // toward its tail tip instead. Runs on resize and from the 100 ms tick below (the block has no height while it is hidden).
-const BOT_HEAD_X = 868.4, BOT_HEAD_Y = 533.4, BUB_GAP = 10, BUB_TAIL = 20, BUB_TOP_MIN = 142;
+// Card 5 round 3 (2026-11-04): placed as in Figma "Ch1 05 - Bot" (10702:73032): the bubble's left edge 140.4 px left of his dome's centre,
+// its top 174 px above his antenna tips, and the tail's tip 78 px in from the bubble's left, just left of his antennas.
+const BOT_HEAD_X = 755.7, BOT_HEAD_Y = 376.5, BUB_LEFT = 140.4, BUB_ABOVE = 174, BUB_TAIL_X = 78, BUB_TAIL = 20, BUB_TOP_MIN = 142;
 function layoutBubble() {
   const blk = document.querySelector(".blk-bubble");
   if (!blk || blk.hidden) return;
@@ -370,9 +372,9 @@ function layoutBubble() {
   const col = blk.offsetParent.getBoundingClientRect();
   const hx = r.left + (BOT_HEAD_X / 1495) * r.width - col.left, hy = r.top + (BOT_HEAD_Y / 1067) * r.height - col.top;
   const w = blk.offsetWidth, h = blk.offsetHeight;
-  const left = Math.max(8, Math.min(col.width - w - 8, hx - 70));
-  const tail = Math.max(30, Math.min(w - 30, hx - left));
-  const tip = hy - BUB_GAP, top = tip - BUB_TAIL - h;
+  const left = Math.max(8, Math.min(col.width - w - 8, hx - BUB_LEFT));
+  const tail = Math.max(30, Math.min(w - 30, hx - BUB_LEFT + BUB_TAIL_X - left));
+  const top = hy - BUB_ABOVE, tip = top + h + BUB_TAIL;
   const k = top < BUB_TOP_MIN ? Math.max(0.6, (tip - BUB_TOP_MIN) / (h + BUB_TAIL)) : 1;
   const s = blk.style;
   s.setProperty("--bub-left", `${left.toFixed(1)}px`);

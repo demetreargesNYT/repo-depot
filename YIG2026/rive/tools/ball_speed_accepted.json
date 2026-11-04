@@ -30,6 +30,118 @@
       "pattern": "^contact at 10\\.57 s leaves faster than it arrived",
       "why": "the 10.57 s contact leaves faster than it arrives: kept on purpose, card 4 is approved",
       "approved": "Demetre, 2026-11-03"
+    },
+    {
+      "chapter": "ch3",
+      "room": "Chapter 3",
+      "pattern": "^contact at 4\\.22 s leaves faster than it arrived",
+      "why": "c3s1 as drawn: the ring box lid tosses the ball onto the calendar",
+      "approved": "Demetre, 2026-11-03"
+    },
+    {
+      "chapter": "ch3",
+      "room": "Chapter 3",
+      "pattern": "^flight at 4\\.25 to 4\\.65 s falls at",
+      "why": "c3s1 as drawn: the flight from the ring box to the calendar",
+      "approved": "Demetre, 2026-11-03"
+    },
+    {
+      "chapter": "ch3",
+      "room": "Chapter 3",
+      "pattern": "^flight at 4\\.78 to 5\\.15 s falls at",
+      "why": "c3s1 as drawn: the first hop on the calendar",
+      "approved": "Demetre, 2026-11-03"
+    },
+    {
+      "chapter": "ch3",
+      "room": "Chapter 3",
+      "pattern": "^contact at 5\\.57 s leaves faster than it arrived",
+      "why": "c3s1 as drawn: the jump off the calendar toward the mobile",
+      "approved": "Demetre, 2026-11-03"
+    },
+    {
+      "chapter": "ch3",
+      "room": "Chapter 3",
+      "pattern": "^turn-round at 6\\.62 s .* off a surface tilted only",
+      "why": "c3s1 as drawn: the ball turns round off the disco ball",
+      "approved": "Demetre, 2026-11-03"
+    },
+    {
+      "chapter": "ch3",
+      "room": "Chapter 3",
+      "pattern": "^flight at 7\\.05 to 7\\.52 s falls at",
+      "why": "c3s1 as drawn: the rise off the clock before the drop into the box",
+      "approved": "Demetre, 2026-11-03"
+    },
+    {
+      "chapter": "ch2",
+      "room": "Shelf",
+      "pattern": "^flight at 3\\.05 to 3\\.18 s falls at",
+      "why": "c2s1 as drawn: the hop from the floor onto the cat tree (read as a flight now the ball arrives rolling out of the door)",
+      "approved": "Demetre, 2026-11-04 (the illustrator-imports policy)"
+    },
+    {
+      "chapter": "ch2",
+      "room": "Shelf",
+      "pattern": "^flight at (3\\.52 to 3\\.92|10\\.52 to 10\\.92) s falls at",
+      "why": "c2s1 as drawn: the hop in place on the cat tree's lower platform",
+      "approved": "Demetre, 2026-11-03"
+    },
+    {
+      "chapter": "ch2",
+      "room": "Shelf",
+      "pattern": "^flight at 4\\.18 to 4\\.60 s falls at",
+      "why": "c2s1 as drawn: the big hop onto the cat tree's upper platform",
+      "approved": "Demetre, 2026-11-03"
+    },
+    {
+      "chapter": "ch2",
+      "room": "Shelf",
+      "pattern": "^contact at 4\\.60 s leaves faster than it arrived",
+      "why": "c2s1 as drawn: the leap off the upper platform to the cat shelf",
+      "approved": "Demetre, 2026-11-03"
+    },
+    {
+      "chapter": "ch2",
+      "room": "Shelf",
+      "pattern": "^turn-round at 5\\.17 s .* off a surface tilted only",
+      "why": "c2s1 as drawn: the turn on the cat shelf toward the trophy",
+      "approved": "Demetre, 2026-11-03"
+    },
+    {
+      "chapter": "ch2",
+      "room": "Shelf",
+      "pattern": "^BUZZ: CubicDetachedVertex y swings back and forth .* from 2\\.05 s",
+      "why": "c2s1 as drawn: the illustrator's double blink",
+      "approved": "Demetre, 2026-11-03"
+    },
+    {
+      "chapter": "ch3",
+      "room": "Chapter 4",
+      "pattern": "^LURCH: the ball's speed jumps from [0-9.]+ to [0-9.]+ at (1\\.87|8\\.88) s",
+      "why": "c4s1 as drawn: the ball shoots up out of the front floor",
+      "approved": "Demetre, 2026-11-03"
+    },
+    {
+      "chapter": "ch3",
+      "room": "Chapter 4",
+      "pattern": "^flight at (3\\.02 to 3\\.18|4\\.00 to 4\\.48|5\\.12 to 5\\.35|10\\.03 to 10\\.28) s falls at",
+      "why": "c4s1 as drawn: the hops up the stack",
+      "approved": "Demetre, 2026-11-03"
+    },
+    {
+      "chapter": "ch3",
+      "room": "Chapter 4",
+      "pattern": "^contact at (3\\.20|4\\.50) s leaves faster than it arrived",
+      "why": "c4s1 as drawn: the pushes off the yellow block and the crossword",
+      "approved": "Demetre, 2026-11-03"
+    },
+    {
+      "chapter": "ch3",
+      "room": "Chapter 4",
+      "pattern": "^roll downhill at 5\\.48 s slows",
+      "why": "c4s1 as drawn: the ball sinks onto the crossword tower's springy top",
+      "approved": "Demetre, 2026-11-03"
     }
   ]
 }
