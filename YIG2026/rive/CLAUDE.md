@@ -30,6 +30,7 @@ Full plan and detail: `docs/rive-plan.md` (start with its "Start here"). In shor
 **A finesse round**
 - He gives notes on a room. Change only that room, keep every rule in this file (the ball's role, physics, rotation, the floor line, starting on arrival, reactions, staying clear of the copy), and run `npm run finesse`.
 - Report in five lines or fewer: what changed (plain words, with Finesse-panel timecodes), the finesse result, and the `/experience` address for that room.
+- Open a still of your own work before you report it: `python3 tools/rive_still.py <ch> <scene> <seconds> [<seconds> ...]` renders stills at those times (the Finesse panel's clock) to `.cache/scratch.nosync/<ch>/stills/`; look at them with the Read tool. If you can't render, say so.
 - Pushes: see "Pushing on your own" (below). `python3 tools/rive_compare.py <ch>` pulls Rive's revision into scratch and reports Editor edits since the last push, and what the push would change.
 - After each push, commit locally, so little work sits uncommitted.
 
