@@ -1,33 +1,39 @@
-# Handoff: shared-files session (2026-11-04)
+# Handoff: shared-files session (2026-11-05), for the engineering-handoff chat
 
 **Rooms owned:** none. This session owns the harness, `CLAUDE.md`, `docs/`, the shared tools, `engineering/` and the package script.
 
-**Open notes:** none of mine. Chapter 2's file (`finesse-notes/ch2.md`) has 1 note still `Status: open`, for the Chapter 2 session. Chapter 1's 12 are all done.
+**The last delivered package**
+- `deliver/yig-engineering-package.zip` (320,856 bytes), the only zip there, built **2026-11-03 13:43** by `python3 tools/package_engineering.py`. Nothing has been built since (none on 11-04 or 11-05). The unzipped copy from that build is `.cache/scratch.nosync/shared/yig-engineering-package/` (same time).
+- Built from `824e869` plus the guide and CSS wording edits committed the same minute as `2ac7464` (13:43). Its `.riv` files match the Rive revisions of that delivery: File 1 49418454, File 2 49418480, File 3 49418501, tags `rive/chN-chapter-1-polish-startscene`. It still uses the **old scene names**.
+- Rive has moved on since: the latest tags are `rive/ch1-chapter-1-update` (`e841a91`), `rive/ch2-chapter-2-update` (`d980828`) and `rive/ch3-chapter-3-update` (`d734fb1`), all 2026-11-05. The next package must be rebuilt from the current `main`.
 
-**Done this session** (all committed; GitHub has everything up to `9871650`; 11 newer commits are local only):
-- Finesse panel: pin comments (C key; the pieces under a pin worked out from the build; Send to Claude writes `finesse-notes/ch<N>.md` and stills), pins only in Comment mode, the timecode as the room's own intro or loop frame (return visits too).
-- CLAUDE.md: parallel-session rules, the push lock, hidden loop resets, the several-rooms pattern, illustrator imports.
-- Scratch subfolders per session; the suite kills only what it started; `npm run open-package`.
-- Ad cards have no copy (no flash when leaving an ad); Wordle Bot's position in the guide.
+**The guide (`docs/engineering-guide.md`), committed in `49ee665`**
+- Section 3 has the new **Scenes** table (every scene in flow order, with its file, the Regi/Sub and Anon cards that use it, and Demetre's notes) and the **Renamed scenes** table (old to new, for engineers who have the 11-03 package).
+- Also updated: "What's new" (neutral names, scenes that share a room, Chapter 4's three scenes), rule 6, rule 11 (three waits, no 1.45 s reveal wait), the properties table, section 5's card lists and examples, section 6's wait table, section 8 and the checklist.
+- **Stale now, fix first:** the Chapter 3 session renamed File 3's `topGame` value `daily` to `crossword` in `a5fd7f6` (after my commit). These all still say or send `daily` for The Crossword's `topGame` and need changing to `crossword`:
+  - the guide's properties table and the line above the Renamed table ("`topGame` still calls The Crossword `daily`"); add `topGame` `daily` to `crossword` to the Renamed table;
+  - `harness/experience-stage.html` (`TOPGAME_VALUE`, which maps crossword to daily);
+  - `engineering/react/src/cards.ts` (the `top === 'crossword' ? 'daily'` mapping) and the `topGame?: string` comment in `types.ts`.
+  Until then a Crossword top game gets no fireworks or colour in the harness and the React example.
+
+**Half-done**
+- `docs/rive-plan.md` "Changes since the last delivery" has no entry yet for the rename, the new per-card scenes, same-room scene changes (0.34 s, no pan) or the removed 1.45 s reveal wait. The next note to engineering is made from that list.
+- The package hasn't been rebuilt, and smoke and the suite haven't run against the new names. Checks run so far: `npm run check` for all three chapters (pass), `npm run finesse` once per chapter (pass), and a one-off walk of File 3's cards for subscriber and anon (every scene and wait right; `.cache/scratch.nosync/shared/pw/scenes-check.mjs`). `npm run experience` and `npm run text` were updated but not run.
+
+**Open items for Demetre** (from the last report)
+1. `topGame`'s Crossword value: resolved by the Chapter 3 session (`crossword`); only the follow-up above remains.
+2. Chapter 4's wall fade: the old 1.45 s copy wait on `reveal` is removed, so the `chapter-4-top-game` copy arrives 0.34 s after the tap while the wall is still fading. Restore it?
+3. Ad 3 is still File 2's `to-chapter-3` card (the same picture as File 3's `ad`); his list put it on File 3's `ad`. Which?
+4. Badge card order: the cards run event badges, then achievement (personal) badges; the File 3 manifest lists `chapter-3-personal-badges` first. Swap?
+5. The "Chapter 4" ball check reports 0 contacts (Chapter 3 session's to look at).
 
 **Decisions not yet in CLAUDE.md**
-- A send covering two chapters keeps the panel's numbers in each file (the second file's section doesn't restart at 1).
-- When a chapter session edits a harness file, the shared session commits it, only when Demetre says.
-- Demetre may approve a review-server restart; done twice this session (14:55 on 11-03, 07:35 on 11-04).
+- Demetre may approve a review-server restart (done 11-03 14:55 and 11-04 07:35).
 
-**Open questions for Demetre**
-- The guide's Wordle Bot head (x 868.4, y 533.4) is stale: card 5 round 3 places the bubble from x 755.7, y 376.5. Update the guide when card 5 settles?
-- Ad cards keep an empty copy element, because `experience-test.mjs` expects one per card. Drop it and change the test?
-- The package hasn't been rebuilt since the ad fix, so its example still has the ad copy until the next build.
-- The panel's return-visit loop frame wasn't tested on its own (only first visits and a pin).
+**Uncommitted shared files:** none from this session. The chapter sessions keep adding to `docs/rooms*.md` and `tools/ball_speed_accepted.json`; commit them by path at the wrap-up.
 
-**Uncommitted shared files** (changed by the chapter sessions, not by me; commit by path when Demetre says):
-- `harness/experience-stage.html`: Chapter 1's card 5 round 3 bubble placement.
-- `tools/ball_speed_accepted.json`: "as drawn" entries from the chapter sessions.
-- `docs/rooms.md`, `docs/rooms-ch1.md`, `docs/rooms-ch3.md`: the chapters' rooms sheets.
+**Rive:** this session pushed nothing; no `.cache/rive-push.lock` left. Chapter sessions now push on their own ("Pushing on your own" in CLAUDE.md).
 
-**Rive:** nothing pushed by this session, nothing waiting for approval, and no `.cache/rive-push.lock` left.
-
-**Next step:** wait for Demetre's word to commit the five chapter-session files above, then wrap-up: push `main` to GitHub, rebuild the package (`python3 tools/package_engineering.py`) and update `docs/rive-plan.md`.
+**Next step:** fix the stale `topGame` `daily` references above, add the rename entries to "Changes since the last delivery", get Demetre's answers to items 2 to 4, then rebuild the package and run smoke (ask him first about the suite).
 
 **Tools for checks:** Playwright (`playwright-core`) is in `.cache/scratch.nosync/shared/pw/`; the one-off checks there drive the system Chrome. For a check that needs new `serve.mjs` code, run a second server on 8766 (`PORT=8766 node serve.mjs`) and stop only that one.
