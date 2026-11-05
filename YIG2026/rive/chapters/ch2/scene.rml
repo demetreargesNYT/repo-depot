@@ -6458,7 +6458,7 @@
                                     <CubicDetachedVertex inRotation="3.1415927" inDistance="7.4499998" x="-57.27" y="-23.08" id="1:647"/>
                                 </PointsPath>
                                 <Fill id="1:2344">
-                                    <SolidColor colorValue="FFF9DF6D" id="1:648"/>
+                                    <SolidColor colorValue="FFD2BEFF" id="1:648"/>
                                 </Fill>
                                 <Stroke transformAffectsStroke="false" thickness="1.5" cap="round" join="round" id="1:2345">
                                     <SolidColor colorValue="FF1F1F1F" id="1:649"/>
@@ -6480,7 +6480,7 @@
                                     <CubicDetachedVertex outRotation="-1.5707964" outDistance="5.1750002" x="58.125" y="-0.0049999999" id="1:661"/>
                                 </PointsPath>
                                 <Fill id="1:2346">
-                                    <SolidColor colorValue="FF05CE7C" id="1:662"/>
+                                    <SolidColor colorValue="FFD2BEFF" id="1:662"/>
                                 </Fill>
                                 <Stroke thickness="1.5" cap="round" join="round" id="1:2347">
                                     <SolidColor colorValue="FF1F1F1F" id="1:663"/>
@@ -50336,11 +50336,11 @@
             </KeyedObject>
             <KeyedObject objectId="1:648" id="9:51011">
                 <KeyedProperty property="colorValue" id="9:51012">
-                    <KeyFrameColor value="FFF9DF6D" frame="0" id="9:51013"/>
-                    <KeyFrameColor value="FFF9DF6D" interpolationType="linear" frame="154" id="9:51014"/>
-                    <KeyFrameColor value="FFB0C4EF" frame="160" id="9:51015"/>
-                    <KeyFrameColor value="FFB0C4EF" interpolationType="linear" frame="173" id="9:51016"/>
-                    <KeyFrameColor value="FFF9DF6D" frame="179" id="9:51017"/>
+                    <KeyFrameColor value="FFD2BEFF" frame="0" id="9:51013"/>
+                    <KeyFrameColor value="FFD2BEFF" interpolationType="linear" frame="154" id="9:51014"/>
+                    <KeyFrameColor value="FF82D1FF" frame="160" id="9:51015"/>
+                    <KeyFrameColor value="FF82D1FF" interpolationType="linear" frame="173" id="9:51016"/>
+                    <KeyFrameColor value="FFD2BEFF" frame="179" id="9:51017"/>
                 </KeyedProperty>
             </KeyedObject>
             <KeyedObject objectId="1:829" id="9:51024">
@@ -52783,27 +52783,27 @@
             </KeyedObject>
             <KeyedObject objectId="1:648" id="9:50621">
                 <KeyedProperty property="colorValue" id="9:50622">
-                    <KeyFrameColor value="FFF9DF6D" frame="0" id="9:50623"/>
-                    <KeyFrameColor value="FFF9DF6D" interpolationType="linear" frame="20" id="9:50624"/>
-                    <KeyFrameColor value="FFA0C35A" frame="26" id="9:50625"/>
-                    <KeyFrameColor value="FFA0C35A" interpolationType="linear" frame="50" id="9:50626"/>
-                    <KeyFrameColor value="FFB0C4EF" frame="56" id="9:50627"/>
-                    <KeyFrameColor value="FFB0C4EF" interpolationType="linear" frame="105" id="9:50628"/>
+                    <KeyFrameColor value="FFD2BEFF" frame="0" id="9:50623"/>
+                    <KeyFrameColor value="FFD2BEFF" interpolationType="linear" frame="20" id="9:50624"/>
+                    <KeyFrameColor value="FFE6FFAA" frame="26" id="9:50625"/>
+                    <KeyFrameColor value="FFE6FFAA" interpolationType="linear" frame="50" id="9:50626"/>
+                    <KeyFrameColor value="FF82D1FF" frame="56" id="9:50627"/>
+                    <KeyFrameColor value="FF82D1FF" interpolationType="linear" frame="105" id="9:50628"/>
                     <KeyFrameColor value="FFBA81C5" frame="111" id="9:50629"/>
                     <KeyFrameColor value="FFBA81C5" interpolationType="linear" frame="240" id="9:50630"/>
-                    <KeyFrameColor value="FFF9DF6D" frame="246" id="9:50631"/>
-                    <KeyFrameColor value="FFF9DF6D" interpolationType="linear" frame="488" id="9:50632"/>
-                    <KeyFrameColor value="FFB0C4EF" frame="494" id="9:50633"/>
-                    <KeyFrameColor value="FFB0C4EF" interpolationType="linear" frame="519" id="9:50634"/>
-                    <KeyFrameColor value="FFF9DF6D" frame="525" id="9:50635"/>
+                    <KeyFrameColor value="FFD2BEFF" frame="246" id="9:50631"/>
+                    <KeyFrameColor value="FFD2BEFF" interpolationType="linear" frame="488" id="9:50632"/>
+                    <KeyFrameColor value="FF82D1FF" frame="494" id="9:50633"/>
+                    <KeyFrameColor value="FF82D1FF" interpolationType="linear" frame="519" id="9:50634"/>
+                    <KeyFrameColor value="FFD2BEFF" frame="525" id="9:50635"/>
                 </KeyedProperty>
             </KeyedObject>
             <KeyedObject objectId="1:829" id="9:50636">
                 <KeyedProperty property="colorValue" id="9:50637">
                     <KeyFrameColor value="FFE6FFAA" frame="0" id="9:50638"/>
                     <KeyFrameColor value="FFE6FFAA" interpolationType="linear" frame="200" id="9:50639"/>
-                    <KeyFrameColor value="FFB0C4EF" frame="206" id="9:50640"/>
-                    <KeyFrameColor value="FFB0C4EF" interpolationType="linear" frame="226" id="9:50641"/>
+                    <KeyFrameColor value="FF82D1FF" frame="206" id="9:50640"/>
+                    <KeyFrameColor value="FF82D1FF" interpolationType="linear" frame="226" id="9:50641"/>
                     <KeyFrameColor value="FFE6FFAA" frame="232" id="9:50642"/>
                 </KeyedProperty>
             </KeyedObject>
@@ -52811,8 +52811,8 @@
                 <KeyedProperty property="colorValue" id="9:50644">
                     <KeyFrameColor value="FFE6FFAA" frame="0" id="9:50645"/>
                     <KeyFrameColor value="FFE6FFAA" interpolationType="linear" frame="270" id="9:50646"/>
-                    <KeyFrameColor value="FFA0C35A" frame="276" id="9:50647"/>
-                    <KeyFrameColor value="FFA0C35A" interpolationType="linear" frame="409" id="9:50648"/>
+                    <KeyFrameColor value="FFBA81C5" frame="276" id="9:50647"/>
+                    <KeyFrameColor value="FFBA81C5" interpolationType="linear" frame="409" id="9:50648"/>
                     <KeyFrameColor value="FFE6FFAA" frame="415" id="9:50649"/>
                 </KeyedProperty>
             </KeyedObject>
@@ -52820,8 +52820,8 @@
                 <KeyedProperty property="colorValue" id="9:50651">
                     <KeyFrameColor value="FF82D1FF" frame="0" id="9:50652"/>
                     <KeyFrameColor value="FF82D1FF" interpolationType="linear" frame="325" id="9:50653"/>
-                    <KeyFrameColor value="FFF9DF6D" frame="331" id="9:50654"/>
-                    <KeyFrameColor value="FFF9DF6D" interpolationType="linear" frame="364" id="9:50655"/>
+                    <KeyFrameColor value="FFE6FFAA" frame="331" id="9:50654"/>
+                    <KeyFrameColor value="FFE6FFAA" interpolationType="linear" frame="364" id="9:50655"/>
                     <KeyFrameColor value="FF82D1FF" frame="370" id="9:50656"/>
                 </KeyedProperty>
             </KeyedObject>
@@ -53391,7 +53391,7 @@
             </KeyedObject>
             <KeyedObject objectId="1:648" id="9:51018">
                 <KeyedProperty property="colorValue" id="9:51019">
-                    <KeyFrameColor value="FFF9DF6D" frame="0" id="9:51020"/>
+                    <KeyFrameColor value="FFD2BEFF" frame="0" id="9:51020"/>
                 </KeyedProperty>
             </KeyedObject>
             <KeyedObject objectId="1:829" id="9:51033">
@@ -53693,7 +53693,7 @@
             </KeyedObject>
             <KeyedObject objectId="1:648" id="9:51021">
                 <KeyedProperty property="colorValue" id="9:51022">
-                    <KeyFrameColor value="FFF9DF6D" frame="0" id="9:51023"/>
+                    <KeyFrameColor value="FFD2BEFF" frame="0" id="9:51023"/>
                 </KeyedProperty>
             </KeyedObject>
             <KeyedObject objectId="1:829" id="9:51042">

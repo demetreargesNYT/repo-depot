@@ -1,12 +1,12 @@
 """Connections: "purple first" (Demetre's brief, 2026-11-04).
 
-The left stack's top slab starts the loop yellow. The ball hunts for purple on it: bounce 1 pops the slab green and it shakes sideways
+The left stack's top slab starts the loop lilac. The ball hunts for purple on it: bounce 1 pops the slab lime and it shakes sideways
 (Connections' wrong-guess shake), bounce 2 pops it blue and shakes again (the ball then gathers itself a little longer), bounce 3 is a
 bigger, more determined bounce: the slab turns purple and locks with a 2 px lift instead of shaking. The ball celebrates with a small
 hop and a roll back of a few degrees (its dot tilts up, a glance). Then it moves on: it hops onto the wall shelf, hops down onto the
 right stack, idles on its lime slab, and hops home. While it is away the left stack shuffles (its slabs slide out sideways and back in
-a different order) and the top slab pops back to yellow as it settles, so the loop starts clean. The intro is unchanged except that the
-top slab is yellow all through it (its setup colour). There is no hidden reset: the ball lands where it began, at rest.
+a different order) and the top slab pops back to lilac as it settles, so the loop starts clean. The intro is unchanged except that the
+top slab is lilac all through it (its setup colour). There is no hidden reset: the ball lands where it began, at rest.
 
 The ball's node is its contact point (scaleX/scaleY on it are the squash, about the contact); its spin pivot turns it about its
 centre. Every flight is a parabola at 0.40 per frame squared, on whole frames; the rolls ease in and out; the net roll distance is 0,
@@ -29,7 +29,9 @@ BAR = "1:593"                                               # the far right stac
 BOOKS = [(("1:767",), 2.0, 2.0, 0), (("1:759",), 1.6, 1.6, 2), (("1:783",), 1.2, 1.2, 4),
          (("1:735", "1:743", "1:751"), 0.8, 0.8, 6), (("1:727", "1:722"), 0.6, 0.6, 8)]
 BOOK_T = 18                                                 # one book's reaction: 0.3 s, a single bump, no wobble
-YELLOW, GREEN, BLUE, PURPLE = "FFF9DF6D", "FFA0C35A", "FFB0C4EF", "FFBA81C5"   # Connections' own four group colours
+# The only colours any slab, bar or shelf ever shows, at rest or in a pop (Demetre, 2026-11-04): the left stack's own four
+C_LILAC, C_LIME, C_BLUE, C_PURPLE = "FFD2BEFF", "FFE6FFAA", "FF82D1FF", "FFBA81C5"
+BOTTOM_COLOUR = "1:662"                                     # the left stack's bottom slab (drawn green): becomes lilac at rest
 PATH = {LILAC: "1:638", TOP_LIME: "1:667", MID_BLUE: "1:695", MID_BLACK: "1:709"}   # each slab's outline path
 R = 17.68
 G = 0.40
@@ -233,10 +235,12 @@ def build(doc, scene, sheet):
     for oid in (BALL, SPIN, LILAC):                 # the old loop: the ball, its turn and the slab's old squash
         doc.drop_object(loop, oid)
 
-    # the top slab's colour is yellow wherever the loop does not key it (the intro, Waiting, Built), and its stroke keeps its
+    # the top slab's colour is its drawn lilac wherever the loop does not key it (the intro, Waiting, Built), and its stroke keeps its
     # weight when the slab scales
     i = doc.idx(TOP_COLOUR)
-    doc.lines[i] = doc.lines[i].replace("FFD2BEFF", YELLOW)
+    assert C_LILAC in doc.lines[i]                  # the top slab starts the loop on its own drawn lilac
+    i = doc.idx(BOTTOM_COLOUR)
+    doc.lines[i] = doc.lines[i].replace("FF05CE7C", C_LILAC)
     i = doc.idx(TOP_STROKE)
     doc.lines[i] = doc.lines[i].replace("<Stroke ", '<Stroke transformAffectsStroke="false" ', 1)
 
@@ -245,7 +249,7 @@ def build(doc, scene, sheet):
     # The top slab's flat face runs from about x 536 to 621, the lime slab's from 738 to 824, the shelf's pocket from 730 to 736.
     b = Path(start)
     b.rest(4)                                       # gathers
-    b.hop((606.0, y0), 16)                          # bounce 1 (slab to green, shakes), drifting left
+    b.hop((606.0, y0), 16)                          # bounce 1 (slab to lime, shakes), drifting left
     c1 = b.f
     b.settle(b.vx, 10)
     b.rest(2)
@@ -280,7 +284,7 @@ def build(doc, scene, sheet):
     b.settle(b.vx, 12)                              # rolls on along the lime slab,
     b.roll(b.c[-1][0] - 1.2, 10)                    # a tiny rock back
     b.rest(3)
-    peak5 = b.hop((896.0, BAR_Y), 30)               # over to the far right stack: onto its blue bar (it pops yellow)
+    peak5 = b.hop((896.0, BAR_Y), 30)               # over to the far right stack: onto its blue bar (it pops lime)
     f_bar = b.f
     b.settle(b.vx, 12)
     b.roll(b.c[-1][0] - 1.2, 10)                    # a tiny rock back
@@ -303,7 +307,7 @@ def build(doc, scene, sheet):
     f_home = b.f
     b.settle(2 * (home_mid - home_land) / 14, 14)   # settling left (the slab's face ends at 621: most of the fall is taken)
     b.rest(3)
-    f_home2 = small_hop(b, x0, 14, 12)              # and a smaller bounce onto the start: the slab pops back to yellow
+    f_home2 = small_hop(b, x0, 14, 12)              # and a smaller bounce onto the start: the slab pops back to lilac
     b.rest(4)
     L = b.f
     assert abs(b.c[L][0] - x0) < 1e-9 and abs(b.c[L][1] - y0) < 1e-9, b.c[L]
@@ -410,19 +414,18 @@ def build(doc, scene, sheet):
     for pid in (LILAC, TOP_LIME, MID_BLUE, MID_BLACK):
         doc.set_prop(intro, PATH[pid], "x", [(0, 0.0, "hold")])
         doc.set_prop(loop, PATH[pid], "x", bake({g: slab_x(pid, g) for g in fr}, fr))
-    # the top slab's colour: each change is a quick pop (6 frames) on the bounce's contact; yellow again as it is back in place
+    # the top slab's colour: each change is a quick pop (6 frames) on the bounce's contact; lilac again as it is back in place
     colour_keys(doc, loop, TOP_COLOUR, [
-        (0, YELLOW, "hold"), (c1, YELLOW, "linear"), (c1 + 6, GREEN, "hold"),
-        (c2, GREEN, "linear"), (c2 + 6, BLUE, "hold"),
-        (c3, BLUE, "linear"), (c3 + 6, PURPLE, "hold"),
-        (f_seat, PURPLE, "linear"), (f_seat + 6, YELLOW, "hold"),
-        (f_home, YELLOW, "linear"), (f_home + 6, BLUE, "hold"), (f_home2, BLUE, "linear"), (f_home2 + 6, YELLOW, "hold")])
+        (0, C_LILAC, "hold"), (c1, C_LILAC, "linear"), (c1 + 6, C_LIME, "hold"),
+        (c2, C_LIME, "linear"), (c2 + 6, C_BLUE, "hold"),
+        (c3, C_BLUE, "linear"), (c3 + 6, C_PURPLE, "hold"),
+        (f_seat, C_PURPLE, "linear"), (f_seat + 6, C_LILAC, "hold"),
+        (f_home, C_LILAC, "linear"), (f_home + 6, C_BLUE, "hold"), (f_home2, C_BLUE, "linear"), (f_home2 + 6, C_LILAC, "hold")])
     # every other landing on a shelf or a bar pops it to a Connections colour, and its smaller bounce pops it back to its drawn lime
-    # (the shelf goes blue: purple is on the top slab then; the lime slab goes green: the top slab is yellow by then)
-    # the shelf goes blue and back at its smaller bounce; the lime slab goes green on its first landing and back on its second (the
-    # return from the bar); the far right bar goes yellow and back to its blue at its smaller bounce
-    pops2 = ((SHELF_COLOUR, f_shelf, f_shelf2, BLUE, DRAWN_LIME), (LIME_COLOUR, f_stack, f_lime2, GREEN, DRAWN_LIME),
-             (BAR_COLOUR, f_bar, f_bar2, YELLOW, DRAWN_BLUE))
+    # the shelf goes blue and back at its smaller bounce; the lime slab goes purple on its first landing and back on its second (the
+    # return from the bar); the far right bar goes lime and back to its blue at its smaller bounce
+    pops2 = ((SHELF_COLOUR, f_shelf, f_shelf2, C_BLUE, DRAWN_LIME), (LIME_COLOUR, f_stack, f_lime2, C_PURPLE, DRAWN_LIME),
+             (BAR_COLOUR, f_bar, f_bar2, C_LIME, DRAWN_BLUE))
     for oid, f1, f2, c, drawn in pops2:
         colour_keys(doc, loop, oid, [(0, drawn, "hold"), (f1, drawn, "linear"), (f1 + 6, c, "hold"),
                                      (f2, c, "linear"), (f2 + 6, drawn, "hold")])
@@ -431,16 +434,16 @@ def build(doc, scene, sheet):
     # (after the rebuilds, which read only number keys) the colours in the intro: the top slab pops blue on the ball's first landing
     # (2.57 s) and back to yellow on its small hop (2.88 s); the shelf and the lime slab hold their lime. Waiting and Built hold the
     # intro's first and last colours, yellow and lime
-    colour_keys(doc, intro, TOP_COLOUR, [(0, YELLOW, "hold"), (154, YELLOW, "linear"), (160, BLUE, "hold"),
-                                         (173, BLUE, "linear"), (179, YELLOW, "hold")])
+    colour_keys(doc, intro, TOP_COLOUR, [(0, C_LILAC, "hold"), (154, C_LILAC, "linear"), (160, C_BLUE, "hold"),
+                                         (173, C_BLUE, "linear"), (179, C_LILAC, "hold")])
     for anim in (f"{ROOM} Waiting", f"{ROOM} Built"):
-        colour_keys(doc, anim, TOP_COLOUR, [(0, YELLOW, "hold")])
+        colour_keys(doc, anim, TOP_COLOUR, [(0, C_LILAC, "hold")])
     for anim in (intro, f"{ROOM} Waiting", f"{ROOM} Built"):
         for oid, _f1, _f2, _c, drawn in pops2:
             colour_keys(doc, anim, oid, [(0, drawn, "hold")])
 
     s = lambda f: f"{(INTRO + f) / 60:.2f} s"
     tops = ", ".join(f"{p - 2 * R:.0f}" for p in (peak3, peak1, peak2, peak5, peak6, peak4))
-    return (f"{ROOM}: bounces at {s(c1)}, {s(c2)}, {s(c3)} (slab green, blue, purple), glance, leaves {s(f_leave)}, "
-            f"shelf {s(f_shelf)} (blue) and {s(f_shelf2)} (lime), lime slab {s(f_stack)} (green), far right bar {s(f_bar)} (yellow) and {s(f_bar2)} (blue), lime slab again {s(f_lime2)} (lime), home {s(f_home)} (blue) and {s(f_home2)} (yellow); shuffle {s(S)} to {s(S + ends)}, top slab yellow {s(f_seat + 6)}; "
+    return (f"{ROOM}: bounces at {s(c1)}, {s(c2)}, {s(c3)} (slab lime, blue, purple), glance, leaves {s(f_leave)}, "
+            f"shelf {s(f_shelf)} (blue) and {s(f_shelf2)} (lime), lime slab {s(f_stack)} (purple), far right bar {s(f_bar)} (lime) and {s(f_bar2)} (blue), lime slab again {s(f_lime2)} (lime), home {s(f_home)} (blue) and {s(f_home2)} (lilac); shuffle {s(S)} to {s(S + ends)}, top slab lilac {s(f_seat + 6)}; "
             f"loop {L / 60:.2f} s ({L} frames); ball tops at y {tops}; squash {squash_report}")
