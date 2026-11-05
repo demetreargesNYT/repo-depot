@@ -41,14 +41,14 @@
     {
       "chapter": "ch3",
       "room": "Chapter 3",
-      "pattern": "^contact at 4\\.22 s leaves faster than it arrived",
+      "pattern": "^contact at 5\\.15 s leaves faster than it arrived",
       "why": "c3s1 as drawn: the ring box lid tosses the ball onto the calendar",
       "approved": "Demetre, 2026-11-03"
     },
     {
       "chapter": "ch3",
       "room": "Chapter 3",
-      "pattern": "^flight at 4\\.25 to 4\\.65 s falls at",
+      "pattern": "^flight at 5\\.18 to 5\\.58 s falls at",
       "why": "c3s1 as drawn: the flight from the ring box to the calendar",
       "approved": "Demetre, 2026-11-03"
     },
@@ -62,21 +62,21 @@
     {
       "chapter": "ch3",
       "room": "Chapter 3",
-      "pattern": "^contact at 5\\.57 s leaves faster than it arrived",
+      "pattern": "^contact at 8\\.42 s leaves faster than it arrived",
       "why": "c3s1 as drawn: the jump off the calendar toward the mobile",
       "approved": "Demetre, 2026-11-03"
     },
     {
       "chapter": "ch3",
       "room": "Chapter 3",
-      "pattern": "^turn-round at 6\\.62 s .* off a surface tilted only",
+      "pattern": "^turn-round at 9\\.47 s .* off a surface tilted only",
       "why": "c3s1 as drawn: the ball turns round off the disco ball",
       "approved": "Demetre, 2026-11-03"
     },
     {
       "chapter": "ch3",
       "room": "Chapter 3",
-      "pattern": "^flight at 7\\.05 to 7\\.52 s falls at",
+      "pattern": "^flight at 9\\.90 to 10\\.37 s falls at",
       "why": "c3s1 as drawn: the rise off the clock before the drop into the box",
       "approved": "Demetre, 2026-11-03"
     },

@@ -22,6 +22,7 @@ from rml_read import chapter_dir
 SCENE = chapter_dir("ch3") / "scene.rml"
 SAVED = chapter_dir("ch3") / "disco-saved.json"
 DISCO = "9:689"
+ALIAS = {"Chapter 3 Disco Loop": "Chapter 3 Loop"}      # 2026-11-05: the loop moved to its own layer; the keys and the length are the same
 
 
 def extract(doc):
@@ -51,7 +52,7 @@ def extract(doc):
                 k += 1
         if blocks:
             dur = re.search(r'duration="(\d+)"', l)
-            anims[m.group(1)] = {"duration": dur.group(1) if dur else None, "blocks": blocks}
+            anims[ALIAS.get(m.group(1), m.group(1))] = {"duration": dur.group(1) if dur else None, "blocks": blocks}
     return {"piece": piece, "anims": anims}
 
 
@@ -82,6 +83,8 @@ def main(cmd):
         i = doc.idx(DISCO)
         doc.lines[i:doc.end(i) + 1] = saved["piece"]
         for name, v in saved["anims"].items():
+            if name == "Chapter 3 Loop" and any('name="Chapter 3 Disco Loop"' in l for l in doc.lines):
+                name = "Chapter 3 Disco Loop"
             a, b = doc.anim(name)
             ids = {re.search(r'objectId="([^"]+)"', blk[0]).group(1) for blk in v["blocks"]}
             for oid in ids:

@@ -139,7 +139,7 @@ def rooms_are_separate(chapter):
             continue
         for ko in anim.findall("KeyedObject"):
             oid = ko.get("objectId")
-            if name.endswith(" Colors"):
+            if name.endswith(" Colors") or name == "Chapter 3 Dim":      # the one named exception (2026-11-05), see check_chapter.DIM_POSE
                 ok = oid in background
             else:
                 ok = room_of.get(oid) == owner
