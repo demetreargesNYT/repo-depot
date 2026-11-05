@@ -2,6 +2,7 @@
 
     python3 chapters/ch3/scripts/ch3_bird_shared_room.py --write [--scene PATH]      once
 
+(The scene was renamed chapter-3-2 by ch3_scene_names.py the same day; this script's names are the ones it ran with.)
 Chapter 1 copied the bird's loop into the Start card (commit 125b175), so nothing else needs the bird room. The scene name and the Scene
 enum stay (engineering's scene list does not change); only what the file does with the value changes:
 - the layers of Chapter 3's room (Chapter 3, Exit, Draw, Small) answer "chapter-3-bird" exactly as they answer "chapter-3": every
