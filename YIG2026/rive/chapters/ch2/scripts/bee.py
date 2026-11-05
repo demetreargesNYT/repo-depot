@@ -11,7 +11,7 @@ ball never uses the pad, and the big hex never moves.
      its starting face, while the ball watches with a faint, eased roll
   5  the honey moment: the ball hops down onto the coaster's big hex and lands soft, staying squashed 0.3 s longer, then leans towards
      the mug with a small upward stretch and pops loose
-  6  home: it threads the gap under the block's corner and over the mug's left rim, drops in (the hidden reset), and the mug gives one
+  6  home: it arcs in front of the block's lower-left corner (overlapping it: depth) and over the mug's left rim, drops in (the hidden reset), and the mug gives one
      small proud wobble
 
 One gravity (0.40), every flight a whole-frame parabola. Squash and stretch about the ball's bottom (Ball_01_Scale), volume constant;
@@ -209,20 +209,40 @@ def plan_honey(x_s, BT, YC, Rc):
                     cross = xc + vx2 * T2
                     if not 796 <= cross <= 810:
                         continue
-                    c_in, t = 99.0, 0.0
+                    c_in, deep, t = 99.0, -99.0, 0.0
                     while True:
                         t += 0.5
                         q = (xc + vx2 * t, YC + vy2 * t + 0.2 * t * t)
                         if q[1] >= HIDE_Y and vy2 + 0.4 * t > 0:
                             break
-                        c_in = min(c_in, clearance(q, pad=False))
-                    if q[0] > 818 or c_in < 24.6:
+                        c_in = min(c_in, clearance(q, block=False, pad=False))
+                        deep = max(deep, 23.865 - block_signed(q))
+                    # it passes in front of the block's lower-left corner, clearly overlapping it (never a near-miss)
+                    if q[0] > 818 or c_in < 25.5 or not OVERLAP[0] <= deep <= OVERLAP[1] or q_top(xc, YC, vy2) < COPY_Y:
                         continue
                     score = min(c_down, c_in)
                     if best is None or score > best[0]:
-                        best = (score, T, xl, vx, vy0, xc, T2, vx2, vy2, c_down, c_in)
+                        best = (score, T, xl, vx, vy0, xc, T2, vx2, vy2, c_down, c_in, deep)
     assert best, "no hop down and into the mug clears the block, the pad and the rim"
     return best
+
+
+OVERLAP = (9.0, 16.0)                      # how deep the ball's outline crosses into the block's corner on the way into the mug (px)
+
+
+def q_top(x0, y0, vy0):
+    return y0 - vy0 * vy0 / 0.8 - 23.865
+
+
+def block_signed(p):
+    """The distance from p to the block's outline, negative inside it."""
+    d = min(seg_dist(p, a, b) for a, b in BLOCK_SEGS)
+    pts = block_outline()
+    inside = False
+    for (x1, y1), (x2, y2) in BLOCK_SEGS:
+        if (y1 > p[1]) != (y2 > p[1]) and p[0] < x1 + (p[1] - y1) * (x2 - x1) / (y2 - y1):
+            inside = not inside
+    return -d if inside else d
 
 
 def build(doc, scene, sheet):
@@ -273,7 +293,7 @@ def build(doc, scene, sheet):
     gathers.append((tr.f - DOWN_GATHER, tr.f, SQ["down_gather"]))
     x_s = tr.pos[-1][0]
     plan = plan_honey(x_s, BT, YC, RC)
-    _, T_d, x_l, vx_d, vy_d, x_c, T2, vx2, vy2, c_down, c_in = plan
+    _, T_d, x_l, vx_d, vy_d, x_c, T2, vx2, vy2, c_down, c_in, deep = plan
     _, c_honey = tr.hop(vx_d, T_d, YC, "the coaster's big hex (honey)", w_air=0.25 * vx_d / R, vy0=vy_d)
     tr.roll_out(vx_d, HONEY_SETTLE)                        # sticky: it rolls on only a touch, then rocks back
     tr.roll_sine(x_c - tr.pos[-1][0], 10)
@@ -450,5 +470,5 @@ def build(doc, scene, sheet):
     beats = [f"pop {sec(go)}", f"block {sec(c_land1)}", f"plate turns {sec(flips[0][0])}", f"glance {sec(c_gl)}",
              "hops " + ", ".join(sec(x) for x in hop_lands), f"gather {sec(c_big)}", f"proud landing {sec(c_proud)}",
              f"top spin {sec(top[0])} to {sec(top[0] + top[1])}", f"hop down {sec(c_honey - T_d)}", f"honey {sec(c_honey)}",
-             f"pulls free {sec(c_pull)}", f"into the mug {sec(c_catch)} (clear {c_in:.1f} of the block corner and rim; down {c_down:.1f})"]
+             f"pulls free {sec(c_pull)}", f"into the mug {sec(c_catch)} (in front of the block's corner, {deep:.1f} px over it; {c_in:.1f} from the rim; down {c_down:.1f})"]
     return f"{ROOM}: " + ", ".join(beats) + f"; loop {L / 60:.2f} s ({L} frames)"
