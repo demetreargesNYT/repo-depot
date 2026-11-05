@@ -77634,7 +77634,7 @@
                 </KeyedProperty>
             </KeyedObject>
         </LinearAnimation>
-        <LinearAnimation fps="60" duration="1" name="Chapter 4 Fireworks daily" id="9:27188">
+        <LinearAnimation fps="60" duration="1" name="Chapter 4 Fireworks crossword" id="9:27188">
             <KeyedObject objectId="9:11269" id="9:27189">
                 <KeyedProperty property="opacity" id="9:27190">
                     <KeyFrameDouble id="9:27191"/>
@@ -102723,7 +102723,7 @@
         <DataEnumValue key="spelling-bee" value="spelling-bee" id="1:9303"/>
         <DataEnumValue key="mini" value="mini" id="1:9304"/>
         <DataEnumValue key="midi" value="midi" id="1:9305"/>
-        <DataEnumValue key="daily" value="daily" id="1:9306"/>
+        <DataEnumValue key="crossword" value="crossword" id="1:9306"/>
     </DataEnumCustom>
     <ViewModel defaultInstanceId="1:15" name="Backdrop" id="1:14">
         <ViewModelPropertyEnumCustom enumId="1:9001" name="scene" id="1:2713"/>

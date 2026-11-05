@@ -35,7 +35,7 @@
         "spelling-bee",
         "mini",
         "midi",
-        "daily"
+        "crossword"
       ],
       "default": "wordle",
       "setBy": "engineering",
@@ -235,7 +235,7 @@
         "chapter-4-editor-video"
       ],
       "when": {
-        "topGame": "daily",
+        "topGame": "crossword",
         "reveal": true
       },
       "wall": "FF6493E6",
@@ -264,8 +264,8 @@
     "spelling-bee": [
       "spelling-bee"
     ],
-    "daily": [
-      "daily",
+    "crossword": [
+      "crossword",
       "mini",
       "midi"
     ]

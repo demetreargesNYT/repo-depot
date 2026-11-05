@@ -41,9 +41,9 @@ VM = "1:14"
 SCENE_P, DIR_P, TOP_P, REVEAL_P, START_P = "1:2713", "1:2855", "1:3300", "1:3310", "1:3400"
 CH4, BACK, FWD = "1:9102", "1:9201", "1:9200"
 TOP_VALUES = {"wordle": "1:9300", "connections": "1:9301", "strands": "1:9302", "spelling-bee": "1:9303",
-              "mini": "1:9304", "midi": "1:9305", "daily": "1:9306"}
+              "mini": "1:9304", "midi": "1:9305", "crossword": "1:9306"}   # "crossword" was "daily" until ch3_topgame_crossword.py
 SET_OF = {"wordle": "Wordle", "connections": "Connections", "strands": "Strands", "spelling-bee": "Spelling Bee",
-          "mini": "Crossword", "midi": "Crossword", "daily": "Crossword"}
+          "mini": "Crossword", "midi": "Crossword", "crossword": "Crossword"}
 SETS = ["Wordle", "Connections", "Strands", "Spelling Bee", "Crossword"]
 # The burst frames (apex of the hop = the frame the burst's large pieces reach their full size in "Chapter 4 Fireworks Loop") and
 # the hop's flight in frames (12 -> 7.2 units, 14 -> 9.8, 16 -> 12.8; a hop of T frames rises 0.4 * T * T / 8). Read from the keys:
