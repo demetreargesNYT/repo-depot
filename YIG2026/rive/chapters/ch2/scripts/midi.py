@@ -9,15 +9,14 @@ The ball lives in the right pair: its white fronts are drawn above the ball, so 
 top edge and comes back in through its bottom edge, and only the part past that edge shows). It rides in hidden with the pair's drop.
 
 The loop, from the moment the pieces have landed (1.95 s):
-  * the two pairs slide towards each other (the left one down, the right one up; they meet at y 500, clear above the stairs) and
+  * the two pairs slide towards each other, above the stairs (left pair up and left, right pair up and left; they meet at y 476) and
     click together into one four-cell bar, with a 1.2 px recoil that settles;
-  * the ball pops up out of the bar's top and lands on it; the bar rides left, carrying it (the ball held, not turning), and docks
-    beside the stairs' upper cube; the ball hops off onto the upper cube's top and the push sends the empty bar back;
-  * the ball hops down the stairs (each step: lands, pauses, goes on by its own effort, as before), then hops onto the floor bar's first
-    cell and rolls right across it (the surface takes the fall), slowing to a stop on the last cell; each cell's top turns from black
-    to white as the ball rolls onto it, the turn's edge following the ball;
-  * it hops up into the bar's right pair from below and is out of sight; the pairs separate back to where they started, the four tops
-    turn back to black one after another, and the ball pops out again.
+  * the ball pops up out of the bar's top and lands on it; the bar carries it right 122 px (the ball held, not turning) to its dock at
+    x 711 to 933.5; the ball rolls left along the docked bar and hops off its left end onto the upper stair cube, then down the stairs;
+  * it hops onto the floor bar's first cell and rolls right across it (the surface takes the fall), slowing to a stop on the last cell;
+    each cell's top turns from black to white as the ball rolls onto it, the turn's edge following the ball;
+  * it hops up into the docked bar's right pair from below and is out of sight; the pairs separate back to where they started, the four
+    tops turn back to black one after another, and the ball pops out again.
 Ambient: the right pair's right square turns black and back, and the floor bar's second front turns white and back, at their own times.
 
 The cube turn is Chapter 1 card 5's 2D trick: each turning square is two faces that share one edge; the edge sits at the faces' widths
@@ -43,30 +42,28 @@ L_HOME = (672.4, 487.3)                     # the left pair's left edge and top
 R_HOME = (781.5, 565.0)                     # the right pair's white fronts' left edge and top
 L_WIDTH = 92.7                              # the left pair's width (its black square shows 40.2, its white 52.5)
 R_WHITES = 105.3                            # the right pair's two white fronts (its black back shows 24.5 more on the right)
-YP = 500.0                                  # the joined bar's top: its bottom (552.5) clears a ball on the lower cube's top; the ball's top on it 458
-LP_J = 690.0                                # the joined bar's left edge: right of the lower cube's top (688.8)
-LP_DOCK = 640.0                             # where the ride docks it: just right of the upper cube (636.3)
-DL = (LP_J - L_HOME[0], YP - L_HOME[1])     # the left pair's slide (down and a little right)
-DR = (LP_J + L_WIDTH - R_HOME[0], YP - R_HOME[1])   # the right pair's slide (up)
-RIDE = LP_DOCK - LP_J
+YP = 476.0                                  # the joined bar's top: its bottom (528.5) clears the upper cube's top (533.5), so it can pass above it
+LP_J = 589.0                                # the joined bar's left edge where the pairs click: above the stairs
+LP_DOCK = 711.0                             # where the ride docks it: its right end (933.5) stops 1.5 px inside the phone frame (935)
+DL = (LP_J - L_HOME[0], YP - L_HOME[1])     # the left pair's slide (left and a little up)
+DR = (LP_J + L_WIDTH - R_HOME[0], YP - R_HOME[1])   # the right pair's slide (left and up)
+RIDE = LP_DOCK - LP_J                       # 122: the ride, rightwards
 
 # ---- the ball's surfaces (contact lines) -------------------------------------------------------------------------------------
 BASE_Y = 670.0                              # on the floor bar's tops, a third of the way back
 LOW_Y, UP_Y = 596.0, 544.0                  # the stairs' lower and upper cube tops (as before)
-UP_X, LOW_X = 600.0, 656.0                  # where it lands on each step
+UP_X, LOW_X = 585.0, 656.0                  # where it lands on each step
 XS = 884.0                                  # where it comes to rest on the floor bar's last cell
 IN_REL = (48.0, 26.25)                      # the ball's centre hidden in the right pair, from its fronts' top-left corner
 TOP_LIMIT = 425.0                           # the ball's top never higher (copy clearance)
 
 # ---- timing (cycle frames from T0) ---------------------------------------------------------------------------------------------
-C_CLICK = 40                                # the pairs meet
+C_CLICK = 42                                # the pairs meet
 RECOIL, RECOIL_T = 1.2, 10
-C_POP = 42                                  # the ball pops out (lands on the bar before the intro hands over to the loop, cycle frame 74)
-C_RIDE0, RIDE_T = 80, 54
-C_HOP = 140                                 # it hops off the docked bar
-RET_T = 44                                  # the empty bar's return
-TURN_T = 18                                 # a cube turn
-SEP_T = 46
+C_POP = 44                                  # the ball pops out (lands on the bar before the intro hands over to the loop, cycle frame 74)
+C_RIDE0, RIDE_T = 80, 52
+TURN_T = 16                                 # a cube turn
+SEP_T = 36
 
 
 def hop_to(p0, p1, vy0):
@@ -208,16 +205,11 @@ class Square:
 
 
 # ---- the pairs -------------------------------------------------------------------------------------------------------------------
-def pair_offsets(f_catch, f_sep):
-    """(dL(g), dR(g)): the pairs' displacement from where they are drawn, and the ride (both, once joined)."""
+def pair_offsets(f_sep):
+    """(dL(g), dR(g), ride(g)): the pairs' displacement from where they are drawn. They slide to the click, the joined bar rides right
+    to its dock and stays there, then both pairs go home (the separation, from f_sep). ride(g) is the bar's ride in px, for the ball."""
     def join(g):
-        if g <= 0:
-            return 0.0
-        if g < C_CLICK:
-            return (g / C_CLICK) ** 1.6                     # they speed up into the click (2.6 px a frame)
-        if g < f_sep:
-            return 1.0
-        return 1.0 - smooth((g - f_sep) / SEP_T)
+        return 0.0 if g <= 0 else min(1.0, g / C_CLICK) ** 0.85      # a quick start that eases off into the click
 
     def recoil(g):                                         # the click: they spring 1.2 px apart and settle, once
         return dip(g - C_CLICK, RECOIL, RECOIL_T)
@@ -225,24 +217,20 @@ def pair_offsets(f_catch, f_sep):
     def ride(g):
         if g < C_RIDE0:
             return 0.0
-        if g < C_RIDE0 + RIDE_T:
-            return RIDE * smooth((g - C_RIDE0) / RIDE_T)
-        if g < C_HOP:
-            return RIDE
-        if g < C_HOP + RET_T:                              # the ball's push sends it back, quickly at first
-            u = (g - C_HOP) / RET_T
-            return RIDE * (1 - u) ** 2
-        return 0.0
+        return RIDE * smooth((g - C_RIDE0) / RIDE_T)
+
+    def home(g):                                           # 0 at the dock, 1 when the pairs are back
+        return smooth((g - f_sep) / SEP_T) if g > f_sep else 0.0
 
     nl, nr = math.hypot(*DL), math.hypot(*DR)
 
     def dl(g):
-        j, r, x = join(g), recoil(g), ride(g)
-        return (DL[0] * j - DL[0] / nl * r + x, DL[1] * j - DL[1] / nl * r)
+        j, r, x, h = join(g), recoil(g), ride(g), home(g)
+        return ((DL[0] * j + x) * (1 - h) - DL[0] / nl * r, (DL[1] * j) * (1 - h) - DL[1] / nl * r)
 
     def dr(g):
-        j, r, x = join(g), recoil(g), ride(g)
-        return (DR[0] * j - DR[0] / nr * r + x, DR[1] * j - DR[1] / nr * r)
+        j, r, x, h = join(g), recoil(g), ride(g), home(g)
+        return ((DR[0] * j + x) * (1 - h) - DR[0] / nr * r, (DR[1] * j) * (1 - h) - DR[1] / nr * r)
     return dl, dr, ride
 
 
@@ -259,33 +247,41 @@ def build(doc, scene, sheet):
     # a provisional pair motion, to place the ball while it is hidden; the catch and the separation are worked out below
     beats = {}
     pa = Path(r_home_in, "hidden")
-    dl0, dr0, ride = pair_offsets(10 ** 6, 10 ** 6)
+    dl0, dr0, ride = pair_offsets(10 ** 6)
     for g in range(1, C_POP + 1):
         d = dr0(g)
         pa.add((r_home_in[0] + d[0], r_home_in[1] + d[1]), "hidden")
     # out of the bar's top: a pop up and a little left, onto the left pair's white
-    f, vin = pa.fly((-2.6, -6.5), yb(YP))
+    f, vin = pa.fly((-2.5, -6.5), yb(YP))
     beats["lands on the bar"] = f
     land_bar = pa.p
     sq = [(f, 0.05)]
     assert f + 3 < INTRO - 1 - T0, (f, "the ball must be resting when the intro hands over to the loop")
     f_bar = f
-    while pa.f < C_HOP:
+    while pa.f < C_RIDE0 + RIDE_T + 6:                     # the bar carries it, the ball held (no turn)
         g = pa.f + 1
         pa.add((land_bar[0] + ride(g), land_bar[1] + dip(g - f_bar, 1.5, 16)), "ride")
+    beats["bar docks"] = C_RIDE0 + RIDE_T
+    # then it rolls left along the docked bar, to near its left end (from rest: the speed builds and eases off), and hops off
+    x0, y0 = pa.p
+    x_end, N_ROLL = LP_DOCK + 31.0, 20
+    for k in range(1, N_ROLL + 1):
+        pa.add((x0 + (x_end - x0) * smooth(k / N_ROLL), y0), "roll")
+    pa.rest(6)
     beats["hops off the bar"] = pa.f
-    v, _ = hop_to(pa.p, (UP_X, yb(UP_Y)), -3.5)
+    f_hop = pa.f
+    v, _ = hop_to(pa.p, (UP_X, yb(UP_Y)), -2.4)
     hop_v = {pa.f: v}
     f, vin = pa.fly(v, yb(UP_Y))
     beats["lands on the upper cube"] = f
     sq.append((f, 0.10))
-    pa.rest(14)
+    pa.rest(12)
     v, _ = hop_to(pa.p, (LOW_X, yb(LOW_Y)), -4.6)
     hop_v[pa.f] = v
     f, vin = pa.fly(v, yb(LOW_Y))
     beats["lands on the lower cube"] = f
     sq.append((f, 0.07))
-    pa.rest(12)
+    pa.rest(8)
     v = (4.3, -0.5)
     hop_v[pa.f] = v
     f, vin = pa.fly(v, yb(BASE_Y))
@@ -294,10 +290,10 @@ def build(doc, scene, sheet):
     f_floor = f
     pa.roll_to_stop(yb(BASE_Y), vin[0], XS)
     beats["stops on the last cell"] = pa.f
-    pa.rest(10)
-    # up into the right pair (joined, at LP_J): apex inside its fronts, N_UP frames later
-    N_UP = 25
-    wl_j = LP_J + L_WIDTH
+    pa.rest(6)
+    # up into the right pair (joined, at its dock): apex inside its fronts, N_UP frames later
+    N_UP = 27
+    wl_j = LP_DOCK + L_WIDTH
     apex = (wl_j + 52.0, yb(BASE_Y) - 0.5 * G * N_UP * N_UP)
     vx = (apex[0] - pa.p[0]) / N_UP
     hop_v[pa.f] = (vx, -G * N_UP)
@@ -306,11 +302,11 @@ def build(doc, scene, sheet):
         pa.add((x0 + vx * k, y0 - G * N_UP * k + 0.5 * G * k * k), "air")
     f_catch = pa.f
     beats["out of sight in the right pair"] = f_catch
-    f_sep = f_catch + 12
-    resets = [f_catch + d for d in (16, 31, 49, 60)]       # the tops turn back, one after another, at uneven gaps
-    L = max(f_sep + SEP_T, resets[-1] + TURN_T) + 16
-    dl, dr, ride = pair_offsets(f_catch, f_sep)
-    assert all(abs(dr(g)[k] - dr0(g)[k]) < 1e-9 for g in range(C_HOP + RET_T + 1) for k in (0, 1))
+    f_sep = f_catch + 8
+    resets = [f_catch + d for d in (8, 17, 28, 36)]        # the tops turn back, one after another, at uneven gaps
+    L = max(f_sep + SEP_T, resets[-1] + TURN_T) + 8
+    dl, dr, ride = pair_offsets(f_sep)
+    assert all(abs(dr(g)[k] - dr0(g)[k]) < 1e-9 for g in range(f_catch) for k in (0, 1))
     # hidden: rides with the right pair, and moves within it (out of sight) from where it was caught to where it pops from
     rel_catch = (apex[0] - (R_HOME[0] + dr(f_catch)[0]), apex[1] - (R_HOME[1] + dr(f_catch)[1]))
     h0, h1 = f_sep + SEP_T, L - 6
@@ -336,11 +332,11 @@ def build(doc, scene, sheet):
         assert y - R >= TOP_LIMIT, (g, y - R)
         if pa.modes[g] != "hidden":
             assert 560 <= x - R and x + R <= 935, (g, x)
-    # the docked bar is clear of the upper cube, and the returning bar clears the ball on its way down the stairs
-    assert LP_DOCK > 636.3 + 2
-    for g in range(beats["lands on the upper cube"], beats["lands on the floor bar"]):
+    # the docked bar clears the ball as it hops off and goes down the stairs
+    assert LP_DOCK - (UP_X + R) > 100
+    for g in range(f_hop + 1, beats["lands on the floor bar"]):
         x, y = pa.pts[g]
-        lp, top = L_HOME[0] + dl(g)[0], L_HOME[1] + dl(g)[1]
+        lp, top = L_HOME[0] + dl(g)[0], L_HOME[1] + dl(g)[1]      # (the left pair's corner: the bar's)
         qx, qy = min(max(x, lp), lp + L_WIDTH + R_WHITES + 24.5), min(max(y, top), top + 52.5)
         assert math.hypot(x - qx, y - qy) > R + 1, (g, x, y, lp, "the bar is in the ball's way")
 
@@ -351,7 +347,7 @@ def build(doc, scene, sheet):
         cyc.squash(fr, a, T=12)
 
     # ---- the turn: rolling turns with the distance; a hop from rest takes a little from the push and keeps it; held or still: none
-    hop_v[C_POP] = (-2.6, -6.5)
+    hop_v[C_POP] = (-2.5, -6.5)
     th = [0.0]
     w = 0.0
     for g in range(L):
@@ -421,7 +417,7 @@ def build(doc, scene, sheet):
     sec = lambda g: f"{(T0 + g) / 60:.2f} s"
     told = "; ".join(f"{k} {sec(v)}" for k, v in beats.items())
     return (f"{ROOM}: the pairs slide together from {sec(0)} and click at {sec(C_CLICK)}; the ball pops out at {sec(C_POP)}; {told}; "
-            f"the bar rides {sec(C_RIDE0)} to {sec(C_RIDE0 + RIDE_T)} and goes back from {sec(C_HOP)}; tops turn white at "
+            f"the bar rides {sec(C_RIDE0)} to {sec(C_RIDE0 + RIDE_T)} and hops off at {sec(f_hop)}; tops turn white at "
             f"{', '.join(sec(g) for g in fills)}, back at {', '.join(sec(g) for g in resets)}; the pairs part at {sec(f_sep)}; "
             f"ambient turns: " + "; ".join(f"{k} {sec(a)} and {sec(b)}" for k, (a, b) in amb.items()) +
             f"; loop {L / 60:.2f} s ({L} frames)")

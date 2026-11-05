@@ -72,9 +72,7 @@ POP_T, SETTLE_T, SNAP_T = 6, 8, 6          # frames
 LIGHT, DARK = "FFDFDBD7", "FF1F1F1F"
 SQUARES = {
     "left box": ("9:5277", (14.307, -0.249, 50.747, 50.7915), LIGHT),
-    "lower cube": ("9:5246", (-100.478, 116.142, 47.9145, 47.873), LIGHT),
     "upper cube": ("9:5215", (337.08151, 93.455, 47.9145, 47.873), LIGHT),
-    "lid box": ("9:5186", (939.41248, 712.203, 47.9145, 47.873), DARK),
 }
 TURN = 14                                  # frames: 0.23 s
 TURNS = []                                 # (cube, cycle frame the turn starts): set in build() from the ball's timeline
@@ -248,12 +246,9 @@ def build(doc, scene, sheet):
 
     # the cube turns: one at a time, while the ball is away from the cube, in short bursts
     global TURNS
-    TURNS = [("lower cube", 58), ("lid box", 74),               # the beat after the hop (the lockup still on), the ball in the mouth
-             ("upper cube", 112), ("upper cube", 134),           # the ball out over the gap: a flick there and back
-             ("lower cube", 170),                                # it is on its way back up from the floor
-             ("lid box", 222), ("left box", 236),                # the next beat
-             ("left box", 318),                                  # it rattles on the mouth's edge
-             ("lid box", 360), ("lid box", 384)]                 # the last beat: a flick there and back
+    TURNS = [("left box", 40), ("left box", 66),             # the hop: a flick there and back on the left box (the ball is in the air, far from it)
+             ("upper cube", 112), ("upper cube", 134),       # the ball out over the gap: a flick there and back
+             ("left box", 236), ("left box", 318)]           # the pause before the rim, then after the rim bounces
     touches = {"left box": ("left box side", "left box corner"), "upper cube": ("upper cube corner",)}
     for cube, s in TURNS:
         for t, name, *_ in contacts:
@@ -267,7 +262,7 @@ def build(doc, scene, sheet):
     assert not odd, f"a cube turns an odd number of times: {odd}"
     starts = sorted(s for _, s in TURNS)
     for a_, b_ in zip(starts, starts[1:]):
-        assert b_ - a_ >= TURN, ("two turns at once", a_, b_)
+        assert b_ - a_ >= TURN + 6, ("two turns at once", a_, b_)
     assert starts[-1] + TURN < L
 
     def face_scale(cube, shown):
