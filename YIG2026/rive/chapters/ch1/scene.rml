@@ -28008,11 +28008,11 @@
         <DataEnumValue key="loading" value="loading" id="1:9100"/>
         <DataEnumValue key="start" value="start" id="1:9101"/>
         <DataEnumValue key="ad" value="ad" id="1:9102"/>
-        <DataEnumValue key="chapter-1-card-1" value="chapter-1-card-1" id="1:9103"/>
-        <DataEnumValue key="chapter-1-card-2" value="chapter-1-card-2" id="1:9104"/>
-        <DataEnumValue key="chapter-1-card-3" value="chapter-1-card-3" id="1:9105"/>
-        <DataEnumValue key="chapter-1-card-4" value="chapter-1-card-4" id="1:9106"/>
-        <DataEnumValue key="chapter-1-card-5" value="chapter-1-card-5" id="1:9107"/>
+        <DataEnumValue key="chapter-1" value="chapter-1" id="1:9103"/>
+        <DataEnumValue key="chapter-1-2" value="chapter-1-2" id="1:9104"/>
+        <DataEnumValue key="chapter-1-3" value="chapter-1-3" id="1:9105"/>
+        <DataEnumValue key="chapter-1-4" value="chapter-1-4" id="1:9106"/>
+        <DataEnumValue key="chapter-1-5" value="chapter-1-5" id="1:9107"/>
     </DataEnumCustom>
     <DataEnumCustom name="Direction" id="1:9002">
         <DataEnumValue key="forward" value="forward" id="1:9200"/>
