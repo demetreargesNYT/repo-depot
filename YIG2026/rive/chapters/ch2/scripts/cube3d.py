@@ -115,7 +115,8 @@ class Cube:
 
     A pose is a dict: turn (radians, about its vertical axis), slide (dX, dY, dZ), lid (radians, the top's hinge on its back edge),
     door (radians, the front face's hinge on its left edge, swinging towards the viewer), tip (radians, the whole cube tipped forward
-    about its bottom-front edge, applied before the turn), dip (the whole cube pressed down by that much). Missing keys are 0."""
+    about its bottom-front edge, applied before the turn), rot (a row-major 3 x 3 rotation about the cube's centre, applied after the
+    tip: a roll in place), dip (the whole cube pressed down by that much). Missing keys are 0."""
 
     def __init__(self, name, front, depth_px, depth=None, perspective=None):
         x0, y0, x1, y1 = front
@@ -139,6 +140,8 @@ class Cube:
         h = (self.hx, self.hy, self.hz)
         if part == "lid" and pose.get("lid"):
             return rotate(p, (0.0, -h[1], h[2]), (1.0, 0.0, 0.0), -pose["lid"])      # the front edge rises
+        if part == "lidl" and pose.get("lidl"):
+            return rotate(p, (-h[0], -h[1], 0.0), (0.0, 0.0, 1.0), -pose["lidl"])   # hinged on its left edge: the right edge rises
         if part == "door" and pose.get("door"):
             return turn_y(p, (-h[0], 0.0, -h[2]), pose["door"])                         # the free edge swings towards the viewer
         return p
@@ -150,6 +153,9 @@ class Cube:
             a = pose["tip"]
             yr, zr = p[1] - self.hy, p[2] + self.hz           # from the hinge: y down (negative above it), z away from the viewer
             p = (p[0], self.hy + math.cos(a) * yr - math.sin(a) * zr, -self.hz + math.sin(a) * yr + math.cos(a) * zr)
+        if pose.get("rot"):                                  # a whole-cube roll about its own centre: a row-major 3 x 3 matrix
+            m = pose["rot"]
+            p = (m[0] * p[0] + m[1] * p[1] + m[2] * p[2], m[3] * p[0] + m[4] * p[1] + m[5] * p[2], m[6] * p[0] + m[7] * p[1] + m[8] * p[2])
         p = turn_y(p, (0.0, 0.0, 0.0), pose.get("turn", 0.0))
         s = pose.get("slide", (0.0, 0.0, 0.0))
         d = pose.get("dip", 0.0)                             # the whole cube pressed down by d (a gather before a lid opens)
