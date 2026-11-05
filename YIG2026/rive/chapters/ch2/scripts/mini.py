@@ -88,18 +88,15 @@ ART_CORNERS = {                            # the drawing's own corners, for the 
     (L, "left"): [(507.393, 609.656), (536.008, 609.656), (536.008, 711.239), (507.393, 711.239)],
 }
 
-# crossword patterns, 5 x 5 like The Mini's own grid, row by row from the face's top left (1 = black), each symmetric under a half
-# turn as crossword grids are; the faces the drawing had black (R's front, L's side) stay mostly black, never one plain block
-p = c3.pattern
-PAT = {
-    (U, "front"): p("10000 00000 00100 00000 00001"), (U, "left"): p("00001 00000 00000 00000 10000"),
-    (U, "right"): p("11000 10000 00100 00001 00011"), (U, "back"): p("00000 01000 00000 00010 00000"),
-    (U, "lid"): p("10001 00000 00000 00000 10001"),
-    (R, "front"): p("11011 10001 00100 10001 11011"), (R, "left"): p("00001 00000 00000 00000 10000"),
-    (R, "lid"): p("01000 00000 00000 00000 00010"),
-    (F, "front"): p("00011 00001 00000 10000 11000"), (F, "right"): p("10000 00000 00000 00000 00001"),
-    (F, "lid"): p("00100 00000 00000 00000 00100"),
-    (L, "front"): p("00001 00010 00000 01000 10000"), (L, "left"): p("11011 10001 00100 10001 11011"),
+# each cube is one square of the puzzle: every face one solid colour, as the illustration drew it (its fills before the 3D rebuild):
+# the fronts and sides light, R's front and L's side black, the tops of U and F black and R's light. Lids and the door take
+# their face's colour (their insides stay light, so an open lid reads against the dark opening). U's right face, which the
+# illustration never drew and the turn shows, takes the colour of the face opposite it, its left side (light).
+COL = {
+    (U, "front"): LIGHT, (U, "left"): LIGHT, (U, "right"): LIGHT, (U, "back"): LIGHT, (U, "lid"): DARK,
+    (R, "front"): DARK, (R, "left"): LIGHT, (R, "lid"): LIGHT,
+    (F, "front"): LIGHT, (F, "right"): LIGHT, (F, "lid"): DARK,
+    (L, "front"): LIGHT, (L, "left"): DARK,
 }
 
 # tempo (frames)
@@ -488,20 +485,20 @@ def build(doc, scene, sheet):
     # ---------------------------------------------------------------- the faces
     cub = {"U": U, "R": R, "F": F, "L": L}
     faces = {
-        "front": [Face(U, "front", "door", pattern=PAT[(U, "front")], name=f"{U.name} Front"),
-                  Face(U, "left", pattern=PAT[(U, "left")]), Face(U, "right", pattern=PAT[(U, "right")]),
-                  Face(U, "back", pattern=PAT[(U, "back")]),
-                  Face(L, "front", pattern=PAT[(L, "front")]), Face(L, "left", pattern=PAT[(L, "left")]),
-                  Face(F, "front", pattern=PAT[(F, "front")]), Face(F, "right", pattern=PAT[(F, "right")])],
-        "c3": [Face(R, "front", pattern=PAT[(R, "front")])],
+        "front": [Face(U, "front", "door", fill=COL[(U, "front")], name=f"{U.name} Front"),
+                  Face(U, "left", fill=COL[(U, "left")]), Face(U, "right", fill=COL[(U, "right")]),
+                  Face(U, "back", fill=COL[(U, "back")]),
+                  Face(L, "front", fill=COL[(L, "front")]), Face(L, "left", fill=COL[(L, "left")]),
+                  Face(F, "front", fill=COL[(F, "front")]), Face(F, "right", fill=COL[(F, "right")])],
+        "c3": [Face(R, "front", fill=COL[(R, "front")])],
         "floor": doorway(),
-        "c1": [Face(U, "top", "lid", pattern=PAT[(U, "lid")], name=f"{U.name} Lid"), Face(U, "top", "lid", flip=True, name=f"{U.name} Lid Inside"),
+        "c1": [Face(U, "top", "lid", fill=COL[(U, "lid")], name=f"{U.name} Lid"), Face(U, "top", "lid", flip=True, name=f"{U.name} Lid Inside"),
                Face(U, "top", fill=DARK, name=f"{U.name} Opening"),
-               Face(F, "top", "lid", pattern=PAT[(F, "lid")], name=f"{F.name} Lid"), Face(F, "top", "lid", flip=True, name=f"{F.name} Lid Inside"),
+               Face(F, "top", "lid", fill=COL[(F, "lid")], name=f"{F.name} Lid"), Face(F, "top", "lid", flip=True, name=f"{F.name} Lid Inside"),
                Face(F, "top", fill=DARK, name=f"{F.name} Opening")],
-        "c4": [Face(R, "top", "lid", pattern=PAT[(R, "lid")], name=f"{R.name} Lid"), Face(R, "top", "lid", flip=True, name=f"{R.name} Lid Inside"),
+        "c4": [Face(R, "top", "lid", fill=COL[(R, "lid")], name=f"{R.name} Lid"), Face(R, "top", "lid", flip=True, name=f"{R.name} Lid Inside"),
                Face(R, "top", fill=DARK, name=f"{R.name} Opening")],
-        "floor_end": [Face(R, "left", pattern=PAT[(R, "left")]),
+        "floor_end": [Face(R, "left", fill=COL[(R, "left")]),
                       Face(L, "top", "lid", name=f"{L.name} Lid"), Face(L, "top", "lid", flip=True, name=f"{L.name} Lid Inside")],
     }
     key_of = {U: "U", R: "R", F: "F", L: "L"}
