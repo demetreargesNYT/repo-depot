@@ -44,7 +44,7 @@ def fail(msg):
 
 def build(chapter, work, src=None):
     """Build a scratch copy of the chapter (with working artboards taken out) and return the .riv's bytes.
-    `src` is the folder to build from; it defaults to chapters/<chapter> (tools/marketing_copy.py passes a pushed tag's files)."""
+    `src` is the folder to build from; it defaults to chapters/<chapter> (tools/public_copy.py passes a pushed tag's files)."""
     src = Path(src) if src else chapter_dir(chapter)
     dst = work / chapter
     shutil.copytree(src, dst, ignore=shutil.ignore_patterns("build"))
@@ -143,6 +143,17 @@ list, Loading is 0), and `?rive-only` or the H key to hide the HTML.
 """
 
 
+REFERENCE_PAGES = ("timing-demo.html", "text-motion.html")
+
+
+def copy_reference_pages(ref):
+    """Copy the two reference pages from engineering/ into `ref`, unchanged. They open from a double-click and link
+    ../core/yig-text-motion.css; text-motion.html also links example/yig-framing.css and example/assets/icons/.
+    The engineering package and tools/public_copy.py (the public pages) both use this, so engineering/ stays the only source."""
+    for name in REFERENCE_PAGES:
+        shutil.copy(REPO / "engineering" / name, Path(ref) / name)
+
+
 def assemble(files):
     if OUT.exists():
         shutil.rmtree(OUT)
@@ -156,8 +167,7 @@ def assemble(files):
     shutil.copy(REPO / "art" / "global" / "ui-desktop-button.svg", core / "ui-desktop-button.svg")      # the desktop arrow art: engineering needs it, so it is in core/ (the demo page keeps its own copy)
     (core / "ui-desktop-button.svg").chmod(0o644)
     (ref / "yig-integration.js").write_text(reference_integration())
-    shutil.copy(REPO / "engineering" / "timing-demo.html", ref / "timing-demo.html")      # opens from a double-click; links ../core/yig-text-motion.css
-    shutil.copy(REPO / "engineering" / "text-motion.html", ref / "text-motion.html")      # the same; also links example/yig-framing.css and its icons
+    copy_reference_pages(ref)
     shutil.copytree(REPO / "engineering" / "react", ref / "react", ignore=shutil.ignore_patterns("node_modules", "dist"))
     main = ref / "react" / "src" / "main.tsx"
     main.write_text(main.read_text().replace("'../../yig-text-motion.css'", "'../../../core/yig-text-motion.css'"))
