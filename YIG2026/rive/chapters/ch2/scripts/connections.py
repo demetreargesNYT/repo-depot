@@ -177,8 +177,38 @@ def colour_keys(doc, anim, oid, keys):
     doc.lines[b:b] = lines
 
 
+def settle_intro(doc, intro):
+    """The intro's landing (2.57 s) no longer stops dead: it lands 10 px short of where the ball used to land and rolls on, easing,
+    through its small hop and second landing (2.88 s), to rest on the same spot as before (x 616.07) by frame 188. The roll-in
+    before the landing keeps its keys but ends 10 px earlier (a touch slower), and the turn follows the ball: it is (x - 616.07) / R
+    all the way, in flight as well, so it comes round to 0 at rest. The intro's y keys and its length are untouched."""
+    end, D = 616.07001, 10.0
+    v0, f_a, f_b, f_c = 1.2, 159, 173, 188
+    v1 = (D - 2.5 * v0) / (2.5 + 14 + 7.5)
+    d = {}
+    for f in range(154, f_c):
+        if f < f_a:
+            d[f] = v0 + (v1 - v0) * (f - 154 + 0.5) / (f_a - 154)
+        elif f < f_b:
+            d[f] = v1
+        else:
+            d[f] = v1 * (1 - (f - f_b + 0.5) / (f_c - f_b))
+    assert abs(sum(d.values()) - D) < 1e-9
+    x = {154: end - D}
+    for f in range(154, f_c):
+        x[f + 1] = x[f] + d[f]
+    fr = range(154, f_c + 1)
+    xk = bake(x, fr)
+    rot = {f: (x[f] - end) / R for f in fr}
+    head_x = [(88, -80.0, "power1.out"), (124, 470.0, "linear")]
+    head_r = [(88, (-80.0 - end) / R, "power1.out"), (124, (470.0 - end) / R, "linear")]
+    doc.set_prop(intro, BALL, "x", head_x + xk)
+    doc.set_prop(intro, SPIN, "rotation", head_r + bake(rot, fr))
+
+
 def build(doc, scene, sheet):
     intro, loop = f"{ROOM} Intro", f"{ROOM} Loop"
+    settle_intro(doc, intro)
     last = {(o, p): v for o, p, v in last_values(doc, intro)}
     start = (last[(BALL, "x")], last[(BALL, "y")])
     x0, y0 = start
