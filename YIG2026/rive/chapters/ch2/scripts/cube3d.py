@@ -114,7 +114,8 @@ class Cube:
     the drawing puts its back face from its front face; depth = its true depth (its width unless given).
 
     A pose is a dict: turn (radians, about its vertical axis), slide (dX, dY, dZ), lid (radians, the top's hinge on its back edge),
-    door (radians, the front face's hinge on its left edge, swinging towards the viewer). Missing keys are 0."""
+    door (radians, the front face's hinge on its left edge, swinging towards the viewer), tip (radians, the whole cube tipped forward
+    about its bottom-front edge, applied before the turn), dip (the whole cube pressed down by that much). Missing keys are 0."""
 
     def __init__(self, name, front, depth_px, depth=None, perspective=None):
         x0, y0, x1, y1 = front
@@ -145,9 +146,14 @@ class Cube:
     def world(self, p_local, part=None, pose=None):
         pose = pose or {}
         p = self._joint(p_local, part, pose)
+        if pose.get("tip"):                                  # tipped forward about the bottom-front edge, the top swinging towards the viewer
+            a = pose["tip"]
+            yr, zr = p[1] - self.hy, p[2] + self.hz           # from the hinge: y down (negative above it), z away from the viewer
+            p = (p[0], self.hy + math.cos(a) * yr - math.sin(a) * zr, -self.hz + math.sin(a) * yr + math.cos(a) * zr)
         p = turn_y(p, (0.0, 0.0, 0.0), pose.get("turn", 0.0))
         s = pose.get("slide", (0.0, 0.0, 0.0))
-        return (self.centre[0] + p[0] + s[0], self.centre[1] + p[1] + s[1], self.centre[2] + p[2] + s[2])
+        d = pose.get("dip", 0.0)                             # the whole cube pressed down by d (a gather before a lid opens)
+        return (self.centre[0] + p[0] + s[0], self.centre[1] + p[1] + s[1] + d, self.centre[2] + p[2] + s[2])
 
     def quad3(self, face, part=None, pose=None, flip=False):
         """A face's corners in the world. part: None (the body), "lid" (the top, on its hinge) or "door" (the front, on its hinge);
