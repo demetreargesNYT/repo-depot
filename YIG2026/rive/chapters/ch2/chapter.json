@@ -103,9 +103,10 @@
     },
     {
       "name": "chapter-2-community-intro",
-      "kind": "picture",
-      "colors": "Bridge Colors",
-      "about": "Chapter 2.5's community intro card (\"The rest of the world also came to play.\"; was `bridge`), for players with exactly one qualifying game: an empty version of the opener's room (wall E7F1E1, pink floor). Its copy arrives when the pan ends. Its pieces are arranged on the Bridge Art artboard, which never exports."
+      "kind": "room",
+      "room": "Community",
+      "title": "Community intro (Chapter 2.5)",
+      "about": "Chapter 2.5's community intro card (\"The rest of the world also came to play.\"; was `bridge`), for players with exactly one qualifying game (wall E7F1E1, pink floor). The cat, the ball with the bird on it and the dog on its cushion stand on the floor line; the ball bounces in front of the mouse hole, the bird floats down after it and the mouse peeks out. Its copy arrives at the first-visit constant like any room."
     }
   ],
   "roomsSheet": "docs/rooms.md",
