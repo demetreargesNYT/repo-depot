@@ -6,13 +6,14 @@ ball never uses the pad, and the big hex never moves.
      under 1 percent as the ball leaves; the ball hops out and lands on the block's top (landing squash), rolling on a touch
   2  curious: 0.2 s after the landing the block's inner plate turns once like a coin (width |cos t|, 0.6 s, eased, the dark hollow
      behind it); the ball rolls a touch so its dot looks down at it, and holds
-  3  eager: three quick little hops in place, each with a small gather; the plate flips on each landing, a little faster each time
-  4  showing off: a deeper gather and a slight lean, one bigger hop, a proud landing; the plate spins like a top, slowing to a stop on
-     its starting face, while the ball watches with a faint, eased roll
-  5  bounce down: the ball hops down onto the coaster's big hex and bounces off it (keeping about 75 to 80 percent), up and left into the lily
-     pad's lower right face (drawn at 107 degrees), which knocks it back up and right (88 percent kept); the pad gives a little
-  6  home: that ricochet carries it in front of the block's lower-left corner (overlapping it: depth) and over the mug's left rim; it
-     drops in (the hidden reset), and the mug gives one small proud wobble
+  3  eager: two quick little hops in place, each with a small gather; the plate flips on each landing, a little faster each time
+  4  the visit: a high hop to the lily pad, which it hits on its leaning face and bounces off, up and right, back onto the block;
+     as it leaves, the block rolls one facet to the left (a hexagonal prism turning about its axis; identical after)
+  5  showing off: a deeper gather and a slight lean, one bigger hop, a proud landing; the plate spins like a top, slowing to a stop
+     on its starting face, while the ball watches with a faint, eased roll
+  6  bounce down: the ball hops down onto the coaster's big hex and bounces off it, up and left into the lily pad's lower right
+     face, which knocks it back up and right; that ricochet carries it in front of the block's lower-left corner and into the mug
+     (the hidden reset); the pad gives a little at each hit and the mug gives one small proud wobble
 
 One gravity (0.40), every flight a whole-frame parabola. Squash and stretch about the ball's bottom (Ball_01_Scale), volume constant;
 a lean is a turn of Ball_01_Scale about the contact point, with the spin pivot turned back by the same angle so the dot only turns with
@@ -21,7 +22,7 @@ clear of their outlines, and of the mug's rim.
 """
 import math
 
-from bee_art import BLOCK_C, add_plate_spin, block_outline
+from bee_art import BLOCK_C, block_outline, block_values, build_block
 from common import BallArt, Cycle, dip, emit, intro_series, plane_x, prepare_ball, smooth
 
 ROOM = "Spelling Bee"
@@ -42,23 +43,27 @@ GO, N1, X_BLOCK = 9, 46, 788.0             # the pop: 46 frames to the block's t
 SETTLE1 = 16
 FLIP1_AT, FLIP1 = 12, 36                   # 0.2 s after the landing; 0.6 s
 GLANCE_AT, GLANCE_N, GLANCE_DX, GLANCE_HOLD = 17, 16, 10.0, 30
-HOPS = [(0.35, 17, 28), (-0.40, 16, 24), (0.35, 15, 20)]   # (vx, flight frames, the flip's frames on its landing)
+HOPS = [(0.35, 17, 28), (-0.40, 16, 24)]   # (vx, flight frames, the flip's frames on its landing)
 HOP_DWELL = 20                             # landing to the next launch: the landing squash (12), then the gather (8)
-CALM1, CALM1_DX = 60, -3.0                 # after the hops: a faint roll back
+CALM1 = 12                                 # after the hops: a faint roll to the take-off place for the visit
+VISIT_X = 788.0                            # where it leaves the block for the lily pad
+ROLL_N, ROLL_AT = 36, 5                    # the block's roll to the left: 0.6 s, starting 5 frames after the ball leaves
+
 BIG_GATHER, BIG_VX, BIG_T, BIG_LEAN = 18, -0.25, 36, math.radians(-3.0)
-TOP_AT, TOP_N, TOP_TURNS = 2, 150, 8       # the top spin: 8 half turns (4 whole) over 2.5 s, slowing to a stop
-WATCH_AT, WATCH_N, WATCH_DX = 22, 134, 5.0     # it watches until the top has stopped
-CALM2, CALM2_DX = 56, -5.0
+TOP_AT, TOP_N, TOP_TURNS = 2, 100, 6       # the top spin: 6 half turns (3 whole) over 1.7 s, slowing to a stop
+WATCH_AT, WATCH_N, WATCH_DX = 22, 84, 5.0      # it watches until the top has stopped
+HOP_X = 789.0                              # where it leaves the block for the big hex
+CALM2 = 32                                 # then a faint roll to the take-off place for the hop down
 DOWN_GATHER = 9
 PAD_FACES = {"the lily pad's upper right slant": (PAD[0], PAD[5]), "the lily pad's lower right face": (PAD[5], PAD[4]),
              "the lily pad's bottom": (PAD[4], PAD[3])}
 PAD_NODE = (627.625, 658.929)              # the lily pad's node (it turns about it)
 PAD_GIVE, PAD_TILT = 3.2, math.radians(1.6)   # how far the hit pushes the pad (along the hit), and its tilt
-HOME_BEAT = 84                             # hidden in the mug after the catch before the loop starts again
+HOME_BEAT = 114                            # hidden in the mug after the catch before the loop starts again
 
 # squash and stretch (maximums from CLAUDE.md: gather 5, landing 6, big landing 8, flight stretch 3 on the fastest moves only)
 SQ = dict(mug_gather=0.04, land1=0.05, hop_gather=0.02, hop_land=0.03, big_gather=0.045, proud=0.075, down_gather=0.03,
-          coaster=0.06, pad_hit=0.03)
+          coaster=0.06, pad_hit=0.03, back=0.05)
 
 ease = lambda u: 0.0 if u <= 0 else 1.0 if u >= 1 else (4 * u ** 3 if u < 0.5 else 1 - (-2 * u + 2) ** 3 / 2)
 sine = lambda u: 0.0 if u <= 0 else 1.0 if u >= 1 else 0.5 - 0.5 * math.cos(math.pi * u)
@@ -287,6 +292,84 @@ def plan_bounces(x_s, BT, YC, Rc):
     return best[1]
 
 
+PLAN_TILTS = []
+
+
+def plan_visit(xs, BT, Rc):
+    """The high hop from the block (from xs) to the lily pad's leaning face, the bounce off it, and the landing back on the block's
+    top: each contact keeps 72 to 90 percent of its speed, both flights keep clear of the block's outline and the pad, the ball's top
+    stays at or below the copy line. Returns the best (most clearance, a bounce that keeps well under 90 percent)."""
+    best = None
+    for ang10 in range(200, 461, 10):
+        a = math.radians(ang10 / 10)
+        n = (math.sin(a), -math.cos(a))
+        for px in range(626, 651, 4):
+            for py in range(598, 613, 4):
+                PC = (px + Rc * n[0], py + Rc * n[1])
+                for T in range(30, 62):
+                    vx = (PC[0] - xs) / T
+                    vy0 = (PC[1] - BT - 0.2 * T * T) / T
+                    if vy0 > -2.0 or BT - vy0 * vy0 / 0.8 - 23.865 < COPY_Y:
+                        continue
+                    vin = (vx, vy0 + 0.4 * T - 0.2)
+                    vn = vin[0] * n[0] + vin[1] * n[1]
+                    if vn >= 0:
+                        continue
+                    vt = (vin[0] - vn * n[0], vin[1] - vn * n[1])
+                    cb = min(min(seg_dist((xs + vx * k / 2, BT + vy0 * k / 2 + 0.2 * (k / 2) ** 2), a_, b_) for a_, b_ in BLOCK_SEGS)
+                             for k in range(7, 2 * T - 4))
+                    if cb < Rc - 0.5:
+                        continue
+                    for ep in (0.78, 0.82, 0.86, 0.9):
+                        for ktp in (0.8, 0.85, 0.9):
+                            w = (ktp * vt[0] - ep * vn * n[0], ktp * vt[1] - ep * vn * n[1])
+                            kp = math.hypot(*w) / math.hypot(*vin)
+                            if not 0.72 <= kp <= 0.895 or w[0] < 1.5:
+                                continue
+                            t, above, good = 0.0, False, None
+                            while t < 100:
+                                t += 0.5
+                                q = (PC[0] + w[0] * t, PC[1] + w[1] * t + 0.2 * t * t)
+                                if q[1] - 23.865 < COPY_Y:
+                                    break
+                                if q[1] < BT - 2:
+                                    above = True
+                                if above and w[1] + 0.4 * t > 0 and q[1] >= BT:
+                                    good = (t, q)
+                                    break
+                            if not good:
+                                continue
+                            t, q = good
+                            if not 786 <= q[0] <= 800:
+                                continue
+                            T2 = round(t)
+                            wy = (BT - PC[1] - 0.2 * T2 * T2) / T2
+                            wx = w[0]
+                            xl = PC[0] + wx * T2
+                            if not 784 <= xl <= 800:
+                                continue
+                            kp2 = math.hypot(wx, wy) / math.hypot(*vin)
+                            if not 0.72 <= kp2 <= 0.9:
+                                continue
+                            cbl = min(min(seg_dist((PC[0] + wx * k / 2, PC[1] + wy * k / 2 + 0.2 * (k / 2) ** 2), a_, b_) for a_, b_ in BLOCK_SEGS)
+                                      for k in range(2, 2 * T2 - 10))
+                            if cbl < Rc - 0.5:
+                                continue
+                            dv = (wx - vin[0], wy - vin[1])           # ball_speed.py's tilt of the surface: dv is along the normal
+                            tilt_ = abs(math.degrees(math.atan2(dv[0], -dv[1])))
+                            PLAN_TILTS.append((round(tilt_, 1), ang10 / 10))
+                            if tilt_ < 30.5:
+                                continue
+                            score = cb + cbl - (ang10 - 300) * 0.1 - 40 * max(0.0, kp2 - 0.86)
+                            if best is None or score > best[0]:
+                                best = (score, dict(T=T, vx=vx, vy0=vy0, PC=PC, n=n, ang=ang10 / 10, ep=ep, kt=ktp, w=(wx, wy), T2=T2, kp=kp2,
+                                                    x_land=xl, v_land=(wx, wy + 0.4 * T2), clear=min(cb, cbl)))
+    if not best:
+        print("best tilts", sorted(PLAN_TILTS)[-8:])
+    assert best, "no hop from the block to the lily pad's face and back works"
+    return best[1]
+
+
 OVERLAP = (9.0, 16.0)                      # how deep the ball's outline crosses into the block's corner on the way into the mug (px)
 
 
@@ -303,6 +386,23 @@ def block_signed(p):
         if (y1 > p[1]) != (y2 > p[1]) and p[0] < x1 + (p[1] - y1) * (x2 - x1) / (y2 - y1):
             inside = not inside
     return -d if inside else d
+
+
+def hold_key(doc, anim, oid, prop, frame):
+    """Make the key at `frame` of oid's prop a hold (it stays until the next key), so a corner relabelling is one frame, never a blend."""
+    a, b = doc.anim(anim)
+    pat = f'objectId="{oid}"'
+    for i in range(a, b):
+        if pat in doc.lines[i] and "<KeyedObject" in doc.lines[i]:
+            e = doc.end(i)
+            for j in range(i, e):
+                if f'property="{prop}"' in doc.lines[j]:
+                    for m in range(j, doc.end(j)):
+                        if f' frame="{frame}"' in doc.lines[m]:
+                            doc.lines[m] = doc.lines[m].replace(' interpolationType="linear"', "")
+                            return True
+            return False
+    return False
 
 
 def build(doc, scene, sheet):
@@ -334,10 +434,28 @@ def build(doc, scene, sheet):
         _, land = tr.hop(vx, T, BT, "the block's top", w_air=0.0)
         hop_lands.append(land)
         flips.append((land, flip_n))
-        tr.roll_out(vx, HOP_DWELL if k < len(HOPS) - 1 else 22)
+        tr.roll_out(vx, HOP_DWELL if k < len(HOPS) - 1 else 14)
         if k < len(HOPS) - 1:
             gathers.append((tr.f - 8, tr.f, SQ["hop_gather"]))
-    tr.roll_sine(CALM1_DX, CALM1)
+    # the visit: a faint roll to the take-off place, a gather, a high hop to the lily pad's leaning face, the bounce back onto the block
+    tr.roll_sine(VISIT_X + 1.0 - tr.pos[-1][0], CALM1)
+    tr.roll_sine(-1.0, 9)
+    gathers.append((tr.f - 9, tr.f, SQ["hop_gather"] + 0.01))
+    V = plan_visit(tr.pos[-1][0], BT, RC)
+    PCv, nv = V["PC"], V["n"]
+    c_go_v, c_pad1 = tr.hop(V["vx"], V["T"], BT, "the lily pad's leaning face", w_air=0.25 * V["vx"] / R, vy0=V["vy0"])
+    vin_v = math.hypot(V["vx"], V["vy0"] + 0.4 * V["T"] - 0.2)
+    wx, wy = V["w"]
+    tang_v = (-nv[1], nv[0])
+    w_back = 0.5 * 0.25 * V["vx"] / R + 0.5 * (wx * tang_v[0] + wy * tang_v[1]) / R
+    for u in range(1, V["T2"] + 1):
+        tr.put((PCv[0] + wx * u, PCv[1] + wy * u + 0.2 * u * u), w_back)
+    c_back = tr.f
+    tr.flights.append((c_pad1, V["T2"], wx, wy))
+    tr.landings.append((c_back, "the block's top", math.hypot(*V["v_land"])))
+    roll_at = (c_go_v + ROLL_AT, ROLL_N)
+    tr.roll_out(wx, 12)
+    tr.roll_sine(-4.0, 34)
     c_big = tr.f
     tr.still(BIG_GATHER)                                  # the deeper gather and the lean: full stillness, on purpose
     gathers.append((c_big, tr.f, SQ["big_gather"]))
@@ -348,7 +466,7 @@ def build(doc, scene, sheet):
     while tr.f < c_proud + WATCH_AT:
         tr.roll_sine(0.0, 1)
     tr.roll_sine(WATCH_DX, WATCH_N)                       # the ball watches the top with a faint roll
-    tr.roll_sine(CALM2_DX, CALM2)
+    tr.roll_sine(HOP_X - tr.pos[-1][0], CALM2)
     tr.roll_sine(-1.0, DOWN_GATHER)
     gathers.append((tr.f - DOWN_GATHER, tr.f, SQ["down_gather"]))
     x_s = tr.pos[-1][0]
@@ -430,7 +548,7 @@ def build(doc, scene, sheet):
         for land in hop_lands:
             v += land_pulse(g - land, SQ["hop_land"])
         v += land_pulse(g - c_proud, SQ["proud"], down=4, back=7, after=4)
-        v += land_pulse(g - c_coaster, SQ["coaster"])
+        v += land_pulse(g - c_coaster, SQ["coaster"]) + land_pulse(g - c_back, SQ["back"])
         s[g] = v
         for a, b, ang, back in leans:
             if a <= g <= b:
@@ -449,7 +567,8 @@ def build(doc, scene, sheet):
     assert max(s) <= 0.08 + 1e-9 and min(s) >= -0.03 - 1e-9, (max(s), min(s))
     assert abs(s[0] - s[L]) < 1e-9 and abs(lean[0] - lean[L]) < 1e-9
     cyc = Cycle(L)
-    hs = [land_pulse(g - c_pad, SQ["pad_hit"], down=2, back=6, after=2) for g in range(L + 1)]   # the hit on the pad's face: across
+    hs = [land_pulse(g - c_pad, SQ["pad_hit"], down=2, back=6, after=2) + land_pulse(g - c_pad1, SQ["pad_hit"], down=2, back=6, after=2)
+          for g in range(L + 1)]   # the hit on the pad's face: across
     for g in range(L + 1):
         cyc.put(g, pos[g], "air")
         cyc.sy[g] = (1 - s[g]) / (1 - hs[g])
@@ -470,10 +589,12 @@ def build(doc, scene, sheet):
         pieces.append((mug, "scaleY", ser(lambda g: pose[g][1]), intro_series(scene, sheet, ROOM, mug, "scaleY")))
         pieces.append((mug, "rotation", ser(lambda g: pose[g][2]), None))
     pieces.append((art.scale, "rotation", ser(lambda g: lean[g]), None))
-    # the lily pad gives under the hit: pushed along the hit a little, tilted a little, one small overshoot, still in 0.4 s
-    pieces.append(("9:504", "x", ser(lambda g: PAD_NODE[0] - n[0] * settle(g - c_pad, PAD_GIVE)), None))
-    pieces.append(("9:504", "y", ser(lambda g: PAD_NODE[1] - n[1] * settle(g - c_pad, PAD_GIVE)), intro_series(scene, sheet, ROOM, "9:504", "y")))
-    pieces.append(("9:504", "rotation", ser(lambda g: settle(g - c_pad, PAD_TILT)), None))
+    # the lily pad gives under each hit: pushed along the hit a little, tilted a little, one small overshoot, still in 0.4 s
+    hits = [(c_pad1, nv, 1.0), (c_pad, n, -1.0)]
+    pieces.append(("9:504", "x", ser(lambda g: PAD_NODE[0] - sum(h[1][0] * settle(g - h[0], PAD_GIVE) for h in hits)), None))
+    pieces.append(("9:504", "y", ser(lambda g: PAD_NODE[1] - sum(h[1][1] * settle(g - h[0], PAD_GIVE) for h in hits)),
+                   intro_series(scene, sheet, ROOM, "9:504", "y")))
+    pieces.append(("9:504", "rotation", ser(lambda g: sum(h[2] * settle(g - h[0], PAD_TILT) for h in hits)), None))
 
     # the plate: one coin turn per flip (half a turn of |cos|: it ends on the face it started on), then the top's spin, slowing down
     for (a, n), (b, _) in zip(flips, flips[1:] + [top]):
@@ -488,8 +609,32 @@ def build(doc, scene, sheet):
             u = (c - a) / n
             return TOP_TURNS * math.pi * (1 - (1 - u) ** 2)
         return 0.0
-    plate = add_plate_spin(doc, ROOM)
-    pieces.append((plate, "scaleX", ser(lambda g: max(0.07, abs(math.cos(plate_angle(g))))), None))
+    ids = build_block(doc, "9:506", ["9:507", "9:519", "9:529", "9:541"], ROOM)
+    pieces.append((ids["spin"], "scaleX", ser(lambda g: max(0.07, abs(math.cos(plate_angle(g))))), None))
+    # the block rolls one facet to the left as the ball leaves it (a hexagonal prism turning about its axis; at 60 degrees the
+    # drawing is identical, and the corners go back to their first values in one frame)
+    assert all(a + n < roll_at[0] or b_ < roll_at[0] for (a, n), b_ in zip(flips, [x for x, _ in flips[1:]] + [top[0]])), "the roll meets a flip"
+    assert roll_at[0] + roll_at[1] < top[0]
+    block_angle = lambda c: -math.pi / 3 * ease((c - roll_at[0]) / roll_at[1]) if c <= roll_at[0] + roll_at[1] else 0.0
+    cache = {}
+
+    def bv(c):
+        a_ = block_angle(c)
+        if a_ not in cache:
+            cache[a_] = block_values(a_)
+        return cache[a_]
+    holds = []
+    for key in bv(0):
+        if key[0] in ("ring", "plate", "hollow"):
+            oid, prop = ids[key[0]][key[1]], key[2]
+        elif key[0] == "quad":
+            _, k_, light, n_, prop = key
+            oid = ids["quads"][k_][3 if light else 2][n_]
+        else:
+            _, k_, light = key
+            oid, prop = ids["quads"][k_][1 if light else 0], "opacity"
+        pieces.append((oid, prop, ser(lambda g, key=key: bv(g)[key]), None))
+        holds.append((oid, prop, roll_at[0] + roll_at[1]))
 
     def pre(f):
         px = plane_x(scene, sheet, ROOM, "Front")
@@ -500,6 +645,11 @@ def build(doc, scene, sheet):
         return ((MUG_PIVOT[0] + msx(f) * (IN_MUG[0] - MUG_PIVOT[0]) + px(f), MUG_PIVOT[1] + dy + msy(f) * (IN_MUG[1] - MUG_PIVOT[1])), 1.0, 1.0)
 
     emit(doc, art, spin, cyc, th_spin, T0, pre, pieces)
+    phase0 = 192 - 1 - T0
+    for oid, prop, cf in holds:                           # the corners go back in one frame (a hold, never a blend)
+        hold_key(doc, f"{ROOM} Loop", oid, prop, (cf - phase0) % L)
+        if T0 + cf < 192:
+            hold_key(doc, f"{ROOM} Intro", oid, prop, T0 + cf)
 
     # ------------------------------------------------------------------ the checks
     launches = {f[0] for f in tr.flights}
@@ -523,7 +673,9 @@ def build(doc, scene, sheet):
 
     sec = lambda g: f"{(T0 + g) / 60:.2f} s"
     beats = [f"pop {sec(go)}", f"block {sec(c_land1)}", f"plate turns {sec(flips[0][0])}", f"glance {sec(c_gl)}",
-             "hops " + ", ".join(sec(x) for x in hop_lands), f"gather {sec(c_big)}", f"proud landing {sec(c_proud)}",
+             "hops " + ", ".join(sec(x) for x in hop_lands),
+             f"leaves the block {sec(c_go_v)} (block rolls left {sec(roll_at[0])}), pad face {sec(c_pad1)} ({V['ang']:.0f} deg lean, {V['kp']:.0%} kept), back on the block {sec(c_back)} (x {V['x_land']:.0f})",
+             f"gather {sec(c_big)}", f"proud landing {sec(c_proud)}",
              f"top spin {sec(top[0])} to {sec(top[0] + top[1])}", f"hop down {sec(c_go_down)}", f"big hex {sec(c_coaster)} ({P['kc']:.0%} kept)",
              f"{P['face']} {sec(c_coaster + tc)} ({P['kp']:.0%} kept)",
              f"into the mug {sec(c_catch)} (crosses x {cross[0]:.0f}; in front of the block's corner, {P['deep']:.1f} px over it; "
