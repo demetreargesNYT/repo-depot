@@ -21,14 +21,21 @@ BALL, SPIN = "1:559", "1:560"
 SHELF, LIME, LILAC = "1:721", "1:579", "1:635"              # the wall shelf, the right stack's lime slab, the left stack's top slab
 TOP_LIME, MID_BLUE, MID_BLACK = "1:664", "1:692", "1:706"   # the left stack's other moving slabs (its bottom pair stays)
 TOP_STROKE, TOP_COLOUR = "1:2345", "1:648"                  # the top slab's stroke, and its fill's colour
-SHELF_COLOUR, LIME_COLOUR = "1:829", "1:591"                # the shelf board's and the right lime slab's fill colours
-DRAWN_LIME = "FFE6FFAA"                                     # their drawn colour
+SHELF_COLOUR, LIME_COLOUR, BAR_COLOUR = "1:829", "1:591", "1:605"   # the shelf board's, the lime slab's and the far right blue bar's fills
+DRAWN_LIME, DRAWN_BLUE = "FFE6FFAA", "FF82D1FF"             # their drawn colours
+BAR = "1:593"                                               # the far right stack's blue bar (Right Middle Blue)
+# the items on the shelf, nearest the ball's landing first: (shapes that move together, tilt in degrees, lift in px, delay in frames).
+# The ball lands left of the books; each book answers the shelf's dip with its own small tilt (leaning away) and lift, a short chain
+BOOKS = [(("1:767",), 2.0, 2.0, 0), (("1:759",), 1.6, 1.6, 2), (("1:783",), 1.2, 1.2, 4),
+         (("1:735", "1:743", "1:751"), 0.8, 0.8, 6), (("1:727", "1:722"), 0.6, 0.6, 8)]
+BOOK_T = 18                                                 # one book's reaction: 0.3 s, a single bump, no wobble
 YELLOW, GREEN, BLUE, PURPLE = "FFF9DF6D", "FFA0C35A", "FFB0C4EF", "FFBA81C5"   # Connections' own four group colours
 PATH = {LILAC: "1:638", TOP_LIME: "1:667", MID_BLUE: "1:695", MID_BLACK: "1:709"}   # each slab's outline path
 R = 17.68
 G = 0.40
 SHELF_Y = 575.0            # on the shelf board, in the pocket left of the books
-STACK_Y = 678.0            # on the right stack's lime slab
+STACK_Y = 678.0            # on the lime slab
+BAR_Y = 676.0              # on the far right stack's blue bar (its top edge is at 674)
 
 SHAKE2_AT = 8                                   # bounce 2's shake starts this long after the landing (20+ frames after the last swing of the first)
 SHAKE_T = 18                                    # the wrong-guess shake: 4 swings in 0.3 s, dying away to still
@@ -118,6 +125,17 @@ def shake(u):
         if u0 <= u <= u1:
             return v0 + (v1 - v0) * smooth((u - u0) / (u1 - u0))
     return 0.0
+
+
+def book_bump(u, T=BOOK_T):
+    """One book's answer u frames after the shelf's hit: up to 1 and back to 0 in T frames, a single smooth bump."""
+    return math.sin(math.pi * u / T) ** 2 if 0 < u < T else 0.0
+
+
+def doc_attr(doc, oid, name):
+    import re
+    m = re.search(rf' {name}="([^"]*)"', doc.lines[doc.idx(oid)])
+    return m.group(1) if m else "0"
 
 
 def lift(u):
@@ -241,51 +259,59 @@ def build(doc, scene, sheet):
     peak3 = b.hop((604.0, y0), 26)                  # bounce 3: bigger, more determined, back to the right (slab to purple, locks)
     c3 = b.f
     b.settle(b.vx, 12)                              # rides the lock's lift as it settles
-    b.rest(6)
-    b.hop((b.c[-1][0] + 4.0, y0), 12)               # the proud hop
-    f_proud = b.f
-    b.settle(b.vx, 8)
     b.rest(2)
     glance = 4.6                                    # about 15 degrees of roll back
     xg = b.c[-1][0]
-    b.roll(xg - glance, 14)                         # rolls back a few degrees: the dot tilts up
-    b.rest(14)                                      # the held glance
-    b.roll(xg, 14)
+    b.roll(xg - glance, 12)                         # rolls back a few degrees: the dot tilts up
+    b.rest(12)                                      # the held glance
+    b.roll(xg, 12)
     b.rest(9)                                       # the gather before the big hop
     f_leave = b.f
-    peak1 = b.hop((731.0, SHELF_Y), 39)             # up onto the shelf, into the pocket left of the books
+    # The journey: left stack -> the shelf -> the lime slab under it -> the far right stack (the bar) -> back to the lime slab (the
+    # centre stack) -> home. Every hop between pieces is a flight (never a roll across a change of depth or of piece).
+    peak1 = b.hop((731.0, SHELF_Y), 36)             # up onto the shelf, into the pocket left of the books
     f_shelf = b.f
     b.settle(0.8, 10)                               # the board takes most of the fall: a short roll, 4 px, short of the books
     b.rest(2)
     f_shelf2 = small_hop(b, 731.5, 14, 8)           # a smaller bounce back across the pocket: the shelf pops back to its lime
     b.rest(2)
-    peak2 = b.hop((800.0, STACK_Y), 38)             # off the shelf's front, down onto the right stack
+    peak2 = b.hop((800.0, STACK_Y), 34)             # off the shelf's front, down onto the lime slab below it
     f_stack = b.f
     b.settle(b.vx, 12)                              # rolls on along the lime slab,
     b.roll(b.c[-1][0] - 1.2, 10)                    # a tiny rock back
-    b.rest(6)
-    # the home landing settles 7 px left and its small bounce settles onto the start; the lime slab's small bounce settles by what
-    # makes all the rolls add up to nothing, so the dot comes round to where it began
+    b.rest(3)
+    peak5 = b.hop((896.0, BAR_Y), 30)               # over to the far right stack: onto its blue bar (it pops yellow)
+    f_bar = b.f
+    b.settle(b.vx, 12)
+    b.roll(b.c[-1][0] - 1.2, 10)                    # a tiny rock back
+    b.rest(3)
+    f_bar2 = small_hop(b, b.c[-1][0], 14, 10)       # a smaller bounce on the bar: it pops back to its blue
+    b.rest(3)
+    peak6 = b.hop((800.0, STACK_Y), 32)             # and back to the centre (the lime slab): this landing restores its lime
+    f_lime2 = b.f
+    b.settle(b.vx, 12)
+    # the home landing settles 7 px left and its small bounce settles onto the start; the last roll along the lime slab takes
+    # what makes all the rolls add up to nothing, so the dot comes round to where it began
     home_land, home_mid = x0 + 4.0, x0 - 3.0
     x_h2 = small_hop_landing(home_mid, x0, 14, 12)
     after = (home_mid - home_land) + (x0 - x_h2)
     net = sum(b.c[f + 1][0] - b.c[f][0] for f in range(b.f) if b.mode[f] == "roll") + after
-    vx = -2 * net / 12
-    f_lime2 = b.f + 14
-    b.hop((b.c[-1][0] + vx * 14, STACK_Y), 14)      # a smaller bounce back along the slab: it pops back to its lime
-    b.settle(b.vx, 12)
-    b.rest(4)
-    peak4 = b.hop((home_land, y0), 47)              # and home, landing just right of where it began (top slab to blue),
+    b.rest(2)
+    b.roll(b.c[-1][0] - net, 20)                    # idles along the lime slab (to where the rolls add up to nothing)
+    b.rest(3)
+    peak4 = b.hop((home_land, y0), 42)              # and home, landing just right of where it began (top slab to blue),
     f_home = b.f
     b.settle(2 * (home_mid - home_land) / 14, 14)   # settling left (the slab's face ends at 621: most of the fall is taken)
     b.rest(3)
     f_home2 = small_hop(b, x0, 14, 12)              # and a smaller bounce onto the start: the slab pops back to yellow
-    b.rest(6)
+    b.rest(4)
     L = b.f
     assert abs(b.c[L][0] - x0) < 1e-9 and abs(b.c[L][1] - y0) < 1e-9, b.c[L]
-    lime_xs = [x for x, _ in b.c[f_stack:f_home - 47]]
+    lime_xs = [x for x, _ in b.c[f_stack:f_bar - 30]] + [x for x, _ in b.c[f_lime2:f_home - 42]]
     assert 738 <= min(lime_xs) and max(lime_xs) <= 824, (min(lime_xs), max(lime_xs))
-    assert 730 <= min(x for x, _ in b.c[f_shelf:f_stack - 38]) and max(x for x, _ in b.c[f_shelf:f_stack - 38]) <= 736
+    bar_xs = [x for x, _ in b.c[f_bar:f_lime2 - 32]]
+    assert 880 <= min(bar_xs) and max(bar_xs) <= 950, (min(bar_xs), max(bar_xs))
+    assert 730 <= min(x for x, _ in b.c[f_shelf:f_stack - 34]) and max(x for x, _ in b.c[f_shelf:f_stack - 34]) <= 736
 
     # the shuffle starts a beat after the ball has left, and ends well before it comes back
     S = f_leave + 10
@@ -357,9 +383,19 @@ def build(doc, scene, sheet):
 
     # the pieces: the right stack and the shelf give a little where the ball lands
     doc.set_prop(intro, SHELF, "y", [(0, 0.0, "hold")])
-    for oid, f, depth, T, f2 in ((SHELF, f_shelf, 1.5, 18, f_shelf2), (LIME, f_stack, 2.5, 20, f_lime2)):
+    for oid, hits in ((SHELF, [(f_shelf, 1.5, 18), (f_shelf2, 0.8, 14)]), (LIME, [(f_stack, 2.5, 20), (f_lime2, 2.0, 18)]),
+                      (BAR, [(f_bar, 2.0, 18), (f_bar2, 0.8, 14)])):
         rest_y = last.get((oid, "y"), 0.0)
-        doc.set_prop(loop, oid, "y", bake({g: rest_y + dip(g - f, depth, T) + dip(g - f2, 0.8, 14) for g in fr}, fr))
+        doc.set_prop(loop, oid, "y", bake({g: rest_y + sum(dip(g - f, depth, T) for f, depth, T in hits) for g in fr}, fr))
+    # the books answer the shelf's dip, each in its own time and size (the shelf's group carries them; these are on top of it)
+    for shapes, tilt, rise, delay in BOOKS:
+        for oid in shapes:
+            base_y = float(doc_attr(doc, oid, "y"))
+            doc.set_prop(intro, oid, "y", [(0, base_y, "hold")])
+            doc.set_prop(intro, oid, "rotation", [(0, 0.0, "hold")])
+            hit = lambda g, amp: sum(amp * k * book_bump(g - f - delay) for f, k in ((f_shelf, 1.0), (f_shelf2, 0.5)))
+            doc.set_prop(loop, oid, "y", bake({g: base_y - hit(g, rise) for g in fr}, fr))
+            doc.set_prop(loop, oid, "rotation", bake({g: math.radians(hit(g, tilt)) for g in fr}, fr))
     # the top slab: lifts when it locks, dips when the ball comes home; pops at each recolour
     pops = (c1, c2, c3, f_seat)
     rest_y = last.get((LILAC, "y"), 0.0)
@@ -383,10 +419,13 @@ def build(doc, scene, sheet):
         (f_home, YELLOW, "linear"), (f_home + 6, BLUE, "hold"), (f_home2, BLUE, "linear"), (f_home2 + 6, YELLOW, "hold")])
     # every other landing on a shelf or a bar pops it to a Connections colour, and its smaller bounce pops it back to its drawn lime
     # (the shelf goes blue: purple is on the top slab then; the lime slab goes green: the top slab is yellow by then)
-    pops2 = ((SHELF_COLOUR, f_shelf, f_shelf2, BLUE), (LIME_COLOUR, f_stack, f_lime2, GREEN))
-    for oid, f1, f2, c in pops2:
-        colour_keys(doc, loop, oid, [(0, DRAWN_LIME, "hold"), (f1, DRAWN_LIME, "linear"), (f1 + 6, c, "hold"),
-                                     (f2, c, "linear"), (f2 + 6, DRAWN_LIME, "hold")])
+    # the shelf goes blue and back at its smaller bounce; the lime slab goes green on its first landing and back on its second (the
+    # return from the bar); the far right bar goes yellow and back to its blue at its smaller bounce
+    pops2 = ((SHELF_COLOUR, f_shelf, f_shelf2, BLUE, DRAWN_LIME), (LIME_COLOUR, f_stack, f_lime2, GREEN, DRAWN_LIME),
+             (BAR_COLOUR, f_bar, f_bar2, YELLOW, DRAWN_BLUE))
+    for oid, f1, f2, c, drawn in pops2:
+        colour_keys(doc, loop, oid, [(0, drawn, "hold"), (f1, drawn, "linear"), (f1 + 6, c, "hold"),
+                                     (f2, c, "linear"), (f2 + 6, drawn, "hold")])
     doc.rebuild_waiting(ROOM)
     rebuild_built(doc, ROOM)
     # (after the rebuilds, which read only number keys) the colours in the intro: the top slab pops blue on the ball's first landing
@@ -397,11 +436,11 @@ def build(doc, scene, sheet):
     for anim in (f"{ROOM} Waiting", f"{ROOM} Built"):
         colour_keys(doc, anim, TOP_COLOUR, [(0, YELLOW, "hold")])
     for anim in (intro, f"{ROOM} Waiting", f"{ROOM} Built"):
-        for oid, *_ in pops2:
-            colour_keys(doc, anim, oid, [(0, DRAWN_LIME, "hold")])
+        for oid, _f1, _f2, _c, drawn in pops2:
+            colour_keys(doc, anim, oid, [(0, drawn, "hold")])
 
     s = lambda f: f"{(INTRO + f) / 60:.2f} s"
-    tops = ", ".join(f"{p - 2 * R:.0f}" for p in (peak3, peak1, peak2, peak4))
-    return (f"{ROOM}: bounces at {s(c1)}, {s(c2)}, {s(c3)} (slab green, blue, purple), proud hop and glance, leaves {s(f_leave)}, "
-            f"shelf {s(f_shelf)} (blue) and {s(f_shelf2)} (lime), right stack {s(f_stack)} (green) and {s(f_lime2)} (lime), home {s(f_home)} (blue) and {s(f_home2)} (yellow); shuffle {s(S)} to {s(S + ends)}, top slab yellow {s(f_seat + 6)}; "
+    tops = ", ".join(f"{p - 2 * R:.0f}" for p in (peak3, peak1, peak2, peak5, peak6, peak4))
+    return (f"{ROOM}: bounces at {s(c1)}, {s(c2)}, {s(c3)} (slab green, blue, purple), glance, leaves {s(f_leave)}, "
+            f"shelf {s(f_shelf)} (blue) and {s(f_shelf2)} (lime), lime slab {s(f_stack)} (green), far right bar {s(f_bar)} (yellow) and {s(f_bar2)} (blue), lime slab again {s(f_lime2)} (lime), home {s(f_home)} (blue) and {s(f_home2)} (yellow); shuffle {s(S)} to {s(S + ends)}, top slab yellow {s(f_seat + 6)}; "
             f"loop {L / 60:.2f} s ({L} frames); ball tops at y {tops}; squash {squash_report}")
