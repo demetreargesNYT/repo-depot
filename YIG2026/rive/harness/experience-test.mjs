@@ -28,7 +28,7 @@ const INTRO = 3.2, PAN = 1.65;
 // When a card's copy arrives after a room change (the guide, section 6): a first visit FIRST, or LOCKUP on a Chapter 2
 // game's first card with its lockup; a picture or a room coming back PAN; a two-move crossing adds a PAN.
 const FIRST = 2.0, LOCKUP = 3.2;
-const NO_INTRO = { 1: ["loading", "ad"], 2: ["from-chapter-1", "to-chapter-3", "chapter-2-community-intro"], 3: ["ad"] };
+const NO_INTRO = { 1: ["loading", "ad"], 2: ["from-chapter-1", "to-chapter-3"], 3: ["ad"] };
 // Scenes that share a room (written out from the guide's Scenes table, not read from the integration): a move between two of them
 // is not a room change, and its copy swaps after the usual 0.34 s, except a move that changes Chapter 4's `reveal`
 // (chapter-4 to chapter-4-top-game, and Back): its copy waits REVEAL s for the wall's fade.

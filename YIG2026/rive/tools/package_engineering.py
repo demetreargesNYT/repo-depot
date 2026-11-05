@@ -112,10 +112,9 @@ def reference_integration():
 def readme():
     return """# Year in Games 2026: Rive files for engineering
 
-Read `core/engineering-guide.md` first. It starts with what's new since Nov 3: renamed scenes, five new scenes, and three
-rules that changed.
+Read `core/engineering-guide.md` first. It has everything you need to build with these files.
 
-This is the final engineering update. From here on, I'll only send updated Rive files, with no code changes needed.
+This replaces the Nov 3 package. Scene names have changed; use the names in the guide.
 
 ## What you need: `core/`
 

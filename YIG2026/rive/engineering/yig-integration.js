@@ -29,7 +29,7 @@ import { Rive } from "@rive-app/canvas"; // pin the version you ship; 2.27.3 and
 // The three files, in order, with the empty room each opens on and ends on, and the scenes with no intro of their own.
 const FILES = [
   { src: "start-chapter-1.riv", opens: "loading", ends: "ad", noIntro: ["loading", "ad"] },
-  { src: "chapter-2.riv", opens: "from-chapter-1", ends: "to-chapter-3", noIntro: ["from-chapter-1", "to-chapter-3", "chapter-2-community-intro"], lockup: true },
+  { src: "chapter-2.riv", opens: "from-chapter-1", ends: "to-chapter-3", noIntro: ["from-chapter-1", "to-chapter-3"], lockup: true },
   { src: "chapters-3-4-end.riv", opens: "ad", ends: "end", noIntro: ["ad"] },
 ];
 // Scenes that share one room or picture. A move between two of them is not a room change: no pan, the room keeps looping,

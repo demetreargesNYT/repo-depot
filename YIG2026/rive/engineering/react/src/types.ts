@@ -27,7 +27,7 @@ export type Stats = {
   flow: Flow
   // the games the player has 10 or more completed puzzles in (their order here does not matter: GAME_ORDER decides it)
   games: Game[]
-  // how many cards each of those games has for this player (from the ranked list and thresholds in the stats requirements)
+  // how many cards each of those games has for this player (from your stats work)
   cardsPerGame: Partial<Record<Game, number>>
   eventBadges: number // Chapter 3's event badges card (chapter-3-event-badges)
   achievementBadges: number // Chapter 3's personal badges card (chapter-3-personal-badges)

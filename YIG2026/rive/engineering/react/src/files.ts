@@ -13,7 +13,7 @@ export type FileDef = {
 
 export const FILES: Record<FileNumber, FileDef> = {
   1: { src: '/yig/start-chapter-1.riv', opens: 'loading', ends: 'ad', noIntro: ['loading', 'ad'], hasLockup: false },
-  2: { src: '/yig/chapter-2.riv', opens: 'from-chapter-1', ends: 'to-chapter-3', noIntro: ['from-chapter-1', 'to-chapter-3', 'chapter-2-community-intro'], hasLockup: true },
+  2: { src: '/yig/chapter-2.riv', opens: 'from-chapter-1', ends: 'to-chapter-3', noIntro: ['from-chapter-1', 'to-chapter-3'], hasLockup: true },
   3: { src: '/yig/chapters-3-4-end.riv', opens: 'ad', ends: 'end', noIntro: ['ad'], hasLockup: false },
 }
 

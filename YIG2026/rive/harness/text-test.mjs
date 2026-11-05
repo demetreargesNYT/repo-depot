@@ -345,7 +345,7 @@ for (const order of ["wc", "cw"]) {
   const iconB = await ev(`[...document.querySelectorAll('.yig-icon')].filter((e) => !e.hidden).map((e) => e.dataset.iconGame).join(',')`);
   check(sceneB === "chapter-2-community-intro", `H  Wordle's last card to the bridge: Rive is on the bridge room (scene ${sceneB})`);
   check(!!goneB && goneB.at - tb <= QUICK + TOL, `H  ...the Wordle card and icon are gone ${fmt(goneB ? goneB.at - tb : null)} after the tap`);
-  check(!!riseB && Math.abs(riseB.at - tb - PAN) <= TOL, `H  ...the bridge copy rises ${fmt(riseB ? riseB.at - tb : null)} after the tap (want ${PAN} s, the end of the pan)`);
+  check(!!riseB && Math.abs(riseB.at - tb - FIRST) <= TOL, `H  ...the bridge copy rises ${fmt(riseB ? riseB.at - tb : null)} after the tap (want ${FIRST} s, a first visit)`);
   check(iconB === "", `H  ...and no icon shows with it (${iconB || "none"})`);
 
   await ev("window.__log.length = 0");
