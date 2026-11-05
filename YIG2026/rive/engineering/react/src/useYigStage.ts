@@ -108,15 +108,20 @@ export function useYigStage(cards: Card[]) {
     if (sceneProp) sceneProp.value = scene
   }
 
-  // ---- reveal, for a move that stays in the room (Chapter 4's cards): true when the value changed, so the wall is about to
-  // fade, forward or back. A move that changes room sets reveal inside setScene instead.
-  const applyReveal = (card: Card): boolean => {
+  // ---- reveal as it is now: a move that changes it (Chapter 4: chapter-4 to chapter-4-top-game, or Back from
+  // chapter-4-top-game to chapter-4) fades the wall over 1.45 s, and the copy waits for the fade
+  const revealChanges = (card: Card): boolean => {
     if (card.reveal === undefined) return false
     const prop = rives.current[card.file - 1]?.viewModelInstance?.boolean('reveal')
-    if (!prop) return false
-    const changed = prop.value !== card.reveal
-    prop.value = card.reveal
-    return changed
+    return !!prop && prop.value !== card.reveal
+  }
+
+  // ---- reveal for a card on the same scene as the one before (no card does this now; Chapter 4's cards change scene, and
+  // setScene sets reveal in the guide's order)
+  const applyReveal = (card: Card) => {
+    if (card.reveal === undefined) return
+    const prop = rives.current[card.file - 1]?.viewModelInstance?.boolean('reveal')
+    if (prop) prop.value = card.reveal
   }
 
   // ---- show file i on top of the one on screen, playing; the old one hides and rests once the new one has drawn
@@ -200,7 +205,8 @@ export function useYigStage(cards: Card[]) {
     mut.frame = target
     if (to.ad) mut.seenAds.add(target)
     setFrame(target)
-    const fading = !sceneChange && applyReveal(to) // only a card that repeats the scene and changes reveal (the old way); Chapter 4's cards now change scene
+    const fading = !roomChange && revealChanges(to) // Chapter 4: the move changes reveal, so the copy waits for the wall's fade (1.45 s)
+    if (!sceneChange) applyReveal(to)
     const key = roomKey(to)
     const firstVisit = roomChange && step > 0 && !mut.visited.has(key) && !FILES[to.file].noIntro.includes(roomOf(to.file, to.scene))
     if (roomChange) {
@@ -228,7 +234,7 @@ export function useYigStage(cards: Card[]) {
         }, PAN_MS)
       }
     }
-    if (!roomChange && sceneChange) setScene(to.file, to.scene, step, !!to.community, to.reveal) // same room: it keeps looping, the copy swaps (0.34 s)
+    if (!roomChange && sceneChange) setScene(to.file, to.scene, step, !!to.community, to.reveal) // same room: it keeps looping, the copy swaps (0.34 s, or 1.45 s on a reveal)
     if (firstVisit) {
       mut.visited.add(key)
       // a Chapter 2 game's lockup shows on its first card unless it is a community card: wait for the whole intro then

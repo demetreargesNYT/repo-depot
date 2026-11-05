@@ -4,15 +4,47 @@ This guide covers what your code needs to drive our three Rive files: what to lo
 
 **What you need** is in `core/`: the three `.riv` files, this guide, `yig-text-motion.css` and the desktop arrow art (`ui-desktop-button.svg`). The `reference/` folder has optional working examples (section 9).
 
-## What's new in this delivery
+## What's new since the Nov 3 package
 
-- **`startScene`**, a new property in all three files, lets a file open directly on any of its scenes, already built and looping. Use it if you mount one file at a time (section 8).
-- **Copy arrives sooner on a first visit:** 2.0 s after you set the scene. A Chapter 2 game's first card with its lockup keeps 3.2 s (section 6).
-- **Desktop Loading and Start:** keep their HTML above artboard y 525 (section 4).
-- **Every scene has a neutral name, and there are new scenes** (section 3, with the old-to-new table). If you already have the previous package, change the scene names in your card list; no property changed.
-- **Some scenes share a room.** `chapter-3` and `chapter-3-2`; `ad` and the two badge scenes; `chapter-4`, `chapter-4-top-game` and `chapter-4-editor-video`; `end` and `share`. A move between scenes that share a room is not a pan: set the new `scene`, the room keeps looping, and the copy waits 0.34 s (section 6).
-- **Chapter 4's three cards now send three scenes** (they all sent `chapter-4` before), and the badge cards and Share send their own scenes (section 5).
-- Chapter 1 animation polish.
+This package replaces the one from Nov 3. **Scene names are now neutral:** each says where the card sits in the flow, never what the picture shows, so the names stay the same as the art changes. Later art updates will keep these names.
+
+**No animation API change.** The same three files, the same `Backdrop` state machine and view model, the same six properties, set in the same order. Only enum values changed: some `scene` values were renamed, File 3 has five new ones, and `topGame` calls The Crossword `crossword`. `startScene` takes the same values as `scene`. Nothing was removed.
+
+**Renamed values** (the full table, with every value that stayed the same, is in section 3):
+
+| Property | File | Nov 3 | Now |
+|---|---|---|---|
+| `scene` | 1 | `chapter-1-card-1` … `chapter-1-card-5` | `chapter-1`, `chapter-1-2`, `chapter-1-3`, `chapter-1-4`, `chapter-1-5` |
+| `scene` | 2 | `intro` | `chapter-2` |
+| `scene` | 2 | `daily` | `crossword` |
+| `scene` | 2 | `bridge` | `chapter-2-community-intro` |
+| `scene` | 3 | `chapter-3-bird` | `chapter-3-2` |
+| `topGame` | 3 | `daily` | `crossword` |
+
+**New scenes** (File 3). Cards that all sent one scene before now each send their own:
+
+| Card | Nov 3 scene | Now |
+|---|---|---|
+| Personal badges | `ad` | `chapter-3-personal-badges` |
+| Event badges (and both of Anon's badge cards) | `ad` | `chapter-3-event-badges` |
+| Chapter 4's top-game card | `chapter-4` | `chapter-4-top-game` |
+| Chapter 4's video card | `chapter-4` | `chapter-4-editor-video` |
+| Share | `end` | `share` |
+
+**Rules that changed**
+
+- **Scenes that share a room.** `chapter-3` and `chapter-3-2`; `ad` and the two badge scenes; `chapter-4`, `chapter-4-top-game` and `chapter-4-editor-video`; `end` and `share`. A move between them is not a pan: set the new `scene`, the room keeps looping, and the copy waits 0.34 s (section 6). `chapter-3` to `chapter-3-2` is the one move whose wait changed: it used to be a pan into a room of its own.
+- **Chapter 4 is three scenes in one room.** Set `topGame` when File 3 loads, so it is set before `chapter-4-top-game`, and leave it unchanged through `chapter-4-editor-video`. `chapter-4` (`reveal` false), then `chapter-4-top-game` (`reveal` true: the wall fades to the top game's colour and its fireworks start; the copy waits 1.45 s for the fade, as it does on the Back to `chapter-4`), then `chapter-4-editor-video` (`reveal` stays true, the fireworks fade out; the copy waits 0.34 s).
+- **The badge cards swapped places.** Personal badges come first ("You also earned new badges"), then event badges ("And bragging rights"). Each is added only when the player has some, so a player with no personal badges goes from `chapter-3-2` straight to `chapter-3-event-badges`.
+- **Anon's two event-badge cards** both send `chapter-3-event-badges`. The second sets the same scene again, which does nothing in Rive; only the copy swaps (0.34 s).
+- **`chapter-2-community-intro`** is added only for a player with exactly one qualifying game, and never for Anon.
+- **Unchanged:** Ad 3 (Anon only) is still File 2's `to-chapter-3`. File 3's `ad` is not a card (section 3).
+
+**Art updates** (new `.riv` files; no code change)
+
+- **File 1:** Start's loop is new (the ball sways and rolls, the bird tilts against it). The first three Chapter 1 rooms get small reactions to the ball. `chapter-1-5` is rebuilt: Wordle Bot on a turning cube, and the ball's three tries. The speech bubble on `chapter-1-5` points at Wordle Bot's head (section 4, item 5).
+- **File 2:** in five rooms the ball now comes out of an object; the opener's ball rolls out of a door. The Mini, The Midi and The Crossword are rebuilt as cube worlds. Connections, Spelling Bee and Strands have new ball loops, and Wordle gets cast shadows.
+- **File 3:** Chapter 3's room has a new loop with the disco ball, and `chapter-3-2` now shows the same room (the separate ball-and-bird room is gone). Chapter 4 is rebuilt: the city builds itself on `chapter-4` and the ball arrives, the ball celebrates on `chapter-4-top-game`, and the fireworks sit clear of the copy. On `end`, one more ball rolls in during the intro.
 
 ## The rules
 
@@ -34,10 +66,11 @@ This guide covers what your code needs to drive our three Rive files: what to lo
 
 **When copy appears** (section 6)
 
-11. There are three waits, timed from when you set the scene:
+11. There are four waits, timed from when you set the scene:
     - **A new room:** 2.0 s. A Chapter 2 game's first card with its lockup: 3.2 s, so the copy never overlaps the lockup.
     - **A room already built:** 1.65 s. Back, a room seen before, an empty room, or an ad.
-    - **The same room:** 0.34 s. Another card on the same scene, or on another scene that shares the room (including Chapter 4's three cards).
+    - **The same room:** 0.34 s. Another card on the same scene, or on another scene that shares the room.
+    - **Chapter 4's reveal:** 1.45 s, when a move changes `reveal`: `chapter-4` to `chapter-4-top-game`, and Back from `chapter-4-top-game` to `chapter-4`. The copy waits for the wall's fade.
 12. Crossing two files in one tap adds two waits together: 1.65 + 2.0 = 3.65 s forward, 1.65 + 1.65 = 3.3 s back.
 13. The old copy leaves at once on every tap.
 
@@ -71,7 +104,7 @@ In every file, the state machine and the view model are both named `Backdrop`.
 | `direction` | enum: `forward`, `back` | all | `forward` for Next, `back` for Back. |
 | `lockup` | boolean, default `true` | 2 | `true` shows a game's lockup. Community cards set `false`. |
 | `reveal` | boolean, default `false` | 3 | Chapter 4: `false` on `chapter-4` (lighter wall), `true` on `chapter-4-top-game` and `chapter-4-editor-video` (the wall fades to the top game's colour; the fireworks run on `chapter-4-top-game` and are off on `chapter-4-editor-video`). |
-| `topGame` | enum: `wordle`, `connections`, `strands`, `spelling-bee`, `mini`, `midi`, `daily` | 3 | The player's top game, for Chapter 4's colour and fireworks. Set once when File 3 loads, and leave it set through `chapter-4-editor-video`. Anonymous: `wordle`. The Crossword's value is still `daily` here (only scene names changed). |
+| `topGame` | enum: `wordle`, `connections`, `strands`, `spelling-bee`, `mini`, `midi`, `crossword` | 3 | The player's top game, for Chapter 4's colour and fireworks. Set once when File 3 loads, so it is set before `chapter-4-top-game`, and leave it unchanged through `chapter-4-editor-video`. Anonymous: `wordle`. The values are the same game names as Chapter 2's scenes. |
 | `scene` | enum (section 3) | all | The room to show. Set it last; it starts the move. |
 | `startScene` | enum, same values as `scene` | all | Set only in `onLoad`, to open on a scene (section 8). |
 
@@ -98,34 +131,47 @@ In flow order. "Regi/Sub" is a registered player or a subscriber; "Anon" is an a
 | `chapter-2` | 2 | the Chapter 2 opener | same | No lockup. |
 | `wordle`, `connections`, `spelling-bee`, `mini`, `midi`, `crossword`, `strands` | 2 | each qualifying game's cards (lockup on) and, with Chapter 2.5, a community card for each other community game (lockup off) | community cards, lockup off (no Wordle) | Each game scene serves personal, Chapter 2.5 and Anon cards; `lockup` decides whether the game's lockup shows. The Midi and The Crossword have no community cards. |
 | `chapter-2-community-intro` | 2 | Chapter 2.5's first card (a player with exactly one qualifying game) | none | An empty room; its copy arrives when the pan ends. |
-| `to-chapter-3` | 2 | none (the tap on the last Chapter 2 card plays both moves) | Ad 3 | The empty Chapter 3 room, File 3's `ad` picture. |
-| `ad` | 3 | none | none | The file opens here; subscribers pass through it. Shares the room with the two badge scenes. |
+| `to-chapter-3` | 2 | none (the tap on the last Chapter 2 card plays both moves) | Ad 3 | The empty Chapter 3 room, the same picture as File 3's `ad`. **Ad 3 (Anon only) is this File 2 scene.** |
+| `ad` | 3 | none | none | File 3's resting backdrop: the file opens on it, and the two badge scenes share its picture. No card sends it, and Ad 3 doesn't use it. Your code sets it only on a Back across files (section 7). |
 | `chapter-3` | 3 | the first Chapter 3 card | same | |
 | `chapter-3-2` | 3 | the second Chapter 3 card | same | Shares `chapter-3`'s room. |
-| `chapter-3-personal-badges` | 3 | the achievement badges card (only with achievement badges) | none | Shares `ad`'s plain wall and floor. |
-| `chapter-3-event-badges` | 3 | the event badges card (only with event badges) | both badge cards | Shares `ad`'s plain wall and floor. Anon sends it on two cards in a row; the same scene again does nothing, and the copy swaps after 0.34 s. |
+| `chapter-3-personal-badges` | 3 | the personal badges card, "You also earned new badges" (only with personal badges) | none | Comes before the event badges card. Shares `ad`'s plain wall and floor. |
+| `chapter-3-event-badges` | 3 | the event badges card, "And bragging rights" (only with event badges) | both badge cards | Shares `ad`'s plain wall and floor. Anon sends it on two cards in a row; the same scene again does nothing, and the copy swaps after 0.34 s. |
 | `chapter-4` | 3 | the first Chapter 4 card (`reveal` false) | same, `topGame` `wordle` | |
-| `chapter-4-top-game` | 3 | the top-game card (`reveal` true) | same | Shares `chapter-4`'s room. `topGame` drives the wall colour and the fireworks. |
+| `chapter-4-top-game` | 3 | the top-game card (`reveal` true) | same | Shares `chapter-4`'s room. `topGame` drives the wall colour and the fireworks. The copy waits 1.45 s for the wall's fade. |
 | `chapter-4-editor-video` | 3 | the video card (`reveal` true) | same | Shares `chapter-4`'s room. No fireworks (they fade out and stay off). `topGame` must stay set. |
 | `end` | 3 | End | End | |
 | `share` | 3 | Share | none | Shares `end`'s room. |
 
 ### Renamed scenes
 
-If you already have the previous package, these are the changes. No property changed (`topGame` still calls The Crossword `daily`).
+Every enum value in the three files, compared with the Nov 3 package. Values are matched inside the file, so a renamed value is the same scene under a new name. No property, state machine or view model changed, and nothing was removed. `startScene` has the same values as `scene` in each file, so it follows every change below.
 
-| Old | New |
-|---|---|
-| `chapter-1-card-1` … `chapter-1-card-5` | `chapter-1`, `chapter-1-2`, `chapter-1-3`, `chapter-1-4`, `chapter-1-5` |
-| `intro` (File 2) | `chapter-2` |
-| `daily` (File 2, The Crossword) | `crossword` |
-| `bridge` | `chapter-2-community-intro` |
-| `chapter-3-bird` | `chapter-3-2` |
-| `ad` on the achievement badges card (File 3) | `chapter-3-personal-badges` |
-| `ad` on the event badges card, and on both Anon badge cards (File 3) | `chapter-3-event-badges` |
-| `chapter-4` on Chapter 4's second card | `chapter-4-top-game` |
-| `chapter-4` on Chapter 4's third card (the video) | `chapter-4-editor-video` |
-| `end` on the Share card | `share` |
+| Property | File | Nov 3 | Now | Change |
+|---|---|---|---|---|
+| `scene` | 1 | `chapter-1-card-1` | `chapter-1` | renamed |
+| `scene` | 1 | `chapter-1-card-2` … `chapter-1-card-5` | `chapter-1-2` … `chapter-1-5` | renamed |
+| `scene` | 1 | `loading`, `start`, `ad` | the same | unchanged |
+| `scene` | 2 | `intro` | `chapter-2` | renamed |
+| `scene` | 2 | `daily` | `crossword` | renamed |
+| `scene` | 2 | `bridge` | `chapter-2-community-intro` | renamed |
+| `scene` | 2 | `from-chapter-1`, `wordle`, `connections`, `spelling-bee`, `mini`, `midi`, `strands`, `to-chapter-3` | the same | unchanged |
+| `scene` | 3 | `chapter-3-bird` | `chapter-3-2` | renamed |
+| `scene` | 3 | none | `chapter-3-personal-badges`, `chapter-3-event-badges`, `chapter-4-top-game`, `chapter-4-editor-video`, `share` | new |
+| `scene` | 3 | `ad`, `chapter-3`, `chapter-4`, `end` | the same | unchanged |
+| `topGame` | 3 | `daily` | `crossword` | renamed |
+| `topGame` | 3 | `wordle`, `connections`, `strands`, `spelling-bee`, `mini`, `midi` | the same | unchanged |
+| `direction` | all | `forward`, `back` | the same | unchanged |
+
+Cards that send a new scene:
+
+| Card | Nov 3 scene | Now |
+|---|---|---|
+| Personal badges | `ad` | `chapter-3-personal-badges` |
+| Event badges, and both of Anon's badge cards | `ad` | `chapter-3-event-badges` |
+| Chapter 4's top-game card | `chapter-4` | `chapter-4-top-game` |
+| Chapter 4's video card | `chapter-4` | `chapter-4-editor-video` |
+| Share | `end` | `share` |
 
 ## 4. Loading and Start
 
@@ -153,39 +199,41 @@ Each card carries `file`, `scene`, any Rive values it names (`lockup`, `reveal`,
 | Ad 2 | always | `ad` |
 | Chapter 2 | the opener, then each qualifying game's cards, in the game order | `chapter-2`, then each game's scene (File 2) |
 | Chapter 2.5 | only with **exactly one** qualifying game | `chapter-2-community-intro`, then a community card for each other community game (`lockup = false`), leaving out the player's own |
-| Chapter 3 | the first two cards; then a card with event badges and a card with achievement badges, each only if the player has some | `chapter-3`, `chapter-3-2`, `chapter-3-event-badges`, `chapter-3-personal-badges` (File 3) |
+| Chapter 3 | the first two cards; then the personal badges card, then the event badges card, each only if the player has some | `chapter-3`, `chapter-3-2`, `chapter-3-personal-badges`, `chapter-3-event-badges` (File 3) |
 | Chapter 4 | three | `chapter-4` (`reveal` false, with `topGame`), `chapter-4-top-game` (`reveal` true), `chapter-4-editor-video` (`reveal` true) |
 | End | End, Share | `end`, `share` |
 
 There's no card on the empty Chapter 3 room: the tap on the last Chapter 2 card plays both moves (section 7).
 
-**Example: several games.** Wordle (4 cards), Spelling Bee (2) and Strands (1) qualify; 14 achievement badges, no event badges; top game Wordle.
+**Example: several games.** Wordle (4 cards), Spelling Bee (2) and Strands (1) qualify; 14 personal badges, no event badges; top game Wordle. In order:
 
-| # | Card | File · scene |
-|---|---|---|
-| 0–2 | Loading, Start, Ad 1 | 1 · `loading`, `start`, `ad` |
-| 3–7 | Chapter 1 ×5 | 1 · `chapter-1`, `chapter-1-2` … `chapter-1-5` |
-| 8 | Ad 2 | 1 · `ad` |
-| 9 | Chapter 2 opener | 2 · `chapter-2` |
-| 10–16 | Wordle ×4, Spelling Bee ×2, Strands | 2 · `wordle`, `spelling-bee`, `strands` |
-| 17–18 | Chapter 3 ×2 | 3 · `chapter-3`, `chapter-3-2` |
-| 19 | Achievement badges | 3 · `chapter-3-personal-badges` |
-| 20–22 | Chapter 4 ×3 | 3 · `chapter-4`, `chapter-4-top-game`, `chapter-4-editor-video` |
-| 23–24 | End, Share | 3 · `end`, `share` |
+| Cards | File · scene |
+|---|---|
+| Loading, Start, Ad 1 | 1 · `loading`, `start`, `ad` |
+| Chapter 1 ×5 | 1 · `chapter-1`, `chapter-1-2` … `chapter-1-5` |
+| Ad 2 | 1 · `ad` |
+| Chapter 2 opener | 2 · `chapter-2` |
+| Wordle ×4, Spelling Bee ×2, Strands | 2 · `wordle`, `spelling-bee`, `strands` |
+| Chapter 3 ×2 | 3 · `chapter-3`, `chapter-3-2` |
+| Personal badges (no event badges card) | 3 · `chapter-3-personal-badges` |
+| Chapter 4 ×3 | 3 · `chapter-4`, `chapter-4-top-game`, `chapter-4-editor-video` |
+| End, Share | 3 · `end`, `share` |
 
-**Example: one game (Chapter 2.5).** Only Connections (5 cards) qualifies: cards 10–14 are Connections, 15 is `chapter-2-community-intro`, and 16–19 are community cards for Wordle, Spelling Bee, The Mini and Strands. The rest follows the table above.
+**Example: one game (Chapter 2.5).** Only Connections (5 cards) qualifies: after the opener come the five Connections cards, then `chapter-2-community-intro`, then community cards for Wordle, Spelling Bee, The Mini and Strands. The rest follows the table above.
 
 ### Anonymous players
 
-| # | Card | File · scene |
-|---|---|---|
-| 0–8 | Loading through Ad 2, as above | 1 |
-| 9 | Chapter 2 opener | 2 · `chapter-2` |
-| 10–13 | Community cards: Connections, Spelling Bee, The Mini, Strands (no Wordle; Chapter 1 covers it) | 2 · each game's scene, `lockup = false` |
-| 14 | Ad 3 | 2 · `to-chapter-3` |
-| 15–18 | Chapter 3 ×4, never skipped | 3 · `chapter-3`, `chapter-3-2`, `chapter-3-event-badges`, `chapter-3-event-badges` |
-| 19–21 | Chapter 4 ×3, `topGame = 'wordle'` | 3 · `chapter-4`, `chapter-4-top-game`, `chapter-4-editor-video` |
-| 22 | End (no Share) | 3 · `end` |
+In order:
+
+| Cards | File · scene |
+|---|---|
+| Loading through Ad 2, as above | 1 |
+| Chapter 2 opener | 2 · `chapter-2` |
+| Community cards: Connections, Spelling Bee, The Mini, Strands (no Wordle; Chapter 1 covers it) | 2 · each game's scene, `lockup = false` |
+| Ad 3 | 2 · `to-chapter-3` (not File 3's `ad`) |
+| Chapter 3 ×4, never skipped | 3 · `chapter-3`, `chapter-3-2`, `chapter-3-event-badges`, `chapter-3-event-badges` |
+| Chapter 4 ×3, `topGame = 'wordle'` | 3 · `chapter-4`, `chapter-4-top-game`, `chapter-4-editor-video` |
+| End (no Share) | 3 · `end` |
 
 ## 6. When the copy appears
 
@@ -196,17 +244,20 @@ Each card's copy arrives a fixed time after you set `scene`.
 | **2.0 s** | A new room: the first visit with Next (`start`, `chapter-1` to `chapter-1-5`, `chapter-2`, community cards, `chapter-3`, `chapter-4`, `end`). The intro is still finishing; that's intended. |
 | **3.2 s** | A Chapter 2 game's first card with its lockup (`lockup` true), first visit. |
 | **1.65 s** | A room already built: Back, a room seen before, an empty room (`ad`, `chapter-2-community-intro`, the badge scenes), an ad. Show an ad when the pan ends. |
-| **0.34 s** | The same room: another card on the same scene, or a move between scenes that share a room (`chapter-3` to `chapter-3-2`; `ad`, `chapter-3-personal-badges` and `chapter-3-event-badges`; `chapter-4` to `chapter-4-top-game` to `chapter-4-editor-video`; `end` to `share`). Set the new `scene` when the scene changes; there is no pan and nothing else to wait for. |
+| **0.34 s** | The same room: another card on the same scene, or a move between scenes that share a room (`chapter-3` to `chapter-3-2`; `ad`, `chapter-3-personal-badges` and `chapter-3-event-badges`; `chapter-4-top-game` to `chapter-4-editor-video`; `end` to `share`). Set the new `scene` when the scene changes; there is no pan and nothing else to wait for. |
+| **1.45 s** | Chapter 4's reveal: `chapter-4` to `chapter-4-top-game` (`reveal` turns true), and Back from `chapter-4-top-game` to `chapter-4` (`reveal` turns false). The room doesn't pan, but the wall fades to the new colour over 1.45 s and the copy waits for it. `chapter-4-top-game` to `chapter-4-editor-video`, either way, keeps `reveal` true and waits 0.34 s. |
 
 - **Crossing two files** in one tap adds two waits: 3.65 s forward (1.65 + 2.0), 3.3 s back (1.65 + 1.65). Skipping a seen ad across files is the same: 3.3 s.
 - **A tap before the copy has arrived** doesn't restart the wait. The copy still arrives at its original time.
-- **Keep 2.0 s and 3.2 s as one named constant each.** In our files they're `--yig-first-visit` and `--yig-lockup` in `core/yig-text-motion.css`, and `FIRST_VISIT_COPY_MS` and `LOCKUP_COPY_MS` in `reference/react/src/timing.ts`.
+- **Keep 2.0 s and 3.2 s as one named constant each.** In our files they're `--yig-first-visit` and `--yig-lockup` in `core/yig-text-motion.css`, and `FIRST_VISIT_COPY_MS` and `LOCKUP_COPY_MS` in `reference/react/src/timing.ts`. The reveal's 1.45 s is `REVEAL_FADE_MS` in `reference/yig-integration.js` and in `timing.ts`.
 
 `reference/timing-demo.html` plays every case with stand-in rooms and opens with a double-click.
 
 ## 7. Files, ads and Back
 
 **Ads are shown once.** Keep a set of the ads reached. When a tap would land on a seen ad, step over it, and work out the move from the card you land on. Whether Back works while an ad is on screen is your choice.
+
+**Where each ad sits.** Ad 1 and Ad 2 are File 1's `ad`. Ad 3 (Anon only) is File 2's `to-chapter-3`, as in the Nov 3 package. File 3's `ad` shows the same empty room, but it is that file's resting backdrop, not an ad card: you set it only on a Back across files (below).
 
 **Switching files.** Each file ends on the empty room the next one opens on:
 
@@ -282,15 +333,17 @@ The game icon is its own block, one per game: `<div class="yig-icon"><span class
 | `reference/react/` | React 18 + TypeScript example. `src/useYigStage.ts` has every rule in one hook; `src/cards.ts` builds the card list. |
 | `reference/yig-integration.js` | The same rules in plain JavaScript. |
 
-To run the example, start any static server from the package folder (`python3 -m http.server 8000`) and open `http://localhost:8000/reference/example/`. It loads the Rive runtime from a CDN. Useful options: `?flow=anon`, `?player=connections-only` (or `several-games`, `midi-only`, `all-seven`, `none`), `?goto=3:chapter-4-top-game`, `?jump=12`, `?rive-only` (or the H key) hides all the HTML.
+To run the example, start any static server from the package folder (`python3 -m http.server 8000`) and open `http://localhost:8000/reference/example/`. It loads the Rive runtime from a CDN. Useful options: `?flow=anon`, `?player=connections-only` (or `several-games`, `midi-only`, `all-seven`, `none`), `?goto=3:chapter-4-top-game` (a file and one of its scenes), `?jump=12` (a position in the card list, counting Loading as 0), `?rive-only` (or the H key) hides all the HTML.
 
 ## Checklist
 
 - `stateMachines: 'Backdrop'` (plural) and `autoBind: true` on every file.
 - Build the card list once; never add a card that doesn't qualify.
 - Each move: `direction`, `lockup`, `reveal`, then `scene`.
-- Copy waits: 2.0 s for a new room (3.2 s with a lockup), 1.65 s for a room already built, 0.34 s for the same room (including scenes that share a room). Crossing two files adds two waits.
-- Keep `topGame` set through `chapter-4-editor-video`.
+- Copy waits: 2.0 s for a new room (3.2 s with a lockup), 1.65 s for a room already built, 0.34 s for the same room (including scenes that share a room), 1.45 s when Chapter 4's `reveal` changes. Crossing two files adds two waits.
+- Set `topGame` when File 3 loads, before `chapter-4-top-game`, and keep it unchanged through `chapter-4-editor-video`.
+- Badge cards: personal first, then event, each only if the player has some.
+- Ad 3 is File 2's `to-chapter-3`; no card sends File 3's `ad`.
 - Hold a Back during a pan.
 - Keep all three files loaded; pause the hidden one.
 - Ads show once; Back and Next skip them after that.

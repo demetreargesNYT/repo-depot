@@ -30,7 +30,9 @@ const INTRO = 3.2, PAN = 1.65;
 const FIRST = 2.0, LOCKUP = 3.2;
 const NO_INTRO = { 1: ["loading", "ad"], 2: ["from-chapter-1", "to-chapter-3", "chapter-2-community-intro"], 3: ["ad"] };
 // Scenes that share a room (written out from the guide's Scenes table, not read from the integration): a move between two of them
-// is not a room change, and its copy swaps after the usual 0.34 s.
+// is not a room change, and its copy swaps after the usual 0.34 s, except a move that changes Chapter 4's `reveal`
+// (chapter-4 to chapter-4-top-game, and Back): its copy waits REVEAL s for the wall's fade.
+const REVEAL = 1.45;
 const SHARED_ROOMS = [["ad", "chapter-3-personal-badges", "chapter-3-event-badges"], ["chapter-3", "chapter-3-2"], ["chapter-4", "chapter-4-top-game", "chapter-4-editor-video"], ["end", "share"]];
 const roomOf = (file, scene) => (file === 3 ? SHARED_ROOMS.find((l) => l.includes(scene))?.[0] : null) ?? scene;
 const sameRoom = (a, b) => a.file === b.file && roomOf(a.file, a.scene) === roomOf(b.file, b.scene);
@@ -86,8 +88,8 @@ function expectedCards(flow, player) {
     for (const g of own) for (let i = 0; i < PER_GAME[g]; i++) out.push(`2:${g}`);
     if (own.length === 1) out.push("2:chapter-2-community-intro", ...COMMUNITY.filter((g) => g !== own[0]).map((g) => `2:${g}`));
     out.push("3:chapter-3", "3:chapter-3-2");
+    if (BADGES[player][1] > 0) out.push("3:chapter-3-personal-badges");   // personal badges first, then event badges
     if (BADGES[player][0] > 0) out.push("3:chapter-3-event-badges");
-    if (BADGES[player][1] > 0) out.push("3:chapter-3-personal-badges");
   }
   out.push("3:chapter-4", "3:chapter-4-top-game", "3:chapter-4-editor-video", "3:end");
   if (!anon) out.push("3:share");
@@ -181,6 +183,13 @@ for (const [flow, player, size] of runs) {
     const timingBad = [];
     // no fade: the copy swaps quickly, or, when the game icon changes, waits the 340 ms the old icon takes to lift (never the 1.45 s)
     const okNoFade = (d, iconChanges) => !!d && (d.quick || (iconChanges && d.delay === "340ms"));
+    // a move inside the room that changes reveal waits for the wall's fade (this walk never taps before a room's copy is due,
+    // so the wait is exactly the fade)
+    const revealChanges = (a, b) => a.reveal !== undefined && b.reveal !== undefined && a.reveal !== b.reveal;
+    const okSameRoom = (d, to, from) => (revealChanges(to, from)
+      ? !!d && !d.quick && Math.abs(parseFloat(d.delay) - REVEAL * 1000) <= 1
+      : okNoFade(d, to.icon !== from.icon));
+    const sameRoomWant = (to, from) => (revealChanges(to, from) ? `wants ${REVEAL * 1000}ms, the wall's fade` : "wants the quick swap, or 340ms when the icon changes");
     for (let i = 2; i < cards.length; i++) {
       await b.ev(`document.getElementById('${next}').click()`);
       if (!sameRoom(cards[i], cards[i - 1])) {
@@ -191,14 +200,14 @@ for (const [flow, player, size] of runs) {
       if (sameRoom(cards[i], cards[i - 1])) {
         await sleep(60);
         const d = await delayOf(i);
-        if (!okNoFade(d, cards[i].icon !== cards[i - 1].icon)) revealBad.push(`Next to ${i} (${cards[i].scene}): ${JSON.stringify(d)} (wants the quick swap, or 340ms when the icon changes)`);
+        if (!okSameRoom(d, cards[i], cards[i - 1])) revealBad.push(`Next to ${i} (${cards[i].scene}): ${JSON.stringify(d)} (${sameRoomWant(cards[i], cards[i - 1])})`);
       }
       await sleep(settle(i, i - 1, true));
       await verify(i, "Next");
     }
     check(!bad.length, `${tag}: Next through all ${cards.length} cards: the right file, scene and copy each time${bad.length ? ": " + bad.slice(0, 3).join(" / ") : ""}`);
     check(!timingBad.length, `${tag}: every room change on the way waits the guide's time: ${FIRST} s on a first visit, ${LOCKUP} s with a lockup, ${PAN} s for a picture, plus ${PAN} s for a second move${timingBad.length ? ": " + timingBad.slice(0, 4).join(" / ") : ""}`);
-    check(!revealBad.length, `${tag}: a change between scenes that share a room (or a repeat of one) swaps the copy after 0.34 s, forward and back${revealBad.length ? ": " + revealBad.join(" / ") : ""}`);
+    check(!revealBad.length, `${tag}: a change between scenes that share a room (or a repeat of one) swaps the copy after 0.34 s, or waits ${REVEAL} s when Chapter 4's reveal changes, forward and back${revealBad.length ? ": " + revealBad.join(" / ") : ""}`);
     check(JSON.stringify([...b.rivs].sort()) === JSON.stringify(["chapter-2.riv", "chapters-3-4-end.riv", "start-chapter-1.riv"]),
       `${tag}: each .riv was fetched once, the next ones ahead of time (${b.rivs.join(", ")})`);
     bad.length = 0;
@@ -210,7 +219,7 @@ for (const [flow, player, size] of runs) {
       if (sameRoom(cards[i], cards[from])) {
         await sleep(60);
         const d = await delayOf(i);
-        if (!okNoFade(d, cards[i].icon !== cards[from].icon)) revealBad.push(`Back to ${i} (${cards[i].scene}): ${JSON.stringify(d)} (wants the quick swap, or 340ms when the icon changes)`);
+        if (!okSameRoom(d, cards[i], cards[from])) revealBad.push(`Back to ${i} (${cards[i].scene}): ${JSON.stringify(d)} (${sameRoomWant(cards[i], cards[from])})`);
       }
       await sleep(settle(i, from, false));
       await verify(i, "Back");

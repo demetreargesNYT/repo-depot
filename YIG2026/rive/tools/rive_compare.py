@@ -29,13 +29,21 @@ PULL_LIMIT = 300        # seconds
 BUILD_LIMIT = 300
 DEFAULTS = {"0", "0.0", "false"}  # a value the pull leaves out on any element
 # ...and the ones it leaves out on one kind of element only (read from pulls of all three files, 2026-11-03)
-DEFAULTS_BY = {("CubicEaseInterpolator", "y2"): "1", ("TransitionViewModelCondition", "opValue"): "equal", ("LinearAnimation", "fps"): "60",
+DEFAULTS_BY = {("CubicEaseInterpolator", "y2"): "1", ("CubicEaseInterpolator", "x1"): "0.42", ("CubicEaseInterpolator", "x2"): "0.58",
+               ("TransitionViewModelCondition", "opValue"): "equal", ("LinearAnimation", "fps"): "60",
                ("LinearAnimation", "loopValue"): "oneShot", ("LinearAnimation", "duration"): "60", ("DrawTarget", "placementValue"): "before",
                ("Rectangle", "originX"): "0.5", ("Rectangle", "originY"): "0.5", ("Artboard", "spaceId"): "0:0"}
 
 
 def is_default(tag, attr, value):
-    return value in DEFAULTS or DEFAULTS_BY.get((tag, attr)) == value
+    if value in DEFAULTS or DEFAULTS_BY.get((tag, attr)) == value:
+        return True
+    try:
+        return float(value) == 0.0                  # a zero written with digits, such as 0.0000
+    except (TypeError, ValueError):
+        return False
+
+
 SHOW = 12               # differences listed per kind (the counts are always complete)
 
 

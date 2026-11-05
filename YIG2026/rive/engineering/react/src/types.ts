@@ -14,8 +14,9 @@ export type Card = {
   community?: boolean
   // the game whose small HTML icon this card's copy shows with
   icon?: Game
-  // File 3: the player's top game, set once when File 3 has loaded. It is File 3's topGame enum value, which still calls The Crossword 'daily'.
-  topGame?: string
+  // File 3: the player's top game, set once when File 3 has loaded and left set through chapter-4-editor-video.
+  // File 3's topGame enum uses the same game names (The Crossword is 'crossword').
+  topGame?: Game
   // File 3, Chapter 4: false on the first card (lighter blue wall), true from the top-game card on
   reveal?: boolean
 }
@@ -28,8 +29,8 @@ export type Stats = {
   games: Game[]
   // how many cards each of those games has for this player (from the ranked list and thresholds in the stats requirements)
   cardsPerGame: Partial<Record<Game, number>>
-  eventBadges: number
-  achievementBadges: number
+  eventBadges: number // Chapter 3's event badges card (chapter-3-event-badges)
+  achievementBadges: number // Chapter 3's personal badges card (chapter-3-personal-badges)
   topGame: Game
 }
 

@@ -175,7 +175,7 @@
   <h2>The code you write for a tap</h2>
   <h3>Every move sets these, in this order</h3>
   <pre id="setscene"></pre>
-  <p style="margin-top:12px">The rest of the tap code picks the wait from the three rules above, and <code>files[n].rive.viewModelInstance</code> is where your Rive objects go. A crossing between two files adds two of the waits together.</p>
+  <p style="margin-top:12px">The rest of the tap code picks the wait from the four rules above, and <code>files[n].rive.viewModelInstance</code> is where your Rive objects go. A crossing between two files adds two of the waits together.</p>
   <details>
     <summary>Show the full tap code</summary>
     <pre id="yourcode"></pre>
@@ -226,7 +226,7 @@ function buildCards(kind) {
   if (kind === "anon") { community("wordle").forEach(comm); add(2, "to-chapter-3", "Ad 3", { ad: true }); }
   add(3, "chapter-3", "chapter-3"); add(3, "chapter-3-2", "chapter-3-2");
   if (kind === "anon") { add(3, "chapter-3-event-badges", "chapter-3-event-badges (1)"); add(3, "chapter-3-event-badges", "chapter-3-event-badges (2)"); }
-  else { add(3, "chapter-3-event-badges", "chapter-3-event-badges"); add(3, "chapter-3-personal-badges", "chapter-3-personal-badges"); }
+  else { add(3, "chapter-3-personal-badges", "chapter-3-personal-badges"); add(3, "chapter-3-event-badges", "chapter-3-event-badges"); }
   add(3, "chapter-4", "chapter-4", { topGame: top, reveal: false });
   add(3, "chapter-4-top-game", "chapter-4-top-game", { icon: top, reveal: true });
   add(3, "chapter-4-editor-video", "chapter-4-editor-video", { reveal: true });
@@ -400,6 +400,7 @@ const RULES = {
   "ad-first": { say: (ms) => `A room already built: ${secs(ms)} s (an ad)` },
   "skip-in": { say: (ms) => `A room already built: ${secs(ms)} s (a seen ad is skipped)` },
   "same-room": { say: (ms) => `The same room: ${secs(ms)} s` },
+  reveal: { say: (ms) => `Chapter 4's reveal: ${secs(ms)} s (reveal changed, so the copy waits for the wall's fade)` },
   "two-first": { say: (ms) => `Crossing between two files: ${secs(PAN_MS)} + ${secs(ms - PAN_MS)} = ${secs(ms)} s` },
   "two-back": { say: (ms) => `Crossing between two files: ${secs(PAN_MS)} + ${secs(ms - PAN_MS)} = ${secs(ms)} s` },
   "skip-across": { say: (ms) => `Crossing between two files, a seen ad skipped: ${secs(PAN_MS)} + ${secs(ms - PAN_MS)} = ${secs(ms)} s` },
@@ -409,7 +410,7 @@ const RULES = {
 // which rows of the table (and lines under it) each rule lights up
 const RULE_KEYS = {
   "first-visit": ["new"], lockup: ["new"], comeback: ["built"], picture: ["built"], "ad-first": ["built"], "skip-in": ["built"],
-  "same-room": ["same"], "two-first": ["new", "built", "crossing"], "two-back": ["built", "crossing"], "skip-across": ["built", "crossing"],
+  "same-room": ["same"], reveal: ["reveal"], "two-first": ["new", "built", "crossing"], "two-back": ["built", "crossing"], "skip-across": ["built", "crossing"],
   settle: ["note-settle"], jump: ["note-start"],
 };
 
@@ -457,7 +458,8 @@ function renderTable() {
   const rows = [
     ["new", "A new room", FIRST_VISIT_MS, `${secs(LOCKUP_MS)} s for a Chapter 2 game's first card, because of its lockup`],
     ["built", "A room already built", PAN_MS, "Back, a room seen before, an empty room, or an ad"],
-    ["same", "The same room", CLEAR_MS, "Another card in the room, or another scene that shares the room (chapter-3-2, the badge scenes, chapter-4-top-game, chapter-4-editor-video, share)"],
+    ["same", "The same room", CLEAR_MS, "Another card in the room, or another scene that shares the room (chapter-3-2, the badge scenes, chapter-4-editor-video, share)"],
+    ["reveal", "Chapter 4's reveal", REVEAL_MS, "chapter-4 to chapter-4-top-game, and Back from chapter-4-top-game to chapter-4: reveal changes and the wall fades"],
   ];
   document.getElementById("waits").innerHTML = rows.map(([key, name, ms, sub]) =>
     `<tr data-key="${key}"><td>${name}<small>${sub}</small></td><td class="n">${secs(ms)} s</td></tr>`).join("");
@@ -508,6 +510,7 @@ const FIRST_VISIT_MS = cssMs("--yig-first-visit");   // 2.0 s: a room's first vi
 const LOCKUP_MS = cssMs("--yig-lockup");             // 3.2 s: a Chapter 2 game's first card, with its lockup
 const CLEAR_MS = cssMs("--yig-clear");               // 0.34 s: the old copy has cleared
 const PAN_MS = 1650;                                 // 1.6 s pan plus a few frames
+const REVEAL_MS = 1450;                              // 1.45 s: Chapter 4's wall fades when reveal changes
 
 // Each file's first and last picture, and the scenes that have no intro of their own.
 const FILES = [
@@ -516,7 +519,7 @@ const FILES = [
   { opens: "ad", ends: "end", noIntro: ["ad"] },
 ];
 // Scenes that share one room or picture (File 3). A move between two of them is no room change: no pan, the room keeps
-// looping, and the copy swaps after 0.34 s. The first scene in a list owns the room.
+// looping, and the copy swaps after 0.34 s (1.45 s when the move changes reveal). The first scene in a list owns the room.
 const ROOMS = [
   ["ad", "chapter-3-personal-badges", "chapter-3-event-badges"],
   ["chapter-3", "chapter-3-2"],
@@ -574,6 +577,8 @@ function go(step) {
   if (to.ad) seenAds.add(target);
   const key = `${to.file}:${roomOf(to.file, to.scene)}`;
   const firstVisit = roomChange && step > 0 && !visited.has(key) && !FILES[to.file - 1].noIntro.includes(roomOf(to.file, to.scene));
+  // Chapter 4: a move inside the room that changes reveal fades the wall (1.45 s); read it before the move sets it
+  const revealing = !roomChange && to.reveal !== undefined && files[to.file - 1].rive.viewModelInstance.boolean("reveal").value !== to.reveal;
   if (!roomChange && sceneChange) setScene(to.file, to, step);   // same room: it keeps looping, the copy swaps
 
   if (roomChange) {
@@ -606,7 +611,8 @@ function go(step) {
   const settleLeft = Math.max(0, (copyFrom[key] ?? 0) - now);   // a first visit's copy is never earlier than its time
   let wait, rule;
   if (!roomChange) {
-    if (settleLeft > 0) { wait = settleLeft; rule = "settle"; }
+    if (revealing) { wait = Math.max(settleLeft, REVEAL_MS); rule = "reveal"; }
+    else if (settleLeft > 0) { wait = settleLeft; rule = "settle"; }
     else { wait = CLEAR_MS; rule = "same-room"; }
   } else if (firstVisit) {
     wait = copyFrom[key] - now;

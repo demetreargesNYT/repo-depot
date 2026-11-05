@@ -113,8 +113,45 @@ def reference_integration():
 def readme():
     return """# Year in Games 2026: Rive files and guide for engineering
 
-Start here. You need the four things in `core/`: the three Rive files, the guide, the text CSS and the desktop arrow art.
-Read `core/engineering-guide.md` first: "The rules" is a one-page summary, and "What's new in this delivery" lists what changed since the last package.
+## What's new since the Nov 3 package
+
+This package replaces the one from Nov 3. Scene names are now neutral: each says where the card sits in the flow, never
+what the picture shows, so the names stay the same as the art changes. Later art updates will keep these names.
+
+No animation API change: the same three files, the same `Backdrop` state machine and view model, the same six properties,
+set in the same order. Only enum values changed. `startScene` takes the same values as `scene`. Nothing was removed.
+
+Renamed values (the full table is in section 3 of the guide):
+
+| Property | File | Nov 3 | Now |
+|---|---|---|---|
+| `scene` | 1 | `chapter-1-card-1` … `chapter-1-card-5` | `chapter-1`, `chapter-1-2`, `chapter-1-3`, `chapter-1-4`, `chapter-1-5` |
+| `scene` | 2 | `intro` | `chapter-2` |
+| `scene` | 2 | `daily` | `crossword` |
+| `scene` | 2 | `bridge` | `chapter-2-community-intro` |
+| `scene` | 3 | `chapter-3-bird` | `chapter-3-2` |
+| `topGame` | 3 | `daily` | `crossword` |
+
+New scenes, all in File 3: `chapter-3-personal-badges`, `chapter-3-event-badges`, `chapter-4-top-game`,
+`chapter-4-editor-video` and `share`. The badge cards, Chapter 4's top-game and video cards, and Share each send their own scene now.
+
+Rules that changed:
+- Scenes that share a room (`chapter-3` and `chapter-3-2`; `ad` and the badge scenes; the three Chapter 4 scenes; `end` and
+  `share`): set the new `scene`, no pan, the copy waits 0.34 s.
+- Chapter 4: set `topGame` when File 3 loads, before `chapter-4-top-game`, and leave it unchanged through
+  `chapter-4-editor-video`. `chapter-4` to `chapter-4-top-game` (and Back) waits 1.45 s for the wall's fade;
+  `chapter-4-top-game` to `chapter-4-editor-video` waits 0.34 s.
+- Badge cards: personal badges first, then event badges, each only if the player has some. Anon sends
+  `chapter-3-event-badges` on both of its badge cards.
+- `chapter-2-community-intro` only for a player with exactly one qualifying game; never for Anon.
+- Unchanged: Ad 3 (Anon only) is still File 2's `to-chapter-3`.
+
+All three files have art updates, with no code change; the guide's "What's new" lists them per file.
+
+## Start here
+
+You need the four things in `core/`: the three Rive files, the guide, the text CSS and the desktop arrow art.
+Read `core/engineering-guide.md` first: "What's new since the Nov 3 package" is the list of changes, and "The rules" is a one-page summary.
 Everything in `reference/` is optional, a working example of the guide.
 `reference/timing-demo.html` is the visual companion to the guide's timing section (section 6): double-click it to see every wait and the Rive calls on each tap.
 `reference/text-motion.html` shows how the copy moves on each card, per line (the guide's section 9): double-click it too.

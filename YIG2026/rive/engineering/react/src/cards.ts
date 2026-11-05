@@ -50,14 +50,15 @@ export function buildCards(stats: Stats): Card[] {
     // four cards, never skipped: the last two both send chapter-3-event-badges (the same scene again does nothing)
     cards.push({ file: 3, scene: 'chapter-3-event-badges' }, { file: 3, scene: 'chapter-3-event-badges' })
   } else {
-    // the badge cards are added only when the player has some
-    if (stats.eventBadges > 0) cards.push({ file: 3, scene: 'chapter-3-event-badges' })
+    // the badge cards, personal badges first ("You also earned new badges"), then event badges ("And bragging rights"),
+    // each added only when the player has some
     if (stats.achievementBadges > 0) cards.push({ file: 3, scene: 'chapter-3-personal-badges' })
+    if (stats.eventBadges > 0) cards.push({ file: 3, scene: 'chapter-3-event-badges' })
   }
 
   // Chapter 4: the first card is the lighter blue wall (reveal false); the next two keep the top game's colour (reveal true)
   const top: Game = anonymous ? 'wordle' : stats.topGame
-  cards.push({ file: 3, scene: 'chapter-4', topGame: top === 'crossword' ? 'daily' : top, reveal: false }) // topGame's enum still calls The Crossword 'daily'
+  cards.push({ file: 3, scene: 'chapter-4', topGame: top, reveal: false }) // topGame's values are the game names, as in GAME_ORDER
   cards.push({ file: 3, scene: 'chapter-4-top-game', icon: top, reveal: true })
   cards.push({ file: 3, scene: 'chapter-4-editor-video', reveal: true }) // the video, in HTML; no fireworks, topGame stays set
 

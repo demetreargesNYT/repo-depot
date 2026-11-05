@@ -20,8 +20,9 @@
 //     (--yig-lockup, the whole intro) on a Chapter 2 game's first card with its lockup, so the copy never
 //     overlaps the lockup; at the end of the pan (1.65 s) when the room comes back already built or is an empty room;
 //     0.34 s within a room, which covers a change between scenes that share a room (see ROOMS below: no pan, the room keeps
-//     looping) and the same scene again. A two-move crossing adds the first move's 1.65 s. The intros themselves stay
-//     3.2 s: the copy arrives while a room is still finishing.
+//     looping) and the same scene again; 1.45 s, the wall's fade, when a move in Chapter 4 changes `reveal` (chapter-4 to
+//     chapter-4-top-game, and Back from chapter-4-top-game to chapter-4). A two-move crossing adds the first move's
+//     1.65 s. The intros themselves stay 3.2 s: the copy arrives while a room is still finishing.
 
 import { Rive } from "@rive-app/canvas"; // pin the version you ship; 2.27.3 and later work, with `stateMachines` (plural)
 
@@ -32,7 +33,8 @@ const FILES = [
   { src: "chapters-3-4-end.riv", opens: "ad", ends: "end", noIntro: ["ad"] },
 ];
 // Scenes that share one room or picture. A move between two of them is not a room change: no pan, the room keeps looping,
-// and the copy swaps after the usual 0.34 s. Each list starts with the scene that owns the room. Every other scene is its own room.
+// and the copy swaps after the usual 0.34 s (1.45 s when the move changes Chapter 4's `reveal`: the copy waits for the
+// wall's fade). Each list starts with the scene that owns the room. Every other scene is its own room.
 const ROOMS = [
   [3, ["ad", "chapter-3-personal-badges", "chapter-3-event-badges"]],   // the plain wall and floor
   [3, ["chapter-3", "chapter-3-2"]],
@@ -125,16 +127,22 @@ function load(i) {
   files[i] = f;
 }
 
-// File 3's `reveal` for a card in the same room (Chapter 4's cards): the wall fades as the player taps. A move that changes
-// room sets `reveal` inside setScene instead, in the guide's order.
-function applyReveal(card) {
+// File 3's `reveal` as it is now: a move that changes it (Chapter 4: chapter-4 to chapter-4-top-game, or Back from
+// chapter-4-top-game to chapter-4) fades the wall over 1.45 s, and the copy waits for the fade.
+function revealChanges(card) {
   if (card.reveal === undefined) return false;
   const f = files[card.file - 1];
   const prop = f?.loaded && f.rive.viewModelInstance.boolean("reveal");
-  if (!prop) return false;
-  const changed = prop.value !== !!card.reveal;
-  prop.value = !!card.reveal;
-  return changed; // the wall is about to fade (1.45 s), forward or back
+  return !!prop && prop.value !== !!card.reveal;
+}
+
+// File 3's `reveal` for a card on the same scene as the one before (no card does this now; Chapter 4's cards change scene,
+// and setScene sets `reveal` in the guide's order).
+function applyReveal(card) {
+  if (card.reveal === undefined) return;
+  const f = files[card.file - 1];
+  const prop = f?.loaded && f.rive.viewModelInstance.boolean("reveal");
+  if (prop) prop.value = !!card.reveal;
 }
 
 // A room change sets direction, lockup, reveal, then scene (the guide's order); `reveal` is passed only for a card that names it (File 3).
@@ -207,7 +215,8 @@ function move(step) {
   if (sceneChange && hopRun) { clearTimeout(hopTimer); hopRun(); } // and cuts a Next's two moves short: the next file takes over now (also for a scene that shares the room, so its scene isn't overwritten later)
   frame = target;
   if (to.ad) seenAds.add(target);
-  const fading = !sceneChange && applyReveal(to);   // only a card that repeats the scene and changes `reveal` (the old way); Chapter 4's cards now change scene
+  const fading = !roomChange && revealChanges(to);  // Chapter 4: the move changes `reveal`, so the copy waits for the wall's fade (1.45 s)
+  if (!sceneChange) applyReveal(to);
   const room = roomOf(to.file, to.scene);
   const key = `${to.file}:${room}`;
   const firstVisit = roomChange && step > 0 && !visited.has(key) && !FILES[fi].noIntro.includes(room);
@@ -233,7 +242,7 @@ function move(step) {
       swapTimer = setTimeout(() => { show(fi); if (legs === 2) setScene(fi, to.scene, step, !!to.community, to.reveal); }, PAN_MS);
     }
   }
-  if (!roomChange && sceneChange) setScene(fi, to.scene, step, !!to.community, to.reveal);   // same room: the room keeps looping, the copy swaps (0.34 s)
+  if (!roomChange && sceneChange) setScene(fi, to.scene, step, !!to.community, to.reveal);   // same room: the room keeps looping, the copy swaps (0.34 s, or 1.45 s on a reveal)
   if (firstVisit) {
     visited.add(key);
     copyFrom[key] = now + (legs - 1) * PAN_MS + firstVisitCopyMs(to);
