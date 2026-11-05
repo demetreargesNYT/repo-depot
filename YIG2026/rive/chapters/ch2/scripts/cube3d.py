@@ -38,7 +38,7 @@ import common  # noqa: F401  (puts tools on the path)
 from rml_edit import num
 
 PERSPECTIVE = 0.06            # 0 = the art's pure oblique; start gentle
-THIN_TOL = 0.2                # art units (0.17 px on the screen): a vertex key is dropped where the straight line between its neighbours is this close
+THIN_TOL = 0.3                # art units (0.255 px on the screen at the 0.85 scale): a vertex key is dropped where the line between its neighbours is this close
 HIDDEN_GLIDE = 40              # frames: a face hidden at least this long glides (a shorter hide keeps its motion, so its
                               # turning points stay where they are and a quick crack never reads as a buzz)
 LIGHT, DARK = "FFDFDBD7", "FF1F1F1F"
@@ -232,7 +232,8 @@ class Face:
 
     Every shape's vertices are keyed to its corners, and its opacity to whether the face faces the viewer."""
 
-    def __init__(self, cube, face, part=None, flip=False, pattern=None, fill=LIGHT, name=None, show=None):
+    def __init__(self, cube, face, part=None, flip=False, pattern=None, fill=LIGHT, name=None, show=None, fixed=None, two_sided=False):
+        self.fixed, self.two_sided = fixed, two_sided     # fixed: a pose it is always drawn at (no vertex keys); two_sided: no culling
         self.cube, self.face, self.part, self.flip = cube, face, part, flip
         self.pattern, self.fill = pattern, fill
         self.name = name or f"{cube.name} {face.title()}" + (f" {part.title()}" if part else "") + (" Inside" if flip else "")
@@ -241,6 +242,7 @@ class Face:
 
     def parts(self, pose):
         """[(name, points, fill or None, closed)] from the top of the drawing down."""
+        pose = self.fixed if self.fixed is not None else pose
         quad = self.cube.quad(self.face, self.part, pose, self.flip)
         if self.pattern is None:
             return [(self.name, quad, self.fill, True)]
@@ -260,12 +262,13 @@ class Face:
         return out
 
     def outline(self, pose):
+        pose = self.fixed if self.fixed is not None else pose
         return self.cube.quad(self.face, self.part, pose, self.flip)
 
     def visible(self, pose):
         if self.show is not None and not self.show(pose):
             return False
-        return faces_viewer(self.outline(pose))
+        return True if self.two_sided else faces_viewer(self.outline(pose))
 
     def lines(self, doc, pad, pose, to_local):
         out = []
@@ -327,9 +330,10 @@ class Fixed:
 
 
 # ---- thinning the baked keys --------------------------------------------------------------------------------------------------
-def thin_keys(doc, anim_name, ids, tol=THIN_TOL):
+def thin_keys(doc, anim_name, ids, tol=THIN_TOL, protect=(), props=("x", "y")):
     """In one animation, drop the per-frame linear keys of these objects' x and y that a straight line between the kept keys
-    reproduces within tol (Douglas-Peucker on each track). The first and last keys always stay. Returns how many keys went."""
+    reproduces within tol (Douglas-Peucker on each track). The first and last keys always stay, and so does every key on a frame in
+    `protect` (the edges of the rests, so a rest is exact and not within tol). Returns how many keys went."""
     a, b = doc.anim(anim_name)
     ids = set(ids)
     dropped = 0
@@ -343,8 +347,8 @@ def thin_keys(doc, anim_name, ids, tol=THIN_TOL):
         e = doc.end(i)
         j = i + 1
         while j < e:
-            pm = re.search(r'<KeyedProperty property="(x|y)"', doc.lines[j])
-            if not pm:
+            pm = re.search(r'<KeyedProperty property="([a-zA-Z]+)"', doc.lines[j])
+            if not pm or pm.group(1) not in props:
                 j += 1
                 continue
             pe = doc.end(j)
@@ -357,7 +361,7 @@ def thin_keys(doc, anim_name, ids, tol=THIN_TOL):
                 fr = re.search(r' frame="(\d+)"', l)
                 v = re.search(r' value="([^"]+)"', l)
                 rows.append((q, int(fr.group(1)) if fr else 0, float(v.group(1)) if v else 0.0, "linear" in l))
-            keep = [False] * len(rows)
+            keep = [rows[r][1] in protect for r in range(len(rows))]
             keep[0] = keep[-1] = True
             for r, row in enumerate(rows):          # a hold key, and the key after it, stay where they are
                 if not row[3]:
@@ -391,3 +395,80 @@ def thin_keys(doc, anim_name, ids, tol=THIN_TOL):
             j = pe + 1
         i = e + 1
     return dropped
+
+
+# ---- reading the baked keys back -------------------------------------------------------------------------------------------------
+def key_values(doc, anim_name, ids):
+    """{(object id, property): [(frame, value, leaves linearly)]} for these objects' x and y keys in one animation."""
+    import xml.etree.ElementTree as ET
+    a, b = doc.anim(anim_name)
+    root = ET.fromstring("\n".join(doc.lines[a:b + 1]))
+    ids = set(ids)
+    out = {}
+    for ko in root.findall("KeyedObject"):
+        oid = ko.get("objectId")
+        if oid not in ids:
+            continue
+        for kp in ko.findall("KeyedProperty"):
+            if kp.get("property") in ("x", "y"):
+                out[(oid, kp.get("property"))] = sorted((int(k.get("frame", 0)), float(k.get("value", 0)), k.get("interpolationType") == "linear")
+                                                        for k in kp.findall("KeyFrameDouble"))
+    return out
+
+
+def value_at(rows, frame):
+    """The value a key list gives on a frame (linear where the key before leaves linearly, else held)."""
+    prev = rows[0]
+    for r in rows:
+        if r[0] > frame:
+            if prev[2]:
+                return prev[1] + (r[1] - prev[1]) * (frame - prev[0]) / (r[0] - prev[0])
+            return prev[1]
+        prev = r
+    return prev[1]
+
+
+def ensure_keys(doc, anim_name, wanted):
+    """wanted: {(object id, property): {frame: value}}. Puts a linear key with that exact value on each of those frames that has none
+    (emit's bake drops the keys inside a slow start, where the value changes by under 0.001 a frame, so the line from the last key at rest
+    would creep before the move really begins). Returns how many keys it added."""
+    a, b = doc.anim(anim_name)
+    added = 0
+    i = a
+    while i < b:
+        m = re.search(r'<KeyedObject objectId="([^"]+)"', doc.lines[i])
+        if not m:
+            i += 1
+            continue
+        e = doc.end(i)
+        oid = m.group(1)
+        j = i + 1
+        while j < e:
+            pm = re.search(r'<KeyedProperty property="([^"]+)"', doc.lines[j])
+            if not pm:
+                j += 1
+                continue
+            pe = doc.end(j)
+            want = wanted.get((oid, pm.group(1)))
+            if want:
+                rows = []
+                for q in range(j + 1, pe):
+                    l = doc.lines[q]
+                    assert "<KeyFrameDouble" in l and l.rstrip().endswith("/>"), "ensure_keys reads only plain keys"
+                    fr = re.search(r' frame="(\d+)"', l)
+                    rows.append((int(fr.group(1)) if fr else 0, l))
+                have = {f for f, _ in rows}
+                pad = " " * (len(doc.lines[j]) - len(doc.lines[j].lstrip()) + 4)
+                for f, v in want.items():
+                    if f not in have:
+                        rows.append((f, doc.key_lines([(f, v, "linear")], pad)[0]))
+                        added += 1
+                rows.sort(key=lambda r: r[0])
+                delta = len(rows) - (pe - j - 1)
+                doc.lines[j + 1:pe] = [l for _, l in rows]
+                pe += delta
+                e += delta
+                b += delta
+            j = pe + 1
+        i = e + 1
+    return added
