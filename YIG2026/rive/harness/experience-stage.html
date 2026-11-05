@@ -175,7 +175,7 @@ const PLAYERS = {
   "none": { completed: { wordle: 3, connections: 2 }, events: 0, achievements: 0 },     // no qualifying game: gets the anonymous flow
 };
 // each game's wall colour in Chapter 4, which the video card shows flat behind the video
-const WALL = { wordle: "#C3E2C0", connections: "#E1DBF5", strands: "#DFF3F0", "spelling-bee": "#FFFDEF", mini: "#95BEFA", midi: "#7EAAF1", crossword: "#6493E6" };
+const WALL = { wordle: "#C3E2C0", connections: "#E1DBF5", strands: "#DFF3F0", "spelling-bee": "#FFFDEF", mini: "#C0D8F8", midi: "#7EAAF1", crossword: "#6493E6" };
 const PLAYER = PLAYERS[q.get("player")] ?? PLAYERS["wordle-only"];
 const CARDS_PER_GAME = PLAYER.firstCardOnly
   ? { wordle: 1, connections: 1, "spelling-bee": 1, strands: 1, mini: 1, midi: 1, crossword: 1 }

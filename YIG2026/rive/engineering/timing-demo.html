@@ -238,7 +238,7 @@ function buildCards(kind) {
 }
 
 // ---- stand-in colours: made-up colours, only to tell the rooms apart
-const WALLS = { wordle: "#B9DDA0", connections: "#C9B8F0", "spelling-bee": "#F5E08A", mini: "#95BEFA", midi: "#7EAAF1", crossword: "#8FB0F0", strands: "#E3B88F" };
+const WALLS = { wordle: "#B9DDA0", connections: "#C9B8F0", "spelling-bee": "#F5E08A", mini: "#C0D8F8", midi: "#7EAAF1", crossword: "#8FB0F0", strands: "#E3B88F" };
 function colorsFor(file, scene, reveal, topGame) {
   if (file === 1 || scene === "from-chapter-1") return ["#F1ECC0", "#FF811E"];
   if (file === 2) return scene === "to-chapter-3" ? ["#CDBEF2", "#7FCB8A"] : [WALLS[scene] || "#F6D9A8", "#F7A8C4"];
