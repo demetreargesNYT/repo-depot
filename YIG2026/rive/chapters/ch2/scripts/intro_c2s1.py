@@ -37,6 +37,9 @@ WAIT_X = 540.0                           # where it waits, inside the doorway be
 BACK = 300                               # out of sight in the trophy: the ball steps back to its start (behind the doorway) after this
 TROPHY_ON, TROPHY_OFF = 247, 310         # their Trophy_F shows from 247; the slot goes off once the ball is behind the doorway
 TROPHY_SLOT_DY = 4.5                     # the trophy front slot, moved down so only a stroke's width of black shows under the ball
+SIZE_FULL_AT = 73                        # their frame where the ball reaches its floor size
+SHRINK = (232, 252)                      # the ball scales down to fit the trophy's mouth (cycle frames), in the air above it
+SHRINK_TO = 1.2                          # 42 px across, inside the rim's 46
 PUPILS_BACK = 384                        # the quiet end: the pupils ease back to where the cycle starts, 384 to 420
 FLOOR = "1:1093"
 PLANE = (756.71997, 650.09998)           # the Shelf Floor Plane where the intro leaves it
@@ -476,8 +479,20 @@ def build(doc, scene, sheet):
     sc_kp = props_of(scale_anim, "1:13658")["scaleX"]
     sq = {k: props_of(squash_anim, k) for k in ("1:13668", "1:13669", "1:13671")}
     size = {f: value_at(sc_kp, (jy(f) + 1) / 2 * 60) for f in range(L + 1)}
-    for f in range(ROLL[1]):                                      # it rolls out at the size it has on reaching the floor (their frame 60)
-        size[f] = size[ROLL[1]]
+    # Demetre's note, 2026-11-04 23:15: the ball keeps one size for the whole scene, the size it has once it is fully out on the floor
+    # (their 1.805, reached on frame 73), from the first frame: rolling out of the door, on every hop, on every shelf. Only at the end,
+    # as it goes into the trophy, does it scale down (slightly) to fit the cup's mouth, SHRINK_TO by SHRINK[1]; the squash pulses stay.
+    # (Their joystick's size changes, 1.435 on the roll-out, 1.805 to 0.886 over the hops, are not kept.)
+    full = size[SIZE_FULL_AT]
+    for f in range(L + 1):
+        if f <= SHRINK[0]:
+            size[f] = full
+        elif f < SHRINK[1]:
+            u = (f - SHRINK[0]) / (SHRINK[1] - SHRINK[0])
+            size[f] = full + (SHRINK_TO - full) * (u * u * (3 - 2 * u))
+        else:
+            size[f] = SHRINK_TO
+    notes.append(f"ball size {full:.3f} for the whole scene, scaling to {SHRINK_TO} into the trophy over {SHRINK[0]}-{SHRINK[1]} (was 1.435 on the roll-out, 1.805 to 0.886 on the hops)")
     def squash(f):
         t = (jx(f) + 1) / 2 * 60
         top = value_at(sq["1:13668"]["y"], t)
