@@ -14,7 +14,8 @@ Every card in order, for both flows. Scenes, settings and waits are the ones in 
 - Anonymous shows `chapter-3-event-badges` twice in a row; Regi/Sub shows `chapter-3-personal-badges` only when earned, then `chapter-3-event-badges` only when earned.
 - `topGame` is set once, when File 3 loads (the example reads it from the `chapter-4` card), and it is always `wordle` for Anonymous.
 - The front end chooses the `chapter-4-editor-video` frame to match `topGame`; it is the same scene for every game.
-- Cards with variants in the design files (`wordle--03a/b/c`, `spelling-bee--02a/b` and `--04a/b`, `strands--03a/b`) are one card slot, and which variant shows is a stats rule, not an animation rule.
+- Cards with variants in the design files (`wordle--03a/b/c`, `spelling-bee--02a/b` and `--04a/b`, `strands--03a/b`) are one card slot, and which variant shows is a stats rule, not an animation rule; only one variant shows per player.
+- The number of cards per game comes from the stats. A game's later cards drop when the player lacks the stat or misses its threshold (the stats requirements doc defines both).
 - The three ads show once; after that Back and Next step over them (guide rule 14).
 - A copy wait is counted from setting `scene`, for a Next that reaches the card for the first time; Back and revisits use the guide's Copy timing table.
 - Which stat each card shows, and its threshold, is defined in "Year in Games 2026: stats requirements by game" (Games team), not here.
