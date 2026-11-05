@@ -43,26 +43,26 @@ N1 = 46                                    # the pop's flight
 BOUNCES = (21, 17, 14)                     # the small bounces on the block's top (flight times)
 C_SPIN = 12                                # the plate's turn starts this long after the landing (0.2 s)
 SPIN_N = 36                                # 0.6 s
-C_GO2 = 118                                # the hop to the pad
-N2 = 44
-X_PAD = 632.0                              # landing on the pad's top (its right end; it slides to rest)
-PAD_SLIDE = (3.0, 2.3, 1.7, 1.1, 0.6, 0.2)
-C_RISE, RISE_N = 170, 60                   # the raft lifts (1 s)
-C_GO3 = 246                                # the hop off the pad
-N3 = 40
-S_LAND = 28.0                              # where on the raft's face it lands (from the face centre)
-RAFT_SLIDE = (1.6, 1.2, 0.8, 0.5, 0.25, 0.1)
-PAD_TURN_N = 48                            # 0.8 s
-C_SWAY, SWAY_P, SWAY_A = 296, 76, 2.6      # two sways on the raft
-C_GLANCE = 336
+C_GO2 = 128                                # the hop to the pad (after the plate's turn and a calm beat)
+N2 = 34                                    # a flatter, quicker arc: it arrives at 8.9 px/frame and ricochets
+PAD_FACE = (640.0, 600.0)                  # where on the pad's face it hits
+PAD_NORMAL = (0.348, -0.937)               # the face's lean (20 degrees from flat, tipped up to the right: its dark rim shows on the left)
+PAD_E, PAD_KT = 0.82, 0.90                 # the hit keeps 82 percent of the speed along the normal and 90 percent along the face
+C_RISE, RISE_N = 106, 66                   # the raft lifts out of the comb (1.1 s) after a 1.5 px press down just before
+RAFT_X0 = 696.0                            # the raft's face centre when it hovers (its left corner stays clear of the brick stack)
+RAFT_SLIDE = (1.0, 0.6, 0.3, 0.1)
+PAD_TURN_N = 48                            # 0.8 s, from the hit
+C_SWAY, SWAY_P, SWAY_A = 236, 108, 2.6     # two sways on the raft
+C_GLANCE = 270
 GLANCE = math.radians(24)
-C_BLOCK, BLOCK_N = 392, 30                 # 0.5 s
-C_HOP, HOP_V = 432, 2.4                    # the happy hop: 7.2 px high, 12 frames
+C_BLOCK, BLOCK_N = 350, 30                 # 0.5 s
+C_HOP, HOP_V = 410, 2.4                    # the happy hop: 7.2 px high, 12 frames
 TILT = math.radians(7.5)
 TILT_N = 18
 LEAVE_S = 67.5                             # the raft's right corner, from the face centre
 DESCENT_N = 54
-H0, DH, DX0, DX_D = 62.3, 25.7, -9.25, 24.0     # the raft: hover 62.3 above its place and 9.25 left; then it drifts 24 right and 25.7 up
+H0, DH, DX_D = 62.3, 25.7, 24.0            # the raft hovers 62.3 above its place, then drifts 24 right and 25.7 up
+DX0 = RAFT_X0 - 705.25                     # the raft's hover, left of its place by 9.25
 DRIFT = 2.8
 
 ease = lambda u: 0.0 if u <= 0 else 1.0 if u >= 1 else (4 * u ** 3 if u < 0.5 else 1 - (-2 * u + 2) ** 3 / 2)
@@ -93,7 +93,11 @@ class Pad:
 
 
 class Raft:
-    """The raft's offset from its place in the coaster (dx, dy), its tilt, frame by frame."""
+    """The raft's offset from its place in the coaster (dx, dy), its tilt, frame by frame.
+
+    The lift: a 1.5 px press down (anticipation), then an ease-out lift (quick off the comb, decelerating into the hover), one overshoot of
+    3 px that settles over 28 frames, a 1.8 degree tilt that rises and falls with the lift, then the bob and the drift as single
+    smooth-in-out moves. Landings dip it; the descent eases in and out and settles 1.2 px into the comb."""
 
     def __init__(self, land3, hop_land, drift0, drift1, tilt0):
         self.land3, self.hop_land, self.drift0, self.drift1, self.tilt0 = land3, hop_land, drift0, drift1, tilt0
@@ -102,18 +106,35 @@ class Raft:
     def down(self, c):
         return ease((c - self.dn0) / DESCENT_N)
 
+    @staticmethod
+    def lift(c):
+        u = (c - C_RISE) / RISE_N
+        if u <= 0:
+            return 0.0
+        if u >= 1:
+            return 1.0
+        x = u ** 0.7                         # quick off the comb, then decelerating to a stop
+        return x * x * (3 - 2 * x)
+
     def offset(self, c):
-        rise, drift = ease((c - C_RISE) / RISE_N), sine((c - self.drift0) / (self.drift1 - self.drift0))
+        lift, drift = self.lift(c), sine((c - self.drift0) / (self.drift1 - self.drift0))
         k = 1 - self.down(c)
-        dx = (DX0 * rise + DX_D * drift) * k
-        dy = (-H0 * rise - DH * drift) * k
-        env = smooth((c - (C_RISE + 50)) / 30) * (1 - smooth((c - (self.tilt0 - 10)) / 10)) * k
-        dy += 1.4 * env * math.sin(2 * math.pi * (c - C_RISE - 50) / 140)
-        dy += settle(c - self.land3, 2.6) + settle(c - self.hop_land, 0.9, 18)
+        dx = (DX0 * lift + DX_D * drift) * k
+        dy = (-H0 * lift - DH * drift) * k
+        if C_RISE - 10 < c < C_RISE:
+            dy += 1.5 * math.sin(math.pi * (c - C_RISE + 10) / 10) ** 2
+        v = (c - C_RISE - RISE_N) / 28
+        if 0 < v < 1:
+            dy -= 3.0 * math.sin(math.pi * v) ** 2
+        env = smooth((c - (C_RISE + RISE_N + 28)) / 30) * (1 - smooth((c - (self.tilt0 - 10)) / 10)) * k
+        dy += 1.4 * env * math.sin(2 * math.pi * (c - C_RISE - RISE_N - 28) / 140)
+        dy += settle(c - self.land3, 2.6) + settle(c - self.hop_land, 0.9, 18) + settle(c - self.dn0 - DESCENT_N, 1.2, 16)
         return dx, dy
 
     def tilt(self, c):
-        return TILT * ease((c - self.tilt0) / TILT_N) * (1 - self.down(c))
+        u = (c - C_RISE) / (RISE_N + 8)
+        lt = math.radians(1.8) * math.sin(math.pi * u) ** 2 if 0 < u < 1 else 0.0
+        return (lt + TILT * ease((c - self.tilt0) / TILT_N)) * (1 - self.down(c))
 
     def ball(self, c, s, lift=0.0, rc=23.22):
         dx, dy = self.offset(c)
@@ -197,41 +218,47 @@ def build(doc, scene, sheet):
         contacts.append(("the block's top", now(), abs(vb)))
     while now() < C_GO2:
         add((X_BLOCK, BT))
-    # the hop to the pad
-    vx2 = (X_PAD - X_BLOCK) / N2
-    vy2 = (PT - BT - 0.2 * N2 ** 2) / N2
+    # the hop to the pad: a quick shallow arc down onto its angled face, where it ricochets towards the raft
+    nl = math.hypot(*PAD_NORMAL)
+    nrm = (PAD_NORMAL[0] / nl, PAD_NORMAL[1] / nl)
+    PC = (PAD_FACE[0] + RC * nrm[0], PAD_FACE[1] + RC * nrm[1])
+    vx2 = (PC[0] - X_BLOCK) / N2
+    vy2 = (PC[1] - BT - 0.2 * N2 ** 2) / N2
     for t in range(1, N2 + 1):
         add((X_BLOCK + vx2 * t, BT + vy2 * t + 0.2 * t * t), 0.25 * vx2 / R)
-    c_land2 = now()
-    contacts.append(("the lily pad", c_land2, math.hypot(vx2, vy2 + G * N2)))
-    pad = Pad(c_land2)
-    lx = X_PAD - PAD_O[0]
-    ly = PT - PAD_O[1]
-    for d in PAD_SLIDE:
-        lx -= d
-        add(pad.at(now() + 1, (lx, ly)), -d / R)
-    c_slid = now()
-    while now() < C_GO3:
-        add(pad.at(now() + 1, (lx, ly)))
-    p_pad = pos[-1]
+    c_b = now()
+    v_in = (vx2, vy2 + 0.4 * N2 - 0.2)
+    vn = v_in[0] * nrm[0] + v_in[1] * nrm[1]
+    assert vn < 0
+    vt = (v_in[0] - vn * nrm[0], v_in[1] - vn * nrm[1])
+    out = (PAD_KT * vt[0] - PAD_E * vn * nrm[0], PAD_KT * vt[1] - PAD_E * vn * nrm[1])
+    contacts.append(("the lily pad", c_b, math.hypot(*v_in)))
+    pad = Pad(c_b)
     # the raft, so far as the landing needs it
-    c_land3 = C_GO3 + N3
     c_hop_land = C_HOP + 12
     c_t0 = C_SWAY + 2 * SWAY_P
-    raft = Raft(c_land3, c_hop_land, c_land3 + 4, c_t0 + 18, c_t0)
-    tgt = raft.ball(c_land3, S_LAND, rc=RC)
-    vx3 = (tgt[0] - p_pad[0]) / N3
-    vy3 = (tgt[1] - p_pad[1] - 0.2 * N3 ** 2) / N3
-    flight3 = []
+    raft = Raft(0, c_hop_land, c_t0 + 18 - 175, c_t0 + 18, c_t0)
+    best = None
+    for T in range(10, 90):
+        ty = raft.ball(c_b + T, 0.0, rc=RC)[1]
+        y = PC[1] + out[1] * T + 0.2 * T * T
+        if T > 15 and y >= ty:
+            best = min([T - 1, T], key=lambda q: abs(PC[1] + out[1] * q + 0.2 * q * q - raft.ball(c_b + q, 0.0, rc=RC)[1]))
+            break
+    N3 = best
+    c_land3 = c_b + N3
+    raft.land3 = c_land3
+    ty = raft.ball(c_land3, 0.0, rc=RC)[1]
+    oy = (ty - PC[1] - 0.2 * N3 ** 2) / N3
+    ox = out[0]
+    ratio = math.hypot(ox, oy) / math.hypot(*v_in)
+    assert 0.72 <= ratio <= 0.9, ("the ricochet keeps", ratio)
+    S_LAND = PC[0] + ox * N3 - RAFT_X0
+    assert 0 <= S_LAND <= 45, ("lands off the raft's face", S_LAND)
     for t in range(1, N3 + 1):
-        p = (p_pad[0] + vx3 * t, p_pad[1] + vy3 * t + 0.2 * t * t)
-        flight3.append(p)
-        add(p, 0.25 * vx3 / R)
-    contacts.append(("the raft", c_land3, math.hypot(vx3, vy3 + G * N3)))
-    # clear of the pad all the way (its top-right corner and its right slant)
-    for k, p in enumerate(flight3[3:]):
-        d = min(seg_dist(p, PAD_OUTLINE[i], PAD_OUTLINE[i + 1]) for i in range(len(PAD_OUTLINE) - 1))
-        assert d >= RC - 0.6, ("the hop off the pad touches its edge", k, d)
+        add((PC[0] + ox * t, PC[1] + oy * t + 0.2 * t * t), 0.25 * ox / R)
+    contacts.append(("the raft", c_land3, math.hypot(ox, oy + G * N3)))
+    apex = PC[1] - oy * oy / 0.8
     s = S_LAND
     for d in RAFT_SLIDE:
         s += d
@@ -298,7 +325,7 @@ def build(doc, scene, sheet):
     # the raft floats back down while it is hidden
     raft.dn0 = c_catch + 6
     c_dn1 = raft.dn0 + DESCENT_N
-    L = max(c_dn1, now()) + 14
+    L = max(c_dn1 + 16, now()) + 8
     while now() < L:
         add(IN_MUG)
     assert now() == L and 540 <= L <= 600, L
@@ -320,7 +347,6 @@ def build(doc, scene, sheet):
     for name, c, vin in contacts:
         cyc.squash(c, min(0.13, 0.011 * vin + 0.005), T=12)
     cyc.squash(C_GO2 - 8, 0.06, T=8)           # the wind-ups
-    cyc.squash(C_GO3 - 8, 0.06, T=8)
 
     # ------------------------------------------------------------------ the pieces' keys
     def ser(fn):
@@ -348,7 +374,7 @@ def build(doc, scene, sheet):
     corners = lambda sid: [(v.get("id"), (float(v.get("x", 0)), float(v.get("y", 0)))) for v in by_id[sid].find("PointsPath")]
     big = corners("9:480")
     M = pad_matrix(big[-1][1], big[-2][1])             # path order is corners 5,4,3,2,1,0
-    c_pt0 = C_GO3 + 2
+    c_pt0 = c_b
     def pad_angle(c):
         return math.pi / 3 * ease((c - c_pt0) / PAD_TURN_N) if c <= c_pt0 + PAD_TURN_N else 0.0      # one frame after the turn the corners are back
     holds = []
@@ -406,7 +432,7 @@ def build(doc, scene, sheet):
 
     # the checks that no frame jumps further than its speed explains
     bad = []
-    near = {c + d for _, c, _ in contacts for d in (-1, 0, 1, 2)} | {c_lv, c_lv + 1, GO, GO + 1, C_GO2, C_GO2 + 1, C_GO3, C_GO3 + 1,
+    near = {c + d for _, c, _ in contacts for d in (-1, 0, 1, 2)} | {c_lv, c_lv + 1, GO, GO + 1, C_GO2, C_GO2 + 1,
                                                                     C_HOP, C_HOP + 1, C_HOP + 2, C_HOP + 12, C_HOP + 13, f_bottom, f_bottom + 1}
     for g in range(2, L):
         if g in near or g > c_hid:
@@ -418,6 +444,6 @@ def build(doc, scene, sheet):
 
     sec = lambda g: f"{(T0 + g) / 60:.2f} s"
     return (f"{ROOM}: squash {sec(0)}, out {sec(GO)}, block {sec(c_land1)} (bounces to {sec(contacts[3][1])}), plate turns {sec(c_ps0)}, "
-            f"pad {sec(c_land2)}, raft rises {sec(C_RISE)}, raft {sec(c_land3)}, pad turns {sec(c_pt0)}, glance {sec(C_GLANCE)}, block rolls {sec(C_BLOCK)}, "
+            f"pad ricochet {sec(c_b)} (keeps {ratio:.0%}, apex y {apex:.0f}), raft rises {sec(C_RISE)}, raft {sec(c_land3)}, pad turns {sec(c_pt0)}, glance {sec(C_GLANCE)}, block rolls {sec(C_BLOCK)}, "
             f"hop {sec(C_HOP)}, tilt {sec(c_t0)}, off the raft {sec(c_lv)}, mug {sec(c_catch)} (rim clearance {rim_min:.1f}, crosses at x {cross[0]:.0f}), "
             f"raft down {sec(c_dn1)}; loop {L / 60:.2f} s ({L} frames)")
