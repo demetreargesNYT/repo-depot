@@ -10,7 +10,7 @@
     "scene": {
       "type": "enum",
       "enum": "Scene",
-      "default": "ad-3",
+      "default": "ad",
       "setBy": "engineering",
       "about": "Which room the stage shows. Setting the same value again does nothing."
     },
@@ -50,14 +50,14 @@
     "startScene": {
       "type": "enum",
       "enum": "Scene",
-      "default": "ad-3",
+      "default": "ad",
       "setBy": "engineering",
       "about": "The scene the file opens on, already built and looping (no intro, pan or fade). Read once, on the file's first frame: set it and scene to the same value in onLoad. Same values as scene; the default is the file's usual opening scene. On chapter-4, set topGame and reveal in the same onLoad: reveal true opens on the game's wall with its fireworks running. Chapter 4's fireworks show only while scene is chapter-4."
     }
   },
   "scenes": [
     {
-      "name": "ad-3",
+      "name": "ad",
       "kind": "picture",
       "about": "The empty Chapter 3 backdrop: lavender wall, green floor, no props, no ball. This file's default and File 2's last picture (File 2's to-chapter-3). Ad 3 plays here for anonymous players; subscribers pass through it."
     },
@@ -76,14 +76,14 @@
     {
       "name": "chapter-3-personal-badges",
       "kind": "shared-picture",
-      "sameRoomAs": "ad-3",
-      "title": "Chapter 3, the personal badges (ad-3's plain wall and floor; no room of its own)"
+      "sameRoomAs": "ad",
+      "title": "Chapter 3, the personal badges (ad's plain wall and floor; no room of its own)"
     },
     {
       "name": "chapter-3-event-badges",
       "kind": "shared-picture",
-      "sameRoomAs": "ad-3",
-      "title": "Chapter 3, the event badges (ad-3's plain wall and floor; anon shows it twice in a row, which is seamless because the same scene again does nothing)"
+      "sameRoomAs": "ad",
+      "title": "Chapter 3, the event badges (ad's plain wall and floor; anon shows it twice in a row, which is seamless because the same scene again does nothing)"
     },
     {
       "name": "chapter-4",
@@ -121,7 +121,7 @@
     {
       "name": "Chapter 3 Colors",
       "scenes": [
-        "ad-3",
+        "ad",
         "chapter-3",
         "chapter-3-2",
         "chapter-3-personal-badges",
@@ -273,7 +273,7 @@
   "roomsSheet": "docs/rooms-ch3.md",
   "tests": {
     "flow": [
-      "ad-3",
+      "ad",
       "chapter-3",
       "chapter-4",
       "end"
@@ -297,7 +297,7 @@
     "**Chapter 4: the fireworks seams are fine** (global pass 3, reviewed by Demetre in the Finesse panel, 2026-11-02: they look good). All five sets are in, behind one gate each (`topGame` picks the set). Measured at the loop restart, nothing pops: every set changes by under 100 pixels from the last frame to the first, against 1,500 to 2,900 mid-loop. Each set goes quiet for 0.1 to 0.3 s around the restart (Wordle 5 frames, Connections 11, Strands 7, Spelling Bee 17, and The Mini, The Midi and The Crossword, which share The Crossword's set, 19). Nothing to do.",
     "**Chapter 4: the stack rides in with the floor; nothing drops.** Every piece of the stack has a front and a back half drawn at different depths, so a drop would need the two halves timed together. Worth designing during finesse.",
     "**End: one more ball joins the pile in the intro** (2026-11-03, `chapters/ch3/scripts/ch3_end_ball.py`). The standard ball at 0.9 times, End's red, rolls in from the room's left as the pan starts, its dot turning, meets the loose ball at the left pile's edge at 1.60 s and rests in front of the pile's edge at 1.67 s; the loose ball gives 4 and settles back 1, the edge ball gives a little, all still by 1.93 s. The loop leaves it in the pile.",
-    "**Scene names are neutral, and four scenes share rooms** (2026-11-05, `chapters/ch3/scripts/ch3_scene_names.py`; a scene name describes position or data, never the illustration). ad is ad-3, chapter-3-bird is chapter-3-2; new: chapter-3-personal-badges and chapter-3-event-badges (they share ad-3's plain wall-and-floor picture; the same scene set again does nothing, so anon's two event-badge cards in a row are seamless), chapter-4-top-game and chapter-4-editor-video (they share chapter-4's room: the wall colour, the city and the ball carry straight through; chapter-4-editor-video fades the fireworks out over 0.4 s and keeps them off, chapter-4-top-game fades them back in over 0.25 s; the fireworks loop runs on underneath, so the ball's hops stay in step) and share (shares end's room, identical for now). `reveal` still drives the wall colour, the fireworks and the ball's celebration, as before. The enum keeps its value ids and is stored in flow order. Harness and docs still use the old names until the shared-files session updates them.",
+    "**Scene names are neutral, and four scenes share rooms** (2026-11-05, `chapters/ch3/scripts/ch3_scene_names.py`; a scene name describes position or data, never the illustration). ad stays ad (it was ad-3 for a few hours on 2026-11-05; `ch3_scene_ad.py` renamed it back, since every file's ad scene is just ad), chapter-3-bird is chapter-3-2; new: chapter-3-personal-badges and chapter-3-event-badges (they share ad's plain wall-and-floor picture; the same scene set again does nothing, so anon's two event-badge cards in a row are seamless), chapter-4-top-game and chapter-4-editor-video (they share chapter-4's room: the wall colour, the city and the ball carry straight through; chapter-4-editor-video fades the fireworks out over 0.4 s and keeps them off, chapter-4-top-game fades them back in over 0.25 s; the fireworks loop runs on underneath, so the ball's hops stay in step) and share (shares end's room, identical for now). `reveal` still drives the wall colour, the fireworks and the ball's celebration, as before. The enum keeps its value ids and is stored in flow order. Harness and docs still use the old names until the shared-files session updates them.",
     "**`chapter-3-bird` (now chapter-3-2) shows chapter-3's own room** (2026-11-05, `chapters/ch3/scripts/ch3_bird_shared_room.py`; the Bird on Ball room, its art, four layers and sixteen animations are gone, 27.5 KB smaller; Chapter 1 had already copied its loop into the Start card, commit 125b175). Chapter 3's four layers (Chapter 3, Exit, Draw, Small) answer chapter-3-bird as they answer chapter-3 (each transition that waits for scene == chapter-3 has a twin for the bird, each one that leaves on scene != chapter-3 also requires scene != chapter-3-bird), so chapter-3 to chapter-3-bird and back is a same-room change: the room keeps looping from where it is, no reset, no pan; arriving at the bird directly builds the room as chapter-3 would, and startScene shows it built. The Backdrop already used Chapter 3's colours for both. The manifest entry has kind shared-room and sameRoomAs chapter-3 and no room, which `tools/check_chapter.py` does not know yet (its Chapter 3 checks fail until the shared-files session teaches it).",
     "**Chapter 3: pieces outside the safe area** (x 560 to 935, y 0 to 812; found in the global pass, nothing moved, a room-by-room call): Box (Floor Plane) (x 995-1075, y 683-711, right); Bird (Floor Plane) (x 900-945, y 505-547, right); Chapter 3 Picture 1 (Floor Plane) (x 558-655, y 505-582, left); Crib (Floor Plane) (x 780-982, y 546-712, right); Chapter 3 Picture 4 (Floor Plane) (x 558-655, y 505-582, left); Gifts (Floor Plane) (x 492-715, y 606-711, left). Pieces named `a` are unnamed groups.",
     "**Chapter 4: pieces outside the safe area** (x 560 to 935, y 0 to 812; found in the global pass, nothing moved, a room-by-room call): Cross_02 (Floor Plane) (x 912-989, y 661-712, right); SpB_01 (Floor Plane) (x 514-639, y 639-712, left); Crossword_F (Floor Plane) (x 551-653, y 435-647, left); Coss_F (Floor Plane) (x 427-1054, y 491-711, left, right); SpB_02_F (Floor Plane) (x 775-966, y 465-697, right); Crossword_B (Floor Plane) (x 551-653, y 435-647, left); Coss_B (Floor Plane) (x 427-1054, y 491-711, left, right); SpB_02_B (Floor Plane) (x 775-966, y 465-697, right). Pieces named `a` are unnamed groups.",
