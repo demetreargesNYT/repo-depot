@@ -9,7 +9,7 @@
   The whole experience, Loading through End, on one stage, framed like engineering's staging page (yig-framing.css).
   Our review page, not an engineering file: /experience wraps it in a frame per screen size. It runs on its own too, at
   the window's size: /experience-stage?flow=anon. All copy is placeholder. Query: flow (sub | anon), player
-  (wordle-only | midi-only | several-games | all-seven), top (a game), jump (a card index), goto (file:scene),
+  (wordle-only | midi-only | several-games | all-seven | all-seven-short), top (a game), jump (a card index), goto (file:scene),
   rive-only (hide all the HTML; the H key and the pill do the same).
 -->
 <!-- the Rive runtime: engineering's version -->
@@ -168,13 +168,17 @@ const PLAYERS = {
   "midi-only": { completed: { midi: 40, daily: 4 }, events: 3, achievements: 0 },
   "connections-only": { completed: { wordle: 4, connections: 120, strands: 2 }, events: 0, achievements: 3 },
   "all-seven": { completed: { wordle: 212, connections: 140, strands: 30, "spelling-bee": 64, mini: 50, midi: 40, daily: 90 }, events: 0, achievements: 0 },
+  // the same seven games, but each shows only its first card ("1 of 1"), and both badge cards are in (the numbers are wordle-only's)
+  "all-seven-short": { completed: { wordle: 212, connections: 140, strands: 30, "spelling-bee": 64, mini: 50, midi: 40, daily: 90 }, events: 5, achievements: 9, firstCardOnly: true },
   "several-games": { completed: { wordle: 212, connections: 7, strands: 30, "spelling-bee": 64, mini: 50, midi: 40, daily: 90 }, events: 0, achievements: 14 },
   "none": { completed: { wordle: 3, connections: 2 }, events: 0, achievements: 0 },     // no qualifying game: gets the anonymous flow
 };
 // each game's wall colour in Chapter 4, which the video card shows flat behind the video
 const WALL = { wordle: "#C3E2C0", connections: "#E1DBF5", strands: "#DFF3F0", "spelling-bee": "#FFFDEF", mini: "#95BEFA", midi: "#7EAAF1", daily: "#6493E6" };
 const PLAYER = PLAYERS[q.get("player")] ?? PLAYERS["wordle-only"];
-const CARDS_PER_GAME = { wordle: 4, connections: 5, "spelling-bee": 2, strands: 1, mini: 1, midi: 1, daily: 1 };
+const CARDS_PER_GAME = PLAYER.firstCardOnly
+  ? { wordle: 1, connections: 1, "spelling-bee": 1, strands: 1, mini: 1, midi: 1, daily: 1 }
+  : { wordle: 4, connections: 5, "spelling-bee": 2, strands: 1, mini: 1, midi: 1, daily: 1 };
 const NAME = { wordle: "Wordle", connections: "Connections", strands: "Strands", "spelling-bee": "Spelling Bee", mini: "The Mini", midi: "The Midi", daily: "The Crossword" };
 const ICON = { wordle: "wordle", connections: "connections", strands: "strands", "spelling-bee": "spelling-bee", mini: "mini", midi: "midi", daily: "crossword" };
 const QUALIFIES = 10;

@@ -102,6 +102,7 @@ body { background: var(--paper); color: var(--ink); font: 500 13px/1.3 var(--ui)
     <option value="midi-only">Midi only (all five community cards; event badges only)</option>
     <option value="several-games">Several games (no 2.5; achievement badges only)</option>
     <option value="all-seven">All seven games (no badge cards)</option>
+    <option value="all-seven-short">All seven games (Chapter 2 short)</option>
     <option value="connections-only">Connections only (Chapter 2.5; achievement badges only)</option>
     <option value="none">No qualifying game (gets the anonymous flow)</option>
   </select></label>
@@ -253,7 +254,7 @@ $("fin-rive").setAttribute("aria-pressed", String(riveOnly));
 // the fixed game order (GAME_ORDER in the integration file): Wordle, Connections, Spelling Bee, The Mini, The Midi, The Crossword, Strands
 const GAMES = [["wordle", "Wordle"], ["connections", "Connections"], ["spelling-bee", "Spelling Bee"], ["mini", "The Mini"], ["midi", "The Midi"], ["daily", "The Crossword"], ["strands", "Strands"]];
 // the games each example player has 10 or more completed puzzles in (the stage's PLAYERS table says the same)
-const QUALIFYING = { "wordle-only": ["wordle"], "midi-only": ["midi", "daily"], "connections-only": ["connections"], "several-games": ["wordle", "spelling-bee", "mini", "midi", "daily", "strands"], "all-seven": GAMES.map((g) => g[0]), "none": [] };
+const QUALIFYING = { "wordle-only": ["wordle"], "midi-only": ["midi", "daily"], "connections-only": ["connections"], "several-games": ["wordle", "spelling-bee", "mini", "midi", "daily", "strands"], "all-seven": GAMES.map((g) => g[0]), "all-seven-short": GAMES.map((g) => g[0]), "none": [] };
 // every scene in every file, grouped by chapter. goto = file:scene[:community]; flow/player/top say what the scene needs
 const SCENES = [
   { group: "Start (File 1)", label: "Loading", goto: "1:loading" },
