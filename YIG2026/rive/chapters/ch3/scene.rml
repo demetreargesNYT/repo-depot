@@ -4594,7 +4594,7 @@
                             <ClippingShape sourceId="9:20855" name="Floor Clip" id="9:20955"/>
                         </Shape>
                     </Node>
-                    <Node x="551.5" y="435.5" opacity="0" name="Crossword_F" locked="true" id="9:4620">
+                    <Node x="551.5" y="435.5" opacity="0" name="Crossword_F" hidden="true" locked="true" id="9:4620">
                         <Node x="50.75" y="232" id="9:4621">
                             <Shape x="-6.25" y="150" id="9:4622">
                                 <PointsPath isClosed="true" id="9:4623">
