@@ -13,6 +13,7 @@ OUTRO_FRAMES = 96     # 1.6 s
 ARTBOARD = (1495, 1067)
 START_SCENE = "from-chapter-1"   # the empty Chapter 1 room File 2 opens on: colours only, no room
 START_COLORS = "Chapter 1 Colors"
+DIM_POSE = "Chapter 3 Dim"   # the only Backdrop pose outside the " Colors" poses that may key the wall and floor (File 3)
 TOL = 1e-4
 
 results = []
@@ -348,7 +349,13 @@ def run(chapter):
 
     # only the Colors timelines may key the Background, or two layers would fight over its colours
     for name, a in A.items():
-        if not name.endswith(" Colors"):
+        if name == DIM_POSE:
+            # the one exception (Demetre, 2026-11-05): Chapter 3's room may dim the wall and floor during its first-visit dance,
+            # through this Backdrop pose only. It must key nothing but the wall and floor colours, and only File 3 has it.
+            check(str(chapter) in ("ch3", "3") and set(o for (o, _p) in s.keys(a)) == {"Wall colour", "Floor colour"}
+                  and all(p == "colorValue" for (_o, p) in s.keys(a)),
+                  f"{name} keys only the Background's wall and floor colours (and only Chapter 3 has it)")
+        elif not name.endswith(" Colors"):
             bad = sorted({o for (o, _p) in s.keys(a) if o in ("Wall colour", "Floor colour", "Background", "Wall", "Floor", "Floor-Line")})
             check(not bad, f"{name} does not key the Background" + ("" if not bad else f": {bad}"))
 
