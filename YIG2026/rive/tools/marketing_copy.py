@@ -1,10 +1,10 @@
-"""The marketing copy of the experience: docs/marketing/, a static page the marketing team can screen-record from a URL.
+"""The marketing copy of the experience (docs/YIG2026/rive/docs/marketing/ at the repo root), a static page the marketing team can screen-record from a URL.
 
     python3 tools/marketing_copy.py                refresh all three .riv files from each chapter's newest push tag (rive/<ch>-*)
     python3 tools/marketing_copy.py --working ch2  refresh one chapter from chapters/<ch> as it is now (what a push just uploaded)
     npm run marketing                              the same as the first line
 
-What it writes, all inside docs/marketing/ with relative paths only (it works under any URL subpath, with no server code):
+What it writes, all inside the marketing folder with relative paths only (it works under any URL subpath, with no server code):
   index.html          hand-written controls (Flow, Player, Top game, Screen, Jump to, Rive only) around the stage; never overwritten here
   stage.html          harness/experience-stage.html with its paths made relative, its comments removed and the Rive only pill hidden
   yig-integration.js, yig-text-motion.css, yig-framing.css   the engineering files the stage uses, comments removed
@@ -13,7 +13,7 @@ What it writes, all inside docs/marketing/ with relative paths only (it works un
 Then it checks every text file for anything internal (names, Figma ids, PR numbers, local-server paths) and stops if it finds any.
 
 tools/rive_push.py calls publish() after every successful Rive push: it refreshes the pushed chapter's .riv from chapters/<ch>
-(exactly what was uploaded), commits only docs/marketing/, and pushes main. Tag the push as usual afterwards: a manual refresh
+(exactly what was uploaded), commits only the marketing folder, and pushes main. Tag the push as usual afterwards: a manual refresh
 reads the newest tag, so an untagged push would be rolled back by it.
 
 To publish from another folder (a root-level docs/ for GitHub Pages, say), change MARKETING in this file.
@@ -30,7 +30,10 @@ import package_engineering as pe  # noqa: E402
 import scratch  # noqa: E402
 
 REPO = pe.REPO
-MARKETING = REPO / "docs" / "marketing"
+# Pages serves only the repo root's docs/, so the page sits at docs/YIG2026/rive/docs/marketing/ there and its URL is
+# https://<user>.github.io/repo-depot/YIG2026/rive/docs/marketing/. Nothing else may be under that root docs/ (it is public).
+PUBLIC = REPO.parent.parent / "docs"
+MARKETING = PUBLIC / "YIG2026" / "rive" / "docs" / "marketing"
 RIVS = pe.RIVS
 NOTE = "Preview for screen recording. Animations are the current versions and may still change."
 # nothing that names a person, a design file, a pull request, a local path or a local server may be published
@@ -126,7 +129,7 @@ def export_tag(ch, tag, dest):
 
 
 def refresh_riv(ch, working=False):
-    """Build one chapter and write its .riv into docs/marketing/. Returns what it was built from."""
+    """Build one chapter and write its .riv into the marketing folder. Returns what it was built from."""
     scratch.SCRATCH.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="marketing-", dir=scratch.SCRATCH) as tmp:
         tmp = Path(tmp)
@@ -168,6 +171,9 @@ def absolute_paths():
 
 def verify():
     problems = internal_hits() + absolute_paths()
+    if PUBLIC.exists():                                      # the root docs/ is the only public folder: it holds this page and nothing else
+        problems += [f"{p.relative_to(PUBLIC)}: not part of the marketing copy, but under the public docs/"
+                     for p in sorted(PUBLIC.rglob("*")) if p.is_file() and MARKETING not in p.parents]
     if not (MARKETING / "index.html").exists():
         problems.append("index.html is missing")
     for name in RIVS.values():
@@ -175,7 +181,7 @@ def verify():
             problems.append(f"{name} is missing")
     if problems:
         print("\n".join(problems))
-        raise SystemExit("STOPPED  docs/marketing/ has something internal or an absolute path (above)")
+        raise SystemExit("STOPPED  the marketing folder has something internal or an absolute path (above)")
 
 
 def refresh(chapters, working=False):
@@ -193,25 +199,25 @@ def git(*args):
 
 
 def publish(ch, revision=None):
-    """Refresh the pushed chapter's copy, commit only docs/marketing/, push main. Returns (ok, message)."""
+    """Refresh the pushed chapter's copy, commit only the marketing folder, push main. Returns (ok, message)."""
     try:
         refresh([ch], working=True)
     except SystemExit as e:
         return False, f"the marketing copy was NOT refreshed: {e}"
     except Exception as e:                                   # a failed build must not hide that the Rive push worked
         return False, f"the marketing copy was NOT refreshed: {e}"
-    git("add", "--", "docs/marketing")
-    if git("diff", "--cached", "--quiet", "--", "docs/marketing").returncode == 0:
-        return True, "docs/marketing/ was already current; nothing to commit"
+    git("add", "--", str(MARKETING))
+    if git("diff", "--cached", "--quiet", "--", str(MARKETING)).returncode == 0:
+        return True, "the marketing folder was already current; nothing to commit"
     rev = f" (Rive revision {revision})" if revision else ""
     message = f"YIG2026 rive: marketing copy refreshed after the {ch} Rive push{rev}"
-    c = git("commit", "-m", message, "--", "docs/marketing")
+    c = git("commit", "-m", message, "--", str(MARKETING))
     if c.returncode != 0:
         return False, f"the marketing copy was refreshed but not committed: {(c.stdout + c.stderr).strip()[-300:]}"
     p = git("push", "origin", "main")
     if p.returncode != 0:
         return False, f"the marketing copy is committed but not pushed to GitHub: {(p.stdout + p.stderr).strip()[-300:]}"
-    return True, "docs/marketing/ refreshed, committed and pushed to GitHub"
+    return True, "the marketing folder refreshed, committed and pushed to GitHub"
 
 
 def main(argv):
@@ -222,7 +228,7 @@ def main(argv):
         sys.exit(__doc__)
     else:
         refresh(list(RIVS))
-    print(f"docs/marketing/ is up to date ({len(list(MARKETING.rglob('*')))} entries)")
+    print(f"the marketing folder is up to date ({len(list(MARKETING.rglob('*')))} entries)")
     return 0
 
 
