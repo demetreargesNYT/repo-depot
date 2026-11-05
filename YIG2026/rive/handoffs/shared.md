@@ -1,39 +1,43 @@
-# Handoff: shared-files session (2026-11-05), for the engineering-handoff chat
+# Handoff: shared-files session (2026-11-05, end of day), for the next shared-files chat
 
-**Rooms owned:** none. This session owns the harness, `CLAUDE.md`, `docs/`, the shared tools, `engineering/` and the package script.
+**Rooms owned:** none. This session owns the harness, `CLAUDE.md`, `docs/`, the shared tools in `tools/`, `engineering/`, the package script and the public pages. Read `CLAUDE.md` first, especially "The engineering contract" and "Pushing on your own".
 
-**The last delivered package**
-- `deliver/yig-engineering-package.zip` (320,856 bytes), the only zip there, built **2026-11-03 13:43** by `python3 tools/package_engineering.py`. Nothing has been built since (none on 11-04 or 11-05). The unzipped copy from that build is `.cache/scratch.nosync/shared/yig-engineering-package/` (same time).
-- Built from `824e869` plus the guide and CSS wording edits committed the same minute as `2ac7464` (13:43). Its `.riv` files match the Rive revisions of that delivery: File 1 49418454, File 2 49418480, File 3 49418501, tags `rive/chN-chapter-1-polish-startscene`. It still uses the **old scene names**.
-- Rive has moved on since: the latest tags are `rive/ch1-chapter-1-update` (`e841a91`), `rive/ch2-chapter-2-update` (`d980828`) and `rive/ch3-chapter-3-update` (`d734fb1`), all 2026-11-05. The next package must be rebuilt from the current `main`.
+## The engineering package
 
-**The guide (`docs/engineering-guide.md`), committed in `49ee665`**
-- Section 3 has the new **Scenes** table (every scene in flow order, with its file, the Regi/Sub and Anon cards that use it, and Demetre's notes) and the **Renamed scenes** table (old to new, for engineers who have the 11-03 package).
-- Also updated: "What's new" (neutral names, scenes that share a room, Chapter 4's three scenes), rule 6, rule 11 (three waits, no 1.45 s reveal wait), the properties table, section 5's card lists and examples, section 6's wait table, section 8 and the checklist.
-- **Stale now, fix first:** the Chapter 3 session renamed File 3's `topGame` value `daily` to `crossword` in `a5fd7f6` (after my commit). These all still say or send `daily` for The Crossword's `topGame` and need changing to `crossword`:
-  - the guide's properties table and the line above the Renamed table ("`topGame` still calls The Crossword `daily`"); add `topGame` `daily` to `crossword` to the Renamed table;
-  - `harness/experience-stage.html` (`TOPGAME_VALUE`, which maps crossword to daily);
-  - `engineering/react/src/cards.ts` (the `top === 'crossword' ? 'daily'` mapping) and the `topGame?: string` comment in `types.ts`.
-  Until then a Crossword top game gets no fireworks or colour in the harness and the React example.
+- **Last zip:** `deliver/yig-engineering-package.zip`, 508,784 bytes, built **2026-11-05 10:36:40**, the only file in `deliver/`. The unzipped copy is `.cache/scratch.nosync/shared/yig-engineering-package/`. The Nov 3 zip it replaces is kept at `.cache/scratch.nosync/shared/delivered-2026-11-03.zip` (unzipped beside it).
+- **Built from the three pushed tags, not from the working tree**, so its `.riv` files are byte-identical to the tag builds: File 1 revision 49562097 (`rive/ch1-chapter-1-update`), File 2 49564861 (`rive/ch2-chapter-2-update`), File 3 49564848 (`rive/ch3-chapter-3-update`). Source commit of the docs and code in it: `9f52ab2`.
+- **Not in the zip:** the favicon line (`<link rel="icon" href="data:,">`) added to `engineering/text-motion.html` and `engineering/timing-demo.html` in `2e88560`. It only stops a console 404. If the zip hasn't gone out, rebuild it; if it has, the difference is two lines and nothing needs doing.
+- **How to rebuild without shipping unpushed art:** `npm run package` builds from `chapters/`, and the working tree now holds unpushed Chapter 2 work (`b5a6a0c`, the community room with an intro; `32e0f9a`, the reworked Mini loop). That would put art in the zip that isn't in Rive. The tag-based build is the scratch script `.cache/scratch.nosync/shared/package_from_tags.py` (git-ignored, not in `tools/`). Run it, then `python3 .cache/scratch.nosync/shared/tag_build_compare.py .cache/scratch.nosync/shared/yig-engineering-package` (three lines ending "packaged equals the tag build: True") and `python3 .cache/scratch.nosync/shared/old_names_search.py .cache/scratch.nosync/shared/yig-engineering-package` (old names only inside the guide's last section). Worth promoting the first script into `tools/` before anyone relies on it.
+- **Engineering contract** (in `CLAUDE.md`): the 11-05 package is the final engineering update; from now on engineering only gets new `.riv` files. No chapter chat may add, rename or remove a scene, setting or enum value, change a setting's meaning, or move a position engineers use. New art must fit the published copy waits.
 
-**Half-done**
-- `docs/rive-plan.md` "Changes since the last delivery" has no entry yet for the rename, the new per-card scenes, same-room scene changes (0.34 s, no pan) or the removed 1.45 s reveal wait. The next note to engineering is made from that list.
-- The package hasn't been rebuilt, and smoke and the suite haven't run against the new names. Checks run so far: `npm run check` for all three chapters (pass), `npm run finesse` once per chapter (pass), and a one-off walk of File 3's cards for subscriber and anon (every scene and wait right; `.cache/scratch.nosync/shared/pw/scenes-check.mjs`). `npm run experience` and `npm run text` were updated but not run.
+## The engineering guide (`docs/engineering-guide.md`, 162 lines; the README is written by `tools/package_engineering.py`)
 
-**Open items for Demetre** (from the last report)
-1. `topGame`'s Crossword value: resolved by the Chapter 3 session (`crossword`); only the follow-up above remains.
-2. Chapter 4's wall fade: the old 1.45 s copy wait on `reveal` is removed, so the `chapter-4-top-game` copy arrives 0.34 s after the tap while the wall is still fading. Restore it?
-3. Ad 3 is still File 2's `to-chapter-3` card (the same picture as File 3's `ad`); his list put it on File 3's `ad`. Which?
-4. Badge card order: the cards run event badges, then achievement (personal) badges; the File 3 manifest lists `chapter-3-personal-badges` first. Swap?
-5. The "Chapter 4" ball check reports 0 contacts (Chapter 3 session's to look at).
+Sections in order: one line under the title ("This replaces the Nov 3 package. Scene names have changed; use the names in this guide."), **The files** (the three `.riv` files, state machine and view model both `Backdrop`, the load snippet), **Settings** (`direction`, `lockup`, `reveal`, `topGame`, `scene`, `startScene`), **Scenes** (one table in flow order with the Regi/Sub and Anon cards and when to skip each), **Rules** (33 one-sentence rules), **Copy timing** (the waits table: 2.0 s first visit including `chapter-2-community-intro`, 3.2 s with a lockup, 1.45 s for `chapter-4` to `chapter-4-top-game` and back, 0.34 s same room, 1.65 s otherwise, two-move crossings; plus the CSS classes), **What stays fixed**, and the appendix **If you have the Nov 3 package** (the only place old names appear).
 
-**Decisions not yet in CLAUDE.md**
-- Demetre may approve a review-server restart (done 11-03 14:55 and 11-04 07:35).
+**The Mini community rule (Demetre, from the engineer; I did not see the engineer's message):** a game's community card is dropped only when that game is the player's one qualifying game. So the Mini's community card is dropped only when the one qualifying game is the Mini. A player whose one game is the Midi or the Crossword sees all five community cards (Wordle, Connections, Spelling Bee, The Mini, Strands), because those two games have no community card of their own. **The code already does this** (`communityGames(own[0])` in `engineering/react/src/cards.ts`, the same filter in `harness/experience-stage.html` and `harness/experience-test.mjs`, and the Midi-only example player has all five). **The guide does not say it in so many words:** its Scenes table says "one community card for each other community game" and the Chapter 2.5 rule only says the first card needs exactly one qualifying game. A sentence stating the rule, with the Midi and Crossword case, still has to be added to the Scenes table (and the README is unaffected). That is a guide edit only; no code or file change.
 
-**Uncommitted shared files:** none from this session. The chapter sessions keep adding to `docs/rooms*.md` and `tools/ball_speed_accepted.json`; commit them by path at the wrap-up.
+## The public pages (GitHub Pages, source `main` / `/docs`)
 
-**Rive:** this session pushed nothing; no `.cache/rive-push.lock` left. Chapter sessions now push on their own ("Pushing on your own" in CLAUDE.md).
+- **What and where:** three pages under the repo-root `docs/YIG2026/rive/docs/` (repo-depot's `docs/`, not this folder's `docs/`). Marketing page: https://demetreargesnyt.github.io/repo-depot/YIG2026/rive/docs/marketing/ . Reference pages: .../reference/timing-demo.html and .../reference/text-motion.html (same prefix). Pages served the root before; Demetre switched it to `/docs`, so that folder is the only public one and holds nothing but these pages (`tools/public_copy.py` stops the build otherwise).
+- **`tools/public_copy.py`** (`npm run public`; it was `tools/marketing_copy.py`): rebuilds everything. Marketing page: `index.html` is hand-written and never overwritten; `stage.html` and the engineering JS and CSS are generated from `harness/` and `engineering/` with comments stripped and paths relative; the three `.riv` files are built from each chapter's **newest `rive/<ch>-*` tag**. Reference pages: copied unchanged by `package_engineering.copy_reference_pages` (the package build's own step) into `reference/`, plus one note line after `<body>`, with `core/yig-text-motion.css`, `reference/example/yig-framing.css` and `reference/example/assets/icons/` beside them because the pages' links are relative. The build fails if a reference copy differs from its source in more than the note line, if any public file has a name, design-file id, PR number, local path or local-server route, if a URL is absolute, or if a stray file sits in the root `docs/`. `python3 tools/public_copy.py --check` runs those checks without writing; `--working ch2` takes one chapter's `.riv` from the working tree.
+- **The hook:** `tools/rive_push.py` calls `public_copy.publish()` after every Rive push that makes a new revision: it rebuilds the pushed chapter's `.riv` from `chapters/<ch>`, recopies the rest, commits only the root `docs/` folder and runs `git push origin main` (which also publishes any other unpushed commits on `main`). Exit code 3 means Rive took the push but the pages weren't refreshed; `npm run public` redoes it. `--no-public` (or the old `--no-marketing`) skips it. **Tag a push before running `npm run public`**, or the manual refresh reads the older tag and rolls that chapter back.
+- **Tested:** served from `docs/` with `python3 -m http.server`, and again on the live URLs: marketing page in both flows with Rive only on and off, `goto`, arrow keys, H and the button; both reference pages. The hook was tested in a throwaway repo, not with a real Rive push. The scratch checks are `.cache/scratch.nosync/shared/pw/marketing-check.mjs`, `reference-check.mjs` and `timing-demo-check.mjs`, plus `publish_hook_test.py` and `public_guard_test.py` one level up (none in git).
+- **Things Demetre may want to decide:** the four NYT Franklin and Karnak font files are in the public marketing folder (licensed typefaces; without them the page falls back to system fonts); the marketing page needs internet for the Rive runtime (jsDelivr and unpkg); the Pages site root (`/repo-depot/`) returns 404 because nothing is published there.
 
-**Next step:** fix the stale `topGame` `daily` references above, add the rename entries to "Changes since the last delivery", get Demetre's answers to items 2 to 4, then rebuild the package and run smoke (ask him first about the suite).
+## Half-done and not run
 
-**Tools for checks:** Playwright (`playwright-core`) is in `.cache/scratch.nosync/shared/pw/`; the one-off checks there drive the system Chrome. For a check that needs new `serve.mjs` code, run a second server on 8766 (`PORT=8766 node serve.mjs`) and stop only that one.
+- **Tests after the last code change:** `harness/text-test.mjs`, `harness/experience-test.mjs` and `engineering/chapter-2-integration.js` were edited so `chapter-2-community-intro` expects 2.0 s (was 1.65 s), and they have not run since. Results before that edit: experience 66 of 66, text 155 of 155, smoke 10 of 10. Only the timing-demo check ran after it (passed, including the community-intro cases).
+- **The full suite never completed:** piece 8 (`tap ch1`) failed with 11 cases, piece 9 (`tap ch2`) hit the 15-minute limit, pieces 10 to 29 weren't run. Demetre said that was enough for this delivery. The `tap ch1` finding (the leaving room draws over the arriving one for about 0.25 s when Next interrupts an intro: Start to `chapter-1`, `chapter-1` to `chapter-1-2`, `chapter-1-4` to `chapter-1-5`) is written in `docs/rive-plan.md` for the Chapter 1 chat.
+- **Unpushed Chapter 2 work on `main`:** `b5a6a0c` (community room) and `32e0f9a` (Mini loop), both "not pushed" to Rive. When the community room ships, its copy must be ready at 2.0 s; with File 2 at 49564861 that scene is still the empty room, so its copy arrives 0.35 s after the pan ends.
+- **Uncommitted:** `docs/rooms.md` belongs to the Chapter 2 session; commit it by path only when Demetre says. Nothing else of mine is uncommitted.
+- **React example is not typechecked** (no TypeScript compiler installed).
+
+## Commits from this session (all pushed to `main`)
+
+`82363ec`, `0c8d3a1`, `9f52ab2` (engineering handoff, rewrite, new-reader pass), `69b8e3a`, `e2f26ba` (marketing page, moved to the root `docs/`), `2e88560` (reference pages, `public_copy.py`). The `rive/ch3-chapter-3-update` tag was pushed to GitHub as well. No Rive push by this session; no `.cache/rive-push.lock`.
+
+## Next steps, if Demetre asks
+
+1. Add the Mini-community sentence to the guide's Scenes table, then rebuild the package from the tags (also picks up the favicon lines) and rerun the old-name search and the timing-demo check.
+2. Rerun `npm run text` and `npm run experience` against the new community-intro wait.
+3. Move `package_from_tags.py` into `tools/`.
