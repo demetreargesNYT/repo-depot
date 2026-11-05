@@ -35,7 +35,7 @@ Full plan and detail: `docs/rive-plan.md` (start with its "Start here"). In shor
 
 **Pinned notes ("read my notes")**
 - Demetre pins notes on the stage in `/experience` (Finesse panel, Comment or the C key) and sends them with "Send to Claude". Each chapter's notes go to `.cache/scratch.nosync/finesse-notes/ch<N>.md` (one section per send, a JSON block with the exact values), with a still per pin next to it (`ch<N>-<sent>-pin-<n>.png`: the animation only, the pin as a ring, the window's crop dashed). Each send's notes are numbered from 1; a send that covers two chapters keeps the panel's numbers in each file (the second file's section doesn't restart at 1).
-- When he says "read my notes", read your chapter's file and open the still of every note whose line says `Status: open`, and look at it before you change anything: the still shows what the note means. Apply each as a normal finesse change (the rules above). After `npm run finesse` passes, change that note's line to `Status: done: <one-line reply>`.
+- When he says "read my notes", read your chapter's file and open the still of every note whose line says `Status: open`, and look at it before you change anything: the still shows what the note means. Apply each as a normal finesse change (the rules above). After `npm run finesse` passes, mark the note done with `tools/note_done.py` (below).
 - In the report, list each note number with what you did (or why not).
 
 **Parallel sessions (one Claude Code session per chapter, and one shared-files session)**
@@ -49,6 +49,18 @@ Full plan and detail: `docs/rive-plan.md` (start with its "Start here"). In shor
 - Processes: never stop or restart the review server; if a change needs a restart, ask Demetre first. Never kill processes another session started (the suite kills only what its own run started).
 - Rive pushes, one at a time: every Rive push goes through `python3 tools/rive_push.py <ch> "<name>"`, never by hand (no bare `rive push`, no hand-made lock). It takes `.cache/rive-push.lock` atomically, runs the push with `--yes` and the name, removes only its own lock afterwards (even if the push fails) and prints the new revision. If another session holds the lock, it refuses and says who: don't push; tell Demetre another push is running, and run it again when that one ends. It reports a lock older than 15 minutes as stale; tell Demetre rather than deleting it.
 - Don't rebuild the package and don't push to GitHub; one wrap-up session does that at the end. Put status in your report, not in the plan; the wrap-up session updates the plan.
+
+## Commands that run without approval
+
+`.claude/settings.local.json` (at the repo-depot root, on Demetre's machine only) allows plain, simple commands. Shapes outside it stop the chat for his approval while he is away, so keep to these:
+
+- One plain command per Bash call, or a short `&&` chain of allowed commands (`cd "<repo path>" && git status` is fine).
+- Mark finesse notes done only with `python3 tools/note_done.py <ch> "<note title>" "<reply>"` (several notes: repeat `--note "<title>" --reply "<reply>"`). It works on the latest send and prints how many notes are still open. No inline Python.
+- No `$( )` or backticks, no heredocs (`python3 - <<EOF`), no `NAME=value` before a command, no shell `for` loops. If a step needs any of these, write a small script to `.cache/scratch.nosync/<chN>/` and run it with `python3`, with the loop inside the script. (The Chapter 2 build takes `--out <folder>`, not `CH2_OUT=`.)
+- Delete scratch folders only with `python3 tools/scratch_clean.py <path>` (it refuses anything outside `.cache/scratch.nosync/`); measure a Rive file's size only with `python3 tools/rive_size.py <riv or folder>`. No `rm -rf`, no raw `rive` command for either.
+- Never run `git stash` in any form, `stash list` included.
+- Commit with `git commit -m "..." -- <paths>`, as its own Bash call.
+- If a command prompts, rewrite it into an allowed shape rather than asking Demetre to approve the same shape again.
 
 ## Layout
 

@@ -2,8 +2,9 @@
 in order. Run from anywhere:
 
     python3 chapters/ch2/scripts/build.py --real bee mini strands daily midi     writes chapters/ch2/scene.rml
-    CH2_OUT=<folder> python3 chapters/ch2/scripts/build.py strands               writes <folder>/scene.rml (a copy of chapters/ch2 made
+    python3 chapters/ch2/scripts/build.py --out <folder> strands                 writes <folder>/scene.rml (a copy of chapters/ch2 made
                                                                                  on first use), to work on one room without the real file
+                                                                                 (CH2_OUT=<folder> still works, but chats use --out)
 
 A rebuild replaces the whole file, so it would undo any edit made in the Rive Editor (or by hand) since: pull those in and fold them
 into the room scripts first.
@@ -18,6 +19,12 @@ from common import RIVE_DIR, Doc, Scene, Sheet, base_text
 import wordle_connections_spin
 
 out = os.environ.get("CH2_OUT")
+if "--out" in sys.argv:                 # the flag, in place of the CH2_OUT environment variable
+    i = sys.argv.index("--out")
+    if i + 1 >= len(sys.argv):
+        sys.exit("--out needs a folder")
+    out = sys.argv[i + 1]
+    del sys.argv[i:i + 2]
 if out:
     out = Path(out)
     if not out.exists():
