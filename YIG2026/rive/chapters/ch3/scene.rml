@@ -4267,61 +4267,67 @@
                                 </Stroke>
                                 <ClippingShape sourceId="9:20855" name="Floor Clip" id="9:20932"/>
                             </Shape>
+                            <Shape x="-7.6105" y="-15.5" opacity="0" name="Connections Corner Clip" id="9:72012">
+                                <Rectangle linkCornerRadius="false" cornerRadiusTL="6.03" cornerRadiusTR="6.03" originY="0" width="59.75" height="14.25" id="9:72015"/>
+                                <Fill id="9:72013">
+                                    <SolidColor colorValue="FF000000" id="9:72014"/>
+                                </Fill>
+                            </Shape>
                             <Shape x="-30.9855" y="-15.5" name="Connections Tile 1 Old" id="9:61838">
-                                <Rectangle linkCornerRadius="false" cornerRadiusTL="6.03" cornerRadiusTR="0" originY="0" width="13" height="14.25" id="9:61839"/>
+                                <Rectangle originY="0" width="13" height="14.25" id="9:61839"/>
                                 <Fill id="9:61840">
                                     <SolidColor colorValue="FFA0C35A" id="9:61841"/>
                                 </Fill>
-                                <ClippingShape sourceId="9:20855" name="Floor Clip" id="9:61842"/>
+                                <ClippingShape sourceId="9:72012" name="Corner Clip" id="9:61842"/>
                             </Shape>
                             <Shape x="-30.9855" y="-1.25" scaleY="0" opacity="0" name="Connections Tile 1 New" id="9:61843">
-                                <Rectangle linkCornerRadius="false" cornerRadiusTL="6.03" cornerRadiusTR="0" originY="1" width="13" height="14.25" id="9:61844"/>
+                                <Rectangle originY="1" width="13" height="14.25" id="9:61844"/>
                                 <Fill id="9:61845">
                                     <SolidColor colorValue="FF6E9A2E" id="9:61846"/>
                                 </Fill>
-                                <ClippingShape sourceId="9:20855" name="Floor Clip" id="9:61847"/>
+                                <ClippingShape sourceId="9:72012" name="Corner Clip" id="9:61847"/>
                             </Shape>
                             <Shape x="-16.9855" y="-15.5" name="Connections Tile 2 Old" id="9:61848">
-                                <Rectangle linkCornerRadius="false" cornerRadiusTL="0" cornerRadiusTR="0" originY="0" width="15" height="14.25" id="9:61849"/>
+                                <Rectangle originY="0" width="15" height="14.25" id="9:61849"/>
                                 <Fill id="9:61850">
                                     <SolidColor colorValue="FFA0C35A" id="9:61851"/>
                                 </Fill>
-                                <ClippingShape sourceId="9:20855" name="Floor Clip" id="9:61852"/>
+                                <ClippingShape sourceId="9:72012" name="Corner Clip" id="9:61852"/>
                             </Shape>
                             <Shape x="-16.9855" y="-1.25" scaleY="0" opacity="0" name="Connections Tile 2 New" id="9:61853">
-                                <Rectangle linkCornerRadius="false" cornerRadiusTL="0" cornerRadiusTR="0" originY="1" width="15" height="14.25" id="9:61854"/>
+                                <Rectangle originY="1" width="15" height="14.25" id="9:61854"/>
                                 <Fill id="9:61855">
                                     <SolidColor colorValue="FF6E9A2E" id="9:61856"/>
                                 </Fill>
-                                <ClippingShape sourceId="9:20855" name="Floor Clip" id="9:61857"/>
+                                <ClippingShape sourceId="9:72012" name="Corner Clip" id="9:61857"/>
                             </Shape>
                             <Shape x="-1.9855" y="-15.5" name="Connections Tile 3 Old" id="9:61858">
-                                <Rectangle linkCornerRadius="false" cornerRadiusTL="0" cornerRadiusTR="0" originY="0" width="15" height="14.25" id="9:61859"/>
+                                <Rectangle originY="0" width="15" height="14.25" id="9:61859"/>
                                 <Fill id="9:61860">
                                     <SolidColor colorValue="FFA0C35A" id="9:61861"/>
                                 </Fill>
-                                <ClippingShape sourceId="9:20855" name="Floor Clip" id="9:61862"/>
+                                <ClippingShape sourceId="9:72012" name="Corner Clip" id="9:61862"/>
                             </Shape>
                             <Shape x="-1.9855" y="-1.25" scaleY="0" opacity="0" name="Connections Tile 3 New" id="9:61863">
-                                <Rectangle linkCornerRadius="false" cornerRadiusTL="0" cornerRadiusTR="0" originY="1" width="15" height="14.25" id="9:61864"/>
+                                <Rectangle originY="1" width="15" height="14.25" id="9:61864"/>
                                 <Fill id="9:61865">
                                     <SolidColor colorValue="FF6E9A2E" id="9:61866"/>
                                 </Fill>
-                                <ClippingShape sourceId="9:20855" name="Floor Clip" id="9:61867"/>
+                                <ClippingShape sourceId="9:72012" name="Corner Clip" id="9:61867"/>
                             </Shape>
                             <Shape x="13.8895" y="-15.5" name="Connections Tile 4 Old" id="9:61868">
-                                <Rectangle linkCornerRadius="false" cornerRadiusTL="0" cornerRadiusTR="6.03" originY="0" width="16.75" height="14.25" id="9:61869"/>
+                                <Rectangle originY="0" width="16.75" height="14.25" id="9:61869"/>
                                 <Fill id="9:61870">
                                     <SolidColor colorValue="FFA0C35A" id="9:61871"/>
                                 </Fill>
-                                <ClippingShape sourceId="9:20855" name="Floor Clip" id="9:61872"/>
+                                <ClippingShape sourceId="9:72012" name="Corner Clip" id="9:61872"/>
                             </Shape>
                             <Shape x="13.8895" y="-1.25" scaleY="0" opacity="0" name="Connections Tile 4 New" id="9:61873">
-                                <Rectangle linkCornerRadius="false" cornerRadiusTL="0" cornerRadiusTR="6.03" originY="1" width="16.75" height="14.25" id="9:61874"/>
+                                <Rectangle originY="1" width="16.75" height="14.25" id="9:61874"/>
                                 <Fill id="9:61875">
                                     <SolidColor colorValue="FF6E9A2E" id="9:61876"/>
                                 </Fill>
-                                <ClippingShape sourceId="9:20855" name="Floor Clip" id="9:61877"/>
+                                <ClippingShape sourceId="9:72012" name="Corner Clip" id="9:61877"/>
                             </Shape>
                             <Shape x="-7.6104999" id="9:4376">
                                 <Rectangle cornerRadiusTL="6.7800002" width="61.25" height="32.5" id="9:4377"/>
@@ -45381,7 +45387,7 @@
                 </KeyedProperty>
             </KeyedObject>
         </LinearAnimation>
-        <LinearAnimation fps="60" duration="62" name="Chapter 4 Ball Leaving" id="9:64476">
+        <LinearAnimation fps="60" duration="6" name="Chapter 4 Ball Leaving" id="9:64476">
             <KeyedObject objectId="9:43975" id="9:71236">
                 <KeyedProperty property="y" id="9:71237">
                     <KeyFrameDouble value="696.5576" id="9:71238"/>
@@ -78003,7 +78009,7 @@
                     <StateTransition stateToId="9:71384" duration="0" enableExitTime="true" exitTimeIsPercetange="true" exitTime="100" id="9:71874"/>
                 </AnimationState>
                 <AnimationState animationId="9:64470" x="760" y="0" id="9:71384">
-                    <StateTransition stateToId="9:71390" duration="100" id="9:71885">
+                    <StateTransition stateToId="9:71390" duration="1000" id="9:71885">
                         <TransitionViewModelCondition opValue="equal" id="9:71875">
                             <TransitionPropertyViewModelComparator id="9:71876">
                                 <BindablePropertyEnum id="9:71877">
@@ -78093,7 +78099,7 @@
                     </StateTransition>
                 </AnimationState>
                 <AnimationState animationId="9:64471" x="960" y="0" id="9:71385">
-                    <StateTransition stateToId="9:71390" duration="100" id="9:71957">
+                    <StateTransition stateToId="9:71390" duration="1000" id="9:71957">
                         <TransitionViewModelCondition opValue="equal" id="9:71947">
                             <TransitionPropertyViewModelComparator id="9:71948">
                                 <BindablePropertyEnum id="9:71949">
@@ -78113,7 +78119,7 @@
                     </StateTransition>
                 </AnimationState>
                 <AnimationState animationId="9:64472" x="1160" y="0" id="9:71386">
-                    <StateTransition stateToId="9:71390" duration="100" id="9:71968">
+                    <StateTransition stateToId="9:71390" duration="1000" id="9:71968">
                         <TransitionViewModelCondition opValue="equal" id="9:71958">
                             <TransitionPropertyViewModelComparator id="9:71959">
                                 <BindablePropertyEnum id="9:71960">
@@ -78133,7 +78139,7 @@
                     </StateTransition>
                 </AnimationState>
                 <AnimationState animationId="9:64473" x="1360" y="0" id="9:71387">
-                    <StateTransition stateToId="9:71390" duration="100" id="9:71979">
+                    <StateTransition stateToId="9:71390" duration="1000" id="9:71979">
                         <TransitionViewModelCondition opValue="equal" id="9:71969">
                             <TransitionPropertyViewModelComparator id="9:71970">
                                 <BindablePropertyEnum id="9:71971">
@@ -78153,7 +78159,7 @@
                     </StateTransition>
                 </AnimationState>
                 <AnimationState animationId="9:64474" x="1560" y="0" id="9:71388">
-                    <StateTransition stateToId="9:71390" duration="100" id="9:71990">
+                    <StateTransition stateToId="9:71390" duration="1000" id="9:71990">
                         <TransitionViewModelCondition opValue="equal" id="9:71980">
                             <TransitionPropertyViewModelComparator id="9:71981">
                                 <BindablePropertyEnum id="9:71982">
@@ -78173,7 +78179,7 @@
                     </StateTransition>
                 </AnimationState>
                 <AnimationState animationId="9:64475" x="1760" y="0" id="9:71389">
-                    <StateTransition stateToId="9:71390" duration="100" id="9:72001">
+                    <StateTransition stateToId="9:71390" duration="1000" id="9:72001">
                         <TransitionViewModelCondition opValue="equal" id="9:71991">
                             <TransitionPropertyViewModelComparator id="9:71992">
                                 <BindablePropertyEnum id="9:71993">
