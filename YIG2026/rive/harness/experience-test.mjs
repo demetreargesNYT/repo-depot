@@ -28,7 +28,12 @@ const INTRO = 3.2, PAN = 1.65;
 // When a card's copy arrives after a room change (the guide, section 6): a first visit FIRST, or LOCKUP on a Chapter 2
 // game's first card with its lockup; a picture or a room coming back PAN; a two-move crossing adds a PAN.
 const FIRST = 2.0, LOCKUP = 3.2;
-const NO_INTRO = { 1: ["loading", "ad"], 2: ["from-chapter-1", "to-chapter-3", "bridge"], 3: ["ad"] };
+const NO_INTRO = { 1: ["loading", "ad"], 2: ["from-chapter-1", "to-chapter-3", "chapter-2-community-intro"], 3: ["ad"] };
+// Scenes that share a room (written out from the guide's Scenes table, not read from the integration): a move between two of them
+// is not a room change, and its copy swaps after the usual 0.34 s.
+const SHARED_ROOMS = [["ad", "chapter-3-personal-badges", "chapter-3-event-badges"], ["chapter-3", "chapter-3-2"], ["chapter-4", "chapter-4-top-game", "chapter-4-editor-video"], ["end", "share"]];
+const roomOf = (file, scene) => (file === 3 ? SHARED_ROOMS.find((l) => l.includes(scene))?.[0] : null) ?? scene;
+const sameRoom = (a, b) => a.file === b.file && roomOf(a.file, a.scene) === roomOf(b.file, b.scene);
 const chrome = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const results = [];
@@ -63,29 +68,29 @@ async function browser(width, height) {
 const shownCopy = "[...document.querySelectorAll('.yig-text')].filter((e) => !e.hidden).map((e) => e.dataset.copyFrame).join(',')";
 
 // What each flow's card list must be, written out from the rules in the engineering guide (not read from the page)
-const ORDER = ["wordle", "connections", "spelling-bee", "mini", "midi", "daily", "strands"];
-const PER_GAME = { wordle: 4, connections: 5, "spelling-bee": 2, mini: 1, midi: 1, daily: 1, strands: 1 };
+const ORDER = ["wordle", "connections", "spelling-bee", "mini", "midi", "crossword", "strands"];
+const PER_GAME = { wordle: 4, connections: 5, "spelling-bee": 2, mini: 1, midi: 1, crossword: 1, strands: 1 };
 const COMMUNITY = ["wordle", "connections", "spelling-bee", "mini", "strands"];
 const COMPLETED = {
-  "wordle-only": { wordle: 212, connections: 7, mini: 3 }, "midi-only": { midi: 40, daily: 4 }, "connections-only": { wordle: 4, connections: 120, strands: 2 },
-  "all-seven": Object.fromEntries(ORDER.map((g) => [g, 50])), "several-games": { wordle: 212, connections: 7, strands: 30, "spelling-bee": 64, mini: 50, midi: 40, daily: 90 }, none: { wordle: 3, connections: 2 },
+  "wordle-only": { wordle: 212, connections: 7, mini: 3 }, "midi-only": { midi: 40, crossword: 4 }, "connections-only": { wordle: 4, connections: 120, strands: 2 },
+  "all-seven": Object.fromEntries(ORDER.map((g) => [g, 50])), "several-games": { wordle: 212, connections: 7, strands: 30, "spelling-bee": 64, mini: 50, midi: 40, crossword: 90 }, none: { wordle: 3, connections: 2 },
 };
 const BADGES = { "wordle-only": [5, 9], "midi-only": [3, 0], "connections-only": [0, 3], "all-seven": [0, 0], "several-games": [0, 14], none: [0, 0] };
 function expectedCards(flow, player) {
   const own = ORDER.filter((g) => (COMPLETED[player][g] ?? 0) >= 10);
   const anon = flow === "anon" || own.length === 0;
-  const out = ["1:loading", "1:start", "1:ad", ...[1, 2, 3, 4, 5].map((n) => `1:chapter-1-card-${n}`), "1:ad", "2:intro"];
+  const out = ["1:loading", "1:start", "1:ad", "1:chapter-1", "1:chapter-1-2", "1:chapter-1-3", "1:chapter-1-4", "1:chapter-1-5", "1:ad", "2:chapter-2"];
   if (anon) {
-    out.push(...COMMUNITY.filter((g) => g !== "wordle").map((g) => `2:${g}`), "2:to-chapter-3", "3:chapter-3", "3:chapter-3-bird", "3:ad", "3:ad");
+    out.push(...COMMUNITY.filter((g) => g !== "wordle").map((g) => `2:${g}`), "2:to-chapter-3", "3:chapter-3", "3:chapter-3-2", "3:chapter-3-event-badges", "3:chapter-3-event-badges");
   } else {
     for (const g of own) for (let i = 0; i < PER_GAME[g]; i++) out.push(`2:${g}`);
-    if (own.length === 1) out.push("2:bridge", ...COMMUNITY.filter((g) => g !== own[0]).map((g) => `2:${g}`));
-    out.push("3:chapter-3", "3:chapter-3-bird");
-    if (BADGES[player][0] > 0) out.push("3:ad");
-    if (BADGES[player][1] > 0) out.push("3:ad");
+    if (own.length === 1) out.push("2:chapter-2-community-intro", ...COMMUNITY.filter((g) => g !== own[0]).map((g) => `2:${g}`));
+    out.push("3:chapter-3", "3:chapter-3-2");
+    if (BADGES[player][0] > 0) out.push("3:chapter-3-event-badges");
+    if (BADGES[player][1] > 0) out.push("3:chapter-3-personal-badges");
   }
-  out.push("3:chapter-4", "3:chapter-4", "3:chapter-4", "3:end");
-  if (!anon) out.push("3:end");
+  out.push("3:chapter-4", "3:chapter-4-top-game", "3:chapter-4-editor-video", "3:end");
+  if (!anon) out.push("3:share");
   return out;
 }
 
@@ -103,9 +108,9 @@ for (const [flow, player, size] of runs) {
     const want = expectedCards(flow, player);
     const got = cards.map((c) => `${c.file}:${c.scene}`);
     check(JSON.stringify(got) === JSON.stringify(want), `${tag}: the card list is the guide's (${got.length} cards)` + (JSON.stringify(got) === JSON.stringify(want) ? "" : `; got ${got.join(" ")} / want ${want.join(" ")}`));
-    // the ad cards are Ad 1 (the first File 1 `ad`), Ad 2 (the one after Chapter 1 card 5) and, for anonymous players, Ad 3
-    // (File 2's `to-chapter-3`); the badge cards on File 3's `ad` scene are not ads
-    const adsWant = [2, want.indexOf("2:intro") - 1, ...(flow === "anon" || want.includes("2:to-chapter-3") ? [want.indexOf("2:to-chapter-3")] : [])];
+    // the ad cards are Ad 1 (the first File 1 `ad`), Ad 2 (the one after chapter-1-5) and, for anonymous players, Ad 3
+    // (File 2's `to-chapter-3`); the badge cards (File 3's chapter-3-*-badges scenes) are not ads
+    const adsWant = [2, want.indexOf("2:chapter-2") - 1, ...(flow === "anon" || want.includes("2:to-chapter-3") ? [want.indexOf("2:to-chapter-3")] : [])];
     const adsGot = cards.map((c, i) => (c.ad ? i : -1)).filter((i) => i >= 0);
     check(JSON.stringify(adsGot) === JSON.stringify(adsWant), `${tag}: the ad cards are tagged ad (cards ${adsGot.join(", ")}; want ${adsWant.join(", ")})`);
     if (RANGE) {
@@ -118,7 +123,7 @@ for (const [flow, player, size] of runs) {
       for (let i = fwd ? from + 1 : from - 1; fwd ? i <= to : i >= to; i += fwd ? 1 : -1) {
         const prev = fwd ? i - 1 : i + 1;
         await b.ev(`document.getElementById('${fwd ? next : back}').click()`);
-        const moved = cards[i].file !== cards[prev].file || cards[i].scene !== cards[prev].scene;
+        const moved = !sameRoom(cards[i], cards[prev]);      // a change inside one room is a quick copy swap, not a pan
         const edge = fwd ? cards[prev] : cards[i];
         const extra = cards[i].file !== cards[prev].file && edge.scene !== { 1: "ad", 2: "to-chapter-3" }[edge.file] ? PAN : 0;
         await sleep(!moved ? 900 : fwd ? (INTRO + extra + 0.6) * 1000 : (PAN + extra + 0.7) * 1000);
@@ -150,7 +155,7 @@ for (const [flow, player, size] of runs) {
     // plays two moves, one after the other
     const ENDS = { 1: "ad", 2: "to-chapter-3" };
     const settle = (i, from, forward) => {
-      const moved = cards[i].file !== cards[from].file || cards[i].scene !== cards[from].scene;
+      const moved = !sameRoom(cards[i], cards[from]);      // a change inside one room is a quick copy swap, not a pan
       const edge = forward ? cards[from] : cards[i];
       const extra = cards[i].file !== cards[from].file && edge.scene !== ENDS[edge.file] ? PAN : 0;
       return !moved ? 900 : forward ? (INTRO + extra + 0.6) * 1000 : (PAN + extra + 0.7) * 1000;
@@ -169,7 +174,7 @@ for (const [flow, player, size] of runs) {
     const legsNext = (from, to) => (cards[to].file !== cards[from].file && cards[from].scene !== ENDS[cards[from].file] ? 2 : 1);
     const wantNextMs = (i) => {
       const legs = legsNext(i - 1, i), c = cards[i];
-      if (NO_INTRO[c.file].includes(c.scene)) return PAN * legs * 1000;
+      if (NO_INTRO[c.file].includes(roomOf(c.file, c.scene))) return PAN * legs * 1000;
       const lockup = c.file === 2 && ORDER.includes(c.scene) && !c.community;
       return ((legs - 1) * PAN + (lockup ? LOCKUP : FIRST)) * 1000;
     };
@@ -178,23 +183,22 @@ for (const [flow, player, size] of runs) {
     const okNoFade = (d, iconChanges) => !!d && (d.quick || (iconChanges && d.delay === "340ms"));
     for (let i = 2; i < cards.length; i++) {
       await b.ev(`document.getElementById('${next}').click()`);
-      if (cards[i].file !== cards[i - 1].file || cards[i].scene !== cards[i - 1].scene) {
+      if (!sameRoom(cards[i], cards[i - 1])) {
         await sleep(60);
         const d = await delayOf(i);
         if (!d || Math.abs(parseFloat(d.delay) - wantNextMs(i)) > 1) timingBad.push(`Next to ${i} (${cards[i].file}:${cards[i].scene}${cards[i].community ? ", community" : ""}): ${d?.delay || "none"}, want ${wantNextMs(i)}ms`);
       }
-      if (cards[i].reveal !== undefined && cards[i - 1].reveal !== undefined && cards[i].scene === "chapter-4" && cards[i - 1].scene === "chapter-4") {
+      if (sameRoom(cards[i], cards[i - 1])) {
         await sleep(60);
         const d = await delayOf(i);
-        const fades = cards[i].reveal !== cards[i - 1].reveal;
-        if (fades ? d?.delay !== "1450ms" : !okNoFade(d, cards[i].icon !== cards[i - 1].icon)) revealBad.push(`Next to ${i}: ${JSON.stringify(d)} (${fades ? "wants 1450ms" : "wants the quick swap, or 340ms when the icon changes"})`);
+        if (!okNoFade(d, cards[i].icon !== cards[i - 1].icon)) revealBad.push(`Next to ${i} (${cards[i].scene}): ${JSON.stringify(d)} (wants the quick swap, or 340ms when the icon changes)`);
       }
       await sleep(settle(i, i - 1, true));
       await verify(i, "Next");
     }
     check(!bad.length, `${tag}: Next through all ${cards.length} cards: the right file, scene and copy each time${bad.length ? ": " + bad.slice(0, 3).join(" / ") : ""}`);
     check(!timingBad.length, `${tag}: every room change on the way waits the guide's time: ${FIRST} s on a first visit, ${LOCKUP} s with a lockup, ${PAN} s for a picture, plus ${PAN} s for a second move${timingBad.length ? ": " + timingBad.slice(0, 4).join(" / ") : ""}`);
-    check(!revealBad.length, `${tag}: Chapter 4's reveal card waits 1.45 s for the wall's fade, forward and back; the video card does not${revealBad.length ? ": " + revealBad.join(" / ") : ""}`);
+    check(!revealBad.length, `${tag}: a change between scenes that share a room (or a repeat of one) swaps the copy after 0.34 s, forward and back${revealBad.length ? ": " + revealBad.join(" / ") : ""}`);
     check(JSON.stringify([...b.rivs].sort()) === JSON.stringify(["chapter-2.riv", "chapters-3-4-end.riv", "start-chapter-1.riv"]),
       `${tag}: each .riv was fetched once, the next ones ahead of time (${b.rivs.join(", ")})`);
     bad.length = 0;
@@ -203,11 +207,10 @@ for (const [flow, player, size] of runs) {
       let i = from - 1;
       while (i > 1 && cards[i].ad) i--;
       await b.ev(`document.getElementById('${back}').click()`);
-      if (cards[i].scene === "chapter-4" && cards[from].scene === "chapter-4") {
+      if (sameRoom(cards[i], cards[from])) {
         await sleep(60);
         const d = await delayOf(i);
-        const fades = cards[i].reveal !== cards[from].reveal;
-        if (fades ? d?.delay !== "1450ms" : !okNoFade(d, cards[i].icon !== cards[from].icon)) revealBad.push(`Back to ${i}: ${JSON.stringify(d)} (${fades ? "wants 1450ms" : "wants the quick swap, or 340ms when the icon changes"})`);
+        if (!okNoFade(d, cards[i].icon !== cards[from].icon)) revealBad.push(`Back to ${i} (${cards[i].scene}): ${JSON.stringify(d)} (wants the quick swap, or 340ms when the icon changes)`);
       }
       await sleep(settle(i, from, false));
       await verify(i, "Back");
@@ -221,7 +224,7 @@ for (const [flow, player, size] of runs) {
     check(s.frame === 1, `${tag}: Back on Start does nothing; Loading never comes back (card ${s.frame})`);
 
     // a Back during the Next pan into File 2 waits for the pan, then lands back in File 1. Ad 2 has been seen, so Next from
-    // Chapter 1 card 5 skips it and plays the two-move crossing (File 1 out to the empty room, File 2 takes over and pans in),
+    // chapter-1-5 skips it and plays the two-move crossing (File 1 out to the empty room, File 2 takes over and pans in),
     // and the Back after it skips Ad 2 too: File 2 pans back to the empty room, then File 1 pans back into card 5
     const firstOf2 = cards.findIndex((c) => c.file === 2);
     const card5 = firstOf2 - 2;
@@ -235,7 +238,7 @@ for (const [flow, player, size] of runs) {
     await sleep((PAN * 3 + 0.8) * 1000);
     const end = await st();
     check(mid.frame === firstOf2 && end.frame === card5 && end.shown === 1,
-      `${tag}: a Back 0.5 s into the two-move Next into File 2 waits (card ${mid.frame}), then skips Ad 2 and lands on Chapter 1 card 5 (card ${end.frame}, file ${end.shown})`);
+      `${tag}: a Back 0.5 s into the two-move Next into File 2 waits (card ${mid.frame}), then skips Ad 2 and lands on chapter-1-5 (card ${end.frame}, file ${end.shown})`);
     check(b.errors.length === 0, `${tag}: no console errors${b.errors.length ? ": " + b.errors.slice(0, 2).join(" / ") : ""}`);
     b.close();
 

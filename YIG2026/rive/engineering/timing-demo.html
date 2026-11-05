@@ -175,7 +175,7 @@
   <h2>The code you write for a tap</h2>
   <h3>Every move sets these, in this order</h3>
   <pre id="setscene"></pre>
-  <p style="margin-top:12px">The rest of the tap code picks the wait from the four rules above, and <code>files[n].rive.viewModelInstance</code> is where your Rive objects go. A crossing between two files adds two of the waits together.</p>
+  <p style="margin-top:12px">The rest of the tap code picks the wait from the three rules above, and <code>files[n].rive.viewModelInstance</code> is where your Rive objects go. A crossing between two files adds two of the waits together.</p>
   <details>
     <summary>Show the full tap code</summary>
     <pre id="yourcode"></pre>
@@ -196,9 +196,9 @@ let cards = [], frame = 0, files = [], player = "several";
 let seenAds = new Set(), visited = new Set(), copyFrom = {}, pan = { dir: 0, endsAt: 0 };
 let heldTimer = 0, swapTimer = 0, hopTimer = 0, hopRun = null;
 
-const GAME_ORDER = ["wordle", "connections", "spelling-bee", "mini", "midi", "daily", "strands"];
+const GAME_ORDER = ["wordle", "connections", "spelling-bee", "mini", "midi", "crossword", "strands"];
 const COMMUNITY_GAMES = ["wordle", "connections", "spelling-bee", "mini", "strands"];
-const NAMES = { wordle: "Wordle", connections: "Connections", "spelling-bee": "Spelling Bee", mini: "The Mini", midi: "The Midi", daily: "The Crossword", strands: "Strands" };
+const NAMES = { wordle: "Wordle", connections: "Connections", "spelling-bee": "Spelling Bee", mini: "The Mini", midi: "The Midi", crossword: "The Crossword", strands: "Strands" };
 
 // A time from yig-text-motion.css, in ms. Returns the stylesheet's own value if the file is missing, and says so on the page.
 function cssMs(name) {
@@ -214,35 +214,35 @@ function buildCards(kind) {
   const c = [];
   const add = (file, scene, label, extra = {}) => c.push({ file, scene, label, ...extra });
   add(1, "loading", "Loading"); add(1, "start", "Start"); add(1, "ad", "Ad 1", { ad: true });
-  for (let n = 1; n <= 5; n++) add(1, `chapter-1-card-${n}`, `Chapter 1 · ${n}`);
+  for (const scene of ["chapter-1", "chapter-1-2", "chapter-1-3", "chapter-1-4", "chapter-1-5"]) add(1, scene, scene);
   add(1, "ad", "Ad 2", { ad: true });
-  add(2, "intro", "Opener");
+  add(2, "chapter-2", "chapter-2");
   const community = (own) => GAME_ORDER.filter((g) => COMMUNITY_GAMES.includes(g) && g !== own);
   const games = (g, n) => { for (let i = 1; i <= n; i++) add(2, g, `${NAMES[g]} ${i} of ${n}`, { icon: g }); };
   const comm = (g) => add(2, g, `${NAMES[g]} (community)`, { community: true, icon: g });
   let top = "wordle";
   if (kind === "several") { games("wordle", 4); games("spelling-bee", 2); games("strands", 1); }
-  if (kind === "one") { games("connections", 5); add(2, "bridge", "Bridge"); community("connections").forEach(comm); top = "connections"; }
+  if (kind === "one") { games("connections", 5); add(2, "chapter-2-community-intro", "chapter-2-community-intro"); community("connections").forEach(comm); top = "connections"; }
   if (kind === "anon") { community("wordle").forEach(comm); add(2, "to-chapter-3", "Ad 3", { ad: true }); }
-  add(3, "chapter-3", "Chapter 3 · 1"); add(3, "chapter-3-bird", "Chapter 3 · 2");
-  if (kind === "anon") { add(3, "ad", "Chapter 3 · 3"); add(3, "ad", "Chapter 3 · 4"); }
-  else add(3, "ad", "Badges");
-  add(3, "chapter-4", "Chapter 4 · 1", { topGame: top, reveal: false });
-  add(3, "chapter-4", "Chapter 4 · 2", { icon: top, reveal: true });
-  add(3, "chapter-4", "Chapter 4 · 3", { reveal: true });
-  add(3, "end", "End");
-  if (kind !== "anon") add(3, "end", "Share");
+  add(3, "chapter-3", "chapter-3"); add(3, "chapter-3-2", "chapter-3-2");
+  if (kind === "anon") { add(3, "chapter-3-event-badges", "chapter-3-event-badges (1)"); add(3, "chapter-3-event-badges", "chapter-3-event-badges (2)"); }
+  else { add(3, "chapter-3-event-badges", "chapter-3-event-badges"); add(3, "chapter-3-personal-badges", "chapter-3-personal-badges"); }
+  add(3, "chapter-4", "chapter-4", { topGame: top, reveal: false });
+  add(3, "chapter-4-top-game", "chapter-4-top-game", { icon: top, reveal: true });
+  add(3, "chapter-4-editor-video", "chapter-4-editor-video", { reveal: true });
+  add(3, "end", "end");
+  if (kind !== "anon") add(3, "share", "share");
   c.forEach((x) => { x.sub = `File ${x.file} · ${x.scene}`; });
   return c;
 }
 
 // ---- stand-in colours: the cream/orange and lavender/green pictures are the guide's; the rest are placeholders
-const WALLS = { wordle: "#B9DDA0", connections: "#C9B8F0", "spelling-bee": "#F5E08A", mini: "#95BEFA", midi: "#7EAAF1", daily: "#8FB0F0", strands: "#E3B88F" };
+const WALLS = { wordle: "#B9DDA0", connections: "#C9B8F0", "spelling-bee": "#F5E08A", mini: "#95BEFA", midi: "#7EAAF1", crossword: "#8FB0F0", strands: "#E3B88F" };
 function colorsFor(file, scene, reveal, topGame) {
   if (file === 1 || scene === "from-chapter-1") return ["#F1ECC0", "#FF811E"];
   if (file === 2) return scene === "to-chapter-3" ? ["#CDBEF2", "#7FCB8A"] : [WALLS[scene] || "#F6D9A8", "#F7A8C4"];
-  if (scene === "chapter-4") return [reveal ? WALLS[topGame] : "#BFD9F7", "#7FCB8A"];
-  return scene === "end" ? ["#F4C7B8", "#7FCB8A"] : ["#CDBEF2", "#7FCB8A"];
+  if (scene.startsWith("chapter-4")) return [reveal ? WALLS[topGame] : "#BFD9F7", "#7FCB8A"];
+  return scene === "end" || scene === "share" ? ["#F4C7B8", "#7FCB8A"] : ["#CDBEF2", "#7FCB8A"];
 }
 
 // ---- stand-in Rive: one per file, with the view model the guide describes. It records every set, then moves the stage.
@@ -251,7 +251,7 @@ const riveStandIn = {
   state: [],
   mount(n, reset) {   // a file opened fresh (the page start, or startScene on a jump)
     const opens = FILES[n - 1].opens;
-    this.state[n - 1] = { direction: "forward", lockup: true, reveal: false, topGame: "wordle", scene: reset ? null : opens, startScene: reset ? null : opens, booted: !reset, seen: new Set([opens]) };
+    this.state[n - 1] = { direction: "forward", lockup: true, reveal: false, topGame: "wordle", scene: reset ? null : opens, startScene: reset ? null : opens, booted: !reset, room: reset ? null : opens, seen: new Set([opens]) };
   },
   vm(n) {
     const st = () => this.state[n - 1], self = this;
@@ -273,9 +273,13 @@ const riveStandIn = {
     const s = this.state[n - 1];
     const instant = !s.booted && s.startScene === scene;   // startScene: opens already built, no pan, no intro
     s.booted = true;
+    const room = roomOf(n, scene);
+    const sameRoomAgain = !instant && s.room === room;     // a scene that shares the room the file is already in: no pan, the room keeps looping
+    s.room = room;
+    if (sameRoomAgain) { if (n === this.shown) this.recolor(); return; }
     const dir = s.direction === "forward" ? 1 : -1;
-    const intro = !instant && dir > 0 && !s.seen.has(scene) && !FILES[n - 1].noIntro.includes(scene);
-    s.seen.add(scene);
+    const intro = !instant && dir > 0 && !s.seen.has(room) && !FILES[n - 1].noIntro.includes(room);
+    s.seen.add(room);
     if (n !== this.shown) return;
     stage.pan(n, scene, dir, instant, intro && n === 2 && GAME_ORDER.includes(scene) && s.lockup, intro);
     this.recolor();
@@ -387,7 +391,7 @@ function enter(el, { quick = false, delay = null, afterIcon = false, back = fals
 }
 
 // ---- the readout, the waits table and the strip
-// The four waits and what each means; every rule the code picks maps onto them (RULE_KEYS), so the readout and the table agree.
+// The three waits and what each means; every rule the code picks maps onto them (RULE_KEYS), so the readout and the table agree.
 const RULES = {
   "first-visit": { say: (ms) => `A new room: ${secs(ms)} s` },
   lockup: { say: (ms) => `A new room, with a lockup: ${secs(ms)} s (a Chapter 2 game's first card)` },
@@ -396,7 +400,6 @@ const RULES = {
   "ad-first": { say: (ms) => `A room already built: ${secs(ms)} s (an ad)` },
   "skip-in": { say: (ms) => `A room already built: ${secs(ms)} s (a seen ad is skipped)` },
   "same-room": { say: (ms) => `The same room: ${secs(ms)} s` },
-  reveal: { say: (ms) => `Chapter 4's reveal: ${secs(ms)} s` },
   "two-first": { say: (ms) => `Crossing between two files: ${secs(PAN_MS)} + ${secs(ms - PAN_MS)} = ${secs(ms)} s` },
   "two-back": { say: (ms) => `Crossing between two files: ${secs(PAN_MS)} + ${secs(ms - PAN_MS)} = ${secs(ms)} s` },
   "skip-across": { say: (ms) => `Crossing between two files, a seen ad skipped: ${secs(PAN_MS)} + ${secs(ms - PAN_MS)} = ${secs(ms)} s` },
@@ -406,7 +409,7 @@ const RULES = {
 // which rows of the table (and lines under it) each rule lights up
 const RULE_KEYS = {
   "first-visit": ["new"], lockup: ["new"], comeback: ["built"], picture: ["built"], "ad-first": ["built"], "skip-in": ["built"],
-  "same-room": ["same"], reveal: ["reveal"], "two-first": ["new", "built", "crossing"], "two-back": ["built", "crossing"], "skip-across": ["built", "crossing"],
+  "same-room": ["same"], "two-first": ["new", "built", "crossing"], "two-back": ["built", "crossing"], "skip-across": ["built", "crossing"],
   settle: ["note-settle"], jump: ["note-start"],
 };
 
@@ -454,8 +457,7 @@ function renderTable() {
   const rows = [
     ["new", "A new room", FIRST_VISIT_MS, `${secs(LOCKUP_MS)} s for a Chapter 2 game's first card, because of its lockup`],
     ["built", "A room already built", PAN_MS, "Back, a room seen before, an empty room, or an ad"],
-    ["same", "The same room", CLEAR_MS, "Another card in the room"],
-    ["reveal", "Chapter 4's reveal", REVEAL_FADE_MS, "Forward and back"],
+    ["same", "The same room", CLEAR_MS, "Another card in the room, or another scene that shares the room (chapter-3-2, the badge scenes, chapter-4-top-game, chapter-4-editor-video, share)"],
   ];
   document.getElementById("waits").innerHTML = rows.map(([key, name, ms, sub]) =>
     `<tr data-key="${key}"><td>${name}<small>${sub}</small></td><td class="n">${secs(ms)} s</td></tr>`).join("");
@@ -506,16 +508,24 @@ const FIRST_VISIT_MS = cssMs("--yig-first-visit");   // 2.0 s: a room's first vi
 const LOCKUP_MS = cssMs("--yig-lockup");             // 3.2 s: a Chapter 2 game's first card, with its lockup
 const CLEAR_MS = cssMs("--yig-clear");               // 0.34 s: the old copy has cleared
 const PAN_MS = 1650;                                 // 1.6 s pan plus a few frames
-const REVEAL_FADE_MS = 1450;                         // Chapter 4: the wall's fade
 
 // Each file's first and last picture, and the scenes that have no intro of their own.
 const FILES = [
   { opens: "loading", ends: "ad", noIntro: ["loading", "ad"] },
-  { opens: "from-chapter-1", ends: "to-chapter-3", noIntro: ["from-chapter-1", "to-chapter-3", "bridge"] },
+  { opens: "from-chapter-1", ends: "to-chapter-3", noIntro: ["from-chapter-1", "to-chapter-3", "chapter-2-community-intro"] },
   { opens: "ad", ends: "end", noIntro: ["ad"] },
 ];
+// Scenes that share one room or picture (File 3). A move between two of them is no room change: no pan, the room keeps
+// looping, and the copy swaps after 0.34 s. The first scene in a list owns the room.
+const ROOMS = [
+  ["ad", "chapter-3-personal-badges", "chapter-3-event-badges"],
+  ["chapter-3", "chapter-3-2"],
+  ["chapter-4", "chapter-4-top-game", "chapter-4-editor-video"],
+  ["end", "share"],
+];
+const roomOf = (file, scene) => (file === 3 ? ROOMS.find((l) => l.includes(scene))?.[0] : null) ?? scene;
 const lockupShows = (card) => card.file === 2 && GAME_ORDER.includes(card.scene) && !card.community;
-const isPicture = (card) => FILES[card.file - 1].noIntro.includes(card.scene);
+const isPicture = (card) => FILES[card.file - 1].noIntro.includes(roomOf(card.file, card.scene));
 
 // The same Rive calls on every move, in this order.
 function setScene(file, card, step) {
@@ -524,14 +534,6 @@ function setScene(file, card, step) {
   if (file === 2) vm.boolean("lockup").value = !card.community;
   if (file === 3 && card.reveal !== undefined) vm.boolean("reveal").value = card.reveal;
   vm.enum("scene").value = card.scene;
-}
-
-// Inside Chapter 4 only `reveal` changes. Returns true when the wall is about to fade.
-function setReveal(card) {
-  const prop = files[2].rive.viewModelInstance.boolean("reveal");
-  const changed = prop.value !== card.reveal;
-  prop.value = card.reveal;
-  return changed;
 }
 
 // The card a tap lands on: the next one that way, leaving out any ad already seen.
@@ -554,7 +556,9 @@ function go(step) {
   if (target > cards.length - 1) return readout.nothing("Next on the last card does nothing.");
   const from = cards[frame], to = cards[target];
   const skipped = target !== frame + step;
-  const roomChange = to.file !== from.file || to.scene !== from.scene;
+  const sceneChange = to.file !== from.file || to.scene !== from.scene;
+  // a change between scenes that share a room (ROOMS) sets the scene, with no pan
+  const roomChange = to.file !== from.file || roomOf(to.file, to.scene) !== roomOf(from.file, from.scene);
   const legs = movesBetween(from, to, step);
   const now = performance.now();
   // A Back during a pan, or a Next during a Back pan, waits for the pan to end.
@@ -564,13 +568,13 @@ function go(step) {
     return;
   }
   if (roomChange) clearTimeout(swapTimer);
-  if (roomChange && hopRun) { clearTimeout(hopTimer); hopRun(); }   // a new tap cuts a Next's two moves short
+  if (sceneChange && hopRun) { clearTimeout(hopTimer); hopRun(); }   // a new tap cuts a Next's two moves short (also a scene that shares the room, so its scene isn't overwritten later)
   readout.tap(`${step > 0 ? "Next" : "Back"} to ${to.label}`, skipped ? `${cards[frame + step].label} was already seen, so the tap skips it.` : "");
   frame = target;
   if (to.ad) seenAds.add(target);
-  const revealChanged = !roomChange && to.reveal !== undefined && setReveal(to);
-  const key = `${to.file}:${to.scene}`;
-  const firstVisit = roomChange && step > 0 && !visited.has(key) && !FILES[to.file - 1].noIntro.includes(to.scene);
+  const key = `${to.file}:${roomOf(to.file, to.scene)}`;
+  const firstVisit = roomChange && step > 0 && !visited.has(key) && !FILES[to.file - 1].noIntro.includes(roomOf(to.file, to.scene));
+  if (!roomChange && sceneChange) setScene(to.file, to, step);   // same room: it keeps looping, the copy swaps
 
   if (roomChange) {
     pan = { dir: step, endsAt: now + PAN_MS * legs };
@@ -602,8 +606,7 @@ function go(step) {
   const settleLeft = Math.max(0, (copyFrom[key] ?? 0) - now);   // a first visit's copy is never earlier than its time
   let wait, rule;
   if (!roomChange) {
-    if (revealChanged) { wait = Math.max(settleLeft, REVEAL_FADE_MS); rule = "reveal"; }
-    else if (settleLeft > 0) { wait = settleLeft; rule = "settle"; }
+    if (settleLeft > 0) { wait = settleLeft; rule = "settle"; }
     else { wait = CLEAR_MS; rule = "same-room"; }
   } else if (firstVisit) {
     wait = copyFrom[key] - now;
@@ -632,7 +635,7 @@ function openOn(index) {
   vm.enum("scene").value = card.scene;
   show(card.file);
   frame = index;
-  visited = new Set([`${card.file}:${card.scene}`]);   // a freshly opened file has seen no other room
+  visited = new Set([`${card.file}:${roomOf(card.file, card.scene)}`]);   // a freshly opened file has seen no other room
   seenAds = new Set(card.ad ? [index] : []);
   copyFrom = {}; pan = { dir: 0, endsAt: 0 };
   showCopy(index, { changed: true, delay: 0 });

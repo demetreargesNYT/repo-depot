@@ -227,7 +227,7 @@ for (const order of ["wc", "cw"]) {
   const tm = after(logM, "next")[0];
   const riseM = logM.find((e) => e.card === "opener#-" && e.cardRising);
   const sceneM = await ev(`${VM}.enum('scene').value`);
-  check(sceneM === "intro" && !!riseM && Math.abs(riseM.at - tm - FIRST) <= TOL, `M  ${first} first: the first tap pans to the opener (scene ${sceneM}); its copy rises ${fmt(riseM ? riseM.at - tm : null)} after the tap (want ${FIRST} s, a first visit)`);
+  check(sceneM === "chapter-2" && !!riseM && Math.abs(riseM.at - tm - FIRST) <= TOL, `M  ${first} first: the first tap pans to the opener (scene ${sceneM}); its copy rises ${fmt(riseM ? riseM.at - tm : null)} after the tap (want ${FIRST} s, a first visit)`);
 
   // G2: Back from the opener to the empty room, and Next again (no second intro: the copy comes back as the pan ends)
   await press("back"); await wait(PAN + 0.4);
@@ -343,7 +343,7 @@ for (const order of ["wc", "cw"]) {
   const goneB = log.find((e) => !e.label && e.at >= tb && e.icon !== "wordle" && e.card !== "wordle#" + n);
   const riseB = log.find((e) => e.card === "bridge#1" && e.cardRising);
   const iconB = await ev(`[...document.querySelectorAll('.yig-icon')].filter((e) => !e.hidden).map((e) => e.dataset.iconGame).join(',')`);
-  check(sceneB === "bridge", `H  Wordle's last card to the bridge: Rive is on the bridge room (scene ${sceneB})`);
+  check(sceneB === "chapter-2-community-intro", `H  Wordle's last card to the bridge: Rive is on the bridge room (scene ${sceneB})`);
   check(!!goneB && goneB.at - tb <= QUICK + TOL, `H  ...the Wordle card and icon are gone ${fmt(goneB ? goneB.at - tb : null)} after the tap`);
   check(!!riseB && Math.abs(riseB.at - tb - PAN) <= TOL, `H  ...the bridge copy rises ${fmt(riseB ? riseB.at - tb : null)} after the tap (want ${PAN} s, the end of the pan)`);
   check(iconB === "", `H  ...and no icon shows with it (${iconB || "none"})`);
@@ -368,7 +368,7 @@ for (const order of ["wc", "cw"]) {
   const tk = log.find((e) => e.label === "back").at;
   const sceneK = await ev(`${VM}.enum('scene').value`);
   const back = log.find((e) => e.card === "bridge#1" && e.cardRising);
-  check(sceneK === "bridge" && !!back && Math.abs(back.at - tk - PAN) <= TOL, `H  Back to the bridge: scene ${sceneK}; its copy returns ${fmt(back ? back.at - tk : null)} after the tap (want ${PAN} s)`);
+  check(sceneK === "chapter-2-community-intro" && !!back && Math.abs(back.at - tk - PAN) <= TOL, `H  Back to the bridge: scene ${sceneK}; its copy returns ${fmt(back ? back.at - tk : null)} after the tap (want ${PAN} s)`);
 }
 section("H (Chapter 2.5)");
 const WORDS = ["ADIEU", "BREAD", "MOUSE"];

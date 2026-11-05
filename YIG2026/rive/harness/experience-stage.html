@@ -165,23 +165,24 @@ let FLOW = q.get("flow") === "anon" ? "anon" : "sub";
 // them, and each card is skipped when the player has none (so these four cover both, one of each, and neither).
 const PLAYERS = {
   "wordle-only": { completed: { wordle: 212, connections: 7, mini: 3 }, events: 5, achievements: 9 },
-  "midi-only": { completed: { midi: 40, daily: 4 }, events: 3, achievements: 0 },
+  "midi-only": { completed: { midi: 40, crossword: 4 }, events: 3, achievements: 0 },
   "connections-only": { completed: { wordle: 4, connections: 120, strands: 2 }, events: 0, achievements: 3 },
-  "all-seven": { completed: { wordle: 212, connections: 140, strands: 30, "spelling-bee": 64, mini: 50, midi: 40, daily: 90 }, events: 0, achievements: 0 },
+  "all-seven": { completed: { wordle: 212, connections: 140, strands: 30, "spelling-bee": 64, mini: 50, midi: 40, crossword: 90 }, events: 0, achievements: 0 },
   // the same seven games, but each shows only its first card ("1 of 1"), and both badge cards are in (the numbers are wordle-only's)
-  "all-seven-short": { completed: { wordle: 212, connections: 140, strands: 30, "spelling-bee": 64, mini: 50, midi: 40, daily: 90 }, events: 5, achievements: 9, firstCardOnly: true },
-  "several-games": { completed: { wordle: 212, connections: 7, strands: 30, "spelling-bee": 64, mini: 50, midi: 40, daily: 90 }, events: 0, achievements: 14 },
+  "all-seven-short": { completed: { wordle: 212, connections: 140, strands: 30, "spelling-bee": 64, mini: 50, midi: 40, crossword: 90 }, events: 5, achievements: 9, firstCardOnly: true },
+  "several-games": { completed: { wordle: 212, connections: 7, strands: 30, "spelling-bee": 64, mini: 50, midi: 40, crossword: 90 }, events: 0, achievements: 14 },
   "none": { completed: { wordle: 3, connections: 2 }, events: 0, achievements: 0 },     // no qualifying game: gets the anonymous flow
 };
 // each game's wall colour in Chapter 4, which the video card shows flat behind the video
-const WALL = { wordle: "#C3E2C0", connections: "#E1DBF5", strands: "#DFF3F0", "spelling-bee": "#FFFDEF", mini: "#95BEFA", midi: "#7EAAF1", daily: "#6493E6" };
+const WALL = { wordle: "#C3E2C0", connections: "#E1DBF5", strands: "#DFF3F0", "spelling-bee": "#FFFDEF", mini: "#95BEFA", midi: "#7EAAF1", crossword: "#6493E6" };
 const PLAYER = PLAYERS[q.get("player")] ?? PLAYERS["wordle-only"];
 const CARDS_PER_GAME = PLAYER.firstCardOnly
-  ? { wordle: 1, connections: 1, "spelling-bee": 1, strands: 1, mini: 1, midi: 1, daily: 1 }
-  : { wordle: 4, connections: 5, "spelling-bee": 2, strands: 1, mini: 1, midi: 1, daily: 1 };
-const NAME = { wordle: "Wordle", connections: "Connections", strands: "Strands", "spelling-bee": "Spelling Bee", mini: "The Mini", midi: "The Midi", daily: "The Crossword" };
-const ICON = { wordle: "wordle", connections: "connections", strands: "strands", "spelling-bee": "spelling-bee", mini: "mini", midi: "midi", daily: "crossword" };
+  ? { wordle: 1, connections: 1, "spelling-bee": 1, strands: 1, mini: 1, midi: 1, crossword: 1 }
+  : { wordle: 4, connections: 5, "spelling-bee": 2, strands: 1, mini: 1, midi: 1, crossword: 1 };
+const NAME = { wordle: "Wordle", connections: "Connections", strands: "Strands", "spelling-bee": "Spelling Bee", mini: "The Mini", midi: "The Midi", crossword: "The Crossword" };
+const ICON = { wordle: "wordle", connections: "connections", strands: "strands", "spelling-bee": "spelling-bee", mini: "mini", midi: "midi", crossword: "crossword" };
 const QUALIFIES = 10;
+const TOPGAME_VALUE = { crossword: "daily" };     // only the scene names were renamed: File 3's topGame enum still has "daily" for The Crossword
 // the game order is one constant in the integration file (GAME_ORDER); the community cards follow it too
 const COMMUNITY_ORDER = GAME_ORDER.filter((g) => COMMUNITY_GAMES.includes(g));          // Chapter 2.5
 const ANON_COMMUNITY = COMMUNITY_ORDER.filter((g) => g !== "wordle");                     // anonymous Chapter 2: no Wordle, Chapter 1 covers it
@@ -211,9 +212,10 @@ function buildCards() {
        [["t-serif", "Your first puzzle was [game icon + name], [date, time]."]],
        [["t-serif", "And your longest streak was in [game] at X days."], ["t-small", "Keep the wins coming."]],
        [["bubble", "Did you know: Over XXX players achieved 100-day Wordle streaks this year. That’s a lot, even for this clever bot!"]]];
-  ch1.forEach((copy, i) => out.push(c(1, `chapter-1-card-${i + 1}`, i ? "" : "Chapter 1", copy, i === 4 ? { slot: "bubble" } : {})));
+  const CH1_SCENES = ["chapter-1", "chapter-1-2", "chapter-1-3", "chapter-1-4", "chapter-1-5"];
+  ch1.forEach((copy, i) => out.push(c(1, CH1_SCENES[i], i ? "" : "Chapter 1", copy, i === 4 ? { slot: "bubble" } : {})));
   out.push(c(1, "ad", "Ad 2", [], { ad: true }));          // the last picture of File 1; File 2 opens on it
-  out.push(c(2, "intro", "Chapter 2", [["t-serif", "But that’s not all"], ["t-small", "PLACEHOLDER · the Chapter 2 opener"]]));
+  out.push(c(2, "chapter-2", "Chapter 2", [["t-serif", "But that’s not all"], ["t-small", "PLACEHOLDER · the Chapter 2 opener"]]));
   const community = (g, why) => c(2, g, "", [["t-tag", why], ["t-serif", `In ${NAME[g]}, all players…`], ["t-big", "Community stat"]], { community: true, icon: g });
   if (anon) {
     ANON_COMMUNITY.forEach((g) => out.push(community(g, "Community card · no lockup")));
@@ -225,7 +227,7 @@ function buildCards() {
       }
     }
     if (own.length === 1) {
-      out.push(c(2, "bridge", "Chapter 2.5", [["t-serif", "The rest of the world"], ["t-serif", "also came to play."]]));
+      out.push(c(2, "chapter-2-community-intro", "Chapter 2.5", [["t-serif", "The rest of the world"], ["t-serif", "also came to play."]]));
       COMMUNITY_ORDER.filter((g) => g !== own[0]).forEach((g) => out.push(community(g, "Chapter 2.5 · community card")));
     }
     // no Ad 3 for subscribers: the tap on the last card plays both moves (out to the empty Chapter 3 room, then Chapter 3's room)
@@ -233,26 +235,26 @@ function buildCards() {
   if (anon) {
     // Chapter 3 for anonymous players: four cards, never skipped, in the same rooms as subscribers' (Ad 3 comes before card 1)
     out.push(c(3, "chapter-3", "Chapter 3", [["t-serif", "There’s plenty more to celebrate, too."]]));
-    out.push(c(3, "chapter-3-bird", "", [["t-serif", "Crossplay, the Midi and bonus puzzles introduced new ways to play."], ["btn", "Download Crossplay app"], ["icons", "connections,daily,midi"]]));
-    out.push(c(3, "ad", "", [["t-serif", "Connections hit 1000 puzzles."], ["panel", "1000TH BADGE · HTML · PLACEHOLDER"]]));
-    out.push(c(3, "ad", "", [["t-serif", "And Wordle turned 5 and fabulous."], ["panel", "WORDLE 5 ICON · HTML · PLACEHOLDER"]]));
+    out.push(c(3, "chapter-3-2", "", [["t-serif", "Crossplay, the Midi and bonus puzzles introduced new ways to play."], ["btn", "Download Crossplay app"], ["icons", "connections,crossword,midi"]]));
+    out.push(c(3, "chapter-3-event-badges", "", [["t-serif", "Connections hit 1000 puzzles."], ["panel", "1000TH BADGE · HTML · PLACEHOLDER"]]));
+    out.push(c(3, "chapter-3-event-badges", "", [["t-serif", "And Wordle turned 5 and fabulous."], ["panel", "WORDLE 5 ICON · HTML · PLACEHOLDER"]]));
   } else {
     // Chapter 3 for subscribers and registered players: the room, the ball with the bird on top, then the badge cards on the
     // empty Chapter 3 room (HTML only), each added only when the player has some
     out.push(c(3, "chapter-3", "Chapter 3", [["t-serif", "There’s plenty more to celebrate, too."]]));
-    out.push(c(3, "chapter-3-bird", "", [["t-serif", "Crossplay, the Midi and bonus puzzles gave you new ways to play."]]));
-    if (PLAYER.events > 0) out.push(c(3, "ad", "", [["t-serif", "You also earned new badges"], ["panel", `${PLAYER.events} EVENT BADGES · HTML · PLACEHOLDER`]]));
-    if (PLAYER.achievements > 0) out.push(c(3, "ad", "", [["t-serif", "…and bragging rights."], ["panel", `${PLAYER.achievements} ACHIEVEMENT BADGES · HTML · PLACEHOLDER`]]));
+    out.push(c(3, "chapter-3-2", "", [["t-serif", "Crossplay, the Midi and bonus puzzles gave you new ways to play."]]));
+    if (PLAYER.events > 0) out.push(c(3, "chapter-3-event-badges", "", [["t-serif", "You also earned new badges"], ["panel", `${PLAYER.events} EVENT BADGES · HTML · PLACEHOLDER`]]));
+    if (PLAYER.achievements > 0) out.push(c(3, "chapter-3-personal-badges", "", [["t-serif", "…and bragging rights."], ["panel", `${PLAYER.achievements} ACHIEVEMENT BADGES · HTML · PLACEHOLDER`]]));
   }
   // Chapter 4: the first card is the stack and the ball on the lighter blue wall (reveal false); the top-game card tints the
   // wall to the game's colour and starts its fireworks (reveal true); the video card keeps that colour
-  out.push(c(3, "chapter-4", "Chapter 4", [["t-serif", anon ? "But through it all, it’s clear everyone plays favorites." : "But through it all, it’s clear you play favorites."]], { topGame: TOP, reveal: false }));
-  out.push(c(3, "chapter-4", "", [["t-serif", anon ? "In 2026, everyone’s top game was…" : "In 2026, your top game was…"], ["t-big", NAME[TOP]]], { icon: TOP, reveal: true }));
-  out.push(c(3, "chapter-4", "Video", [["panel panel-video", anon ? "VIDEO FROM ALL THE EDITORS · PLACEHOLDER" : `${NAME[TOP].toUpperCase()} VIDEO · PLACEHOLDER`], ["t-serif", "Tracey Bennett"], ["t-small", `Editor of ${NAME[TOP]} · PLACEHOLDER`]], { kind: "video", reveal: true, bg: WALL[TOP] }));
+  out.push(c(3, "chapter-4", "Chapter 4", [["t-serif", anon ? "But through it all, it’s clear everyone plays favorites." : "But through it all, it’s clear you play favorites."]], { topGame: TOPGAME_VALUE[TOP] ?? TOP, reveal: false }));   // File 3's topGame enum still calls The Crossword "daily"
+  out.push(c(3, "chapter-4-top-game", "", [["t-serif", anon ? "In 2026, everyone’s top game was…" : "In 2026, your top game was…"], ["t-big", NAME[TOP]]], { icon: TOP, reveal: true }));
+  out.push(c(3, "chapter-4-editor-video", "Video", [["panel panel-video", anon ? "VIDEO FROM ALL THE EDITORS · PLACEHOLDER" : `${NAME[TOP].toUpperCase()} VIDEO · PLACEHOLDER`], ["t-serif", "Tracey Bennett"], ["t-small", `Editor of ${NAME[TOP]} · PLACEHOLDER`]], { kind: "video", reveal: true, bg: WALL[TOP] }));
   out.push(c(3, "end", "End", anon
     ? [["t-serif", "Thanks for playing"], ["t-small", "Register for a personalized Year in Games next year. PLACEHOLDER"]]
     : [["t-serif", "Thanks for playing"], ["t-small", "PLACEHOLDER"]]));
-  if (!anon) out.push(c(3, "end", "Share", [["panel", "SHARE CARD (HTML) · PLACEHOLDER"]]));
+  if (!anon) out.push(c(3, "share", "Share", [["panel", "SHARE CARD (HTML) · PLACEHOLDER"]]));
   return out;
 }
 const cards = buildCards();

@@ -14,26 +14,37 @@
 //     loaded, so Back across files never reloads; a file that isn't on screen is paused.
 //   - An ad (a card tagged `ad: true`: Ad 1, Ad 2 and the anonymous Ad 3) shows only the first time the player reaches it with Next.
 //     After that Back and Next skip it and land on the card on its other side; the move is worked out from the card landed on,
-//     so it can be one move in a file, or the two-move crossing (Ad 2 sits between Chapter 1 card 5 and the Chapter 2 opener).
+//     so it can be one move in a file, or the two-move crossing (Ad 2 sits between chapter-1-5 and chapter-2).
 //   - A Back during a pan, or a Next during a Back pan, waits for the pan to end (the file can't turn a room around part-way).
 //   - Copy arrives at fixed times: on a room's first visit 2.0 s after the scene is set (--yig-first-visit), or 3.2 s
 //     (--yig-lockup, the whole intro) on a Chapter 2 game's first card with its lockup, so the copy never
 //     overlaps the lockup; at the end of the pan (1.65 s) when the room comes back already built or is an empty room;
-//     0.34 s within a room; 1.45 s when Chapter 4's `reveal` changes (the wall fades first). A two-move crossing adds
-//     the first move's 1.65 s. The intros themselves stay 3.2 s: the copy arrives while a room is still finishing.
+//     0.34 s within a room, which covers a change between scenes that share a room (see ROOMS below: no pan, the room keeps
+//     looping) and the same scene again. A two-move crossing adds the first move's 1.65 s. The intros themselves stay
+//     3.2 s: the copy arrives while a room is still finishing.
 
 import { Rive } from "@rive-app/canvas"; // pin the version you ship; 2.27.3 and later work, with `stateMachines` (plural)
 
 // The three files, in order, with the empty room each opens on and ends on, and the scenes with no intro of their own.
 const FILES = [
   { src: "start-chapter-1.riv", opens: "loading", ends: "ad", noIntro: ["loading", "ad"] },
-  { src: "chapter-2.riv", opens: "from-chapter-1", ends: "to-chapter-3", noIntro: ["from-chapter-1", "to-chapter-3", "bridge"], lockup: true },
+  { src: "chapter-2.riv", opens: "from-chapter-1", ends: "to-chapter-3", noIntro: ["from-chapter-1", "to-chapter-3", "chapter-2-community-intro"], lockup: true },
   { src: "chapters-3-4-end.riv", opens: "ad", ends: "end", noIntro: ["ad"] },
 ];
+// Scenes that share one room or picture. A move between two of them is not a room change: no pan, the room keeps looping,
+// and the copy swaps after the usual 0.34 s. Each list starts with the scene that owns the room. Every other scene is its own room.
+const ROOMS = [
+  [3, ["ad", "chapter-3-personal-badges", "chapter-3-event-badges"]],   // the plain wall and floor
+  [3, ["chapter-3", "chapter-3-2"]],
+  [3, ["chapter-4", "chapter-4-top-game", "chapter-4-editor-video"]],
+  [3, ["end", "share"]],
+];
+// the scene that owns a scene's room (the scene itself when it has its own)
+const roomOf = (file, scene) => ROOMS.find(([f, list]) => f === file && list.includes(scene))?.[1][0] ?? scene;
 // The order of the games in Chapter 2, and of Chapter 2.5's community cards, is ours by default and yours to change: the
 // page that builds the card list reads these two constants. Rive plays any order, because each move just sets the next
 // scene. COMMUNITY_GAMES are the games that have community cards (The Midi and The Crossword have none).
-const GAME_ORDER = ["wordle", "connections", "spelling-bee", "mini", "midi", "daily", "strands"];
+const GAME_ORDER = ["wordle", "connections", "spelling-bee", "mini", "midi", "crossword", "strands"];
 const COMMUNITY_GAMES = ["wordle", "connections", "spelling-bee", "mini", "strands"];
 // The two first-visit copy times live in yig-text-motion.css, as --yig-first-visit (2s) and --yig-lockup (3.2s), and are
 // read from there (cssMs) so the page and the CSS can't drift apart; change them there.
@@ -175,7 +186,9 @@ function move(step) {
   if (target < 0 || target > cards.length - 1) return;
   const from = cards[frame];
   const to = cards[target];
-  const roomChange = to.file !== from.file || to.scene !== from.scene;
+  const sceneChange = to.file !== from.file || to.scene !== from.scene;
+  // a change between scenes that share a room sets the scene but doesn't pan (ROOMS)
+  const roomChange = to.file !== from.file || roomOf(to.file, to.scene) !== roomOf(from.file, from.scene);
   const now = performance.now();
   // crossing files from a card that isn't on the empty room: the first move goes to that room, the second starts after it
   const legs = to.file !== from.file && (step > 0 ? from.scene !== FILES[from.file - 1].ends : to.scene !== FILES[to.file - 1].ends) ? 2 : 1;
@@ -191,12 +204,13 @@ function move(step) {
     return;
   }
   if (roomChange) clearTimeout(swapTimer); // a new room change takes over from a Back's hand-back still to come
-  if (roomChange && hopRun) { clearTimeout(hopTimer); hopRun(); } // and cuts a Next's two moves short: the next file takes over now
+  if (sceneChange && hopRun) { clearTimeout(hopTimer); hopRun(); } // and cuts a Next's two moves short: the next file takes over now (also for a scene that shares the room, so its scene isn't overwritten later)
   frame = target;
   if (to.ad) seenAds.add(target);
-  const fading = !roomChange && applyReveal(to);
-  const key = `${to.file}:${to.scene}`;
-  const firstVisit = roomChange && step > 0 && !visited.has(key) && !FILES[fi].noIntro.includes(to.scene);
+  const fading = !sceneChange && applyReveal(to);   // only a card that repeats the scene and changes `reveal` (the old way); Chapter 4's cards now change scene
+  const room = roomOf(to.file, to.scene);
+  const key = `${to.file}:${room}`;
+  const firstVisit = roomChange && step > 0 && !visited.has(key) && !FILES[fi].noIntro.includes(room);
   if (roomChange) {
     pan = { dir: step, endsAt: now + PAN_MS * legs };
     if (to.file === from.file) {
@@ -219,6 +233,7 @@ function move(step) {
       swapTimer = setTimeout(() => { show(fi); if (legs === 2) setScene(fi, to.scene, step, !!to.community, to.reveal); }, PAN_MS);
     }
   }
+  if (!roomChange && sceneChange) setScene(fi, to.scene, step, !!to.community, to.reveal);   // same room: the room keeps looping, the copy swaps (0.34 s)
   if (firstVisit) {
     visited.add(key);
     copyFrom[key] = now + (legs - 1) * PAN_MS + firstVisitCopyMs(to);

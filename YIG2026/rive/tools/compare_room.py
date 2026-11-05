@@ -3,7 +3,7 @@
     python3 tools/compare_room.py ch2 wordle                     the room's loop now against the last commit (HEAD)
     python3 tools/compare_room.py ch2 wordle --rev 158faed       against any commit, tag or branch
     python3 tools/compare_room.py ch1 start --part intro         the intro (frames 1 to 191) instead of the loop
-    python3 tools/compare_room.py ch1 chapter-1-card-1 --frames 190-400    an exact range of scene frames (60 per second)
+    python3 tools/compare_room.py ch1 chapter-1 --frames 190-400    an exact range of scene frames (60 per second)
     python3 tools/compare_room.py ch2 wordle --workers 8
 
 What is in Rive now is the current version of a room, so this answers "what did my change do?", not "does it match a source".
@@ -115,7 +115,7 @@ def frame_range(args, scene_entry, scene):
 def main(argv):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("chapter", help="ch1, ch2 or ch3")
-    ap.add_argument("scene", help="the scene name, e.g. wordle, start, chapter-1-card-1, chapter-4")
+    ap.add_argument("scene", help="the scene name, e.g. wordle, start, chapter-1, chapter-4")
     ap.add_argument("--rev", default="HEAD", help="the version to compare against (a commit, tag or branch; default HEAD)")
     ap.add_argument("--part", choices=("loop", "intro"), default="loop")
     ap.add_argument("--frames", help="an exact range of scene frames, e.g. 190-400")

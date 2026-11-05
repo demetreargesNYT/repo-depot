@@ -77,6 +77,40 @@ def layer_moves(s, layer):
     return out
 
 
+def scene_sets(s):
+    """{layer name: the scene values its 'scene ==' conditions wait for}. A room that other scenes share (the manifest's
+    sameRoomAs) waits for several; scene_numbers() in rml_read keeps only the last."""
+    props = {p.get("id"): p.get("name") for p in s.view_model if p.tag.startswith("ViewModelProperty")}
+    out = {}
+    for layer in s.artboard.find("StateMachine").findall("StateMachineLayer"):
+        if layer.get("name") == "Backdrop":
+            continue
+        for tr in layer.iter("StateTransition"):
+            for c in tr.findall("TransitionViewModelCondition"):
+                ctx = c.find(".//DataBindContext").get("sourcePathIds").split("-")[-1]
+                if c.get("opValue", "equal") == "equal" and props.get(ctx) == "scene":
+                    out.setdefault(layer.get("name"), set()).add(s.cond_value(c))
+    return {k: sorted(v) for k, v in out.items()}
+
+
+def expand(entries, n, ns):
+    """A room's expected moves are written for its own scene n. When other scenes share the room (ns lists all of them), each
+    move that waits for scene == n repeats for every scene in ns (the twin transitions, with startScene alike), and each
+    scene != n guard lists every scene in ns (leaving the room means leaving all of them). With ns == [n] nothing changes."""
+    out = []
+    for a, b, g, d, bl in entries:
+        if g != "end" and ("scene", "!=", n) in g:
+            rest = tuple(c for c in g if c != ("scene", "!=", n))
+            out.append((a, b, tuple(sorted(rest + tuple(("scene", "!=", k) for k in ns))), d, bl))
+        elif g != "end" and ("scene", "==", n) in g:
+            for k in ns:
+                swap = {("scene", "==", n): ("scene", "==", k), ("startScene", "==", n): ("startScene", "==", k)}
+                out.append((a, b, tuple(sorted(swap.get(c, c) for c in g)), d, bl))
+        else:
+            out.append((a, b, g, d, bl))
+    return out
+
+
 def conditions(s, tr):
     """{(property id, op, compared value)} of a transition."""
     return {(c.find(".//DataBindContext").get("sourcePathIds").split("-")[-1], c.get("opValue", "equal"),
@@ -181,12 +215,21 @@ def run(chapter):
         check(room in layers and f"{room} Exit" in layers, f'layers "{room}" and "{room} Exit" exist' if room != "Shelf" else 'layers "Shelf" and "Shelf Exit" exist')
     vals = [v for k, v in numbers.items() if not k.endswith("Exit") or True]
     per_room = {r: numbers.get(r, numbers.get(f"{r} Exit")) for r in rooms}
-    check(len(set(per_room.values())) == len(per_room), f"each room waits for its own scene value: {per_room}")
+    sets = scene_sets(s)
+    # the scenes that show each room: its own, plus every scene the manifest says shares it (sameRoomAs)
+    shown_in = {}
     if m is not None:
         scene_list = [x["name"] for x in m["scenes"]]
+        shown_in = {x["room"]: sorted([scene_list.index(x["name"])] + [scene_list.index(y["name"]) for y in m["scenes"] if y.get("sameRoomAs") == x["name"]])
+                    for x in m["scenes"] if "room" in x}
+    ns_of = {r: shown_in.get(r) or [per_room[r]] for r in rooms}
+    room_sets = {r: sets.get(r) or sets.get(f"{r} Exit") or [per_room[r]] for r in rooms}
+    all_values = [v for vs in room_sets.values() for v in vs]
+    check(len(set(all_values)) == len(all_values), f"each room waits for its own scene values, and no two rooms share one: {room_sets}")
+    if m is not None:
         for x in m["scenes"]:
             if "room" in x:
-                check(per_room.get(x["room"]) == scene_list.index(x["name"]), f'{x["room"]} waits for the manifest\'s "{x["name"]}" scene (it waits for {per_room.get(x["room"])})')
+                check(room_sets.get(x["room"]) == shown_in[x["room"]], f'{x["room"]} waits for the manifest\'s "{x["name"]}" scene and the scenes that share its room (it waits for {room_sets.get(x["room"])}, the manifest says {shown_in[x["room"]]})')
         check(sorted(x["room"] for x in m["scenes"] if "room" in x) == rooms, f"the manifest lists exactly the rooms in the file ({rooms})")
 
     # backdrop: one shared Background (wall, floor, floor line) under every room; its colours change by crossfade
@@ -336,9 +379,10 @@ def run(chapter):
         n = per_room[room]
         dl = next((l for l in sm.findall("StateMachineLayer") if l.get("name") == f"{room} Draw"), None)
         got = sorted(layer_moves(s, dl)) if dl is not None else []
-        want = sorted([(f"{room} Below", f"{room} On Top", ((("scene", "==", n),)), "0", False),
-                       (f"{room} On Top", f"{room} Below", ((("scene", "!=", n),)), "0", False)])
-        check(got == want and start_of(s, dl) == f"{room} Below", f'layer "{room} Draw" starts Below and goes On Top exactly while scene == {n}, at once')
+        ns = ns_of[room]
+        want = sorted(expand([(f"{room} Below", f"{room} On Top", ((("scene", "==", n),)), "0", False),
+                              (f"{room} On Top", f"{room} Below", ((("scene", "!=", n),)), "0", False)], n, ns))
+        check(got == want and start_of(s, dl) == f"{room} Below", f'layer "{room} Draw" starts Below and goes On Top exactly while scene == {" or ".join(map(str, ns))}, at once')
 
         check(s.duration(outro) == OUTRO_FRAMES, f"{room} Outro is {OUTRO_FRAMES} frames (1.6 s)")
         for pose in ("Home", "Gone", "Right"):
@@ -388,7 +432,7 @@ def run(chapter):
             # (a file opened on the picture it shares with the file before it): it comes in from the left, built
             want += [(R("Home"), R("Home (2)"), (S, ("startScene", "==", n)), "0", False),
                      (R("Home"), R("Return"), (S, B), "0", False)]
-        want = sorted((a, b, g if g == "end" else tuple(sorted(g)), d, bl) for a, b, g, d, bl in want)
+        want = sorted((a, b, g if g == "end" else tuple(sorted(g)), d, bl) for a, b, g, d, bl in expand(want, n, ns_of[room]))
         got = sorted(layer_moves(s, el))
         check(got == want, f'layer "{room} Exit" has exactly the Next and Back moves' + ("" if got == want else f"; extra {sorted(set(got) - set(want))}, missing {sorted(set(want) - set(got))}"))
         start = start_of(s, el)
@@ -447,8 +491,10 @@ def run(chapter):
             S = ("scene", "==", n)
             src = "Start Loading Loop" if room == "Start" else f"{room} Waiting"
             got = {(a, b, g) for a, b, g, _d, _bl in layer_moves(s, rl) if b == f"{room} Built" or a == f"{room} Built"}
-            want = {(src, f"{room} Built", tuple(sorted([S, ("startScene", "==", n)]))), (f"{room} Built", f"{room} Loop", "end"),
-                    (src, f"{room} Built", tuple(sorted([S, ("direction", "==", 1)])))}
+            want = {(f"{room} Built", f"{room} Loop", "end")}
+            for k in ns_of[room]:            # the twin transitions: one pair for each scene that shows the room
+                want |= {(src, f"{room} Built", tuple(sorted([("scene", "==", k), ("startScene", "==", k)]))),
+                         (src, f"{room} Built", tuple(sorted([("scene", "==", k), ("direction", "==", 1)])))}
             got = {(a.split(" (")[0], b, g) for a, b, g in got}
             check(got == want, f'layer "{room}" goes from {src} to {room} Built when opened on it or asked for with Back before it was shown'
                   + f", then on to its Loop" + ("" if got == want else f"; has {sorted(got, key=str)}"))
@@ -482,8 +528,10 @@ def run(chapter):
             S = ("scene", "==", n)
             got = {(a, b, g) for a, b, g, _d, _bl in layer_moves(s, next(l for l in sm.findall("StateMachineLayer") if l.get("name") == f"{room} Small"))
                    if a == f"{room} Small Waiting" and b == f"{room} Small Loop"}
-            want = {(f"{room} Small Waiting", f"{room} Small Loop", tuple(sorted([S, ("startScene", "==", n)]))),
-                    (f"{room} Small Waiting", f"{room} Small Loop", tuple(sorted([S, ("direction", "==", 1)])))}
+            want = set()
+            for k in ns_of[room]:            # the twin transitions: one pair for each scene that shows the room
+                want |= {(f"{room} Small Waiting", f"{room} Small Loop", tuple(sorted([("scene", "==", k), ("startScene", "==", k)]))),
+                         (f"{room} Small Waiting", f"{room} Small Loop", tuple(sorted([("scene", "==", k), ("direction", "==", 1)])))}
             check(got == want, f"{room}'s small loops start at once when the file opens on it or it is asked for with Back before it was shown"
                   + ("" if got == want else f"; has {sorted(got, key=str)}"))
 
@@ -605,14 +653,26 @@ def run(chapter):
         if m is not None and "topGame" in m["properties"]:
             values = m["properties"]["topGame"]["values"]
             extra = 1 if "reveal" in m["properties"] else 0       # and one that shows none until the top game is revealed
-            check(len(gl.find("AnyState").findall("StateTransition")) == len(values) + extra, f"{room}'s gate layer has one transition per topGame value ({values})" + (" and one for reveal == false" if extra else ""))
-            # a set shows only while its room is the scene, so a file opened on another scene with reveal already true
-            # (startScene) shows no fireworks; in normal playback reveal only turns true there anyway
-            n = per_room[room]
+            # scenes that share the room: the fireworks run on each of them except those the manifest marks "fireworks": "off",
+            # which get one transition of their own to the none pose (the sets fade out there and stay off)
+            ns = ns_of[room]
+            off = [k for k in ns if m["scenes"][k].get("fireworks") == "off"]
+            on = [k for k in ns if k not in off]
+            check(len(gl.find("AnyState").findall("StateTransition")) == len(values) * len(on) + extra + len(off),
+                  f"{room}'s gate layer has one transition per topGame value for each of its {len(on)} scene(s) with fireworks ({values})"
+                  + (" and one for reveal == false" if extra else "") + (f", and one for each of its {len(off)} scene(s) with the fireworks off" if off else ""))
+            # a set shows only while one of the room's fireworks scenes is the scene, so a file opened on another scene with
+            # reveal already true (startScene) shows no fireworks; in normal playback reveal only turns true there anyway
+            sc_ids = [v.get("id") for v in s_enum if v.tag == "DataEnumValue"]
+            sid_ = props["scene"].get("id")
             loose = [tr.get("id") for tr in gl.find("AnyState").findall("StateTransition")
                      if any(p.endswith(props["topGame"].get("id")) for p, _o, _v in conditions(s, tr))
-                     and (props["scene"].get("id"), "equal", [v.get("id") for v in s_enum if v.tag == "DataEnumValue"][n]) not in conditions(s, tr)]
-            check(not loose, f"{room}'s gate layer picks a set only while scene is {room}'s" + ("" if not loose else f": {loose}"))
+                     and not any((sid_, "equal", sc_ids[k]) in conditions(s, tr) for k in on)]
+            check(not loose, f"{room}'s gate layer picks a set only while scene is one of {room}'s fireworks scenes" + ("" if not loose else f": {loose}"))
+            names_ = state_names(s, gl)
+            for k in off:
+                tos = [names_[tr.get("stateToId")] for tr in gl.find("AnyState").findall("StateTransition") if (sid_, "equal", sc_ids[k]) in conditions(s, tr)]
+                check(len(tos) == 1 and tos[0].endswith(" none"), f"{room}'s gate layer shows no set while the scene is {m['scenes'][k]['name']} (the fireworks are off there)")
 
     # the opener's toy ball is keyed only by its own loop, and held on the loop's first pose by its Intro and Waiting
     for name, a in A.items():

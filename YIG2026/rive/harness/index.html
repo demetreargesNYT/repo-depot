@@ -172,7 +172,7 @@ const EXAMPLE_PLAYERS = {
   },
   "midi-only": {
     midi: { completed: 40 }, // PLACEHOLDER stats: The Midi has one placeholder card for now
-    daily: { completed: 4 },
+    crossword: { completed: 4 },
   },
   "several-games": {
     wordle: WORDLE,
@@ -189,7 +189,7 @@ const EXAMPLE_PLAYERS = {
     "spelling-bee": { completed: 64, genius: 21, pangrams: 38 },
     mini: { completed: 50 },
     midi: { completed: 40 },
-    daily: { completed: 90 },
+    crossword: { completed: 90 },
   },
 };
 // THE ONE TEST ENTRY POINT. The text test (harness/text-test.mjs) sets window.__yigTest before this script runs:
@@ -225,7 +225,7 @@ const EXAMPLE_COMMUNITY = {
 const QUALIFIES = 10;
 // The order of the games (and of the community cards) is one constant, ours by default and yours to change. Rive plays any
 // order, because each move just sets the next scene.
-const GAME_ORDER = ["wordle", "connections", "spelling-bee", "mini", "midi", "daily", "strands"];
+const GAME_ORDER = ["wordle", "connections", "spelling-bee", "mini", "midi", "crossword", "strands"];
 const COMMUNITY_ORDER = GAME_ORDER.filter((game) => ["wordle", "connections", "spelling-bee", "mini", "strands"].includes(game)); // The Midi and The Crossword have none
 function buildCards(p) {
   // The file opens on the empty Chapter 1 room (where File 1 ends and Ad 2 plays): always the first card, with no copy.
@@ -240,7 +240,7 @@ function buildCards(p) {
       cards.push({ game, card: "hardest-word", variant: s.hardestWordResult });
       if (s.topStartingWords.length) cards.push({ game, card: "starting-words" });
     }
-    if (["strands", "mini", "midi", "daily"].includes(game)) cards.push({ game, card: "placeholder" });
+    if (["strands", "mini", "midi", "crossword"].includes(game)) cards.push({ game, card: "placeholder" });
     if (game === "spelling-bee") {
       cards.push({ game, card: "pangrams" });
       cards.push({ game, card: "genius" });
@@ -321,7 +321,7 @@ const COPY = {
   strands: { placeholder: () => placeholder("Strands"), community: () => placeholder("Strands") },
   mini: { placeholder: () => placeholder("The Mini"), community: () => placeholder("The Mini") },
   midi: { placeholder: () => placeholder("The Midi"), community: () => placeholder("The Midi") },
-  daily: { placeholder: () => placeholder("The Crossword"), community: () => placeholder("The Crossword") },
+  crossword: { placeholder: () => placeholder("The Crossword"), community: () => placeholder("The Crossword") },
   // PLACEHOLDER COPY: the Chapter 2 ending has no copy yet; this only lets you see the backdrop and its crossfade.
   chapter3: { end: () => placeholder("On to Chapter 3") },
   // Chapter 2.5's bridge card, in its own empty room.
@@ -403,7 +403,7 @@ const ICON = {
 <path d="M114.263 13.2021H61.4175C57.4601 13.2021 54.252 16.4103 54.252 20.3677V73.2136C54.252 77.171 57.4601 80.3791 61.4175 80.3791H114.263C118.221 80.3791 121.429 77.171 121.429 73.2136V20.3677C121.429 16.4103 118.221 13.2021 114.263 13.2021Z" fill="white"/>
 <path d="M114.263 11.4111H61.4169C56.4777 11.4111 52.46 15.4289 52.46 20.3681V73.2139C52.46 78.1531 56.4777 82.1708 61.4169 82.1708H114.263C119.202 82.1708 123.22 78.1531 123.22 73.2139V20.3681C123.22 15.4289 119.202 11.4111 114.263 11.4111ZM97.2656 33.7964H78.4153V14.9938H97.2656V33.7964ZM74.8325 56.2027H56.0428V37.3792H74.8325V56.2027ZM78.4153 59.7855H97.2656V78.5881H78.4153V59.7855ZM100.848 37.3791H119.637V56.2026H100.848V37.3791ZM61.4169 14.9939H74.8324V33.7965H56.0427V20.3681C56.0427 17.4045 58.4534 14.9939 61.4169 14.9939ZM114.263 78.5881H100.849V59.7855H119.637V73.2139C119.637 76.1774 117.226 78.5881 114.263 78.5881Z" fill="black"/>
 </svg>`,
-  daily: `<svg width="50" height="49" viewBox="52.12 11.38 70.76 70.76" fill="none" xmlns="http://www.w3.org/2000/svg">
+  crossword: `<svg width="50" height="49" viewBox="52.12 11.38 70.76 70.76" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M113.923 11.3765H61.077C56.1328 11.3765 52.1201 15.3892 52.1201 20.3334V73.1792C52.1201 78.1235 56.1328 82.1362 61.077 82.1362H113.923C118.855 82.1362 122.88 78.1235 122.88 73.1792V20.3334C122.88 15.3892 118.855 11.3765 113.923 11.3765Z" fill="black"/>
 <path d="M119.297 48.2551H105.778V62.0607H119.297V48.2551Z" fill="white"/>
 <path d="M119.297 65.0464V73.1793C119.297 76.141 116.885 78.5534 113.923 78.5534H105.778V65.0464H119.297Z" fill="white"/>

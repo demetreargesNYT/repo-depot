@@ -1,8 +1,8 @@
-"""The one command to run after every finesse change:  npm run finesse 1 "chapter-1-card-4"
+"""The one command to run after every finesse change:  npm run finesse 1 "chapter-1-4"
 
     npm run finesse <ch> "<room>" [--open]
 
-<ch> is 1, 2, 3 or ch1, ch2, ch3; <room> is the scene's name (chapter-1-card-4, wordle) or the room's (Chapter 1 Card 4, The Mini).
+<ch> is 1, 2, 3 or ch1, ch2, ch3; <room> is the scene's name (chapter-1-4, wordle) or the room's (Chapter 1 Card 4, The Mini).
 It does three things and nothing else (no frame renders, no smoke):
   1. the rule checks for that chapter only (npm run check <ch>)
   2. the ball's physics and jitter check for that room (tools/ball_speed.py <ch> "<room>" --contacts); flags accepted on purpose
@@ -28,7 +28,7 @@ LIMITS = {"check": 300, "ball": 120}      # seconds per step
 # what each scene needs from the review page (the same choices as the Jump to menu in harness/experience.html)
 NEEDS = {
     "2:to-chapter-3": {"flow": "anon"},
-    "2:bridge": {"flow": "sub", "player": "wordle-only"},
+    "2:chapter-2-community-intro": {"flow": "sub", "player": "wordle-only"},
     "3:ad": {"flow": "sub", "player": "wordle-only"},
 }
 
@@ -45,7 +45,10 @@ def scene_of(ch, arg):
     scenes = json.loads((REPO / "chapters" / ch / "chapter.json").read_text())["scenes"]
     for s in scenes:
         if arg.lower() in (s["name"].lower(), (s.get("room") or "").lower()):
-            return s["name"], s.get("room")
+            room = s.get("room")
+            if room is None and s.get("sameRoomAs"):         # a scene that shares a room (chapter-3-2, share...) is checked as that room
+                room = next((o.get("room") for o in scenes if o["name"] == s["sameRoomAs"]), None)
+            return s["name"], room
     names = ", ".join(s["name"] for s in scenes)
     sys.exit(f"no scene or room {arg!r} in {ch}; its scenes are: {names}")
 

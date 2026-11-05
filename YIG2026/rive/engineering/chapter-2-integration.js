@@ -4,11 +4,11 @@
 // plays its 3.2 s intro like a game does (without a lockup: the opener is not a game, so its copy comes at 2.0 s). "chapter3" is this file's last scene: after the player's last game, the room leaves and an empty Chapter 3
 // backdrop pans in, the same way any game-to-game move does. It has no lockup and no ball; File 3 takes over from it
 // (and, for anonymous players, Ad 3 plays over it). Add it to the card list once, after the player's last game card.
-// "bridge" is Chapter 2.5's bridge card, for a player with exactly one qualifying game: an empty version of the
-// opener's room, between that game's cards and the community cards.
+// "bridge" is this page's name for Chapter 2.5's community intro card (scene chapter-2-community-intro), for a player with exactly
+// one qualifying game: an empty version of the opener's room, between that game's cards and the community cards.
 const SCENE = {
-  opener: "intro", wordle: "wordle", connections: "connections", strands: "strands", "spelling-bee": "spelling-bee",
-  mini: "mini", midi: "midi", daily: "daily", chapter3: "to-chapter-3", chapter1: "from-chapter-1", bridge: "bridge",
+  opener: "chapter-2", wordle: "wordle", connections: "connections", strands: "strands", "spelling-bee": "spelling-bee",
+  mini: "mini", midi: "midi", crossword: "crossword", chapter3: "to-chapter-3", chapter1: "from-chapter-1", bridge: "chapter-2-community-intro",
 };
 
 // Rooms with nothing to build, so no intro: their copy arrives when the pan ends (1.65 s), even on the first visit. These are the
@@ -33,7 +33,7 @@ const yig = new Rive({
 // The file reads three properties of its "Backdrop" view model: scene (an enum: the room to show), direction (an enum,
 // "forward" for Next or "back" for Back, so a room knows which way to leave) and lockup (true shows the game lockup of
 // the room being entered, false leaves it out; a community card sets it to false). direction and lockup are set before
-// scene, so the file sees them on the same frame. `name` is a scene name, like "wordle" or "intro". `step` is +1 for
+// scene, so the file sees them on the same frame. `name` is a scene name, like "wordle" or "chapter-2". `step` is +1 for
 // Next and -1 for Back, and `community` is the card's flag, which becomes lockup = !community.
 function setScene(name, step = 1, community = false) {
   yig.viewModelInstance.enum("direction").value = step < 0 ? "back" : "forward";
@@ -46,7 +46,7 @@ function setScene(name, step = 1, community = false) {
 // lockup time, the whole intro, because the lockup is gone exactly at 3.2 s and the copy must never overlap it.
 // The two first-visit copy times live in yig-text-motion.css, as --yig-first-visit (2s) and --yig-lockup (3.2s), and are
 // read from there (cssMs) so the page and the CSS can't drift apart; change them there.
-const LOCKUP_GAMES = new Set(["wordle", "connections", "strands", "spelling-bee", "mini", "midi", "daily"]); // the rooms with a lockup
+const LOCKUP_GAMES = new Set(["wordle", "connections", "strands", "spelling-bee", "mini", "midi", "crossword"]); // the rooms with a lockup
 const PAN_MS = 1650;   // a room change: the rooms' moves run 1.6 s (the pan itself is 0.05 to 1.55 s), plus a few frames
                        // so a held tap never lands on the frame a move hands over to its resting pose
 let cards = [];        // set by start()
@@ -62,7 +62,7 @@ let heldTimer = 0;     // a tap waiting for a pan to end
 // has several in a row. Each card names its game. A player with exactly one such game then gets Chapter 2.5: the
 // bridge card ({ game: "bridge" }), then one community card for each other community game, marked community: true
 // (the game's Rive lockup is then left out; everything else is the same). Then { game: "chapter3" }, the last card.
-// Games: "chapter1" (always the first card), "opener", "wordle", "connections", "strands", "spelling-bee", "mini", "midi", "daily",
+// Games: "chapter1" (always the first card), "opener", "wordle", "connections", "strands", "spelling-bee", "mini", "midi", "crossword",
 // "bridge", "chapter3". Other fields on a card (your own card id, say) are ignored here. The copy for card i is the
 // element with data-copy-frame="i".
 // Example: start([{ game: "chapter1" }, { game: "opener" }, { game: "midi" }, { game: "bridge" }, { game: "wordle", community: true }, { game: "chapter3" }])

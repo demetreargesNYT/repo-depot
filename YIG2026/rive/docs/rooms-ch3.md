@@ -6,7 +6,7 @@
 
 - **Chapter 3: the disco ball spins and sparkles** (2026-11-03): its facets slide a column every 0.43 s (a full turn about every 7 s), five small stars flash one or two at a time; its small swing and the contact sparkle answer the ball's hit at 6.62 s (both were made for a hit on its upper left: the swing starts to the right and the sparkle sits upper left; the hit is on its upper right). The Loop and the bird's blink loop are 416 frames.
 
-- **Chapter 4: the player's ball and the crowd** (2026-11-03; `chapters/ch3/scripts/ch3_c4s1_import.py`, `ch3_c4_ball.py`, `ch3_c4_crowd.py`). The ball keeps c4s1_Wordle's journey from 1.60 s at 0.9 to 1.2 times, with a spring hop off the crossword tower (5.63 s) that drops out of sight behind the stack (6.55 s) instead of the 5 times leap; it resets there; c4s1's physics are accepted as drawn. When reveal turns true, after the wall's fade (1.45 s), four more balls (End's red, 0.7 to 1.1 times) come in one at a time: from the left, the right, a drop just outside the phone frame, and a small one that taps the first; they settle at the base's sides (x 586, 616, 878, 914) and idle with small hops at different times (a 6 s loop); reveal false on chapter-4 rolls them out the way they came; startScene or Back shows them settled (layer "Chapter 4 Crowd"). To tune: the arrival is long (6.6 s, the drop's bounces); the edge of the ball on the yellow block reaches x 556 at 1.17 times.
+- **Chapter 4: the city builds itself, the ball arrives to see it, card 2 celebrates** (2026-11-04, replaces the first living-city round; rebuild order: `ch3_c4_cleanup.py`, `ch3_c4_fireworks_fit.py`, `ch3_c4_cleanup2.py`, `ch3_c4_build_tower/hex/connections/dome/strands/cross.py` on the shared writer `ch3_c4_city.py`, then `ch3_c4_ball_stay.py`, all on the scene as committed in 0e325fa). Card 1 BUILD (the 192 frame Intro, one layer per building, "Chapter 4 City <Name>": Rest = nothing on the ground, Build, Loop, Calm): back to front, the tower stacks row by row from frame 69 (157 squares per copy), the hex column drops in bottom-up from frame 72 with each inner hex doing the coin spin as it lands (96, 126, 156), Connections slides its four colour groups in from alternating sides (96 to 180), the Coss towers assemble tile by tile like a sliding puzzle (cross tower 100 to 175; the far left column and the right L tower, outside the phone crop, from 40 and 50), the dome pops in cell by cell from the middle out (130 to 180), Strands pops its spheres then draws its sticks (130 to 184), Cross_02 steps up block by block (120 to 188). Back and startScene show the city built. Card 1 LOOP (600 frames, 10 s): two hero moments, never together: the hex column's cascade of inner hex coin spins (frames 150, 168, 186, 36 frames each, width |cos| to 0.07) and one Connections slide-and-lock (372 to 462, 12 px); Strands sways slightly all loop (3 cycles, at most 2.9 degrees); everything else is still. Calm (card 2): the spins narrow to 0.5, the slide is 6 px, the sway 1.2 degrees. The BALL (layer "Chapter 4 Ball Motion") is on card 1 now and never leaves: after the build (3.2 s) it bounces in from the left (flights 36, 25, 18, 12, 9 frames, 82 to 84 percent of the speed kept), rolls to a stop at x 755, rolls back to x 747 with its dot up and holds still 0.9 s, then idles on a faint eased roll (+-2.7 px, 600 frames). reveal true blends it into the top game's celebration idle (600 frames, phase aligned with the fireworks): a small excited hop on that gate's first big burst (Wordle 64, Connections 35, Strands 94, Spelling Bee 125, Crossword 26), small hops on the bigger bursts, rocks between, one showing-off hop of 20 units (8 percent landing squash, no puff). reveal false blends back to the card 1 idle (no roll-out); a reveal during the arrival lets it finish, hop once, and enter the celebration idle out of phase. Fireworks: moved down and together (k 0.58 to 0.78) so no piece rises above y 445 inside x 540 to 955, and scale-0 pieces got opacity keys (they drew dots). To tune: the tower has no loop motion yet (its 3D cube turns wait for Demetre's approval of the cube method being tested in Chapter 2's The Mini); most of the first two bounces land left of the phone crop; the Connections tile flip and its square-corner fix were dropped from the loop this round (commit 4a6adf4 has them); the Chapter 4 ball check (tools/ball_speed.py) reads only the Intro and Loop, so it does not see the ball layer.
 
 - **Chapter 4: The Mini and The Midi use The Crossword's fireworks on their own walls, and that is final** (2026-11-02). Their walls are 95BEFA and 7EAAF1, exactly their Chapter 2 colours.
 
@@ -16,7 +16,9 @@
 
 - **End: one more ball joins the pile in the intro** (2026-11-03, `chapters/ch3/scripts/ch3_end_ball.py`). The standard ball at 0.9 times, End's red, rolls in from the room's left as the pan starts, its dot turning, meets the loose ball at the left pile's edge at 1.60 s and rests in front of the pile's edge at 1.67 s; the loose ball gives 4 and settles back 1, the edge ball gives a little, all still by 1.93 s. The loop leaves it in the pile.
 
-- **Bird on Ball (`chapter-3-bird`): the standard ball grows under c3s1's bird** (2026-11-03, `chapters/ch3/scripts/ch3_bird_on_ball.py`; no illustrator artboard for this room). The ball rides in at 1 times with the bird on top, grows to 2 times from 1.60 to 2.20 s (a slight overshoot); the bird hops up at 2.00 s and lands back on it at 2.60 s, the ball giving a little. Loop 5 s (the blink's length): a ±5 sway along the floor line, the dot rolling with it, the bird tilting against it.
+- **Scene names are neutral, and four scenes share rooms** (2026-11-05, `chapters/ch3/scripts/ch3_scene_names.py`; a scene name describes position or data, never the illustration). ad stays ad (it was ad-3 for a few hours on 2026-11-05; `ch3_scene_ad.py` renamed it back, since every file's ad scene is just ad), chapter-3-bird is chapter-3-2; new: chapter-3-personal-badges and chapter-3-event-badges (they share ad's plain wall-and-floor picture; the same scene set again does nothing, so anon's two event-badge cards in a row are seamless), chapter-4-top-game and chapter-4-editor-video (they share chapter-4's room: the wall colour, the city and the ball carry straight through; chapter-4-editor-video fades the fireworks out over 0.4 s and keeps them off, chapter-4-top-game fades them back in over 0.25 s; the fireworks loop runs on underneath, so the ball's hops stay in step) and share (shares end's room, identical for now). `reveal` still drives the wall colour, the fireworks and the ball's celebration, as before. The enum keeps its value ids and is stored in flow order. Harness and docs still use the old names until the shared-files session updates them.
+
+- **`chapter-3-bird` (now chapter-3-2) shows chapter-3's own room** (2026-11-05, `chapters/ch3/scripts/ch3_bird_shared_room.py`; the Bird on Ball room, its art, four layers and sixteen animations are gone, 27.5 KB smaller; Chapter 1 had already copied its loop into the Start card, commit 125b175). Chapter 3's four layers (Chapter 3, Exit, Draw, Small) answer chapter-3-bird as they answer chapter-3 (each transition that waits for scene == chapter-3 has a twin for the bird, each one that leaves on scene != chapter-3 also requires scene != chapter-3-bird), so chapter-3 to chapter-3-bird and back is a same-room change: the room keeps looping from where it is, no reset, no pan; arriving at the bird directly builds the room as chapter-3 would, and startScene shows it built. The Backdrop already used Chapter 3's colours for both. The manifest entry has kind shared-room and sameRoomAs chapter-3 and no room, which `tools/check_chapter.py` does not know yet (its Chapter 3 checks fail until the shared-files session teaches it).
 
 - **Chapter 3: pieces outside the safe area** (x 560 to 935, y 0 to 812; found in the global pass, nothing moved, a room-by-room call): Box (Floor Plane) (x 995-1075, y 683-711, right); Bird (Floor Plane) (x 900-945, y 505-547, right); Chapter 3 Picture 1 (Floor Plane) (x 558-655, y 505-582, left); Crib (Floor Plane) (x 780-982, y 546-712, right); Chapter 3 Picture 4 (Floor Plane) (x 558-655, y 505-582, left); Gifts (Floor Plane) (x 492-715, y 606-711, left). Pieces named `a` are unnamed groups.
 
@@ -42,6 +44,8 @@ the ball's shape keys and are not listed here.
 
 
 ## Chapter 3, card 1 (the room) · scene `chapter-3`
+
+`chapter-3-2` shares Chapter 3's room.
 
 **Loop:** 6.93 s (416 frames at 60/s), repeats. First and last frames are the same pose.
 
@@ -222,6 +226,10 @@ the ball's shape keys and are not listed here.
 
 ## Chapter 4 (the shared stack) · scene `chapter-4`
 
+`chapter-4-top-game` shares Chapter 4's room.
+
+`chapter-4-editor-video` shares Chapter 4's room.
+
 **Loop:** 7.00 s (420 frames at 60/s), repeats. First and last frames are the same pose.
 
 ### Intro · exactly 3.2 s
@@ -230,216 +238,14 @@ the ball's shape keys and are not listed here.
 
 ### Ball · intro
 
-- **Chapter 4 Ball**: rises 41 px (y 772 → 732), starts 1.80 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 35 px (y 732 → 697), starts 1.82 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 30 px (y 697 → 667), starts 1.83 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 26 px (y 667 → 641), starts 1.85 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 23 px (y 641 → 618), starts 1.87 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 21 px (y 618 → 597), starts 1.88 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 19 px (y 597 → 578), starts 1.90 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 17 px (y 578 → 560), starts 1.92 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 16 px (y 560 → 545), starts 1.93 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 14 px (y 545 → 530), starts 1.95 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 13 px (y 530 → 517), starts 1.97 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 12 px (y 517 → 505), starts 1.98 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 11 px (y 505 → 495), starts 2.00 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 10 px (y 495 → 485), starts 2.02 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 9 px (y 485 → 476), starts 2.03 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 8 px (y 476 → 467), starts 2.05 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 8 px (y 467 → 460), starts 2.07 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 7 px (y 460 → 453), starts 2.08 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 6 px (y 453 → 447), starts 2.10 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 6 px (y 447 → 441), starts 2.12 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 5 px (y 441 → 436), starts 2.13 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 4 px (y 436 → 432), starts 2.15 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 4 px (y 432 → 428), starts 2.17 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 3 px (y 428 → 425), starts 2.18 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 3 px (y 425 → 422), starts 2.20 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 2 px (y 422 → 420), starts 2.22 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 2 px (y 420 → 418), starts 2.23 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 1 px (y 418 → 417), starts 2.25 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 1 px (y 417 → 416), starts 2.27 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 0 px (y 416 → 415), starts 2.28 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 0 px (y 415 → 415), starts 2.30 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: drops 0 px (y 415 → 415), starts 2.32 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: drops 1 px (y 415 → 416), starts 2.33 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: drops 1 px (y 416 → 417), starts 2.35 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: drops 2 px (y 417 → 419), starts 2.37 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: drops 2 px (y 419 → 421), starts 2.38 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: drops 2 px (y 421 → 423), starts 2.40 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: drops 3 px (y 423 → 426), starts 2.42 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: drops 3 px (y 426 → 430), starts 2.43 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: drops 4 px (y 430 → 433), starts 2.45 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: drops 4 px (y 433 → 437), starts 2.47 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: drops 5 px (y 437 → 442), starts 2.48 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: drops 5 px (y 442 → 447), starts 2.50 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: drops 5 px (y 447 → 452), starts 2.52 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: drops 6 px (y 452 → 458), starts 2.53 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: drops 6 px (y 458 → 465), starts 2.55 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: drops 7 px (y 465 → 472), starts 2.57 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: drops 8 px (y 472 → 479), starts 2.58 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: drops 8 px (y 479 → 488), starts 2.60 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: drops 9 px (y 488 → 497), starts 2.62 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: drops 10 px (y 497 → 506), starts 2.63 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: drops 11 px (y 506 → 517), starts 2.65 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: drops 12 px (y 517 → 529), starts 2.67 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: drops 13 px (y 529 → 542), starts 2.68 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: drops 15 px (y 542 → 557), starts 2.70 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: drops 18 px (y 557 → 575), starts 2.72 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: drops 22 px (y 575 → 597), starts 2.73 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: drops 33 px (y 597 → 630), starts 2.75 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 0 px (y 630 → 630), starts 2.77 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 1 px (y 630 → 628), starts 2.78 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 2 px (y 628 → 626), starts 2.80 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 4 px (y 626 → 622), starts 2.82 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 6 px (y 622 → 616), starts 2.83 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 8 px (y 616 → 608), starts 2.85 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 12 px (y 608 → 596), starts 2.87 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 15 px (y 596 → 581), starts 2.88 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 16 px (y 581 → 566), starts 2.90 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 14 px (y 566 → 552), starts 2.92 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 11 px (y 552 → 540), starts 2.93 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 9 px (y 540 → 532), starts 2.95 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 6 px (y 532 → 525), starts 2.97 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 5 px (y 525 → 521), starts 2.98 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 3 px (y 521 → 517), starts 3.00 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 2 px (y 517 → 515), starts 3.02 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 2 px (y 515 → 514), starts 3.03 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 1 px (y 514 → 513), starts 3.05 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: rises 0 px (y 513 → 512), starts 3.07 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: drops 0 px (y 512 → 513), starts 3.08 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: drops 1 px (y 513 → 514), starts 3.10 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: drops 1 px (y 514 → 515), starts 3.12 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: drops 2 px (y 515 → 517), starts 3.13 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: drops 3 px (y 517 → 520), starts 3.15 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: drops 4 px (y 520 → 524), starts 3.17 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves right 1 px (x 754 → 756), starts 1.80 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves right 1 px (x 756 → 757), starts 1.82 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 0 px (x 757 → 756), starts 1.83 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 1 px (x 756 → 756), starts 1.85 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 1 px (x 756 → 755), starts 1.87 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 1 px (x 755 → 754), starts 1.88 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 2 px (x 754 → 752), starts 1.90 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 2 px (x 752 → 750), starts 1.92 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 2 px (x 750 → 748), starts 1.93 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 2 px (x 748 → 746), starts 1.95 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 2 px (x 746 → 743), starts 1.97 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 3 px (x 743 → 741), starts 1.98 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 3 px (x 741 → 738), starts 2.00 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 3 px (x 738 → 735), starts 2.02 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 3 px (x 735 → 732), starts 2.03 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 3 px (x 732 → 729), starts 2.05 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 3 px (x 729 → 726), starts 2.07 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 3 px (x 726 → 722), starts 2.08 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 3 px (x 722 → 719), starts 2.10 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 3 px (x 719 → 716), starts 2.12 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 3 px (x 716 → 712), starts 2.13 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 4 px (x 712 → 709), starts 2.15 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 4 px (x 709 → 705), starts 2.17 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 4 px (x 705 → 702), starts 2.18 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 4 px (x 702 → 698), starts 2.20 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 4 px (x 698 → 694), starts 2.22 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 4 px (x 694 → 690), starts 2.23 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 4 px (x 690 → 687), starts 2.25 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 4 px (x 687 → 683), starts 2.27 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 4 px (x 683 → 679), starts 2.28 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 4 px (x 679 → 675), starts 2.30 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 4 px (x 675 → 671), starts 2.32 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 4 px (x 671 → 667), starts 2.33 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 4 px (x 667 → 663), starts 2.35 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 4 px (x 663 → 659), starts 2.37 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 4 px (x 659 → 655), starts 2.38 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 4 px (x 655 → 651), starts 2.40 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 4 px (x 651 → 647), starts 2.42 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 4 px (x 647 → 643), starts 2.43 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 4 px (x 643 → 639), starts 2.45 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 4 px (x 639 → 635), starts 2.47 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 4 px (x 635 → 631), starts 2.48 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 4 px (x 631 → 627), starts 2.50 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 4 px (x 627 → 623), starts 2.52 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 4 px (x 623 → 619), starts 2.53 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 4 px (x 619 → 615), starts 2.55 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 4 px (x 615 → 611), starts 2.57 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 4 px (x 611 → 607), starts 2.58 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 4 px (x 607 → 603), starts 2.60 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 4 px (x 603 → 599), starts 2.62 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 4 px (x 599 → 595), starts 2.63 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 4 px (x 595 → 592), starts 2.65 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 4 px (x 592 → 588), starts 2.67 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 3 px (x 588 → 585), starts 2.68 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 3 px (x 585 → 582), starts 2.70 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 3 px (x 582 → 579), starts 2.72 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 2 px (x 579 → 577), starts 2.73 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball**: moves left 0 px (x 577 → 577), starts 2.75 s, takes 0.02 s, linear (constant speed)
-- **Ball_01**: squash on landing: 0.902 wide × 0.902 tall at 2.12 s (reached over 2.12 s, linear); 
-- **Chapter 4 Ball Spin**: turns 0° → 5°, starts 1.80 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns 5° → 7°, starts 1.82 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns 7° → 7°, starts 1.83 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns 7° → 5°, starts 1.85 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns 5° → 1°, starts 1.87 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns 1° → -4°, starts 1.88 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -4° → -9°, starts 1.90 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -9° → -16°, starts 1.92 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -16° → -24°, starts 1.93 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -24° → -32°, starts 1.95 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -32° → -41°, starts 1.97 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -41° → -50°, starts 1.98 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -50° → -60°, starts 2.00 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -60° → -70°, starts 2.02 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -70° → -81°, starts 2.03 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -81° → -92°, starts 2.05 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -92° → -104°, starts 2.07 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -104° → -115°, starts 2.08 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -115° → -127°, starts 2.10 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -127° → -139°, starts 2.12 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -139° → -152°, starts 2.13 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -152° → -164°, starts 2.15 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -164° → -177°, starts 2.17 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -177° → -190°, starts 2.18 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -190° → -203°, starts 2.20 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -203° → -216°, starts 2.22 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -216° → -230°, starts 2.23 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -230° → -243°, starts 2.25 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -243° → -256°, starts 2.27 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -256° → -270°, starts 2.28 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -270° → -284°, starts 2.30 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -284° → -297°, starts 2.32 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -297° → -311°, starts 2.33 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -311° → -324°, starts 2.35 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -324° → -338°, starts 2.37 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -338° → -351°, starts 2.38 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -351° → -365°, starts 2.40 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -365° → -378°, starts 2.42 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -378° → -391°, starts 2.43 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -391° → -405°, starts 2.45 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -405° → -418°, starts 2.47 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -418° → -431°, starts 2.48 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -431° → -443°, starts 2.50 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -443° → -456°, starts 2.52 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -456° → -469°, starts 2.53 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -469° → -481°, starts 2.55 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -481° → -493°, starts 2.57 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -493° → -505°, starts 2.58 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -505° → -516°, starts 2.60 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -516° → -528°, starts 2.62 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -528° → -539°, starts 2.63 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -539° → -549°, starts 2.65 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -549° → -559°, starts 2.67 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -559° → -569°, starts 2.68 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -569° → -577°, starts 2.70 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -577° → -585°, starts 2.72 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -585° → -590°, starts 2.73 s, takes 0.02 s, linear (constant speed)
-- **Chapter 4 Ball Spin**: turns -590° → -591°, starts 2.75 s, takes 0.02 s, linear (constant speed)
-- Highlight and shape ease into the landing pose, 0.00 s to 3.18 s.
 
 ### Ball · loop
 
-- **Move 1**: 0.00 s to 3.37 s (3.37 s): 183 px right and 222 px down, rising 188 px above its start/finish height
-- **Move 2**: 3.90 s to 3.92 s (0.02 s): 6 px left and 26 px down
-- **Move 3**: 5.62 s to 7.00 s (1.38 s): 178 px left and 248 px up, rising 109 px above its start/finish height
-- Waits: 3.37–3.90 s, 3.92–5.62 s
+- The ball stays put.
 
 ## End · scene `end`
+
+`share` shares End's room.
 
 **Loop:** 5.00 s (300 frames at 60/s), repeats. First and last frames are the same pose.
 
@@ -645,101 +451,6 @@ the ball's shape keys and are not listed here.
 - **End Ball Spin**: turns 1680° → 1681°, starts 1.63 s, takes 0.02 s, linear (constant speed)
 - **End Ball Spin**: turns 1681° → 1682°, starts 1.65 s, takes 0.02 s, linear (constant speed)
 - Highlight and shape ease into the landing pose, 0.00 s to 3.18 s.
-
-### Ball · loop
-
-- The ball stays put.
-
-## Chapter 3, card 2 (the ball with the bird on top) · scene `chapter-3-bird`
-
-**Loop:** 5.00 s (300 frames at 60/s), repeats. First and last frames are the same pose.
-
-### Intro · exactly 3.2 s
-
-- **Floor and front slide in** (Bird on Ball Floor Plane): moves left 1600 px (x 1600 → 0), starts 0.05 s, takes 1.50 s, power2.inOut (slow, fast, slow)
-
-### Ball · intro
-
-- **Ball_01**: squash on landing: 1.1125 wide × 1.1125 tall at 1.62 s (reached over 0.02 s, linear); 
-- **Bird on Ball Bird**: rises 4 px (y 677 → 673), starts 1.60 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 4 px (y 673 → 669), starts 1.62 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 3 px (y 669 → 666), starts 1.63 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 3 px (y 666 → 662), starts 1.65 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 3 px (y 662 → 659), starts 1.67 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 3 px (y 659 → 657), starts 1.68 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 2 px (y 657 → 654), starts 1.70 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 2 px (y 654 → 652), starts 1.72 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 2 px (y 652 → 650), starts 1.73 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 2 px (y 650 → 648), starts 1.75 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 2 px (y 648 → 647), starts 1.77 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 1 px (y 647 → 645), starts 1.78 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 1 px (y 645 → 644), starts 1.80 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 1 px (y 644 → 643), starts 1.82 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 1 px (y 643 → 642), starts 1.83 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 1 px (y 642 → 642), starts 1.85 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 1 px (y 642 → 641), starts 1.87 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 1 px (y 641 → 640), starts 1.88 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 0 px (y 640 → 640), starts 1.90 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 0 px (y 640 → 640), starts 1.92 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 0 px (y 640 → 640), starts 1.93 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 0 px (y 640 → 639), starts 1.95 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 0 px (y 639 → 639), starts 1.97 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: drops 0 px (y 639 → 639), starts 1.98 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 7 px (y 639 → 633), starts 2.00 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 6 px (y 633 → 626), starts 2.02 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 6 px (y 626 → 620), starts 2.03 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 6 px (y 620 → 615), starts 2.05 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 5 px (y 615 → 609), starts 2.07 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 5 px (y 609 → 604), starts 2.08 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 4 px (y 604 → 600), starts 2.10 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 4 px (y 600 → 596), starts 2.12 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 4 px (y 596 → 592), starts 2.13 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 3 px (y 592 → 589), starts 2.15 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 3 px (y 589 → 586), starts 2.17 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 3 px (y 586 → 583), starts 2.18 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 2 px (y 583 → 581), starts 2.20 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 2 px (y 581 → 580), starts 2.22 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 1 px (y 580 → 578), starts 2.23 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 1 px (y 578 → 577), starts 2.25 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 1 px (y 577 → 577), starts 2.27 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 0 px (y 577 → 576), starts 2.28 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: drops 0 px (y 576 → 577), starts 2.30 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: drops 1 px (y 577 → 577), starts 2.32 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: drops 1 px (y 577 → 578), starts 2.33 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: drops 1 px (y 578 → 580), starts 2.35 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: drops 2 px (y 580 → 581), starts 2.37 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: drops 2 px (y 581 → 584), starts 2.38 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: drops 3 px (y 584 → 586), starts 2.40 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: drops 3 px (y 586 → 589), starts 2.42 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: drops 3 px (y 589 → 593), starts 2.43 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: drops 4 px (y 593 → 596), starts 2.45 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: drops 4 px (y 596 → 601), starts 2.47 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: drops 5 px (y 601 → 605), starts 2.48 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: drops 5 px (y 605 → 610), starts 2.50 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: drops 5 px (y 610 → 616), starts 2.52 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: drops 6 px (y 616 → 621), starts 2.53 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: drops 6 px (y 621 → 628), starts 2.55 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: drops 7 px (y 628 → 634), starts 2.57 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: drops 7 px (y 634 → 641), starts 2.58 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: drops 2 px (y 641 → 643), starts 2.60 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: drops 1 px (y 643 → 644), starts 2.62 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 0 px (y 644 → 644), starts 2.63 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 1 px (y 644 → 643), starts 2.65 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 1 px (y 643 → 642), starts 2.67 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 1 px (y 642 → 642), starts 2.68 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 1 px (y 642 → 641), starts 2.70 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 0 px (y 641 → 641), starts 2.72 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 0 px (y 641 → 641), starts 2.73 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: drops 0 px (y 641 → 641), starts 2.75 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: drops 0 px (y 641 → 641), starts 2.77 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: drops 0 px (y 641 → 641), starts 2.78 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: drops 0 px (y 641 → 641), starts 2.80 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: drops 0 px (y 641 → 641), starts 2.82 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: drops 0 px (y 641 → 641), starts 2.83 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: drops 0 px (y 641 → 641), starts 2.85 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 0 px (y 641 → 641), starts 2.87 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 0 px (y 641 → 641), starts 2.88 s, takes 0.02 s, linear (constant speed)
-- **Bird on Ball Bird**: rises 0 px (y 641 → 641), starts 2.90 s, takes 0.02 s, linear (constant speed)
 
 ### Ball · loop
 

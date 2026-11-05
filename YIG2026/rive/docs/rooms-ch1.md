@@ -37,7 +37,7 @@ the ball's shape keys and are not listed here.
 
 ## Start and Loading · scene `start`
 
-**Loop:** 7.25 s (435 frames at 60/s), repeats. First and last frames are the same pose.
+**Loop:** 5.00 s (300 frames at 60/s), repeats. First and last frames are the same pose.
 
 ### Intro · exactly 3.2 s
 
@@ -49,9 +49,9 @@ the ball's shape keys and are not listed here.
 
 ### Ball · loop
 
-- **Move 1**: 1.02 s to 1.55 s (0.53 s): ends where it began, rising 51 px above its start/finish height
+- The ball stays put.
 
-## Chapter 1, card 1 · scene `chapter-1-card-1`
+## Chapter 1, card 1 · scene `chapter-1`
 
 **Loop:** 12.70 s (762 frames at 60/s), repeats. First and last frames are the same pose.
 
@@ -72,10 +72,10 @@ the ball's shape keys and are not listed here.
 
 - **Move 1**: 0.07 s to 1.87 s (1.80 s): 149 px right and 19 px down, rising 16 px above its start/finish height
 - **Move 2**: 2.32 s to 4.50 s (2.18 s): 103 px left and 191 px down, rising 25 px above its start/finish height
-- **Move 3**: 4.95 s to 9.67 s (4.72 s): 46 px left and 210 px up
+- **Move 3**: 4.95 s to 9.70 s (4.75 s): 46 px left and 210 px up
 - Waits: 1.87–2.32 s, 4.50–4.95 s
 
-## Chapter 1, card 2 · scene `chapter-1-card-2`
+## Chapter 1, card 2 · scene `chapter-1-2`
 
 **Loop:** 8.32 s (499 frames at 60/s), repeats. First and last frames are the same pose.
 
@@ -607,7 +607,7 @@ the ball's shape keys and are not listed here.
 - **Move 8**: 7.65 s to 8.30 s (0.65 s): 44 px right and 72 px down
 - Waits: 1.15–1.37 s, 2.90–3.23 s, 4.42–4.48 s, 4.97–5.03 s, 6.30–6.50 s, 6.70–7.43 s, 7.48–7.65 s
 
-## Chapter 1, card 3 · scene `chapter-1-card-3`
+## Chapter 1, card 3 · scene `chapter-1-3`
 
 **Loop:** 3.65 s (219 frames at 60/s), repeats. First and last frames are the same pose.
 
@@ -982,7 +982,7 @@ the ball's shape keys and are not listed here.
 - **Move 2**: 2.25 s to 3.63 s (1.38 s): 56 px left and 243 px up, rising 86 px above its start/finish height
 - Waits: 1.67–2.25 s
 
-## Chapter 1, card 4 · scene `chapter-1-card-4`
+## Chapter 1, card 4 · scene `chapter-1-4`
 
 **Loop:** 10.20 s (612 frames at 60/s), repeats. First and last frames are the same pose.
 
@@ -1509,9 +1509,9 @@ the ball's shape keys and are not listed here.
 - **Move 12**: 9.75 s to 9.98 s (0.23 s): 14 px right
 - Waits: 2.70–2.87 s, 3.00–3.15 s, 4.62–4.72 s, 5.00–5.15 s, 5.38–5.53 s, 5.77–5.90 s, 6.13–6.37 s, 6.77–6.85 s, 8.38–8.75 s, 9.02–9.18 s, 9.55–9.75 s
 
-## Chapter 1, card 5 · scene `chapter-1-card-5`
+## Chapter 1, card 5 · scene `chapter-1-5`
 
-**Loop:** 8.37 s (502 frames at 60/s), repeats. First and last frames are the same pose.
+**Loop:** 9.30 s (558 frames at 60/s), repeats. First and last frames are the same pose.
 
 ### Intro · exactly 3.2 s
 
@@ -1887,51 +1887,54 @@ the ball's shape keys and are not listed here.
 - **Chapter 1 Card 5 Ball Spin**: turns 20° → 22°, starts 2.43 s, takes 0.02 s, linear (constant speed)
 - **Chapter 1 Card 5 Ball Spin**: turns 22° → 23°, starts 2.45 s, takes 0.02 s, linear (constant speed)
 - **Chapter 1 Card 5 Ball Spin**: turns 23° → 25°, starts 2.47 s, takes 0.02 s, linear (constant speed)
-- **Chapter 1 Card 5 Ball Spin**: turns 25° → 26°, starts 2.48 s, takes 0.02 s, linear (constant speed)
-- **Chapter 1 Card 5 Ball Spin**: turns 26° → 26°, starts 2.50 s, takes 0.02 s, linear (constant speed)
-- **Chapter 1 Card 5 Ball Spin**: turns 26° → 26°, starts 2.52 s, takes 0.02 s, linear (constant speed)
-- **Chapter 1 Card 5 Ball Spin**: turns 26° → 27°, starts 2.53 s, takes 0.02 s, linear (constant speed)
-- **Chapter 1 Card 5 Ball Spin**: turns 27° → 27°, starts 2.55 s, takes 0.02 s, linear (constant speed)
-- **Chapter 1 Card 5 Ball Spin**: turns 27° → 28°, starts 2.57 s, takes 0.02 s, linear (constant speed)
-- **Chapter 1 Card 5 Ball Spin**: turns 28° → 28°, starts 2.58 s, takes 0.02 s, linear (constant speed)
-- **Chapter 1 Card 5 Ball Spin**: turns 28° → 28°, starts 2.60 s, takes 0.02 s, linear (constant speed)
-- **Chapter 1 Card 5 Ball Spin**: turns 28° → 29°, starts 2.62 s, takes 0.02 s, linear (constant speed)
-- **Chapter 1 Card 5 Ball Spin**: turns 29° → 29°, starts 2.63 s, takes 0.02 s, linear (constant speed)
-- **Chapter 1 Card 5 Ball Spin**: turns 29° → 30°, starts 2.65 s, takes 0.02 s, linear (constant speed)
-- **Chapter 1 Card 5 Ball Spin**: turns 30° → 30°, starts 2.67 s, takes 0.02 s, linear (constant speed)
-- **Chapter 1 Card 5 Ball Spin**: turns 30° → 31°, starts 2.68 s, takes 0.02 s, linear (constant speed)
-- **Chapter 1 Card 5 Ball Spin**: turns 31° → 31°, starts 2.70 s, takes 0.02 s, linear (constant speed)
-- **Chapter 1 Card 5 Ball Spin**: turns 31° → 31°, starts 2.72 s, takes 0.02 s, linear (constant speed)
-- **Chapter 1 Card 5 Ball Spin**: turns 31° → 32°, starts 2.73 s, takes 0.02 s, linear (constant speed)
-- **Chapter 1 Card 5 Ball Spin**: turns 32° → 32°, starts 2.75 s, takes 0.02 s, linear (constant speed)
-- **Chapter 1 Card 5 Ball Spin**: turns 32° → 33°, starts 2.77 s, takes 0.02 s, linear (constant speed)
-- **Chapter 1 Card 5 Ball Spin**: turns 33° → 33°, starts 2.78 s, takes 0.02 s, linear (constant speed)
-- **Chapter 1 Card 5 Ball Spin**: turns 33° → 33°, starts 2.80 s, takes 0.02 s, linear (constant speed)
-- **Chapter 1 Card 5 Ball Spin**: turns 33° → 34°, starts 2.82 s, takes 0.02 s, linear (constant speed)
-- **Chapter 1 Card 5 Ball Spin**: turns 34° → 34°, starts 2.83 s, takes 0.02 s, linear (constant speed)
-- **Chapter 1 Card 5 Ball Spin**: turns 34° → 31°, starts 2.85 s, takes 0.02 s, linear (constant speed)
-- **Chapter 1 Card 5 Ball Spin**: turns 31° → 29°, starts 2.87 s, takes 0.02 s, linear (constant speed)
-- **Chapter 1 Card 5 Ball Spin**: turns 29° → 26°, starts 2.88 s, takes 0.02 s, linear (constant speed)
-- **Chapter 1 Card 5 Ball Spin**: turns 26° → 24°, starts 2.90 s, takes 0.02 s, linear (constant speed)
-- **Chapter 1 Card 5 Ball Spin**: turns 24° → 22°, starts 2.92 s, takes 0.02 s, linear (constant speed)
-- **Chapter 1 Card 5 Ball Spin**: turns 22° → 20°, starts 2.93 s, takes 0.02 s, linear (constant speed)
-- **Chapter 1 Card 5 Ball Spin**: turns 20° → 19°, starts 2.95 s, takes 0.02 s, linear (constant speed)
-- **Chapter 1 Card 5 Ball Spin**: turns 19° → 17°, starts 2.97 s, takes 0.02 s, linear (constant speed)
-- **Chapter 1 Card 5 Ball Spin**: turns 17° → 16°, starts 2.98 s, takes 0.02 s, linear (constant speed)
-- **Chapter 1 Card 5 Ball Spin**: turns 16° → 15°, starts 3.00 s, takes 0.02 s, linear (constant speed)
-- **Chapter 1 Card 5 Ball Spin**: turns 15° → 14°, starts 3.02 s, takes 0.02 s, linear (constant speed)
-- **Chapter 1 Card 5 Ball Spin**: turns 14° → 13°, starts 3.03 s, takes 0.02 s, linear (constant speed)
-- **Chapter 1 Card 5 Ball Spin**: turns 13° → 13°, starts 3.05 s, takes 0.02 s, linear (constant speed)
-- **Chapter 1 Card 5 Ball Spin**: turns 13° → 12°, starts 3.07 s, takes 0.02 s, linear (constant speed)
-- **Chapter 1 Card 5 Ball Spin**: turns 12° → 12°, starts 3.08 s, takes 0.02 s, linear (constant speed)
-- **Chapter 1 Card 5 Ball Spin**: turns 12° → 12°, starts 3.10 s, takes 0.08 s, linear (constant speed)
+- **Chapter 1 Card 5 Ball Spin**: turns 25° → 27°, starts 2.48 s, takes 0.02 s, linear (constant speed)
+- **Chapter 1 Card 5 Ball Spin**: turns 27° → 29°, starts 2.50 s, takes 0.02 s, linear (constant speed)
+- **Chapter 1 Card 5 Ball Spin**: turns 29° → 31°, starts 2.52 s, takes 0.02 s, linear (constant speed)
+- **Chapter 1 Card 5 Ball Spin**: turns 31° → 32°, starts 2.53 s, takes 0.02 s, linear (constant speed)
+- **Chapter 1 Card 5 Ball Spin**: turns 32° → 34°, starts 2.55 s, takes 0.02 s, linear (constant speed)
+- **Chapter 1 Card 5 Ball Spin**: turns 34° → 36°, starts 2.57 s, takes 0.02 s, linear (constant speed)
+- **Chapter 1 Card 5 Ball Spin**: turns 36° → 38°, starts 2.58 s, takes 0.02 s, linear (constant speed)
+- **Chapter 1 Card 5 Ball Spin**: turns 38° → 40°, starts 2.60 s, takes 0.02 s, linear (constant speed)
+- **Chapter 1 Card 5 Ball Spin**: turns 40° → 41°, starts 2.62 s, takes 0.02 s, linear (constant speed)
+- **Chapter 1 Card 5 Ball Spin**: turns 41° → 43°, starts 2.63 s, takes 0.02 s, linear (constant speed)
+- **Chapter 1 Card 5 Ball Spin**: turns 43° → 45°, starts 2.65 s, takes 0.02 s, linear (constant speed)
+- **Chapter 1 Card 5 Ball Spin**: turns 45° → 47°, starts 2.67 s, takes 0.02 s, linear (constant speed)
+- **Chapter 1 Card 5 Ball Spin**: turns 47° → 49°, starts 2.68 s, takes 0.02 s, linear (constant speed)
+- **Chapter 1 Card 5 Ball Spin**: turns 49° → 51°, starts 2.70 s, takes 0.02 s, linear (constant speed)
+- **Chapter 1 Card 5 Ball Spin**: turns 51° → 52°, starts 2.72 s, takes 0.02 s, linear (constant speed)
+- **Chapter 1 Card 5 Ball Spin**: turns 52° → 54°, starts 2.73 s, takes 0.02 s, linear (constant speed)
+- **Chapter 1 Card 5 Ball Spin**: turns 54° → 56°, starts 2.75 s, takes 0.02 s, linear (constant speed)
+- **Chapter 1 Card 5 Ball Spin**: turns 56° → 58°, starts 2.77 s, takes 0.02 s, linear (constant speed)
+- **Chapter 1 Card 5 Ball Spin**: turns 58° → 60°, starts 2.78 s, takes 0.02 s, linear (constant speed)
+- **Chapter 1 Card 5 Ball Spin**: turns 60° → 61°, starts 2.80 s, takes 0.02 s, linear (constant speed)
+- **Chapter 1 Card 5 Ball Spin**: turns 61° → 63°, starts 2.82 s, takes 0.02 s, linear (constant speed)
+- **Chapter 1 Card 5 Ball Spin**: turns 63° → 65°, starts 2.83 s, takes 0.02 s, linear (constant speed)
+- **Chapter 1 Card 5 Ball Spin**: turns 65° → 62°, starts 2.85 s, takes 0.02 s, linear (constant speed)
+- **Chapter 1 Card 5 Ball Spin**: turns 62° → 60°, starts 2.87 s, takes 0.02 s, linear (constant speed)
+- **Chapter 1 Card 5 Ball Spin**: turns 60° → 57°, starts 2.88 s, takes 0.02 s, linear (constant speed)
+- **Chapter 1 Card 5 Ball Spin**: turns 57° → 55°, starts 2.90 s, takes 0.02 s, linear (constant speed)
+- **Chapter 1 Card 5 Ball Spin**: turns 55° → 53°, starts 2.92 s, takes 0.02 s, linear (constant speed)
+- **Chapter 1 Card 5 Ball Spin**: turns 53° → 51°, starts 2.93 s, takes 0.02 s, linear (constant speed)
+- **Chapter 1 Card 5 Ball Spin**: turns 51° → 50°, starts 2.95 s, takes 0.02 s, linear (constant speed)
+- **Chapter 1 Card 5 Ball Spin**: turns 50° → 48°, starts 2.97 s, takes 0.02 s, linear (constant speed)
+- **Chapter 1 Card 5 Ball Spin**: turns 48° → 47°, starts 2.98 s, takes 0.02 s, linear (constant speed)
+- **Chapter 1 Card 5 Ball Spin**: turns 47° → 46°, starts 3.00 s, takes 0.02 s, linear (constant speed)
+- **Chapter 1 Card 5 Ball Spin**: turns 46° → 45°, starts 3.02 s, takes 0.02 s, linear (constant speed)
+- **Chapter 1 Card 5 Ball Spin**: turns 45° → 44°, starts 3.03 s, takes 0.02 s, linear (constant speed)
+- **Chapter 1 Card 5 Ball Spin**: turns 44° → 43°, starts 3.05 s, takes 0.02 s, linear (constant speed)
+- **Chapter 1 Card 5 Ball Spin**: turns 43° → 43°, starts 3.07 s, takes 0.02 s, linear (constant speed)
+- **Chapter 1 Card 5 Ball Spin**: turns 43° → 43°, starts 3.08 s, takes 0.02 s, linear (constant speed)
+- **Chapter 1 Card 5 Ball Spin**: turns 43° → 43°, starts 3.10 s, takes 0.08 s, linear (constant speed)
 
 ### Ball · loop
 
 - **Move 1**: 0.58 s to 1.85 s (1.27 s): 9 px right, rising 135 px above its start/finish height
 - **Move 2**: 2.32 s to 2.68 s (0.37 s): 13 px left
 - **Move 3**: 3.07 s to 3.72 s (0.65 s): 86 px right and 128 px up, rising 23 px above its start/finish height
-- **Move 4**: 5.23 s to 6.10 s (0.87 s): 84 px left and 128 px down, rising 22 px above its start/finish height
-- **Move 5**: 6.17 s to 6.60 s (0.43 s): 18 px right
-- **Move 6**: 7.42 s to 8.22 s (0.80 s): 15 px left, rising 64 px above its start/finish height
-- Waits: 1.85–2.32 s, 2.68–3.07 s, 3.72–5.23 s, 6.10–6.17 s, 6.60–7.42 s
+- **Move 4**: 3.85 s to 4.05 s (0.20 s): 8 px right
+- **Move 5**: 4.52 s to 4.72 s (0.20 s): 8 px left
+- **Move 6**: 5.80 s to 5.98 s (0.18 s): ends where it began
+- **Move 7**: 6.17 s to 7.03 s (0.87 s): 84 px left and 128 px down, rising 22 px above its start/finish height
+- **Move 8**: 7.10 s to 7.53 s (0.43 s): 18 px right
+- **Move 9**: 8.35 s to 9.15 s (0.80 s): 15 px left, rising 64 px above its start/finish height
+- Waits: 1.85–2.32 s, 2.68–3.07 s, 3.72–3.85 s, 4.05–4.52 s, 4.72–5.80 s, 5.98–6.17 s, 7.03–7.10 s, 7.53–8.35 s

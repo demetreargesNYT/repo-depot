@@ -2,7 +2,7 @@ import type { Card, Game, Stats } from './types'
 
 // The order of the games in Chapter 2, and of Chapter 2.5's community cards. This is our default: change it here. Rive plays
 // any order, because each move just sets the next scene.
-export const GAME_ORDER: Game[] = ['wordle', 'connections', 'spelling-bee', 'mini', 'midi', 'daily', 'strands']
+export const GAME_ORDER: Game[] = ['wordle', 'connections', 'spelling-bee', 'mini', 'midi', 'crossword', 'strands']
 
 // The games that have community cards (The Midi and The Crossword have none)
 export const COMMUNITY_GAMES: Game[] = ['wordle', 'connections', 'spelling-bee', 'mini', 'strands']
@@ -23,11 +23,11 @@ export function buildCards(stats: Stats): Card[] {
   ]
 
   // Chapter 1: always five cards, in both flows
-  for (let n = 1; n <= 5; n += 1) cards.push({ file: 1, scene: `chapter-1-card-${n}` })
+  for (const scene of ['chapter-1', 'chapter-1-2', 'chapter-1-3', 'chapter-1-4', 'chapter-1-5']) cards.push({ file: 1, scene })
   cards.push({ file: 1, scene: 'ad', ad: true }) // Ad 2
 
   // Chapter 2
-  cards.push({ file: 2, scene: 'intro' })
+  cards.push({ file: 2, scene: 'chapter-2' })
   if (anonymous) {
     // community cards for every community game but Wordle: Chapter 1 already covers Wordle (ADIEU and PSHAW)
     for (const game of communityGames('wordle')) cards.push({ file: 2, scene: game, community: true, icon: game })
@@ -37,32 +37,32 @@ export function buildCards(stats: Stats): Card[] {
       for (let n = 0; n < (stats.cardsPerGame[game] ?? 0); n += 1) cards.push({ file: 2, scene: game, icon: game })
     }
     if (own.length === 1) {
-      // Chapter 2.5: the bridge, then a community card for each other community game
-      cards.push({ file: 2, scene: 'bridge' })
+      // Chapter 2.5: the community intro, then a community card for each other community game
+      cards.push({ file: 2, scene: 'chapter-2-community-intro' })
       for (const game of communityGames(own[0])) cards.push({ file: 2, scene: game, community: true, icon: game })
     }
     // no card on the empty Chapter 3 room: the tap on the last Chapter 2 card plays both moves
   }
 
   // Chapter 3
-  cards.push({ file: 3, scene: 'chapter-3' }, { file: 3, scene: 'chapter-3-bird' })
+  cards.push({ file: 3, scene: 'chapter-3' }, { file: 3, scene: 'chapter-3-2' })
   if (anonymous) {
-    // four cards, never skipped: the last two are on the empty Chapter 3 room
-    cards.push({ file: 3, scene: 'ad' }, { file: 3, scene: 'ad' })
+    // four cards, never skipped: the last two both send chapter-3-event-badges (the same scene again does nothing)
+    cards.push({ file: 3, scene: 'chapter-3-event-badges' }, { file: 3, scene: 'chapter-3-event-badges' })
   } else {
     // the badge cards are added only when the player has some
-    if (stats.eventBadges > 0) cards.push({ file: 3, scene: 'ad' })
-    if (stats.achievementBadges > 0) cards.push({ file: 3, scene: 'ad' })
+    if (stats.eventBadges > 0) cards.push({ file: 3, scene: 'chapter-3-event-badges' })
+    if (stats.achievementBadges > 0) cards.push({ file: 3, scene: 'chapter-3-personal-badges' })
   }
 
   // Chapter 4: the first card is the lighter blue wall (reveal false); the next two keep the top game's colour (reveal true)
   const top: Game = anonymous ? 'wordle' : stats.topGame
-  cards.push({ file: 3, scene: 'chapter-4', topGame: top, reveal: false })
-  cards.push({ file: 3, scene: 'chapter-4', icon: top, reveal: true })
-  cards.push({ file: 3, scene: 'chapter-4', reveal: true }) // the video, in HTML
+  cards.push({ file: 3, scene: 'chapter-4', topGame: top === 'crossword' ? 'daily' : top, reveal: false }) // topGame's enum still calls The Crossword 'daily'
+  cards.push({ file: 3, scene: 'chapter-4-top-game', icon: top, reveal: true })
+  cards.push({ file: 3, scene: 'chapter-4-editor-video', reveal: true }) // the video, in HTML; no fireworks, topGame stays set
 
   // End, then the Share card on the same room
   cards.push({ file: 3, scene: 'end' })
-  if (!anonymous) cards.push({ file: 3, scene: 'end' })
+  if (!anonymous) cards.push({ file: 3, scene: 'share' })
   return cards
 }

@@ -3,6 +3,13 @@
   "accepted": [
     {
       "chapter": "ch1",
+      "room": "Chapter 1 Card 1",
+      "pattern": "^(?:LURCH|STALL): the ball's speed goes from [0-9.]+ to [0-9.]+ in one frame at (?:4\\.35|4\\.45|4\\.60|4\\.68|4\\.82|4\\.92|4\\.97|6\\.38|6\\.47|6\\.62|6\\.67|6\\.77|6\\.82|6\\.93|7\\.02|7\\.12|7\\.27|7\\.33|7\\.47|7\\.57|7\\.60|8\\.32|8\\.98|9\\.07|9\\.22|9\\.37|9\\.78|10\\.18) s with no turn to explain it$",
+      "why": "card 1 as approved, unchanged since 2026-11-02",
+      "approved": "Demetre, 2026-11-04"
+    },
+    {
+      "chapter": "ch1",
       "room": "Chapter 1 Card 4",
       "pattern": "^flight at .* falls at ([0-9.]+) per frame squared",
       "min": 0.15,
@@ -114,6 +121,76 @@
       "pattern": "^BUZZ: CubicDetachedVertex y swings back and forth .* from 2\\.05 s",
       "why": "c2s1 as drawn: the illustrator's double blink",
       "approved": "Demetre, 2026-11-03"
+    },
+    {
+      "chapter": "ch2",
+      "room": "Strands",
+      "pattern": "^contact at 3\\.98 s leaves faster than it arrived",
+      "why": "Strands strings fling by design: after three light bounces the bottom string flings the ball over its left knob into the shoe",
+      "approved": "Demetre, 2026-11-04"
+    },
+    {
+      "chapter": "ch2",
+      "room": "Wordle",
+      "pattern": "^flight at 1\\.97 to 2\\.15 s falls at",
+      "why": "as approved by Demetre, part of the room's feel",
+      "approved": "Demetre, 2026-11-04"
+    },
+    {
+      "chapter": "ch2",
+      "room": "Wordle",
+      "pattern": "^flight at 2\\.38 to 2\\.57 s falls at",
+      "why": "as approved by Demetre, part of the room's feel",
+      "approved": "Demetre, 2026-11-04"
+    },
+    {
+      "chapter": "ch2",
+      "room": "Wordle",
+      "pattern": "^flight at 2\\.68 to 2\\.88 s falls at",
+      "why": "as approved by Demetre, part of the room's feel",
+      "approved": "Demetre, 2026-11-04"
+    },
+    {
+      "chapter": "ch2",
+      "room": "Wordle",
+      "pattern": "^flight at 5\\.63 to 6\\.02 s falls at",
+      "why": "as approved by Demetre, part of the room's feel",
+      "approved": "Demetre, 2026-11-04"
+    },
+    {
+      "chapter": "ch2",
+      "room": "Wordle",
+      "pattern": "^flight at 6\\.12 to 6\\.43 s falls at",
+      "why": "as approved by Demetre, part of the room's feel",
+      "approved": "Demetre, 2026-11-04"
+    },
+    {
+      "chapter": "ch2",
+      "room": "Wordle",
+      "pattern": "^flight at 6\\.52 to 6\\.75 s falls at",
+      "why": "as approved by Demetre, part of the room's feel",
+      "approved": "Demetre, 2026-11-04"
+    },
+    {
+      "chapter": "ch2",
+      "room": "Wordle",
+      "pattern": "^flight at 6\\.90 to 7\\.37 s falls at",
+      "why": "as approved by Demetre, part of the room's feel",
+      "approved": "Demetre, 2026-11-04"
+    },
+    {
+      "chapter": "ch2",
+      "room": "Connections",
+      "pattern": "^flight at 2\\.15 to 2\\.57 s falls at",
+      "why": "as approved by Demetre, part of the room's feel",
+      "approved": "Demetre, 2026-11-04"
+    },
+    {
+      "chapter": "ch2",
+      "room": "Connections",
+      "pattern": "^flight at 2\\.68 to 2\\.88 s falls at",
+      "why": "as approved by Demetre, part of the room's feel",
+      "approved": "Demetre, 2026-11-04"
     },
     {
       "chapter": "ch3",

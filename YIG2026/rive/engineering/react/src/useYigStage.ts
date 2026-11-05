@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRive } from '@rive-app/react-canvas'
 import type { Rive } from '@rive-app/react-canvas'
-import { FILES, FILE_NUMBERS } from './files'
+import { FILES, FILE_NUMBERS, roomOf } from './files'
 import { CLEAR_MS, FIRST_VISIT_COPY_MS, LOCKUP_COPY_MS, PAN_MS, REVEAL_FADE_MS, RISE_SETTLED_MS } from './timing'
 import { GAME_ORDER } from './cards'
 import type { Card, CopyLayer, FileNumber, Game } from './types'
@@ -25,7 +25,7 @@ type Mutable = {
   nextId: number
 }
 
-const roomKey = (card: Card) => `${card.file}:${card.scene}`
+const roomKey = (card: Card) => `${card.file}:${roomOf(card.file, card.scene)}`
 
 // Drives the three Rive files from a card list: the rules of engineering-guide.md in one hook.
 export function useYigStage(cards: Card[]) {
@@ -178,7 +178,9 @@ export function useYigStage(cards: Card[]) {
     const from = list[mut.frame]
     const to = list[target]
     if (!from || !to) return
-    const roomChange = to.file !== from.file || to.scene !== from.scene
+    const sceneChange = to.file !== from.file || to.scene !== from.scene
+    // a change between scenes that share a room sets the scene but does not pan (ROOMS in files.ts)
+    const roomChange = to.file !== from.file || roomOf(to.file, to.scene) !== roomOf(from.file, from.scene)
     const now = performance.now()
     // crossing files from a card that is not on the empty room: the first move goes to that room, the second starts after it
     const legs = to.file !== from.file && (step > 0 ? from.scene !== FILES[from.file].ends : to.scene !== FILES[to.file].ends) ? 2 : 1
@@ -194,13 +196,13 @@ export function useYigStage(cards: Card[]) {
       return
     }
     if (roomChange) window.clearTimeout(mut.swapTimer) // a new room change takes over from a Back's hand-back still to come
-    if (roomChange && mut.hopRun) { window.clearTimeout(mut.hopTimer); mut.hopRun() } // and cuts a Next's two moves short
+    if (sceneChange && mut.hopRun) { window.clearTimeout(mut.hopTimer); mut.hopRun() } // and cuts a Next's two moves short (also for a scene that shares the room, so its scene is not overwritten later)
     mut.frame = target
     if (to.ad) mut.seenAds.add(target)
     setFrame(target)
-    const fading = !roomChange && applyReveal(to)
+    const fading = !sceneChange && applyReveal(to) // only a card that repeats the scene and changes reveal (the old way); Chapter 4's cards now change scene
     const key = roomKey(to)
-    const firstVisit = roomChange && step > 0 && !mut.visited.has(key) && !FILES[to.file].noIntro.includes(to.scene)
+    const firstVisit = roomChange && step > 0 && !mut.visited.has(key) && !FILES[to.file].noIntro.includes(roomOf(to.file, to.scene))
     if (roomChange) {
       mut.pan = { dir: step, endsAt: now + PAN_MS * legs }
       if (to.file === from.file) {
@@ -226,6 +228,7 @@ export function useYigStage(cards: Card[]) {
         }, PAN_MS)
       }
     }
+    if (!roomChange && sceneChange) setScene(to.file, to.scene, step, !!to.community, to.reveal) // same room: it keeps looping, the copy swaps (0.34 s)
     if (firstVisit) {
       mut.visited.add(key)
       // a Chapter 2 game's lockup shows on its first card unless it is a community card: wait for the whole intro then

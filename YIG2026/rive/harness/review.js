@@ -5,12 +5,12 @@
 //   ?player=midi-only#bridge      the same, with another of the page's example players (see EXAMPLE_PLAYERS)
 //   Replay                        replays the current room's intro (reloads to the card before it, then taps Next)
 //
-// Names: chapter1 (the empty start room), opener, wordle, connections, strands, spelling-bee, mini, midi, daily (daily is The Crossword), chapter3
+// Names: chapter1 (the empty start room), opener, wordle, connections, strands, spelling-bee, mini, midi, crossword (The Crossword; #daily still works), chapter3
 // (the Chapter 2 ending: no intro of its own, so #chapter3 is for viewing the backdrop crossfade, not a replay), bridge
-// (Chapter 2.5's bridge card, also empty: #bridge shows the pan into it and its copy arriving as the pan ends).
-const GAMES = ["opener", "wordle", "connections", "strands", "spelling-bee", "mini", "midi", "daily", "chapter3", "chapter1", "bridge"];
-const SCENE_NAME = { opener: "intro", chapter3: "to-chapter-3", chapter1: "from-chapter-1" }; // every other game's scene has its own name
-const ALIAS = { crossword: "daily", "the-mini": "mini", "the-midi": "midi", "the-crossword": "daily", spellingbee: "spelling-bee", bee: "spelling-bee", "chapter-3": "chapter3", ending: "chapter3", start: "chapter1", "chapter-1": "chapter1" };
+// (Chapter 2.5's bridge card, also empty, Rive scene chapter-2-community-intro: #bridge or #chapter-2-community-intro shows the pan into it and its copy arriving as the pan ends).
+const GAMES = ["opener", "wordle", "connections", "strands", "spelling-bee", "mini", "midi", "crossword", "chapter3", "chapter1", "bridge"];
+const SCENE_NAME = { opener: "chapter-2", bridge: "chapter-2-community-intro", chapter3: "to-chapter-3", chapter1: "from-chapter-1" }; // every other game's scene has its own name
+const ALIAS = { daily: "crossword", "chapter-2-community-intro": "bridge", "the-mini": "mini", "the-midi": "midi", "the-crossword": "crossword", spellingbee: "spelling-bee", bee: "spelling-bee", "chapter-3": "chapter3", ending: "chapter3", start: "chapter1", "chapter-1": "chapter1" };
 const gameOfScene = (name) => GAMES.find((g) => (SCENE_NAME[g] ?? g) === name);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -48,7 +48,7 @@ const replay = document.createElement("button");
 replay.textContent = "Replay";
 replay.title = "Play the current room's intro again";
 replay.addEventListener("click", () => {
-  const scene = ex()?.yig?.viewModelInstance?.enum("scene")?.value ?? "intro";
+  const scene = ex()?.yig?.viewModelInstance?.enum("scene")?.value ?? "chapter-2";
   const game = gameOfScene(scene) ?? "opener";
   sessionStorage.setItem("yigReplay", "1");
   if (location.hash === `#${game}`) location.reload();

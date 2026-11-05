@@ -3,7 +3,7 @@
 
 export type FileNumber = 1 | 2 | 3
 
-export type Game = 'wordle' | 'connections' | 'strands' | 'spelling-bee' | 'mini' | 'midi' | 'daily'
+export type Game = 'wordle' | 'connections' | 'strands' | 'spelling-bee' | 'mini' | 'midi' | 'crossword'
 
 export type Card = {
   file: FileNumber
@@ -14,8 +14,8 @@ export type Card = {
   community?: boolean
   // the game whose small HTML icon this card's copy shows with
   icon?: Game
-  // File 3: the player's top game, set once when File 3 has loaded
-  topGame?: Game
+  // File 3: the player's top game, set once when File 3 has loaded. It is File 3's topGame enum value, which still calls The Crossword 'daily'.
+  topGame?: string
   // File 3, Chapter 4: false on the first card (lighter blue wall), true from the top-game card on
   reveal?: boolean
 }

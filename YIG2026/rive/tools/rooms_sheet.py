@@ -254,6 +254,9 @@ def render(chapter):
     out = [header(chapter, scene)]
     for n, room, title in rooms_of_manifest(scene):
         out.append(f"\n## {title} · scene `{n}`\n")
+        for x in scene.manifest["scenes"]:
+            if x.get("sameRoomAs") == n and "room" not in x:
+                out.append(f"`{x['name']}` shares {room}'s room.\n")
         li = sh.loop_info(room)
         if li:
             fps, frames, pos, chain, lkeys = li
