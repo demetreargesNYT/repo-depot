@@ -35,6 +35,8 @@ POP = 8                                         # the recolour pop's scale pulse
 # the shuffle: each slab's x offset out, the frame it starts out and the frame it starts back in (relative to the shuffle's start)
 SHUFFLE = [(LILAC, 56.0, 0, 50), (TOP_LIME, -60.0, 5, 56), (MID_BLUE, 28.0, 10, 38), (MID_BLACK, -48.0, 15, 44)]
 SLIDE = 16
+RIDE_X = 2 / 7                                  # a rolling ball's centre follows 2/7 of a board moved under it
+LAND_MAX, BIG, GATHER = 0.06, 0.08, 0.05        # squash maximums (CLAUDE.md): a landing 6%, the big earned landing 8%, a gather 5%
 
 
 class Path:
@@ -44,6 +46,8 @@ class Path:
         self.c = [p]
         self.mode = []
         self.landings = []                  # (frame, impact speed)
+        self.flights = []                   # (takeoff frame, landing frame)
+        self.vx = 0.0                       # the last hop's sideways speed
 
     @property
     def f(self):
@@ -61,6 +65,13 @@ class Path:
             self.mode.append("roll")
             self.c.append((x0 + (x1 - x0) * u, y))
 
+    def settle(self, v0, n):
+        """Settles into rest: rolls on at v0 a frame (signed) and eases to a stop in n frames (a steady slowing, 0 at the end)."""
+        x0, y = self.c[-1]
+        for i in range(1, n + 1):
+            self.mode.append("roll")
+            self.c.append((x0 + v0 * i - v0 * i * i / (2 * n), y))
+
     def hop(self, p1, n):
         """A parabola at G from the current point to p1 in exactly n frames (from rest: the ball's own push)."""
         (x0, y0), (x1, y1) = self.c[-1], p1
@@ -70,6 +81,8 @@ class Path:
             self.mode.append("air")
             self.c.append((x0 + vx * i, y0 + vy0 * i + 0.5 * G * i * i))
         self.c[-1] = p1
+        self.flights.append((self.f - n, self.f))
+        self.vx = vx
         self.landings.append((self.f, math.hypot(vx, vy0 + G * n)))
         return min(y0 + vy0 * t + 0.5 * G * t * t for t in range(n + 1))
 
@@ -98,6 +111,32 @@ def lift(u):
 
 def pulse(u, n=POP):
     return math.sin(math.pi * u / n) ** 2 if 0 < u < n else 0.0
+
+
+def land_squash(u, a):
+    """A landing squash u frames after the contact (as a change of scaleY): down to a in 3 frames, springing back past rest by a fifth
+    of it at 8 frames (the one tiny overshoot), and at rest by 12 (0.2 s)."""
+    if not 0 < u < 12:
+        return 0.0
+    if u <= 3:
+        return -a * smooth(u / 3)
+    if u <= 8:
+        return -a + 1.2 * a * smooth((u - 3) / 5)
+    return 0.2 * a * (1 - smooth((u - 8) / 4))
+
+
+def gather_squash(u, a=GATHER):
+    """The gather before a big hop, u frames from the takeoff: down to a over 9 frames (0.15 s), released in the hop's first 4."""
+    if -9 < u <= 0:
+        return -a * smooth((u + 9) / 9)
+    if 0 < u < 4:
+        return -a * (1 - smooth(u / 4))
+    return 0.0
+
+
+def landing_amount(v):
+    """The landing squash for an impact of v a frame: up to 6%."""
+    return min(LAND_MAX, 0.006 * v + 0.01)
 
 
 def slide(u):
@@ -133,40 +172,58 @@ def build(doc, scene, sheet):
     i = doc.idx(TOP_STROKE)
     doc.lines[i] = doc.lines[i].replace("<Stroke ", '<Stroke transformAffectsStroke="false" ', 1)
 
+    # The ball never stops dead on a landing: it rolls on a touch with the sideways speed it landed with and eases to a stop, now and
+    # then with a tiny rock back (1.2 px, under the ball check's 1.5 px swing). Full stillness only for the gathers and the held glance.
+    # The top slab's flat face runs from about x 536 to 621, the lime slab's from 738 to 824, the shelf's pocket from 730 to 736.
     b = Path(start)
-    b.rest(8)                                       # gathers
-    b.hop(start, 16)                                # bounce 1 (slab to green, shakes)
+    b.rest(4)                                       # gathers
+    b.hop((606.0, y0), 16)                          # bounce 1 (slab to green, shakes), drifting left
     c1 = b.f
-    b.rest(4)
-    b.hop(start, 18)                                # bounce 2 (slab to blue, shakes); the flight lasts as long as bounce 1's shake
+    b.settle(b.vx, 10)
+    b.rest(2)
+    b.hop((594.0, y0), 18)                          # bounce 2 (slab to blue, shakes)
     c2 = b.f
-    b.rest(28)                                      # a little longer: gathering itself (it rides the slab's second shake)
-    peak3 = b.hop(start, 26)                        # bounce 3: bigger, more determined (slab to purple, locks)
+    b.settle(b.vx, 10)
+    b.roll(b.c[-1][0] + 1.2, 10)                    # a tiny rock back
+    f_gather3 = b.f
+    b.rest(9)                                       # a little longer: gathering itself (it rides the slab's second shake)
+    t3 = b.f
+    peak3 = b.hop((604.0, y0), 26)                  # bounce 3: bigger, more determined, back to the right (slab to purple, locks)
     c3 = b.f
-    b.rest(18)                                      # the lock settles
-    b.hop(start, 12)                                # the proud hop
+    b.settle(b.vx, 12)                              # rides the lock's lift as it settles
     b.rest(6)
+    b.hop((b.c[-1][0] + 4.0, y0), 12)               # the proud hop
+    f_proud = b.f
+    b.settle(b.vx, 8)
+    b.rest(2)
     glance = 4.6                                    # about 15 degrees of roll back
-    b.roll(x0 - glance, 14)                         # rolls back a few degrees: the dot tilts up
-    b.rest(22)
-    b.roll(x0, 14)
-    b.rest(4)
+    xg = b.c[-1][0]
+    b.roll(xg - glance, 14)                         # rolls back a few degrees: the dot tilts up
+    b.rest(14)                                      # the held glance
+    b.roll(xg, 14)
+    b.rest(9)                                       # the gather before the big hop
     f_leave = b.f
-    peak1 = b.hop((734.0, SHELF_Y), 39)             # up onto the shelf, into the pocket left of the books
+    peak1 = b.hop((731.0, SHELF_Y), 39)             # up onto the shelf, into the pocket left of the books
     f_shelf = b.f
-    b.rest(10)
+    b.settle(0.8, 10)                               # the board takes most of the fall: a short roll, 4 px, short of the books
+    b.rest(2)
     peak2 = b.hop((800.0, STACK_Y), 38)             # off the shelf's front, down onto the right stack
     f_stack = b.f
+    b.settle(b.vx, 12)                              # rolls on along the lime slab,
+    b.roll(b.c[-1][0] - 1.2, 10)                    # a tiny rock back
     b.rest(8)
-    b.roll(836.0, 28)                               # idles on the lime slab: along,
-    b.rest(6)
-    b.roll(800.0, 28)                               # and back
-    b.rest(6)
-    peak4 = b.hop(start, 47)                        # and home, landing at rest where it began
+    # ...then back along it, to where the rolls add up to nothing, so the dot comes round to where it began. The home landing settles
+    # 3.5 px left, onto the start: count it in
+    net = sum(b.c[f + 1][0] - b.c[f][0] for f in range(b.f) if b.mode[f] == "roll") - 3.5
+    b.roll(b.c[-1][0] - net, 30)
+    b.rest(4)
+    peak4 = b.hop((x0 + 3.5, y0), 47)               # and home, landing just right of where it began,
     f_home = b.f
-    b.rest(20)                                      # long enough for the landing squash and the slab's dip to finish
+    b.settle(-7.0 / 12, 12)                         # and settling onto it (the slab's face ends at 621: most of the fall is taken)
+    b.rest(8)
     L = b.f
-    assert abs(b.c[L][0] - x0) < 1e-9 and abs(b.c[L][1] - y0) < 1e-9
+    assert abs(b.c[L][0] - x0) < 1e-9 and abs(b.c[L][1] - y0) < 1e-9, b.c[L]
+    assert 738 <= min(x for x, _ in b.c[f_stack:f_home - 47]) and max(x for x, _ in b.c[f_stack:f_home - 47]) <= 824
 
     # the shuffle starts a beat after the ball has left, and ends well before it comes back
     S = f_leave + 10
@@ -186,39 +243,55 @@ def build(doc, scene, sheet):
     def slab_y(f):
         return lift(f - c3) + dip(f - f_home, 2.0, 20)
 
-    # the ball rides the top slab through the second shake and the lock (it is resting on it)
-    cx = list(b.c)
-    for f in range(L + 1):
-        if c2 + SHAKE2_AT <= f <= c2 + SHAKE2_AT + SHAKE_T and b.mode[min(f, L - 1)] == "rest":
-            cx[f] = (cx[f][0] + slab_x(LILAC, f), cx[f][1])
-        if c3 <= f <= c3 + LIFT_UP + LIFT_DOWN and b.mode[min(f, L - 1)] == "rest":
-            cx[f] = (cx[f][0], cx[f][1] + lift(f - c3))
-    b.c = cx
-
-    # squash on each landing, in proportion to the impact (a smooth pulse, 14 frames, no overshoot)
-    sx = [1.0] * (L + 1)
-    sy = [1.0] * (L + 1)
-    for f, v in b.landings:
-        a = min(0.16, 0.014 * v + 0.02)
-        for u in range(15):
-            g = f + u
-            if g > L:
-                break
-            p = math.sin(math.pi * u / 14) ** 2
-            sy[g] = min(sy[g], 1 - a * p)
-            sx[g] = max(sx[g], 1 + 0.7 * a * p)
-    # the turn: rolling turns with the distance; the hops leave from rest, so they carry no turn; at rest it is still
+    # the turn: rolling turns with the distance (relative to the slab); the hops leave from rest, so they carry no turn
     th = [0.0]
     for f in range(L):
         dx = b.c[f + 1][0] - b.c[f][0]
         th.append(th[-1] + (dx / R if b.mode[f] == "roll" else 0.0))
     assert abs(th[-1]) < 1e-6, th[-1]
 
+    # the ball rides the top slab while it is on it: the lock's lift and the home dip in full; the shakes as a ball on a moving
+    # board does, rolling: its centre follows 2/7 of the slab's sideways move and it turns by the rest (so a shake never buzzes it).
+    # A flight from the slab to the slab carries the difference as a steady drift (and spin), so it stays a parabola at 0.40
+    on = set(range(0, f_leave + 1)) | set(range(f_home, L + 1))
+    ride = {f: (RIDE_X * slab_x(LILAC, f), slab_y(f), (RIDE_X - 1) * slab_x(LILAC, f) / R) for f in on}
+    for f0, f1 in b.flights:
+        if f0 in on and f1 in on and f1 <= f_leave:
+            for f in range(f0 + 1, f1):
+                u = (f - f0) / (f1 - f0)
+                ride[f] = tuple(p + (q - p) * u for p, q in zip(ride[f0], ride[f1]))
+    zero = (0.0, 0.0, 0.0)
+    b.c = [(c[0] + ride.get(f, zero)[0], c[1] + ride.get(f, zero)[1]) for f, c in enumerate(b.c)]
+    th = [t + ride.get(f, zero)[2] for f, t in enumerate(th)]
+    assert abs(th[L] - th[0]) < 1e-9
+
+    # squash (CLAUDE.md maximums): a landing up to 6% (bounce 3, the big earned one, 8%), springing back within 0.2 s with one tiny
+    # overshoot; a 5% gather before bounce 3 and before the hop to the shelf; volume constant (scaleX = 1 / scaleY)
+    d = [0.0] * (L + 1)
+    for f, v in b.landings:
+        a = BIG if f == c3 else landing_amount(v)
+        for g in range(f, min(L, f + 12) + 1):
+            d[g] += land_squash(g - f, a)
+    for t in (t3, f_leave):
+        for g in range(t - 9, t + 4):
+            d[g] += gather_squash(g - t)
+    sy = [1 + x for x in d]
+    sx = [1 / y for y in sy]
+    squash_report = {"landings": [(round(f / 60, 2), round(BIG if f == c3 else landing_amount(v), 3)) for f, v in b.landings],
+                     "gather": GATHER, "max scaleY dev": round(max(abs(x) for x in d), 3)}
+
     fr = range(L + 1)
     doc.set_duration(loop, L + 1)
     for oid, prop, vals in ((BALL, "x", [c[0] for c in b.c]), (BALL, "y", [c[1] for c in b.c]),
                             (BALL, "scaleX", sx), (BALL, "scaleY", sy), (SPIN, "rotation", th)):
         doc.set_prop(loop, oid, prop, bake({f: vals[f] for f in fr}, fr))
+
+    # the intro's two landings on the top slab (2.57 s and 2.88 s) squashed 22% and 8%; brought to the maximums: 6%, and 3.9% for
+    # the small one, each springing back with one tiny overshoot (the intro's motion itself is unchanged)
+    fi = range(154, INTRO)
+    di = {g: land_squash(g - 154, LAND_MAX) + land_squash(g - 173, landing_amount(4.8)) for g in fi}
+    doc.set_prop(intro, BALL, "scaleY", [(0, 1.0, "hold")] + bake({g: 1 + di[g] for g in fi}, fi))
+    doc.set_prop(intro, BALL, "scaleX", [(0, 1.0, "hold")] + bake({g: 1 / (1 + di[g]) for g in fi}, fi))
 
     # the pieces: the right stack and the shelf give a little where the ball lands
     doc.set_prop(intro, SHELF, "y", [(0, 0.0, "hold")])
@@ -251,8 +324,8 @@ def build(doc, scene, sheet):
     for anim in (intro, f"{ROOM} Waiting", f"{ROOM} Built"):
         colour_keys(doc, anim, TOP_COLOUR, [(0, YELLOW, "hold")])
 
-    s = lambda f: f"{f / 60:.2f} s"
+    s = lambda f: f"{(INTRO + f) / 60:.2f} s"
     tops = ", ".join(f"{p - 2 * R:.0f}" for p in (peak3, peak1, peak2, peak4))
     return (f"{ROOM}: bounces at {s(c1)}, {s(c2)}, {s(c3)} (slab green, blue, purple), proud hop and glance, leaves {s(f_leave)}, "
             f"shelf {s(f_shelf)}, right stack {s(f_stack)}, home {s(f_home)}; shuffle {s(S)} to {s(S + ends)}, top slab yellow {s(f_seat + 6)}; "
-            f"loop {L / 60:.2f} s ({L} frames); ball tops at y {tops}")
+            f"loop {L / 60:.2f} s ({L} frames); ball tops at y {tops}; squash {squash_report}")
