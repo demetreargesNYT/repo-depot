@@ -14,6 +14,7 @@
     "smoke": "caffeinate -i python3 tools/suite.py --smoke",
     "finesse": "python3 tools/finesse.py",
     "package": "python3 tools/package_engineering.py",
+    "marketing": "python3 tools/marketing_copy.py",
     "open-package": "test -d .cache/scratch.nosync/shared/yig-engineering-package || python3 tools/package_engineering.py && open .cache/scratch.nosync/shared/yig-engineering-package"
   }
 }

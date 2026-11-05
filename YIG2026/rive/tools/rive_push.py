@@ -9,7 +9,12 @@ reported as stale, for Demetre to clear (this tool never deletes another session
 interrupted), and prints the new revision.
 
 Run `python3 tools/rive_compare.py <ch>` and get Demetre's approval first; commit and tag (rive/<ch>-...) after.
-Exit code 0 when pushed (or already up to date), 1 when the push failed, 2 when another session holds the lock.
+
+A new revision also refreshes the marketing copy in the same step: tools/marketing_copy.py rebuilds docs/marketing/ with the
+pushed chapter's .riv, commits only that folder and pushes main to GitHub, so the marketing page always matches Rive.
+`--no-marketing` skips that (for a push you don't want published yet).
+Exit code 0 when pushed (or already up to date), 1 when the push failed, 2 when another session holds the lock, 3 when Rive
+took the push but the marketing copy was not refreshed, committed or pushed (the message says which; `npm run marketing` redoes it).
 """
 import json
 import os
@@ -124,8 +129,16 @@ def main(argv):
     args = [a for a in argv if not a.startswith("--")]
     if len(args) != 2 or not args[1].strip():
         sys.exit(__doc__)
-    code, message = push(chapter_of(args[0]), args[1].strip())
+    ch = chapter_of(args[0])
+    code, message = push(ch, args[1].strip())
     print(message)
+    # a new revision also refreshes the marketing copy (docs/marketing/), commits it and pushes GitHub, in this same step
+    if code == 0 and "already up to date" not in message and "--no-marketing" not in argv:
+        import marketing_copy
+        ok, note = marketing_copy.publish(ch, revision_of(message))
+        print(("marketing copy: " if ok else "MARKETING COPY: ") + note)
+        if not ok:
+            return 3        # the Rive push worked; run `npm run marketing` (or fix the cause above) and commit docs/marketing/
     return code
 
 

@@ -42,9 +42,10 @@ def fail(msg):
     sys.exit(1)
 
 
-def build(chapter, work):
-    """Build a scratch copy of the chapter (with working artboards taken out) and return the .riv's bytes."""
-    src = chapter_dir(chapter)
+def build(chapter, work, src=None):
+    """Build a scratch copy of the chapter (with working artboards taken out) and return the .riv's bytes.
+    `src` is the folder to build from; it defaults to chapters/<chapter> (tools/marketing_copy.py passes a pushed tag's files)."""
+    src = Path(src) if src else chapter_dir(chapter)
     dst = work / chapter
     shutil.copytree(src, dst, ignore=shutil.ignore_patterns("build"))
     scene = Scene(dst / "scene.rml")
