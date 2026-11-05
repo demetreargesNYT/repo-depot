@@ -1,36 +1,32 @@
-"""The Mini, "the magic trick" (Demetre's brief, 2026-11-05): the ball is a curious, slightly cheeky character and the cubes are the
-props. Two moves, two rests. The full timeline (Finesse-panel times) is printed by build() and recorded in the commit that made it.
+"""The Mini, "the grid trick" (Demetre's brief, 2026-11-05, with the Figma layout): the ball is a curious, cheeky character and six cubes
+on one grid are its props. Loop about 12 s after the 3.2 s arrival. The timeline (the Finesse panel's clock) is printed by build().
 
-Every cube, still or moving, is drawn by the 3D cube method (cube3d.py), from one viewpoint, every face one solid colour. The
-arrival (the intro, 3.2 s) is unchanged: the ball is out of sight in the top cube U and nothing moves. The cycle starts on the
-intro's last frame, so the first thing after the arrival is the reveal; from then on the loop runs in the brief's order:
+The grid (Figma frame the-mini-cubes, nodes 13226:109086 and 13234:109515): six cubes drawn from one viewpoint (depth goes up and to the
+left), every cube touching the next along a shared face or edge. In cells (column, row from the front, level):
+    front-left cube   F1 (0, 0, 0)  lidded (the lid is hinged on its back edge)
+    front-right cube  F2 (1, 0, 0)  black front
+    far-left cube     L0 (-1, 1, 0) black left face
+    middle cube       M  (2, 1, 0)  white front, black left face: the one that spins
+    right cube        R  (3, 1, 0)  black top
+    top cube          T  (2, 1, 1)  lidded, black lid (the Figma draws it with a black top)
+Cubes are 84 square (the Figma's 83.6 plus the 0.4 gaps its strokes hide); the lattice sits within 0.8 px of every Figma position.
+The back edge of the row-1 cubes lies on the floor line (y 712). The cubes never leave their cells: only lids lift and M turns in place.
 
-  1 curiosity   the ball on the floor glances (leans) at the left box L, hops once in place, rolls to L
-  2 lid trick   L's lid opens (press, eased lift, swing past open, settle), the ball peeks, hops in; the lid falls shut (one soft bump);
-                a 0.4 s beat with the box shut
-  3 reveal      U, lid shut, rolls forward a full 90 degrees about its own centre: its back face (hidden) comes up as the new top and
-                the ball, which was behind it, rides up on it into view; one small "ta-da" bounce
-  4 rest 1      the ball on U's new top, one slow settle roll
-  5 ride        U rolls a full 90 degrees to the left (in the picture plane) with the ball on top; the ball rolls a little down the
-                tilting face, leaves it, and lands on the floor as U's next face comes flat (squash, settle roll)
-  6 rest 2      the ball leans back towards U while U rolls back twice (left roll undone, then the forward roll), then it rolls to its
-                starting spot
+The moves (every cube move is complete; the lids are closed while M turns; only one lid is open at a time; cube moves never overlap):
+    1 size up         the ball on the floor in front of the grid glances up at F1's lid and hops twice along the front, counting squares
+    2 in              F1's lid opens (press, eased lift, a few degrees past open, settle); the ball looks, gathers, and hops up over the
+                      rim (a glance down into the box at the top), flips and drops in; the lid falls shut with one bump
+    3 misdirection    with the ball hidden, M turns a quarter turn: its black left face comes to the front (white to black); a beat
+    4 fake-out        T's lid lifts halfway, the ball's top pokes up in T for a look, the lid drops back; a beat
+    5 out             T's lid opens, the ball springs out onto T's top (ta-da: one 6 percent squash); it hops down to the floor in front
+                      of the grid and T's lid falls shut behind it
+    6 reset           M turns a quarter back (black to white), the ball startles, a pleased settle roll, and it rolls to its start spot
 
-The cube moves are complete 90 degree rolls that land on a flat face (heavy: an eased slow start, a few degrees of follow-through, a
-settle). U rolls in place because it is the only cube a full roll keeps inside the phone crop: a roll over an edge would carry it off
-R (right) or into the air (left), L's left side is cut by the crop and F's front is cut at the bottom. U has no lid any more; L's
-lid is the only lid and it never moves while a cube rolls. L's lid is hinged on its left rim, so open it stands at the box's left side
-(mostly outside the crop): a lid hinged on the back edge stands right above the opening, and the ball could not drop in without
-crossing it. The hop in is checked in L's own 3D space (it starts on the floor line, at the wall behind the box, and comes forward over
-the right wall into the box), and on the screen it never touches the open lid.
-
-Draw order (the room's own masks): U's front, left and top, L's and F's front and left faces and R's front are in the Front Plane, over
-the ball; U's back (the face the ball rides) and right face, every lid and opening, F's top and R's top and left are in the Floor
-Plane, under it. U's top is two shapes: the drop-in's copy (under the ball, in the Cubes 1 drop) shows until the drop has landed, then
-the loop's copy (over the ball) takes over on a frame where the two are the same picture.
-
-On the floor the ball sits on the floor line (y 712). Between L and U the floor line runs 2 px above the back edge of F's black top,
-so on the floor the ball sits just behind that edge (0.5 px clear of its stroke).
+Layers: every cube face is under the ball (the Floor Plane) except two "cover" copies of F1's and T's front faces in the Front Plane,
+which switch on only while the ball is inside that cube (the under copy switches off at the same frame, so no edge is drawn twice).
+The ball is modelled in 3D (the grid's own space); the checks run on every frame: the ball clears every cube face, edge and lid
+(sphere against rectangles), every face drawn over or under the ball is on the right side of it in depth, and when the ball is meant
+to be out of sight every pixel of it is under a cover.
 """
 import math
 import os
@@ -42,56 +38,65 @@ from cube3d import Cube, Face, LIGHT, DARK
 from common import CENTER_IN_SCALE, BallArt, Cycle, _set_attrs, emit, plane_x, prepare_ball, smooth
 
 ROOM = "The Mini"
-T0 = 191                                   # the cycle starts on the intro's last frame (the arrival is the ball hidden, nothing moving)
-SWAP = 115                                 # U's top changes copy here: the drop-in has landed (its squash is over at 1.82 s)
-A = (747.5, 711.5)                         # the scale's anchor: the room's middle, on the floor line
-K = 0.85
-PLANES = {"Front": "9:5695", "Floor": "9:5694"}
-CUBES = ("9:5206", "9:5208", "9:5210", "9:5212")    # the four drop-ins
-ART = {"c1": "9:5207", "c3": "9:5211", "c4": "9:5213"}    # their Art nodes (their space is the planes' own space)
-BALL_SCALE = 1.7
+T0 = 191                                   # the cycle starts on the intro's last frame; the ball is at its spot all through the arrival
 G = 0.40
-G_P = G / K                                # gravity in the planes' units
-R_BALL = 17.678 * BALL_SCALE               # the ball's radius on the screen (30.05)
-RC_PLANE = 17.2 * BALL_SCALE / K           # the ball's centre to what it rests on, in the planes' units
-FLOOR_Y = 712.0
-YF = FLOOR_Y - 17.2 * BALL_SCALE           # the ball's centre when it sits on the floor line
+BALL_SCALE = 1.7
+R_BALL = 17.678 * BALL_SCALE               # the ball's drawn radius (30.05)
+RC = 17.2 * BALL_SCALE                     # its centre to what it rests on (29.24)
 COPY_Y = 425.0                             # the ball's top and every moving piece stay at or below this
 CROP = (560.0, 935.0)
-CLEAR = R_BALL + 0.75                      # the ball's centre to any edge it must not touch (its outline plus the edge's half stroke)
-HID_R = (R_BALL + 0.6) / 0.98            # out of sight means the whole outline, stroke and all, is covered (disc() samples its edge at 0.98)
+CROP_BOTTOM = 812.0
+WALL = "FFC0D8F8"                          # The Mini's wall (every Mini card), was FF95BEFA
+OLD_WALL = "FF95BEFA"
 
-# ---- the cubes (the planes' own space, before the 0.85) ---------------------------------------------------------------------
-D3 = (-38.332, -44.682)                    # one viewpoint for all four: the depth goes up and to the left
-U = Cube("The Mini Top Cube", (795.667, 568.582, 891.496, 664.328), D3)
-R = Cube("The Mini Right Stack", (891.498, 664.330, 987.327, 760.076), D3)
-F = Cube("The Mini Front Cube", (679.85, 756.178, 775.679, 851.924), D3)
-L = Cube("The Mini Left Box", (536.008, 664.330, 631.837, 760.076), D3)
-ART_CORNERS = {                            # the drawing's own corners, for the check at PERSPECTIVE 0 (the two cubes the art draws this way)
-    (U, "left"): [(757.338, 523.894), (795.67, 568.576), (795.67, 664.322), (757.338, 619.64)],
-    (U, "top"): [(757.266, 523.894), (853.095, 523.894), (891.427, 568.576), (795.597, 568.576)],
-    (R, "top"): [(853.097, 619.646), (948.926, 619.646), (987.257, 664.328), (891.428, 664.328)],
-    (R, "left"): [(853.166, 619.646), (891.497, 664.328), (891.497, 760.074), (853.166, 715.392)],
-}
+# ---- the grid ---------------------------------------------------------------------------------------------------------------------
+S_ = 84.0
+DX, DY = -33.63, -39.21                    # a cube's back face is this far from its front face on the screen (up and to the left)
+UX, UY = DX / S_, DY / S_                  # the same, per unit of depth
+X0, Y0 = 671.6, 706.45                     # the front-left cube's front square, top left
+FLOOR = Y0 + S_                            # the floor under the front row, at depth 0
+CELLS = {"F1": (0, 0, 0), "F2": (1, 0, 0), "L0": (-1, 1, 0), "M": (2, 1, 0), "R": (3, 1, 0), "T": (2, 1, 1)}
+NAMES = {"F1": "The Mini Front Left Cube", "F2": "The Mini Front Right Cube", "L0": "The Mini Far Left Cube", "M": "The Mini Middle Cube",
+         "R": "The Mini Right Cube", "T": "The Mini Top Cube"}
+FIGMA = {"F1": (671.466, 706.023), "F2": (755.466, 706.027), "L0": (554.466, 667.023), "M": (806.14, 667.57), "R": (890.37, 667.57),
+         "T": (806.14, 583.96)}              # the Figma's front squares, top left (stage coordinates), for the report only
 
-# ---- tempo (frames at 60/s) -------------------------------------------------------------------------------------------------
-# L's lid: a press (the box dips 1.4 and the lid 1.8 degrees closed-ward), an eased lift a few degrees past open, a settle. It shuts
-# quicker: it falls under its own weight (constant acceleration) and lands with one soft bump.
+
+def front_rect(c, r, h):
+    x, y = X0 + S_ * c + DX * r, Y0 - S_ * h + DY * r
+    return (x, y, x + S_, y + S_)
+
+
+CUBE = {k: Cube(NAMES[k], front_rect(*cell), (DX, DY), perspective=0.0) for k, cell in CELLS.items()}
+ZROW = {k: S_ * cell[1] for k, cell in CELLS.items()}
+
+
+def to_world(k, p):
+    """A point in a cube's own space -> the grid's space (X, Y of the front row's plane, Z the depth from the front row)."""
+    return (p[0] - ZROW[k] / S_ * DX, p[1] - ZROW[k] / S_ * DY, p[2] + ZROW[k])
+
+
+def screen(p):
+    return (p[0] + p[2] * UX, p[1] + p[2] * UY)
+
+
+# ---- tempo (frames at 60/s) -------------------------------------------------------------------------------------------------------
 OPEN_TOP, OVERSWING = math.radians(92), math.radians(4)    # past about 98 the free edge dips back and reads as a wobble
-PRESS, PRESS_N, DIP = math.radians(1.8), 7, 1.4
-LIFT_N, LSETTLE_N = 18, 9
-OPEN_N = PRESS_N + LIFT_N + LSETTLE_N      # 35: 0.58 s
-FALL_N, BUMP_N, BUMP = 14, 7, math.radians(1.5)
-SHUT_N = FALL_N + BUMP_N                   # 21: 0.35 s
-# U's rolls: heavy (an eased slow start, a fast middle), a few degrees of follow-through, a settle
-ROLL_N, ROLL_SETTLE, OVER = 44, 14, math.radians(3.5)      # the reveal and the ride: 0.73 s + 0.23 s
-RIDE_N = 66                                                # the ride's roll carries the ball: slower, 1.1 s + 0.23 s
-BACK_N, BACK_SETTLE = 38, 12                               # the two rolls back: 0.63 s + 0.2 s
-HALF = math.pi / 2
+FULL = dict(amp=OPEN_TOP, over=OVERSWING, press_n=7, lift_n=18, settle_n=9, fall_n=14, bump_n=7, bump=math.radians(1.5))
+HALF = dict(amp=math.radians(38), over=math.radians(1.2), press_n=6, lift_n=16, settle_n=8, fall_n=9, bump_n=6, bump=math.radians(1.2))
+PRESS, DIP = math.radians(1.8), 1.2
+TURN_N, SETTLE_N, OVER = 40, 12, math.radians(3.5)         # a quarter turn of M: 0.67 s, a 3.5 degree follow-through, a 0.2 s settle
+TURN_TOTAL = TURN_N + SETTLE_N
+QUARTER = math.pi / 2
+GL_UP = math.radians(-12)                  # a glance up and to the left (the dot turns anticlockwise)
 
 
-def S(p):
-    return (A[0] + K * (p[0] - A[0]), A[1] + K * (p[1] - A[1]))
+def open_n(ev):
+    return ev["press_n"] + ev["lift_n"] + ev["settle_n"]
+
+
+def shut_n(ev):
+    return ev["fall_n"] + ev["bump_n"]
 
 
 def ease_io(u):
@@ -100,243 +105,136 @@ def ease_io(u):
 
 
 def lift_ease(u):
-    """Eases out (most of the swing early) from a standing start, and arrives with no speed."""
     s = smooth(u)
     return 1 - (1 - s) ** 2
 
 
-# ---- the moves: a value per cycle frame -------------------------------------------------------------------------------------------
-def lid_angle(events, g):
-    """events: [(frame, "open" | "shut")] -> (lid angle, box dip) on frame g. A shut lid is exactly 0 from the end of its move."""
+def lid_state(events, g):
+    """events: [(frame, "open" | "shut", params)] -> (lid angle, cube dip) on frame g."""
     a, dip = 0.0, 0.0
-    for f0, kind in sorted(events):
+    for f0, kind, ev in sorted(events, key=lambda e: e[0]):
         if g < f0:
             break
         t = g - f0
         if kind == "open":
-            if t < PRESS_N:
-                a, dip = -PRESS * smooth(t / PRESS_N), DIP * math.sin(math.pi * t / PRESS_N)
-            elif t < PRESS_N + LIFT_N:
-                a, dip = -PRESS + (OPEN_TOP + OVERSWING + PRESS) * lift_ease((t - PRESS_N) / LIFT_N), 0.0
-            elif t < OPEN_N:
-                a, dip = OPEN_TOP + OVERSWING * (1 - smooth((t - PRESS_N - LIFT_N) / LSETTLE_N)), 0.0
+            pn, ln, sn = ev["press_n"], ev["lift_n"], ev["settle_n"]
+            if t < pn:
+                a, dip = -PRESS * smooth(t / pn), DIP * math.sin(math.pi * t / pn)
+            elif t < pn + ln:
+                a, dip = -PRESS + (ev["amp"] + ev["over"] + PRESS) * lift_ease((t - pn) / ln), 0.0
+            elif t < pn + ln + sn:
+                a, dip = ev["amp"] + ev["over"] * (1 - smooth((t - pn - ln) / sn)), 0.0
             else:
-                a, dip = OPEN_TOP, 0.0
+                a, dip = ev["amp"], 0.0
         else:
             dip = 0.0
-            if t < FALL_N:
-                a = OPEN_TOP * (1 - (t / FALL_N) ** 2)
-            elif t < SHUT_N:
-                a = BUMP * math.sin(math.pi * (t - FALL_N) / BUMP_N)
+            if t < ev["fall_n"]:
+                a = ev["amp"] * (1 - (t / ev["fall_n"]) ** 2)
+            elif t < ev["fall_n"] + ev["bump_n"]:
+                a = ev["bump"] * math.sin(math.pi * (t - ev["fall_n"]) / ev["bump_n"])
             else:
                 a = 0.0
     return a, dip
 
 
-def roll_angle(events, g):
-    """events: [(frame, target, turn frames, settle frames)] -> the angle on frame g: eased in and out to a few degrees past the
-    target, then settling onto it. Each roll starts from where the one before settled (asserted when they are made)."""
+def turn_state(events, g):
+    """events: [(frame, target angle)]: a quarter turn, heavy: eased in and out to a few degrees past, then settling onto the target."""
     a = 0.0
-    for f0, target, tn, sn in sorted(events):
+    evs = sorted(events)
+    for k, (f0, target) in enumerate(evs):
         if g < f0:
             break
+        a0 = evs[k - 1][1] if k else 0.0
         t = g - f0
-        a0 = _settled(events, f0)
         over = math.copysign(OVER, target - a0)
-        if t < tn:
-            a = a0 + (target + over - a0) * ease_io(t / tn)
-        elif t < tn + sn:
-            a = target + over * (1 - smooth((t - tn) / sn))
+        if t < TURN_N:
+            a = a0 + (target + over - a0) * ease_io(t / TURN_N)
+        elif t < TURN_TOTAL:
+            a = target + over * (1 - smooth((t - TURN_N) / SETTLE_N))
         else:
             a = target
     return a
 
 
-def _settled(events, f0):
-    prev = [e for e in sorted(events) if e[0] < f0]
-    return prev[-1][1] if prev else 0.0
+# ---- 3D: the ball against the cubes -------------------------------------------------------------------------------------------------
+def sub3(a, b):
+    return (a[0] - b[0], a[1] - b[1], a[2] - b[2])
 
 
-def rx(a):
-    """Rolled forward about the left-right axis through the centre: the top goes to the front (the back comes up)."""
-    c, s = math.cos(a), math.sin(a)
-    return ((1, 0, 0), (0, c, -s), (0, s, c))
+def dot3(a, b):
+    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
 
 
-def rz(a):
-    """Rolled in the picture plane about the front-back axis through the centre: the top goes to the left (on the screen)."""
-    c, s = math.cos(a), math.sin(a)
-    return ((c, s, 0), (-s, c, 0), (0, 0, 1))
+def cross3(a, b):
+    return (a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0])
 
 
-def matmul(a, b):
-    return tuple(tuple(sum(a[i][k] * b[k][j] for k in range(3)) for j in range(3)) for i in range(3))
+def rect_dist(p, rect):
+    """Distance from a point to a rectangle in 3D (corners a, b, c, d in order)."""
+    a, b, _, d = rect
+    u, v, w = sub3(b, a), sub3(d, a), sub3(p, a)
+    s = min(1.0, max(0.0, dot3(w, u) / dot3(u, u)))
+    t = min(1.0, max(0.0, dot3(w, v) / dot3(v, v)))
+    q = (a[0] + u[0] * s + v[0] * t, a[1] + u[1] * s + v[1] * t, a[2] + u[2] * s + v[2] * t)
+    return math.dist(p, q)
 
 
-def flat(m):
-    return tuple(round(v, 12) for row in m for v in row)
+SHELL_FACES = ("front", "left", "right", "back", "bottom")
+LIDDED = ("F1", "T")
 
 
-# ---- the ball's timeline ----------------------------------------------------------------------------------------------------
-class Path:
-    """The ball frame by frame: centre, mode ("hidden", "air", "roll", "rest"), the turn it adds on that frame, a glance (a turn of its
-    dot in place), a squash (signed: down is negative, volume kept), and what it may touch (its state, for the overlap check)."""
-
-    def __init__(self):
-        self.p, self.mode, self.w, self.glance, self.sq, self.state = [], [], [], [], [], []
-        self.notes = []
-
-    @property
-    def now(self):
-        return len(self.p)
-
-    def put(self, p, mode, state, w=0.0, gl=None, sq=0.0):
-        self.p.append(p)
-        self.mode.append(mode)
-        self.w.append(w)
-        self.glance.append(self.glance[-1] if gl is None and self.glance else (gl or 0.0))
-        self.sq.append(sq)
-        self.state.append(state)
-
-    def hold(self, n, mode="rest", state="free"):
-        for _ in range(n):
-            self.put(self.p[-1], mode, state)
-
-    def roll(self, p1, n, state="free", ease=None):
-        """A roll from rest to rest along the floor (or any level surface), eased in and out, the dot turning with the distance."""
-        p0 = self.p[-1]
-        prev = p0[0]
-        for t in range(1, n + 1):
-            s_ = (ease or smooth)(t / n)
-            q = (p0[0] + (p1[0] - p0[0]) * s_, p0[1] + (p1[1] - p0[1]) * s_)
-            self.put(q, "roll", state, w=(q[0] - prev) / R_BALL)
-            prev = q[0]
-
-    def squash_to(self, a, n, state="free"):
-        """Eases the squash from where it is to a (negative: a gather; positive: a stretch) over n frames, in place."""
-        s0 = self.sq[-1]
-        for t in range(1, n + 1):
-            self.put(self.p[-1], "rest", state, sq=s0 + (a - s0) * smooth(t / n))
-
-    def glance_to(self, a, n, state="free"):
-        g0 = self.glance[-1]
-        for t in range(1, n + 1):
-            self.put(self.p[-1], "rest", state, gl=g0 + (a - g0) * ease_io(t / n), sq=self.sq[-1])
-
-    def hop(self, p1, T, gather, stretch=0.0, state="free", label="hop"):
-        """From rest (squashed by `gather`) to a landing at p1, T frames, a parabola at 0.40. Returns (vx, vy at launch, vy at landing)."""
-        p0 = self.p[-1]
-        vy = (p1[1] - p0[1]) / T - 0.5 * G * T
-        vx = (p1[0] - p0[0]) / T
-        f_go = self.now
-        w = 0.25 * vx / R_BALL
-        for t in range(1, T + 1):
-            q = (p0[0] + vx * t, p0[1] + vy * t + 0.5 * G * t * t)
-            u = smooth(min(1.0, t / 3))
-            sq = -gather * (1 - u) + stretch * u * (1 - smooth((t - 3) / 10))
-            self.put(q, "air" if t < T else "roll", state, w=w if t < T else 0.0, sq=sq if t < T else 0.0)
-        apex = min(y for _, y in self.p[f_go:])
-        self.notes.append((label, f_go, self.now - 1, apex, (vx, vy)))
-        return vx, vy, vy + G * T
-
-    def land(self, vk, n, amp, state="free"):
-        """After a landing on the floor: it keeps vk of its sideways speed and rolls to a stop over n frames, with one squash of amp that
-        springs back within 12 frames. Returns where it stops."""
-        p = self.p[-1]
-        x0, prev = p[0], p[0]
-        for t in range(1, n + 1):
-            x = x0 + vk * n / 2 * (1 - (1 - t / n) ** 2)
-            sq = -amp * math.sin(math.pi * min(1.0, t / 12)) ** 2 if t < 12 else 0.0
-            self.put((x, p[1]), "roll", state, w=(x - prev) / R_BALL, sq=sq)
-            prev = x
-        return self.p[-1]
+def shell(k, pose):
+    """The cube as thin rectangles in the grid's space: its five walls and its top (the lid, for the two lidded cubes)."""
+    cube = CUBE[k]
+    out = [(f"{k}.{f}", [to_world(k, p) for p in cube.quad3(f, None, pose)]) for f in SHELL_FACES]
+    if k in LIDDED:
+        out.append((f"{k}.lid", [to_world(k, p) for p in cube.quad3("top", "lid", pose)]))
+    else:
+        out.append((f"{k}.top", [to_world(k, p) for p in cube.quad3("top", None, pose)]))
+    return out
 
 
-# ---- the art ----------------------------------------------------------------------------------------------------------------
-def parse(doc):
-    return ET.fromstring("\n".join(doc.lines))
+STATIC_SHELLS = {k: shell(k, {}) for k in ("F2", "L0", "R")}
 
 
-def delete(doc, oid):
-    i = doc.idx(oid)
-    del doc.lines[i:doc.end(i) + 1]
+def all_shells(poses):
+    out = []
+    for k in CELLS:
+        out += STATIC_SHELLS[k] if k in STATIC_SHELLS else shell(k, poses.get(k, {}))
+    return out
 
 
-def move_before(doc, oid, before_id):
-    """Cut an element and put it just before another (same indent assumed)."""
-    i = doc.idx(oid)
-    block = doc.lines[i:doc.end(i) + 1]
-    del doc.lines[i:doc.end(i) + 1]
-    j = doc.idx(before_id)
-    doc.lines[j:j] = block
+def gap(p, shells):
+    """The smallest distance from the ball's centre to any rectangle, less what it rests on (so 0 is touching), and which one."""
+    best, at = 1e9, None
+    for label, rect in shells:
+        d = rect_dist(p, rect) - RC
+        if d < best:
+            best, at = d, label
+    return best, at
 
 
-def scale_room(doc):
-    """The planes' pieces into 0.85 pivots, the drop-ins' falls compensated. Returns {plane: the pivot's Art node id}."""
-    root = parse(doc)
-    byid = {e.get("id"): e for e in root.iter() if e.get("id")}
-    arts = {}
-    for name, pid in PLANES.items():
-        kids = [c for c in byid[pid] if c.tag in ("Node", "Shape")]
-        piv, art = doc.wrap_run(kids[0].get("id"), kids[-1].get("id"), f"{ROOM} {name} Scale", *A)
-        _set_attrs(doc, piv, {"scaleX": K, "scaleY": K})
-        arts[name] = art
-    a, b = doc.anim(f"{ROOM} Intro")
-    for cid in CUBES:                       # the first y key of each drop: as far above its rest on screen as before
-        i = next(j for j in range(a, b) if f'objectId="{cid}"' in doc.lines[j])
-        j = next(j for j in range(i, doc.end(i)) if 'property="y"' in doc.lines[j])
-        ks = [m for m in range(j, doc.end(j)) if "<KeyFrameDouble" in doc.lines[m]]
-        val = lambda m: float(re.search(r' value="([^"]+)"', doc.lines[m]).group(1)) if ' value="' in doc.lines[m] else 0.0
-        v0, v1 = val(ks[0]), val(ks[-1])
-        doc.lines[ks[0]] = re.sub(r' value="[^"]+"', f' value="{v1 + (v0 - v1) / K:.4f}"', doc.lines[ks[0]])
-    return arts
+def sphere_depth(c, u, v, r):
+    """The depth where the ray through the screen point (u, v) first meets the sphere at c, or None."""
+    a = UX * UX + UY * UY + 1
+    b = UX * (u - c[0]) + UY * (v - c[1]) + c[2]
+    cc = (u - c[0]) ** 2 + (v - c[1]) ** 2 + c[2] ** 2 - r * r
+    disc_ = b * b - a * cc
+    if disc_ < 0:
+        return None
+    return (b - math.sqrt(disc_)) / a
 
 
-def insert_first(doc, parent_id, lines):
-    i = doc.idx(parent_id)
-    doc.lines[i + 1:i + 1] = lines
+def plane_depth(rect, u, v):
+    """The depth where the ray through the screen point (u, v) meets the plane of a rectangle."""
+    a = rect[0]
+    n = cross3(sub3(rect[1], a), sub3(rect[3], a))
+    den = n[2] - n[0] * UX - n[1] * UY
+    if abs(den) < 1e-9:
+        return None
+    return (n[0] * (a[0] - u) + n[1] * (a[1] - v) + n[2] * a[2]) / den
 
 
-def insert_last(doc, parent_id, lines):
-    j = doc.end(doc.idx(parent_id))
-    doc.lines[j:j] = lines
-
-
-def pad_in(doc, parent_id):
-    l = doc.lines[doc.idx(parent_id)]
-    return " " * (len(l) - len(l.lstrip()) + 4)
-
-
-def check_rest_projection():
-    """At PERSPECTIVE 0 every cube at rest is the drawing: the front faces exactly, the rest within the drawing's own 0.07 slack."""
-    worst = 0.0
-    for cube in (U, R, F, L):
-        k0 = cube.cam.k
-        cube.cam.k = 0.0
-        x0, y0 = cube.centre[0] - cube.hx, cube.centre[1] - cube.hy
-        x1, y1 = cube.centre[0] + cube.hx, cube.centre[1] + cube.hy
-        for p, q in zip(cube.quad("front"), [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]):
-            assert math.dist(p, q) < 1e-9, (cube.name, "front", p, q)
-        for (c, face), pts in ART_CORNERS.items():
-            if c is cube:
-                got = cube.quad(face)
-                for p in pts:
-                    d = min(math.dist(p, g) for g in got)
-                    worst = max(worst, d)
-                    assert d < 0.1, (cube.name, face, p, d)
-        cube.cam.k = k0
-    return worst
-
-
-def lid_off(pose):
-    return pose.get("lidl", 0) > 1e-9
-
-
-def pose_key(p):
-    return tuple(round(x, 9) for v in p.values() for x in (v if isinstance(v, tuple) else (v,)))
-
-
-# ---- geometry on the screen -------------------------------------------------------------------------------------------------
 def inside(pt, poly):
     s = None
     for i in range(len(poly)):
@@ -352,33 +250,204 @@ def inside(pt, poly):
     return True
 
 
-def seg_dist(p, a, b):
-    dx, dy = b[0] - a[0], b[1] - a[1]
-    l2 = dx * dx + dy * dy
-    t = 0.0 if l2 == 0 else max(0.0, min(1.0, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / l2))
-    return math.hypot(p[0] - a[0] - t * dx, p[1] - a[1] - t * dy)
-
-
-def poly_dist(p, poly):
-    """How far the point is outside the polygon (negative: inside)."""
-    d = min(seg_dist(p, poly[i], poly[(i + 1) % len(poly)]) for i in range(len(poly)))
-    return -d if inside(p, poly) else d
-
-
-def disc(c, r):
+def disc(c, r, rings=(0.35, 0.7, 0.98), n=24):
     pts = [c]
-    for rr in (0.35 * r, 0.7 * r, 0.98 * r):
-        for k in range(28):
-            a = 2 * math.pi * k / 28
-            pts.append((c[0] + rr * math.cos(a), c[1] + rr * math.sin(a)))
+    for rr in rings:
+        for k in range(n):
+            a = 2 * math.pi * k / n
+            pts.append((c[0] + rr * r * math.cos(a), c[1] + rr * r * math.sin(a)))
     return pts
 
 
-def build(doc, scene, sheet):
-    worst = check_rest_projection()
+HID_R = (R_BALL + 0.6) / 0.98                # out of sight: the outline and its stroke are covered (disc() samples its edge at 0.98)
 
-    # ---------------------------------------------------------------- the old art out
-    olds = ["9:5214", "9:5176", "9:5186", "9:5196", "9:5155"]        # the 'a' groups (U front, side, F, R side, L), R's top, front, inner top, the tops
+
+# ---- the ball's timeline -----------------------------------------------------------------------------------------------------------
+class Path:
+    """The ball frame by frame in the grid's space: centre (X, Y, Z), mode ("air", "roll", "rest"), the turn it adds on the frame, a glance
+    (the dot turning in place) and a squash (signed: down is negative, volume kept)."""
+
+    def __init__(self):
+        self.p, self.mode, self.w, self.gl, self.sq = [], [], [], [], []
+        self.jumps = set()
+        self.notes = []
+
+    @property
+    def now(self):
+        return len(self.p)
+
+    @property
+    def at(self):
+        return self.p[-1]
+
+    def put(self, p, mode="rest", w=0.0, gl=None, sq=None):
+        self.p.append(p)
+        self.mode.append(mode)
+        self.w.append(w)
+        self.gl.append(self.gl[-1] if (gl is None and self.gl) else (gl or 0.0))
+        self.sq.append(self.sq[-1] if (sq is None and self.sq) else (sq or 0.0))
+
+    def roll_to(self, x, n, gl=None, sq=None):
+        """A roll along the surface to X, eased in and out, the dot turning with the distance."""
+        p0, g0 = self.at, self.gl[-1]
+        prev = p0[0]
+        for t in range(1, n + 1):
+            s_ = smooth(t / n)
+            q = (p0[0] + (x - p0[0]) * s_, p0[1], p0[2])
+            self.put(q, "roll", w=(q[0] - prev) / R_BALL, gl=g0 + ((gl if gl is not None else g0) - g0) * s_, sq=sq)
+            prev = q[0]
+
+    def hold(self, n, sway=0.0, period=40):
+        """Stay put; with `sway` the dot drifts a degree or so, so the ball is never exactly still."""
+        g0 = self.gl[-1]
+        for t in range(1, n + 1):
+            self.put(self.at, "rest", gl=g0 + sway * math.sin(2 * math.pi * t / period))
+
+    def squash_to(self, a, n):
+        s0 = self.sq[-1]
+        for t in range(1, n + 1):
+            self.put(self.at, "rest", sq=s0 + (a - s0) * smooth(t / n))
+
+    def glance_to(self, a, n):
+        g0 = self.gl[-1]
+        for t in range(1, n + 1):
+            self.put(self.at, "rest", gl=g0 + (a - g0) * ease_io(t / n))
+
+    def rise_to(self, y, n):
+        """Straight up or down by an eased move (inside a box)."""
+        p0 = self.at
+        for t in range(1, n + 1):
+            self.put((p0[0], p0[1] + (y - p0[1]) * smooth(t / n), p0[2]), "rest")
+
+    def jump_to(self, p):
+        """The ball is put somewhere else on one frame, wholly out of sight both before and after."""
+        self.jumps.add(self.now)
+        self.put(p, "rest")
+
+    def hop(self, p1, T, gather=0.0, stretch=0.0, flip=0.0, glances=(), zp=None, label="hop"):
+        """From rest to a landing at p1: T frames, a parabola at 0.40 in height; X in a straight line; depth in a straight line, or
+        (zp = (from, to), fractions of the flight) eased between those two moments and still before and after. It leaves from a gather
+        and stretches while it is fast; `flip` adds that many turns of the dot over the second half of the flight; `glances` is
+        [(frame, angle)] eased between. Returns (vx, vy, vz, vy at landing)."""
+        p0 = self.at
+        vy = (p1[1] - p0[1]) / T - 0.5 * G * T
+        vx, vz = (p1[0] - p0[0]) / T, (p1[2] - p0[2]) / T
+        f_go = self.now
+        w = 0.25 * vx / R_BALL
+        g0 = self.gl[-1]
+        keys = [(0, g0)] + [(int(f), a) for f, a in glances]
+        raw = [smooth(min(1.0, max(0.0, (t - 0.45 * T) / (0.5 * T)))) for t in range(0, T + 1)]
+        dflip = [raw[t] - raw[t - 1] for t in range(1, T + 1)]
+        tot = sum(dflip) or 1.0
+        for t in range(1, T + 1):
+            q = hop_points(p0, p1, T, zp)[t]
+            u = smooth(min(1.0, t / 3))
+            sq = -gather * (1 - u) + stretch * u * (1 - smooth((t - 3) / 12))
+            gl = g0
+            for (fa, ga), (fb, gb) in zip(keys, keys[1:]):
+                if fa <= t <= fb:
+                    gl = ga + (gb - ga) * ease_io((t - fa) / max(1, fb - fa))
+                elif t > fb:
+                    gl = gb
+            self.put(q, "air" if t < T else "roll", w=w + flip * 2 * math.pi * dflip[t - 1] / tot, gl=gl, sq=sq if t < T else 0.0)
+        self.notes.append((label, f_go, self.now - 1, min(y for _, y, _ in self.p[f_go:]), (vx, vy, vz)))
+        return vx, vy, vz, vy + G * T
+
+    def land(self, vk, n, amp):
+        """After a landing: it keeps vk of its sideways speed and rolls to a stop over n frames (the speed falling to zero), with one
+        squash of amp that springs back within 12 frames. Returns where it stops."""
+        assert n >= 12
+        p = self.at
+        x0, prev = p[0], p[0]
+        for t in range(1, n + 1):
+            x = x0 + vk * n / 2 * (1 - (1 - t / n) ** 2)
+            sq = -amp * math.sin(math.pi * min(1.0, t / 12)) ** 2 if t < 12 else 0.0
+            self.put((x, p[1], p[2]), "roll", w=(x - prev) / R_BALL, sq=sq)
+            prev = x
+        return self.at
+
+
+def hop_points(p0, p1, T, zp=None):
+    vy = (p1[1] - p0[1]) / T - 0.5 * G * T
+    out = []
+    for t in range(0, T + 1):
+        u = t / T if zp is None else smooth((t / T - zp[0]) / (zp[1] - zp[0]))
+        out.append((p0[0] + (p1[0] - p0[0]) * t / T, p0[1] + vy * t + 0.5 * G * t * t, p0[2] + (p1[2] - p0[2]) * u))
+    return out
+
+
+def plan_hop(p0, p1, Ts, shells, zps=(None,), margin=1.5, extra=None):
+    """The shortest flight (time, depth profile) among Ts and zps that keeps the ball `margin` clear of every rectangle on its way (the
+    last two frames are the landing and may touch) and passes `extra(points)`; if none does, the one that clears best.
+    Returns (T, zp, how clear)."""
+    best = None
+    for T in Ts:
+        for zp in zps:
+            pts = hop_points(p0, p1, T, zp)
+            worst = min(gap(q, shells)[0] for q in pts[1:T - 1])
+            end = min(gap(q, shells)[0] for q in pts[T - 1:])
+            ok = extra(pts) if extra else True
+            if worst >= margin and end >= -0.5 and ok:
+                return T, zp, worst
+            score = min(worst, end + margin) - (0 if ok else 100)
+            if best is None or score > best[2]:
+                best = (T, zp, score)
+    return best
+
+
+# ---- the art ---------------------------------------------------------------------------------------------------------------------------
+def parse(doc):
+    return ET.fromstring("\n".join(doc.lines))
+
+
+def delete(doc, oid):
+    i = doc.idx(oid)
+    del doc.lines[i:doc.end(i) + 1]
+
+
+def move_before(doc, oid, before_id):
+    i = doc.idx(oid)
+    block = doc.lines[i:doc.end(i) + 1]
+    del doc.lines[i:doc.end(i) + 1]
+    j = doc.idx(before_id)
+    doc.lines[j:j] = block
+
+
+def insert_first(doc, parent_id, lines):
+    i = doc.idx(parent_id)
+    doc.lines[i + 1:i + 1] = lines
+
+
+def pad_in(doc, parent_id):
+    l = doc.lines[doc.idx(parent_id)]
+    return " " * (len(l) - len(l.lstrip()) + 4)
+
+
+def retarget_drop(doc, node, art, px, py):
+    """A drop-in group falls from 800 above and squashes about its pivot: put the pivot at the group's base (its art keeps its place)."""
+    _set_attrs(doc, node, {"x": px, "y": py})
+    _set_attrs(doc, art, {"x": -px, "y": -py})
+    a, b = doc.anim(f"{ROOM} Intro")
+    i = next(j for j in range(a, b) if f'objectId="{node}"' in doc.lines[j])
+    j = next(m for m in range(i, doc.end(i)) if 'property="y"' in doc.lines[m])
+    ks = [m for m in range(j, doc.end(j)) if "<KeyFrameDouble" in doc.lines[m]]
+    doc.lines[ks[0]] = re.sub(r' value="[^"]+"', f' value="{py - 800:.4f}"', doc.lines[ks[0]])
+    doc.lines[ks[-1]] = re.sub(r' value="[^"]+"', f' value="{py:.4f}"', doc.lines[ks[-1]])
+
+
+def set_wall(doc):
+    a, b = doc.anim(f"{ROOM} Colors")
+    n = 0
+    for i in range(a, b):
+        if f'value="{OLD_WALL}"' in doc.lines[i]:
+            doc.lines[i] = doc.lines[i].replace(OLD_WALL, WALL)
+            n += 1
+    assert n == 1, ("the Mini's wall colour was not found once in its Colors pose", n)
+
+
+def build(doc, scene, sheet):
+    # ---------------------------------------------------------------- the old art out, the wall in
+    olds = ["9:5214", "9:5176", "9:5186", "9:5196", "9:5155"]        # the 'a' groups and the four old cube shapes
     root = parse(doc)
     gone = {e.get("id") for o in olds for e in next(x for x in root.iter() if x.get("id") == o).iter() if e.get("id")}
     for o in olds:
@@ -387,8 +456,17 @@ def build(doc, scene, sheet):
         a, b = doc.anim(f"{ROOM} {an}")
         for oid in sorted({m.group(1) for l in doc.lines[a:b] for m in [re.search(r'<KeyedObject objectId="([^"]+)"', l)] if m and m.group(1) in gone}):
             doc.drop_object(f"{ROOM} {an}", oid)
-    move_before(doc, "9:5206", "9:5212")            # Cubes 1 (U's and F's tops) above Cubes 4 (R's top)
-    arts = scale_room(doc)
+    set_wall(doc)
+    # the four drop-in groups all go under the ball, in the order the cubes overlap (top first): front pair, far left, top, middle + right
+    move_before(doc, "9:5208", "9:5212")
+    move_before(doc, "9:5210", "9:5212")
+    P_NODE, S_NODE, U_NODE, Q_NODE = ("9:5206", "9:5207"), ("9:5210", "9:5211"), ("9:5208", "9:5209"), ("9:5212", "9:5213")
+    front_bottom = lambda k: CUBE[k].centre[1] + CUBE[k].hy
+    mid_x = lambda *ks: sum(CUBE[k].centre[0] for k in ks) / len(ks)
+    retarget_drop(doc, *P_NODE, mid_x("M", "R"), front_bottom("M"))        # middle + right: first down
+    retarget_drop(doc, *S_NODE, mid_x("L0"), front_bottom("L0"))           # far left
+    retarget_drop(doc, *U_NODE, mid_x("F1", "F2"), front_bottom("F1"))     # the front pair
+    retarget_drop(doc, *Q_NODE, mid_x("T"), front_bottom("T"))             # the top cube: last, onto the middle one
 
     # ---------------------------------------------------------------- the ball
     art = BallArt(scene, ROOM)
@@ -399,384 +477,340 @@ def build(doc, scene, sheet):
     art.dc = (art.ox + art.k * (sx + CENTER_IN_SCALE[0]), art.oy + art.k * (sy + CENTER_IN_SCALE[1]))
     spin = prepare_ball(doc, art)
 
-    # ---------------------------------------------------------------- the faces (made first: the path is checked against them)
-    faces = {
-        "front": [Face(U, "front", fill=LIGHT, name=f"{U.name} Front"), Face(U, "left", fill=LIGHT),
-                  Face(U, "top", fill=DARK, name=f"{U.name} Lid"),
-                  Face(L, "front", fill=LIGHT), Face(L, "left", fill=DARK),
-                  Face(F, "front", fill=LIGHT), Face(F, "left", fill=LIGHT)],
-        "c3": [Face(R, "front", fill=DARK)],
-        "floor": [Face(U, "back", fill=LIGHT, name=f"{U.name} Back"), Face(U, "right", fill=LIGHT)],
-        "c1": [Face(U, "top", fill=DARK, name=f"{U.name} Lid Drop", fixed={}),
-               Face(F, "top", fill=DARK, name=f"{F.name} Top"),
-               Face(L, "top", "lidl", fill=LIGHT, name=f"{L.name} Lid", two_sided=True),
-               Face(L, "top", fill=DARK, name=f"{L.name} Opening", fixed={}, show=lid_off)],
-        "c4": [Face(R, "top", fill=LIGHT, name=f"{R.name} Top")],
-        "floor_end": [Face(R, "left", fill=LIGHT)],
-    }
-    over_groups, under_groups = ("front", "c3"), ("floor", "c1", "c4", "floor_end")
-    drop_copy = faces["c1"][0]
-    U_OVER = {f"{U.name} Front", f"{U.name} Left", f"{U.name} Lid"}
-    U_BACK = f"{U.name} Back"
-    L_IN = {f"{L.name} Front", f"{L.name} Left", f"{L.name} Opening"}
-
-    # ---------------------------------------------------------------- the pieces' moves (filled in as the path is made)
-    ax_ev, az_ev, lid_ev = [], [], []
-
-    def upose(g):
-        m = matmul(rz(roll_angle(az_ev, g)), rx(roll_angle(ax_ev, g)))
-        return {"rot": flat(m)}
-
-    def lpose(g):
-        a, d = lid_angle(lid_ev, g)
-        return {"lidl": a, "dip": d}
-
-    def pose_of(cube, g):
-        return upose(g) if cube is U else lpose(g) if cube is L else {}
-
-    def on_u(pose, s, t, lift=0.0):
-        """The ball's centre on the screen when it sits on U's back face at (s across, t down it), lifted off it by `lift`."""
-        return S(U.cam.project(U.world((s, t, U.hz + RC_PLANE + lift), None, pose)))
-
-    def shown(g, groups, skip=()):
-        """[(face, polygon on the screen)] for the faces of these groups that show on frame g."""
-        out = []
-        for grp in groups:
-            for f in faces[grp]:
-                if f is drop_copy or f.name in skip:
-                    continue
-                ps = pose_of(f.cube, g)
-                if f.visible(ps):
-                    out.append((f, [S(q) for q in f.outline(ps)]))
-        return out
-
-    def clearance(g, c, allowed=()):
-        """The smallest margin (centre distance minus CLEAR) from the ball at c to any showing face it may not touch on frame g."""
-        worst_, at = float("inf"), None
-        for f, poly in shown(g, over_groups + under_groups, skip=allowed):
-            d = poly_dist(c, poly) - CLEAR
-            if d < worst_:
-                worst_, at = d, f.name
-        return worst_, at
-
-    l_top = [S(q) for q in L.quad("top")]           # back left, back right, front right, front left
-    l_front = [S(q) for q in L.quad("front")]       # top left, top right, bottom right, bottom left
-    RC = RC_PLANE
-
-    def l_local(c, Z):
-        """The ball's centre in L's own 3D space (x, y, z from the box's centre) from where it is drawn and how deep it is (Z, from the
-        box's front face)."""
-        cam = L.cam
-        p = (A[0] + (c[0] - A[0]) / K, A[1] + (c[1] - A[1]) / K)
-        w = 1 + cam.k * Z / cam.S
-        qx, qy = cam.F[0] + (p[0] - cam.F[0]) * w, cam.F[1] + (p[1] - cam.F[1]) * w
-        X, Y = qx - Z * cam.d[0], qy - Z * cam.d[1]
-        return (X - L.centre[0], Y - L.centre[1], Z - L.hz)
-
-    def l_floor_depth(c):
-        """How deep (Z) a ball drawn at c must be to rest on the floor (the plane of L's bottom)."""
-        lo, hi = -200.0, 400.0
-        for _ in range(60):
-            mid = (lo + hi) / 2
-            if l_local(c, mid)[1] < L.hy - RC:
-                lo = mid
-            else:
-                hi = mid
-        return (lo + hi) / 2
-
-    LID_TOP = -L.hy - 2 * L.hy * math.sin(OPEN_TOP) - 2.0     # the open lid's top edge (its height above the hinge), a little over
-
-    def l_fit(b, lid_open):
-        """How well the ball at b (L's own 3D space) clears the box, in the planes' units (negative: it would be inside a wall, or
-        behind the open lid where it is drawn in front of it). It is clear when it is wholly to the right of the box, wholly above its
-        rim, or wholly inside it; with the lid open, over the box and below the lid's top it must also be in front of the lid."""
-        x, y, z = b
-        right = x - RC - L.hx
-        above = -L.hy - (y + RC)
-        inner = min(L.hx - RC - abs(x), L.hz - RC - abs(z), L.hy - RC - y)
-        fit = max(right, above, inner)
-        if lid_open and x - RC < -L.hx + 1.0 and y + RC > LID_TOP:
-            fit = min(fit, LID_TOP - (y + RC))
-        return fit
+    # ================================================================ the timeline
+    YB = FLOOR - RC                                # the ball's centre on the floor / on the bottom of a box
+    ZF = -31.0                                     # in front of the grid, on the floor (its outline stays inside the crop's bottom edge)
+    TOP_T = Y0 - S_ - RC                           # on T's top (T is one level up)
+    S0 = (800.0, YB, ZF)                           # the start spot
+    IN_F1 = (724.0, YB, 50.0)                      # inside F1, wholly behind its front square
+    IN_T = (888.0, Y0 - RC, ZROW["T"] + 32.0)      # inside T, wholly behind its front square (T's floor is level with F1's top)
+    ON_T = (882.0, TOP_T, ZROW["T"] + 42.0)        # on T's top
+    RIM_F1 = Y0                                    # the front square's top edge on the screen
+    RIM_T = CUBE["T"].centre[1] - CUBE["T"].hy
 
     P = Path()
+    lid1, lid2, turns = [], [], []
     log = []
+    marks = {}
 
     def seg(kind, label, n0):
         log.append((n0, P.now, kind, label))
 
-    # ================================================================ 3 the reveal (the cycle starts here, on the intro's last frame)
-    S0 = (21.6, 6.5)                       # where on U's back face the ball waits: wholly behind U's front, left and top
-    n0 = P.now
-    ax_ev.append((0, HALF, ROLL_N, ROLL_SETTLE))
-    for g in range(ROLL_N + ROLL_SETTLE):
-        P.put(on_u(upose(g), *S0), "rest", "reveal")
-    seg("move", "U rolls forward 90 degrees: its back face comes up as the new top and the ball rides up on it into view", n0)
-    n0 = P.now
-    P.hold(6, state="onU")
-    T_TADA, H_TADA = 14, 10.0 / K                   # a pop of 10 px, no gather: the one squash is the landing
-    v0 = G_P * T_TADA / 2
-    pose1 = upose(P.now)
-    for t in range(1, T_TADA + 1):
-        P.put(on_u(pose1, *S0, lift=v0 * t - 0.5 * G_P * t * t), "air" if t < T_TADA else "rest", "onU")
-    for t in range(1, 13):
-        P.put(P.p[-1], "rest", "onU", sq=-0.05 * math.sin(math.pi * t / 12) ** 2)
-    seg("move", "ta-da: one small bounce on the new top (squash 5 percent, once)", n0)
+    P.put(S0, "rest", gl=0.0, sq=0.0)
 
-    # ================================================================ 4 rest 1
+    # ------------------------------------------------------------ 1 size up (the ball counts the squares)
     n0 = P.now
-    P.hold(16, state="onU")
-    s_, prev = S0[0], P.p[-1][0]
-    S1_U = S0[0] + 6.0                              # one slow settle roll of 5 px (about 10 degrees of turn)
-    for t in range(1, 55):
-        s_ = S0[0] + (S1_U - S0[0]) * smooth(t / 54)
-        q = on_u(pose1, s_, S0[1])
-        P.put(q, "roll", "onU", w=(q[0] - prev) / R_BALL)
-        prev = q[0]
-    P.hold(50, state="onU")
-    seg("rest", "REST 1: on U's new top in plain view, one slow settle roll", n0)
+    P.roll_to(S0[0] - 4.0, 14, gl=GL_UP)                       # settles and glances up at the front-left lid
+    P.squash_to(-0.05, 6)
+    vx, *_ = P.hop((S0[0] - 4.0 - 38.0, YB, ZF), 22, gather=0.05, stretch=0.02, label="count 1")
+    P.land(0.55 * vx, 12, 0.06)
+    P.squash_to(-0.04, 5)
+    vx, *_ = P.hop((P.at[0] - 36.0, YB, ZF), 22, gather=0.04, stretch=0.02, label="count 2")
+    P.land(0.55 * vx, 12, 0.05)
+    seg("move", "1 size up: settles, glances up at the front-left lid, two quick hops along the front", n0)
 
-    # ================================================================ 5 the ride
-    # Slower than the reveal (it carries the ball): the ball rolls down the tilting top and leaves it at 60 degrees, with the speed
-    # the face and its own roll give it (no push), and falls clear of U (tried in .cache/scratch.nosync/ch2/try/ride_probe.py)
-    RIDE_REL = math.radians(60)
+    # ------------------------------------------------------------ 2 in
     n0 = P.now
-    ride0 = P.now
-    az_ev.append((ride0, HALF, RIDE_N, ROLL_SETTLE))
-    s_, vs, prev_phi = S1_U, 0.0, 0.0
-    rel = None
-    for g in range(ride0, ride0 + RIDE_N + ROLL_SETTLE):
-        assert g == P.now
-        phi = roll_angle(az_ev, g)
-        vs += -G_P * math.sin(phi)                  # it rolls down the tilting face (gravity along the slope)
-        s_ += vs
-        b3 = U.world((s_, S0[1], U.hz + RC_PLANE), None, upose(g))
-        q = S(U.cam.project(b3))
-        P.put(q, "roll", "onU", w=-(phi - prev_phi) + vs / RC_PLANE)
-        prev_phi = phi
-        if phi >= RIDE_REL:
-            rel = g
-            break
-    assert rel is not None
-    Z_REL = b3[2]                                  # it falls at the depth it left from
-    w_air = P.w[-1]
-    v = (P.p[-1][0] - P.p[-2][0], P.p[-1][1] - P.p[-2][1])
-    p_rel = P.p[-1]
-    t = 0
-    fall = {}
-    while True:
-        t += 1
-        q = (p_rel[0] + v[0] * t, p_rel[1] + v[1] * t + 0.5 * G * t * t)
-        if q[1] >= YF:
-            P.put((q[0], YF), "roll", "release")
-            fall[P.now - 1] = Z_REL
-            break
-        P.put(q, "air", "release", w=w_air)
-        fall[P.now - 1] = Z_REL
-    vx_land, vy_land = v[0], v[1] + G * t
-    P.notes.append(("off U to the floor", rel, P.now - 1, min(y for _, y in P.p[rel:]), v))
-    LAND_N, KEEP = 20, 0.55
-    P.land(KEEP * vx_land, LAND_N, 0.06)
-    seg("move", "the ride: U rolls 90 degrees to the left, the ball rolls down the tilting top, leaves it and lands on the floor (squash 6 percent, settle roll)", n0)
-    land_at = P.p[-1]
-
-    # ================================================================ 6 rest 2
+    P.glance_to(GL_UP * 1.6, 10)                               # looks up at the lid before it does it
+    lid1.append((P.now, "open", FULL))
+    seg("move", "the ball looks up", n0)
     n0 = P.now
-    P.hold(max(0, ride0 + RIDE_N + ROLL_SETTLE - P.now) + 3)
-    P.roll((land_at[0] + 5.0, YF), 26)              # a lean back towards U
-    P.hold(2)
-    az_ev.append((P.now, 0.0, BACK_N, BACK_SETTLE))
-    P.hold(BACK_N + BACK_SETTLE + 3)
-    ax_ev.append((P.now, 0.0, BACK_N, BACK_SETTLE))
-    P.hold(BACK_N + BACK_SETTLE + 3)
-    seg("rest", "REST 2: the ball on the floor leans back towards U while U rolls back (the left roll, then the forward roll)", n0)
+    P.glance_to(GL_UP * 2.0, FULL["press_n"] + FULL["lift_n"])
+    P.hold(FULL["settle_n"], sway=math.radians(1.0), period=20)
+    seg("move", "F1's lid opens (press, eased lift, past open, settle)", n0)
     n0 = P.now
-    S1 = (733.0, YF)
-    P.roll(S1, 30)
-    seg("move", "the ball rolls to its starting spot", n0)
-
-    # ================================================================ 1 curiosity
+    P.glance_to(math.radians(6), 9)                            # a look at the open mouth
+    P.squash_to(-0.05, 9)                                      # and a gather
+    seg("move", "looks at the mouth, gathers", n0)
+    shells_open = all_shells(dict(F1={"lid": OPEN_TOP}, T={}))
     n0 = P.now
-    P.hold(6)
-    P.roll((S1[0] - 5.0, YF), 20)                   # a lean towards L
-    P.hold(6)
-    P.squash_to(-0.05, 7)
-    vx, vy, _ = P.hop((S1[0] - 5.0, YF), 17, 0.05, label="the deciding hop")
-    P.land(0.0, 12, 0.04)
-    P.roll((P.p[-1][0] - 2.0, YF), 8)               # it settles a touch towards L
-    S2 = (683.0, YF)
-    P.roll(S2, 26)
-    seg("move", "curiosity: a lean towards L, one hop in place (gather 5, squash 4 percent), a roll to L", n0)
-
-    # ================================================================ 2 the lid trick
-    n0 = P.now
-    lid_ev.append((P.now, "open"))
-    P.hold(OPEN_N)
-    seg("move", "L's lid opens: press, eased lift, swing past open, settle", n0)
-    n0 = P.now
-    P.put(P.p[-1], "rest", "free")
-    for t in range(1, 11):                          # the peek: up on its toes (3 percent) and a look into the box
-        P.put(P.p[-1], "rest", "free", gl=math.radians(-12) * ease_io(t / 10), sq=0.03 * smooth(t / 10))
-    for t in range(1, 15):
-        P.put(P.p[-1], "rest", "free", gl=math.radians(-12) - math.radians(1.5) * math.sin(math.pi * t / 14), sq=0.03)
-    P.squash_to(-0.05, 9)
-    # the hop in: the shortest of a few parabolas over the box's right rim and down through the opening, out of sight behind its
-    # front, that clears the box's walls (in 3D), the open lid standing on its left rim (on the screen: it is drawn under the ball
-    # but stands in front of it) and the crop. The ball sits on the floor line, at the wall, a little behind the box's back; it
-    # comes forward as it hops (its depth eases out). The drawn path is the parabola; the depth only decides what it clears.
-    Z_S = l_floor_depth(S2)
-    lid_open_poly = [S(q) for q in L.quad("top", "lidl", {"lidl": OPEN_TOP})]
-    cands = []
-    for T in range(26, 60):
-        for xc in [x / 2 for x in range(1180, 1226)]:
-            for z_i, pw in [(z, p) for z in (30.0, 34.0, 38.0, 44.0) for p in (2, 3, 4, 6)]:
-                yc = 704.0
-                vy_ = (yc - S2[1]) / T - 0.5 * G * T
-                vx_ = (xc - S2[0]) / T
-                m = 99.0
-                for t in range(1, T + 1):
-                    c = (S2[0] + vx_ * t, S2[1] + vy_ * t + 0.5 * G * t * t)
-                    Z = Z_S + (z_i - Z_S) * (1 - (1 - t / T) ** pw)
-                    m = min(m, l_fit(l_local(c, Z), True) * K, c[0] - R_BALL - CROP[0] - 0.5 if c[1] < 702 else 99,
-                            poly_dist(c, lid_open_poly) - CLEAR)
-                cands.append((m, T, xc, z_i, pw))
-    good = [c for c in cands if c[0] >= 1.0]
-    best = min(good, key=lambda c: (c[1], -c[0])) if good else max(cands)
-    _, T_IN, XC, Z_I, PW = best
-    if os.environ.get("MINI_DEBUG") or best[0] < 0:
-        for T in (32, 40, 46):
-            for xc in (591.0, 596.0, 601.0, 606.0, 611.0):
-                for z_i in (36.0, 48.0):
-                    vy_ = (704.0 - S2[1]) / T - 0.5 * G * T
-                    vx_ = (xc - S2[0]) / T
-                    parts = [99.0, 99.0, 99.0]
-                    for t in range(1, T + 1):
-                        c = (S2[0] + vx_ * t, S2[1] + vy_ * t + 0.5 * G * t * t)
-                        Z = Z_S + (z_i - Z_S) * (1 - (1 - t / T) ** 2)
-                        parts = [min(parts[0], l_fit(l_local(c, Z), True) * K),
-                                 min(parts[1], c[0] - R_BALL - CROP[0] - 0.5 if c[1] < 702 else 99),
-                                 min(parts[2], poly_dist(c, lid_open_poly) - CLEAR)]
-                    print("   T", T, "xc", xc, "z", z_i, "3D box", round(parts[0], 1), "crop", round(parts[1], 1), "lid", round(parts[2], 1))
-        print("  lid open", [tuple(round(v, 1) for v in q) for q in lid_open_poly])
-        print("  the hop into L: best", best, "floor depth", Z_S, "L top", [tuple(round(v, 1) for v in q) for q in l_top])
-    assert best[0] >= 0, ("no hop into L clears the box, its lid and the crop", best)
-    f_hop = P.now
-    P.hop((XC, 704.0), T_IN, 0.05, stretch=0.02, state="enterL", label="the hop into L")
-    hop_depth = {f_hop + t - 1: Z_S + (Z_I - Z_S) * (1 - (1 - t / T_IN) ** PW) for t in range(1, T_IN + 1)}
-    for i in range(f_hop, P.now):
-        P.mode[i] = "air"
-    f_catch = P.now - 1
-    P.state[f_catch] = "hidden"
-    H_L = (XC, 709.0)
+    def enter_ok(pts):
+        """Once the ball comes down past the front square's top edge on the screen, it is wholly behind the front wall's plane."""
+        ia = min(range(len(pts)), key=lambda t: pts[t][1])
+        on = next((t for t in range(ia, len(pts)) if pts[t][2] >= RC - 0.7), None)
+        return on is not None and screen(pts[on])[1] + R_BALL < RIM_F1 - 0.5 and all(q[2] >= RC - 0.7 for q in pts[on:])
+    T_IN, zp_in, clr = plan_hop(P.at, IN_F1, range(36, 60), shells_open, [(a, b) for a in (0.2, 0.3, 0.4) for b in (0.55, 0.65, 0.75, 0.85)],
+                                extra=enter_ok)
+    f_hop1 = P.now
+    P.hop(IN_F1, T_IN, gather=0.05, stretch=0.03, flip=1.0, zp=zp_in,
+          glances=[(0.40 * T_IN, math.radians(6)), (0.50 * T_IN, math.radians(24)), (0.62 * T_IN, math.radians(6))], label="peek hop into F1")
+    marks["F1 hop"] = (f_hop1, P.now - 1)
     for t in range(1, 7):
-        s__ = smooth(t / 6)
-        P.put((XC, 704.0 + (H_L[1] - 704.0) * s__), "hidden", "hidden")
-        hop_depth[P.now - 1] = Z_I
-    seg("move", "the peek (up on its toes, a look in), a gather, the hop into L", n0)
+        P.put(P.at, "rest", sq=P.sq[-1] * (1 - t / 6))
+    seg("move", f"the peek hop: straight up, over the rim (a glance down into the box at the top), a flip and a drop in ({T_IN} frames)", n0)
     n0 = P.now
-    lid_ev.append((f_catch + 1, "shut"))
-    P.hold(max(0, f_catch + 1 + SHUT_N - P.now), "hidden", "hidden")
-    seg("move", "L's lid falls shut, one soft bump", n0)
+    P.hold(4)
+    lid1.append((P.now, "shut", FULL))
+    P.hold(shut_n(FULL))
+    seg("move", "F1's lid falls shut, one bump", n0)
+
+    # ------------------------------------------------------------ 3 misdirection
     n0 = P.now
-    P.hold(24, "hidden", "hidden")
-    seg("rest", "the beat: the box shut, the ball out of sight", n0)
-    Lc = P.now                                      # frame Lc is frame 0 again: the ball is behind U (it jumps there out of sight)
-    P.put(P.p[0], "hidden", "reveal")
+    P.hold(4)
+    turns.append((P.now, -QUARTER))
+    f_turn1 = P.now
+    P.hold(TURN_TOTAL)
+    seg("move", "M turns a quarter turn: its black left face comes round to the front (white to black)", n0)
+    n0 = P.now
+    P.hold(8)
+    P.jump_to(IN_T)                                            # out of sight in F1, and on the next frame out of sight in T
+    P.hold(22)
+    seg("rest", "a beat (the ball moves from F1 to T unseen)", n0)
 
-    # ---------------------------------------------------------------- the pieces' poses, frame by frame
-    for evs, kind in ((ax_ev, "x"), (az_ev, "z")):
-        s_ev = sorted(evs)
-        for (fa, _, tn, sn), (fb, _, _, _) in zip(s_ev, s_ev[1:]):
-            assert fb - fa >= tn + sn, ("a roll starts before the one before it has settled", kind, fa, fb)
-    poses = {"U": [upose(g) for g in range(Lc + 1)], "L": [lpose(g) for g in range(Lc + 1)],
-             "F": [{} for _ in range(Lc + 1)], "R": [{} for _ in range(Lc + 1)]}
-    for k, ps in poses.items():
-        assert pose_key(ps[0]) == pose_key(ps[Lc]), k
-    key_of = {U: "U", R: "R", F: "F", L: "L"}
-    # moves never overlap: U and the lid never move on the same frame, U's two axes never turn at once, and L's lid is shut whenever U turns
-    u_moves = [pose_key(poses["U"][g + 1]) != pose_key(poses["U"][g]) for g in range(Lc)]
-    l_moves = [pose_key(poses["L"][g + 1]) != pose_key(poses["L"][g]) for g in range(Lc)]
-    assert not any(a_ and b_ for a_, b_ in zip(u_moves, l_moves)), "U and L's lid move at once"
+    # ------------------------------------------------------------ 4 the fake-out
+    n0 = P.now
+    lid2.append((P.now, "open", HALF))
+    P.hold(HALF["press_n"] + 4)                                # the lid starts to lift; the ball waits a moment
+    P.hop(IN_T, 24, gather=0.04, stretch=0.03, glances=[(7, math.radians(15)), (17, math.radians(-15))], label="pop up in T")
+    P.land(0.0, 12, 0.04)
+    seg("move", "T's lid lifts halfway; the ball pops up for a look (its top over the rim) and drops back in", n0)
+    n0 = P.now
+    P.hold(3)
+    lid2.append((P.now, "shut", HALF))
+    P.hold(shut_n(HALF) + 2)
+    seg("move", "T's lid drops back", n0)
+    n0 = P.now
+    P.hold(22)
+    seg("rest", "a beat", n0)
+
+    # ------------------------------------------------------------ 5 out
+    n0 = P.now
+    lid2.append((P.now, "open", FULL))
+    P.hold(open_n(FULL) - 8)
+    P.squash_to(-0.05, 8)                                      # gathers inside
+    seg("move", "T's lid opens properly", n0)
+    n0 = P.now
+    shells_open2 = all_shells(dict(F1={}, T={"lid": OPEN_TOP}))
+    T_OUT, zp_out, clr2 = plan_hop(P.at, ON_T, range(26, 50), shells_open2)
+    f_hop2 = P.now
+    P.hop(ON_T, T_OUT, gather=0.05, stretch=0.03, zp=zp_out, label="spring out of T")
+    marks["T out"] = (f_hop2, P.now - 1)
+    P.land(0.0, 13, 0.06)                                      # ta-da: the one squash
+    P.hold(4)
+    seg("move", f"the ball springs out onto T's top and lands: ta-da, one 6 percent squash ({T_OUT} frames in the air)", n0)
+    n0 = P.now
+    P.glance_to(math.radians(10), 14)
+    P.glance_to(math.radians(-8), 14)
+    seg("rest", "ta-da: a proud little glance on top of T", n0)
+    n0 = P.now
+    LAND = (748.0, YB, ZF)                                     # the hop down to the floor in front of the grid
+    P.squash_to(-0.05, 6)
+    T_DOWN, zp_down, clr3 = plan_hop(P.at, LAND, range(30, 64), all_shells(dict(F1={}, T={"lid": OPEN_TOP})),
+                                     [(a, b) for a in (0.0, 0.1, 0.2) for b in (0.35, 0.45, 0.55, 0.65, 0.75)])
+    f_down = P.now
+    vx3, *_ = P.hop(LAND, T_DOWN, gather=0.05, stretch=0.02, zp=zp_down, label="hop down to the floor")
+    marks["T down"] = (f_down, P.now - 1)
+    P.land(0.45 * vx3, 14, 0.06)
+    seg("move", f"it hops down to the floor in front of the grid ({T_DOWN} frames in the air), squash and a settle roll", n0)
+
+    # ------------------------------------------------------------ 6 reset
+    n0 = P.now
+    f_turn2 = P.now
+    turns.append((P.now, 0.0))
+    P.glance_to(math.radians(14), 18)                          # watches the cube
+    P.hold(TURN_N - 18 - 4, sway=math.radians(0.8), period=18)
+    P.squash_to(0.03, 4)                                       # the startle at the thump: a small hop
+    P.hop((P.at[0] - 3.0, YB, ZF), 18, gather=-0.03, label="startle hop")
+    P.land(0.0, 12, 0.03)
+    P.glance_to(0.0, 8)
+    seg("move", "M turns a quarter back (black to white); the ball startles with a small hop", n0)
+    n0 = P.now
+    P.roll_to(P.at[0] + 5.0, 22, gl=math.radians(-6))          # a pleased settle roll
+    P.roll_to(P.at[0] - 1.5, 10, gl=math.radians(3))
+    seg("move", "a pleased settle roll", n0)
+    n0 = P.now
+    P.roll_to(S0[0], 34, gl=0.0)
+    P.hold(8)
+    seg("move", "it rolls back to its start spot", n0)
+    Lc = P.now
+    P.put(S0, "rest", gl=0.0, sq=0.0)                          # frame Lc is frame 0 again
+    assert abs(P.sq[Lc]) < 1e-12 and abs(P.gl[Lc]) < 1e-12 and math.dist(P.p[Lc - 1], S0) < 1e-9, ("the loop does not end at its start", P.sq[Lc - 1], P.gl[Lc - 1], P.p[Lc - 1])
+
+    # ---------------------------------------------------------------- when the covers are on, and when T's lid falls shut
+    def first(pred, start, stop):
+        return next(g for g in range(start, stop) if pred(g))
+
+    def disc_bottom(g):
+        return screen(P.p[g])[1] + R_BALL
+    j1 = min(P.jumps)
+    f_apex = min(range(marks["F1 hop"][0], marks["F1 hop"][1] + 1), key=lambda g: P.p[g][1])
+    c1_on = first(lambda g: P.p[g][2] >= RC - 0.7, f_apex, marks["F1 hop"][1] + 1)
+    assert disc_bottom(c1_on) < RIM_F1 - 0.5, ("F1's cover would cut the ball as it comes down", c1_on)
+    c1_off = j1 + 3
+    c2_on = j1 - 2
+    c2_off = first(lambda g: disc_bottom(g) < RIM_T - 1.0, marks["T out"][0] + 3, marks["T out"][1])
+    close_at = None
+    for off in range(0, 30):                                   # T's lid falls shut once the ball's flight has taken it clear of the sweep
+        ev_close = f_down + off
+        bad = 0
+        for g in range(ev_close, ev_close + shut_n(FULL) + 2):
+            a, _ = lid_state(lid2 + [(ev_close, "shut", FULL)], g)
+            d, _ = gap(P.p[min(g, Lc)], shell("T", {"lid": a}))
+            bad += d < 1.5
+        if not bad:
+            close_at = ev_close
+            break
+    assert close_at is not None, "T's lid cannot shut clear of the ball"
+    lid2.append((close_at, "shut", FULL))
+    assert close_at + shut_n(FULL) <= f_turn2, ("T's lid is still moving when M turns back", close_at, f_turn2)
+
+    # ---------------------------------------------------------------- the cubes' poses, frame by frame
+    def poses_at(g):
+        a1, d1 = lid_state(lid1, g)
+        a2, d2 = lid_state(lid2, g)
+        return {"F1": {"lid": a1, "dip": d1, "cover": 1 if c1_on <= g < c1_off else 0},
+                "T": {"lid": a2, "dip": d2, "cover": 1 if c2_on <= g < c2_off else 0},
+                "M": {"turn": turn_state(turns, g)}, "F2": {}, "L0": {}, "R": {}}
+    poses = [poses_at(g) for g in range(Lc + 1)]
+    pk = lambda p: tuple(round(x, 9) for v in p.values() for x in (v if isinstance(v, tuple) else (v,)))
+    nocover = lambda p: {kk: v for kk, v in p.items() if kk != "cover"}
+    for k in CELLS:
+        assert pk(poses[0][k]) == pk(poses[Lc][k]), ("the loop does not close on", k)
+
+    # ---------------------------------------------------------------- the rules for the cubes
+    moving = [{k for k in CELLS if pk(nocover(poses[g + 1][k])) != pk(nocover(poses[g][k]))} for g in range(Lc)]
+    assert all(len(m) <= 1 for m in moving), ("two cubes move at once", [(g, m) for g, m in enumerate(moving) if len(m) > 1][:6])
     for g in range(Lc + 1):
-        ax_, az_ = roll_angle(ax_ev, g), roll_angle(az_ev, g)
-        assert min(abs(ax_), abs(ax_ - HALF)) < 1e-9 or min(abs(az_), abs(az_ - HALF)) < 1e-9, ("U turns on two axes at once", g)
-        if u_moves[min(g, Lc - 1)]:
-            assert poses["L"][g]["lidl"] == 0.0, ("a lid is open while U turns", g)
-
-    # ---------------------------------------------------------------- the checks on the screen, every frame
-    def u_gap(g, c, Z):
-        """In 3D, how far the ball drawn at c (at depth Z from U's front) is from U's body, past its radius (planes units)."""
-        cam = U.cam
-        p = (A[0] + (c[0] - A[0]) / K, A[1] + (c[1] - A[1]) / K)
-        w = 1 + cam.k * Z / cam.S
-        q = (cam.F[0] + (p[0] - cam.F[0]) * w - Z * cam.d[0], cam.F[1] + (p[1] - cam.F[1]) * w - Z * cam.d[1], Z)
-        M = matmul(rz(roll_angle(az_ev, g)), rx(roll_angle(ax_ev, g)))
-        b = [q[i] - U.centre[i] for i in range(3)]
-        loc = [sum(M[k][i] * b[k] for k in range(3)) for i in range(3)]
-        h = (U.hx, U.hy, U.hz)
-        return math.sqrt(sum(max(abs(loc[i]) - h[i], 0.0) ** 2 for i in range(3))) - RC_PLANE
-
-    fall_gap = min((u_gap(g, P.p[g], Z), g) for g, Z in fall.items())
-    if fall_gap[0] <= 0:
-        print("  fall gaps:", [(g, round(u_gap(g, P.p[g], Z), 2), round(P.p[g][0]), round(P.p[g][1])) for g, Z in sorted(fall.items())][:12], "release", rel, "ride0", ride0)
-    assert fall_gap[0] > 0, ("the ball goes into U as it falls", fall_gap)
-    hidden_frames, overlaps, l_edges = [], [], []
+        assert not (poses[g]["F1"]["lid"] > 1e-9 and poses[g]["T"]["lid"] > 1e-9), ("two lids open at once", g)
+        if "M" in moving[min(g, Lc - 1)]:
+            assert poses[g]["F1"]["lid"] == 0.0 and poses[g]["T"]["lid"] == 0.0, ("a lid is open while M turns", g)
     for g in range(Lc + 1):
-        c, st = P.p[g], P.state[g]
-        covers = [poly for f, poly in shown(g, over_groups)]
-        covered = all(any(inside(q, poly) for poly in covers) for q in disc(c, HID_R))
-        if covered:
-            hidden_frames.append(g)
-        if st == "hidden":
-            assert covered, ("the ball shows when it should be out of sight", g, c)
+        t = poses[g]["M"]["turn"]
+        if min(abs(t - 0.0), abs(t + QUARTER)) > 1e-6:
+            assert any(g0 <= g <= g0 + TURN_TOTAL for g0, _ in turns), ("M is turned part way and still", g)
+
+    # ---------------------------------------------------------------- the faces
+    def face(k, f_, part=None, flip=False, fill=LIGHT, name=None, **kw):
+        return Face(CUBE[k], f_, part, flip=flip, fill=fill, name=name or f"{NAMES[k]} {f_.title()}", **kw)
+
+    unc = lambda p: p.get("cover", 0) == 0
+    cov = lambda p: p.get("cover", 0) > 0
+    lid_off = lambda p: p.get("lid", 0) > 1e-9
+    f = {}
+    f["F1 lid"] = face("F1", "top", "lid", name=f"{NAMES['F1']} Lid")
+    f["F1 lid in"] = face("F1", "top", "lid", True, name=f"{NAMES['F1']} Lid Inside")
+    f["F1 open"] = face("F1", "top", fill=DARK, name=f"{NAMES['F1']} Opening", fixed={}, show=lid_off)
+    f["F1 left"] = face("F1", "left", fill=DARK)
+    f["F1 front"] = face("F1", "front", show=unc)
+    f["F2 top"] = face("F2", "top")
+    f["F2 front"] = face("F2", "front", fill=DARK)
+    f["L0 top"] = face("L0", "top")
+    f["L0 left"] = face("L0", "left", fill=DARK)
+    f["L0 front"] = face("L0", "front")
+    f["T lid"] = face("T", "top", "lid", fill=DARK, name=f"{NAMES['T']} Lid")
+    f["T lid in"] = face("T", "top", "lid", True, name=f"{NAMES['T']} Lid Inside")
+    f["T open"] = face("T", "top", fill=DARK, name=f"{NAMES['T']} Opening", fixed={}, show=lid_off)
+    f["T left"] = face("T", "left")
+    f["T front"] = face("T", "front", show=unc)
+    f["R top"] = face("R", "top", fill=DARK)
+    f["R front"] = face("R", "front")
+    f["M top"] = face("M", "top", fill=DARK)
+    f["M left"] = face("M", "left", fill=DARK)
+    f["M front"] = face("M", "front")
+    f["M right"] = face("M", "right")
+    f["M back"] = face("M", "back")
+    f["R left"] = face("R", "left", name=f"{NAMES['R']} Left Side")
+    f["F1 cover"] = face("F1", "front", name=f"{NAMES['F1']} Front Cover", show=cov)
+    f["T cover"] = face("T", "front", name=f"{NAMES['T']} Front Cover", show=cov)
+    groups = {                                             # top first
+        "U": ["F1 lid", "F1 lid in", "F1 open", "F1 left", "F1 front", "F2 top", "F2 front"],
+        "S": ["L0 top", "L0 left", "L0 front"],
+        "Q": ["T lid", "T lid in", "T open", "T left", "T front"],
+        "P": ["R top", "R front", "M top", "M left", "M front", "M right", "M back", "R left"],
+        "C": ["F1 cover", "T cover"],
+    }
+    key_of = {CUBE[k]: k for k in CELLS}
+    for name, fc in f.items():                             # a face no pose ever shows is not drawn at all
+        if not any(fc.visible(poses[g][key_of[fc.cube]]) for g in range(Lc + 1)):
+            for lst in groups.values():
+                if name in lst:
+                    lst.remove(name)
+    where = {"U": U_NODE[1], "S": S_NODE[1], "Q": Q_NODE[1], "P": P_NODE[1], "C": "9:5695"}      # the covers go over the ball: the Front Plane
+    ident = lambda p: p
+    for grp, names in groups.items():
+        parent = where[grp]
+        pad = pad_in(doc, parent)
+        lines = []
+        for nm in names:
+            fc = f[nm]
+            lines += fc.lines(doc, pad, poses[0][key_of[fc.cube]], ident)
+        insert_first(doc, parent, lines)
+
+    # ---------------------------------------------------------------- the checks, every frame
+    def corners(fc, pose):
+        pose = fc.fixed if fc.fixed is not None else pose
+        return [to_world(key_of[fc.cube], p) for p in fc.cube.quad3(fc.face, fc.part, pose, fc.flip)]
+    drawn = [(nm, f[nm]) for grp in groups.values() for nm in grp]
+    tight = (1e9, None, None)
+    hset, layer_bad, crop_bad, negs = set(), [], [], []
+    for g in range(Lc + 1):
+        c = P.p[g]
+        d, at = gap(c, all_shells({k: poses[g][k] for k in CELLS}))
+        if d < tight[0] and g not in P.jumps:
+            tight = (d, g, at)
+        if d < -0.6 and g not in P.jumps:
+            negs.append((g, round(d, 1), at, tuple(round(v, 1) for v in c)))
+        sc = screen(c)
+        covers_now, under = [], []
+        for nm, fc in drawn:
+            ps = poses[g][key_of[fc.cube]]
+            if fc.visible(ps):
+                (covers_now if nm.endswith("cover") else under).append((nm, fc.outline(ps), corners(fc, ps)))
+        cpoly = [poly for _, poly, _ in covers_now]
+        ring = disc(sc, HID_R)
+        if cpoly and all(any(inside(q, poly) for poly in cpoly) for q in ring):
+            hset.add(g)
             continue
-        if covered:
-            continue
-        assert CROP[0] <= c[0] - R_BALL and c[0] + R_BALL <= CROP[1], ("the ball leaves the phone crop", g, c)
-        allowed = {"free": (), "enterL": L_IN, "reveal": U_OVER | {U_BACK}, "onU": {U_BACK}, "release": {U_BACK, f"{U.name} Right"}}[st]
-        m, at = clearance(g, c, allowed)
-        if m < 0:
-            overlaps.append((g, at, round(m, 2), c))
-        if st == "enterL":
-            me = l_fit(l_local(c, hop_depth[g]), lpose(g)["lidl"] > 0) * K
-            if me < 0:
-                l_edges.append((g, round(me, 2)))
+        if not (CROP[0] <= sc[0] - R_BALL and sc[0] + R_BALL <= CROP[1] and sc[1] + R_BALL <= CROP_BOTTOM):
+            crop_bad.append((g, tuple(round(v, 1) for v in sc)))
+        for q in disc(sc, R_BALL):
+            zb = sphere_depth(c, q[0], q[1], R_BALL)
+            if zb is None:
+                zb = c[2] - 8.0
+            for nm, poly, cs in covers_now:                    # a cover over the ball must be nearer than the ball
+                if inside(q, poly):
+                    zf = plane_depth(cs, q[0], q[1])
+                    if zf is not None and zf > zb + LAYER_TOL:
+                        layer_bad.append((g, nm, "cover behind the ball", round(zf - zb, 1)))
+            for nm, poly, cs in under:                         # a face under the ball must be farther than the ball
+                if nm.endswith(" open"):
+                    continue                                   # an opening is a hole: the ball is seen through it
+                if inside(q, poly):
+                    zf = plane_depth(cs, q[0], q[1])
+                    if zf is not None and zf < zb - LAYER_TOL:
+                        layer_bad.append((g, nm, "face in front of the ball", round(zb - zf, 1)))
     if os.environ.get("MINI_DEBUG"):
-        print("  overlaps:", overlaps[:40])
-        print("  L edges:", l_edges[:20])
-    assert not overlaps, ("the ball touches a cube it should be clear of", len(overlaps), overlaps[:12])
-    assert not l_edges, ("the ball goes into a wall of L, or behind its open lid", l_edges[:12])
-    # the release: from the frame it leaves U's top it moves away from it
-    ball_top = min(p[1] for p in P.p) - R_BALL
+        seen = {}
+        for g, nm, why, amount in layer_bad:
+            seen.setdefault((nm, why), []).append((g, amount))
+        for key, v in seen.items():
+            print("  layer:", key, "frames", v[0][0], "to", v[-1][0], "n", len(v), "worst", max(a for _, a in v))
+        runs = []
+        for g, d, at, c in negs:
+            if runs and runs[-1][1] == g - 1 and runs[-1][3] == at:
+                runs[-1][1], runs[-1][2] = g, min(runs[-1][2], d)
+            else:
+                runs.append([g, g, d, at, c])
+        print("  touching:", [(a, b, d, at, c) for a, b, d, at, c in runs][:12])
+        print("  tightest:", tight, " crop:", crop_bad[:10], " covers on F1", c1_on, c1_off, "T", c2_on, c2_off)
+    assert tight[0] > -0.6, ("the ball touches a cube", tight)
+    assert not crop_bad, ("the ball leaves the phone crop", crop_bad[:6])
+    seen = {}
+    for g, nm, why, amount in layer_bad:
+        seen.setdefault((nm, why), []).append(g)
+    assert not seen, ("the ball is on the wrong side of a face", {k: (v[0], v[-1], len(v)) for k, v in seen.items()})
+    ball_top = min(screen(p)[1] for p in P.p) - R_BALL
     assert ball_top >= COPY_Y, ("the ball crosses the copy", ball_top)
-    piece_top = min(poly[i][1] for g in range(0, Lc + 1, 2) for f, poly in shown(g, over_groups + under_groups) for i in range(len(poly)))
-    assert piece_top >= COPY_Y, ("a piece crosses the copy", piece_top)
-    # the intro: the ball waits out of sight in U (its front and left before the swap, and its top too after it)
-    IN_U = (S(U.cam.project(U.centre))[0], S((0.0, U.centre[1] - U.hy))[1] + 36)
 
-    def pre_pos(f):
-        if f < SWAP + 2:
-            return IN_U
-        u = smooth((f - SWAP - 2) / 40)
-        return (IN_U[0] + (P.p[0][0] - IN_U[0]) * u, IN_U[1] + (P.p[0][1] - IN_U[1]) * u)
-    for f in range(0, T0 + 1, 1):
-        groups = [poly for fc, poly in shown(0, ("front",)) if f >= SWAP or fc.name != f"{U.name} Lid"]
-        assert all(any(inside(q, poly) for poly in groups) for q in disc(pre_pos(f), HID_R)), ("the ball shows in the arrival", f)
-    assert pre_pos(T0) == P.p[0] or math.dist(pre_pos(T0), P.p[0]) < 1e-9
-
-    # stretches: hidden (cyclic), and still while in view outside the two rests
-    hid = [g in set(hidden_frames) for g in range(Lc)]
-    longest_hidden, run = 0, 0
+    hid = [g in hset for g in range(Lc)]
+    longest_hidden, run, run_at = 0, 0, 0
     for g in list(range(Lc)) * 2:
         run = run + 1 if hid[g] else 0
-        longest_hidden = max(longest_hidden, run)
-    in_rest = [False] * Lc
-    for a_, b_, kind, label in log:
-        if label.startswith("REST"):
-            for g in range(a_, min(b_, Lc)):
-                in_rest[g] = True
-    still = [not hid[g] and not in_rest[g] and math.dist(P.p[g], P.p[(g + 1) % Lc]) < 0.02 and abs(P.sq[g] - P.sq[(g + 1) % Lc]) < 1e-6
-             and abs(P.glance[g] - P.glance[(g + 1) % Lc]) < 1e-6 for g in range(Lc)]
+        if run > longest_hidden:
+            longest_hidden, run_at = run, g
+    in_rest = [any(a_ <= g < b_ for a_, b_, kind, _ in log if kind == "rest") for g in range(Lc)]
+    still = [(not hid[g]) and (not in_rest[g]) and math.dist(P.p[g], P.p[g + 1]) < 0.02 and abs(P.sq[g + 1] - P.sq[g]) < 1e-6
+             and abs(P.gl[g + 1] - P.gl[g]) < 1e-6 for g in range(Lc)]
     longest_still, run, still_at, start = 0, 0, None, 0
     for g in list(range(Lc)) * 2:
         if still[g]:
@@ -789,69 +823,48 @@ def build(doc, scene, sheet):
             run = 0
     longest_still = min(longest_still, Lc)
 
-    # ---------------------------------------------------------------- the art in
-    rest_pose = lambda f: poses[key_of[f.cube]][0]
-    ident = lambda p: p
-    where = {"front": (arts["Front"], insert_first), "c3": (ART["c3"], insert_first), "floor": (arts["Floor"], insert_first),
-             "c1": (ART["c1"], insert_first), "c4": (ART["c4"], insert_first), "floor_end": (arts["Floor"], insert_last)}
-    for grp in faces:                               # a face no pose ever shows is not drawn at all
-        faces[grp] = [f for f in faces[grp] if f is drop_copy or any(f.visible(poses[key_of[f.cube]][g]) for g in range(Lc + 1))]
-    for grp, fs in faces.items():
-        parent, put = where[grp]
-        pad = pad_in(doc, parent)
-        lines = []
-        for f in fs:
-            lines += f.lines(doc, pad, rest_pose(f), ident)
-        put(doc, parent, lines)
-
+    # ---------------------------------------------------------------- the pieces' keys
     pieces, vertex_ids, moving_tracks = [], [], 0
-    loop_lid = next(f for f in faces["front"] if f.name == f"{U.name} Lid")
-    for grp, fs in faces.items():
-        for f in fs:
-            if f is drop_copy:
-                pieces.append((f.shapes[0][0], "opacity", lambda g: 0.0, lambda fr: 1.0 if fr < SWAP else 0.0))
+    for nm, fc in drawn:
+        ps = [poses[g][key_of[fc.cube]] for g in range(Lc + 1)]
+        for (oid, prop), vals in fc.tracks(ps, ident).items():
+            if max(vals) - min(vals) < 1e-6:
                 continue
-            ps = poses[key_of[f.cube]]
-            for (oid, prop), vals in f.tracks(ps, ident).items():
-                own = None
-                if f is loop_lid and prop == "opacity":
-                    own = lambda fr: 0.0 if fr < SWAP else 1.0
-                elif max(vals) - min(vals) < 1e-6:
-                    continue
-                assert abs(vals[0] - vals[Lc]) < 1e-6, (f.name, oid, prop)
-                pieces.append((oid, prop, (lambda g, a=vals: a[g]), own))
-                if prop != "opacity":
-                    vertex_ids.append(oid)
-                    moving_tracks += 1
+            assert abs(vals[0] - vals[Lc]) < 1e-6, (nm, oid, prop)
+            pieces.append((oid, prop, (lambda g, a=vals: a[g]), None))
+            if prop != "opacity":
+                vertex_ids.append(oid)
+                moving_tracks += 1
 
     # ---------------------------------------------------------------- the ball's keys
     cyc = Cycle(Lc)
     for g in range(Lc + 1):
-        cyc.put(g, P.p[g], "air" if P.mode[g] == "air" else "hidden")
+        cyc.put(g, screen(P.p[g]), "air" if P.mode[g] == "air" else "hidden")
         s_ = P.sq[g]
         if s_:
             cyc.sy[g], cyc.sx[g] = 1 + s_, 1 / (1 + s_)
     th = [0.0]
     for g in range(Lc):
         th.append(th[-1] + P.w[g])
-    th = [th[g] + P.glance[g] for g in range(Lc + 1)]
+    th = [th[g] + P.gl[g] for g in range(Lc + 1)]
     total = th[Lc] - th[0]
     want = round(total / (2 * math.pi)) * 2 * math.pi
-    a0 = Lc - 24                                     # the beat (out of sight in L) takes up what is left over to a whole number of turns
+    a0, a1 = f_turn1 + TURN_N, f_turn1 + TURN_TOTAL + 10       # while M turns the ball is out of sight, so it takes up the odd bit of a turn here
+    assert all(g in hset for g in range(a0, a1 + 1)), "the correcting turn would show"
     for g in range(a0, Lc + 1):
-        th[g] += (want - total) * smooth((g - a0) / (Lc - a0))
+        th[g] += (want - total) * smooth((min(g, a1) - a0) / (a1 - a0))
     px = plane_x(scene, sheet, ROOM, "Front")
+    s0 = screen(S0)
 
-    def pre(f):
-        p = pre_pos(f)
-        return (p[0] + px(f), p[1]), 1.0, 1.0
+    def pre(fr):
+        return (s0[0] + px(fr), s0[1]), 1.0, 1.0
     emit(doc, art, spin, cyc, th, T0, pre, pieces)
 
     # thin the vertex keys, but keep the edge of every rest exact so a shut lid lies exactly on its box
     phase0 = 192 - 1 - T0
-    pkey = {k: [pose_key(p) for p in ps] for k, ps in poses.items()}
     edges = set()
-    for k, keys_ in pkey.items():
+    for k in CELLS:
+        keys_ = [pk(poses[g][k]) for g in range(Lc + 1)]
         for g in range(Lc + 1):
             prev_same = g > 0 and keys_[g] == keys_[g - 1]
             next_same = g < Lc and keys_[g] == keys_[g + 1]
@@ -869,55 +882,61 @@ def build(doc, scene, sheet):
         ball_thinned += c3.thin_keys(doc, f"{ROOM} {an}", [art.id], tol=0.1, props=("x",))
     thinned = c3.thin_keys(doc, f"{ROOM} Loop", vertex_ids, protect=protect_loop)
 
-    # the jump from L to behind U (both out of sight) holds, so no in-between frame ever draws the ball between them
+    # the jump from F1 to T holds: no frame in between ever draws the ball half way
     a, b = doc.anim(f"{ROOM} Loop")
     held = 0
     i = a
     while i < b:
         if f'<KeyedObject objectId="{art.id}"' in doc.lines[i]:
-            for j in range(i, doc.end(i)):
-                l = doc.lines[j]
-                if "<KeyFrameDouble" in l and re.search(rf' frame="{Lc - 1}"', l):
-                    doc.lines[j] = l.replace(' interpolationType="linear"', "")
-                    held += 1
+            e = doc.end(i)
+            j = i + 1
+            while j < e:
+                pm = re.search(r'<KeyedProperty property="([^"]+)"', doc.lines[j])
+                if pm and pm.group(1) in ("x", "y"):
+                    pe = doc.end(j)
+                    for q in range(j + 1, pe):
+                        if "<KeyFrameDouble" in doc.lines[q] and re.search(rf' frame="{j1 - 1}"', doc.lines[q]):
+                            doc.lines[q] = doc.lines[q].replace(' interpolationType="linear"', "")
+                            held += 1
+                    j = pe + 1
+                else:
+                    j += 1
             break
         i += 1
     assert held == 2, ("the jump's keys", held)
 
-    # a shut lid is exactly its box's still top: read the keys back and compare, on every frame it rests shut
+    # a shut lid is exactly its cube's still top
     flush, flush_at = 0.0, None
-    lid_faces = [f for grp in faces.values() for f in grp if getattr(f, "part", None) in ("lid", "lidl") and not f.flip]
-    ids_ = [vid for f in lid_faces for vid in f.shapes[0][1]]
+    lid_faces = [fc for _, fc in drawn if getattr(fc, "part", None) == "lid" and not fc.flip]
+    ids_ = [vid for fc in lid_faces for vid in fc.shapes[0][1]]
     rows_l = c3.key_values(doc, f"{ROOM} Loop", ids_)
-    for f in lid_faces:
-        ps = poses[key_of[f.cube]]
+    for fc in lid_faces:
+        ps = [poses[g][key_of[fc.cube]] for g in range(Lc + 1)]
         for g in range(1, Lc):
-            if not (pose_key(ps[g]) == pose_key(ps[g - 1]) == pose_key(ps[g + 1]) and ps[g]["lidl"] == 0):
+            if not (pk(ps[g]) == pk(ps[g - 1]) == pk(ps[g + 1]) and ps[g]["lid"] == 0):
                 continue
-            ref = f.cube.quad(f.face, None, ps[g])
-            for vid, (rx_, ry_) in zip(f.shapes[0][1], ref):
+            ref = fc.cube.quad(fc.face, None, {"dip": ps[g].get("dip", 0)})
+            for vid, (rx_, ry_) in zip(fc.shapes[0][1], ref):
                 for prop, ref_v in (("x", rx_), ("y", ry_)):
                     r_ = rows_l.get((vid, prop))
                     if r_ is not None:
-                        d_ = abs(c3.value_at(r_, (g - phase0) % Lc) - ref_v) * K
+                        d_ = abs(c3.value_at(r_, (g - phase0) % Lc) - ref_v)
                         if d_ > flush:
-                            flush, flush_at = d_, (f.name, g, prop)
-    assert flush < 0.05, ("a shut lid is not flush with its box", flush, flush_at)
+                            flush, flush_at = d_, (fc.name, g, prop)
+    assert flush < 0.05, ("a shut lid is not flush with its cube", flush, flush_at)
 
     # ---------------------------------------------------------------- the report
     sec = lambda g: f"{3.2 + g / 60:.2f}"
     table = "\n".join(f"  {sec(a_):>6}-{sec(b_):<6} {k:4s} {t_}" for a_, b_, k, t_ in log)
-    flights = "; ".join(f"{lab} {sec(a_)}-{sec(b_)} s apex y {apex:.0f} (ball top {apex - R_BALL:.0f}) v ({vv[0]:.2f}, {vv[1]:.2f})"
-                        for lab, a_, b_, apex, vv in P.notes)
-    tight = min((clearance(g, P.p[g], {"free": (), "enterL": L_IN, "reveal": U_OVER | {U_BACK}, "onU": {U_BACK}, "release": {U_BACK, f"{U.name} Right"}}[P.state[g]])[0], g)
-                for g in range(0, Lc, 1) if P.state[g] != "hidden" and g not in set(hidden_frames))
-    return (f"{ROOM}: loop {Lc / 60:.2f} s ({Lc} frames), the loop starts at 3.20 s on the reveal\n{table}\n"
-            f"  3D cubes (perspective {c3.PERSPECTIVE}, rest pose within {worst:.3f} of the drawing), {moving_tracks} vertex tracks keyed "
-            f"({thinned} keys thinned, {ball_thinned} on the ball); L's shut lid flush within {flush:.3f} px\n"
+    flights = "; ".join(f"{lab} {sec(a_)}-{sec(b_)} s ({b_ - a_ + 1} fr) apex y {apex:.0f}" for lab, a_, b_, apex, vv in P.notes)
+    dev = max(math.dist((CUBE[k].centre[0] - CUBE[k].hx, CUBE[k].centre[1] - CUBE[k].hy), FIGMA[k]) for k in CELLS)
+    return (f"{ROOM}: loop {Lc / 60:.2f} s ({Lc} frames), the loop starts at 3.20 s with the ball at its start spot\n{table}\n"
+            f"  six cubes on one lattice (every front square within {dev:.2f} px of the Figma), {moving_tracks} vertex tracks keyed "
+            f"({thinned} keys thinned, {ball_thinned} on the ball); shut lids flush within {flush:.3f} px\n"
             f"  flights: {flights}\n"
-            f"  the ride: leaves U's top at {math.degrees(RIDE_REL):.0f} degrees of the roll, v ({v[0]:.2f}, {v[1]:.2f}), lands at x {land_at[0]:.1f} "
-            f"(vx {vx_land:.2f}, vy {vy_land:.2f}); the hop into L: {T_IN} frames, rim clearance {best[0]:.1f} px\n"
-            f"  ball top {ball_top:.0f}, pieces top {piece_top:.0f}; closest approach to a cube it may not touch: {tight[0]:.2f} px past "
-            f"the edge's stroke (frame {tight[1]}, {sec(tight[1])} s)\n"
-            f"  longest out of sight {longest_hidden} frames ({longest_hidden / 60:.2f} s); longest still in view outside the rests "
-            f"{longest_still} frames ({longest_still / 60:.2f} s, from {sec(still_at) if still_at is not None else '-'} s)")
+            f"  ball top {ball_top:.0f}; closest to any cube face, edge or lid: {tight[0]:.2f} px (frame {tight[1]}, {sec(tight[1])} s, {tight[2]})\n"
+            f"  longest out of sight {longest_hidden} frames ({longest_hidden / 60:.2f} s, ending {sec(run_at)} s); longest still in view outside "
+            f"the rests {longest_still} frames ({longest_still / 60:.2f} s, from {sec(still_at) if still_at is not None else '-'} s)")
+
+
+LAYER_TOL = 3.0                                # px of depth the layering check forgives (the ball and a face meeting at a rim)
