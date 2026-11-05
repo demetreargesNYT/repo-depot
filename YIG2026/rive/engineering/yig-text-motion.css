@@ -4,8 +4,7 @@
   Copy rises in from behind a mask, one line after another, and lifts out and dissolves when it leaves. An icon or image
   pops in instead. Everything is timed from the variables below.
 
-  Classes (engineering-guide.md, section 9, has the markup: per line on every card, with block and per element as fallbacks,
-  and when to add each class):
+  Classes ("Copy timing" in engineering-guide.md has the markup, one line per designed line, and when to add each class):
     yig-text         a card's copy block
     yig-icon         a game's icon block, with the icon inside yig-pop
     yig-mask > yig-line   one line (or one piece of copy); each rises inside its own mask
@@ -19,7 +18,7 @@
 :root {
   --yig-first-visit: 2s;    /* a room's first visit: the copy arrives this long after the scene is set */
   --yig-lockup: 3.2s;       /* a Chapter 2 game's first card with its lockup: the whole intro, so the copy never overlaps the lockup */
-  --yig-delay: var(--yig-first-visit); /* the default wait; set it per card from the table in engineering-guide.md, section 6 */
+  --yig-delay: var(--yig-first-visit); /* the default wait; set it per card from the "Copy timing" table in engineering-guide.md */
   --yig-clear: 340ms;       /* how long the old copy takes to dissolve; yig-quick waits this long */
   --yig-rise: 720ms;
   --yig-lift: 240ms;
