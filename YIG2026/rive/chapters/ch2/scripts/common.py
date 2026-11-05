@@ -21,10 +21,20 @@ sys.path.insert(0, str(RIVE_DIR / "tools"))
 BASE_REV = "340b2c7"
 
 
+# Scene names describe position or data, never the illustration (Demetre, 2026-11-05). The base text still has the old names; the
+# conditions and transitions refer to the enum values by id, so renaming the enum's keys and values is the whole change.
+SCENE_RENAMES = {"intro": "chapter-2", "daily": "crossword", "bridge": "chapter-2-community-intro"}
+
+
 def base_text():
     import subprocess
     r = subprocess.run(["git", "show", f"{BASE_REV}:./chapters/ch2/scene.rml"], cwd=RIVE_DIR, capture_output=True, text=True, check=True)
-    return r.stdout
+    text = r.stdout
+    for old, new in SCENE_RENAMES.items():
+        line = f'<DataEnumValue key="{old}" value="{old}" '
+        assert text.count(line) == 1, old
+        text = text.replace(line, f'<DataEnumValue key="{new}" value="{new}" ')
+    return text
 
 from rml_edit import Doc, bake, num  # noqa: E402
 from rml_read import Scene  # noqa: E402

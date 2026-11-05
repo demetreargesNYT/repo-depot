@@ -40,7 +40,7 @@
   },
   "scenes": [
     {
-      "name": "intro",
+      "name": "chapter-2",
       "kind": "opener",
       "room": "Shelf",
       "title": "The opener (Shelf)"
@@ -82,7 +82,7 @@
       "title": "The Midi"
     },
     {
-      "name": "daily",
+      "name": "crossword",
       "kind": "game",
       "room": "The Crossword",
       "title": "The Crossword"
@@ -102,10 +102,10 @@
       "about": "Empty Chapter 1 room: this file's first picture (its default) and File 1's last."
     },
     {
-      "name": "bridge",
+      "name": "chapter-2-community-intro",
       "kind": "picture",
       "colors": "Bridge Colors",
-      "about": "Chapter 2.5's bridge card, for players with exactly one qualifying game: an empty version of the opener's room (wall E7F1E1, pink floor). Its copy arrives when the pan ends. Its pieces are arranged on the Bridge Art artboard, which never exports."
+      "about": "Chapter 2.5's community intro card (\"The rest of the world also came to play.\"; was `bridge`), for players with exactly one qualifying game: an empty version of the opener's room (wall E7F1E1, pink floor). Its copy arrives when the pan ends. Its pieces are arranged on the Bridge Art artboard, which never exports."
     }
   ],
   "roomsSheet": "docs/rooms.md",
@@ -117,12 +117,12 @@
       "Connections"
     ],
     "scenes": [
-      "intro",
+      "chapter-2",
       "wordle",
       "connections",
       "to-chapter-3",
       "from-chapter-1",
-      "bridge"
+      "chapter-2-community-intro"
     ],
     "start": "from-chapter-1",
     "tapOrders": {
@@ -135,7 +135,7 @@
         "wordle"
       ],
       "sw": [
-        "intro",
+        "chapter-2",
         "wordle"
       ],
       "wx": [
@@ -150,7 +150,7 @@
     "labels": {
       "from-chapter-1": "Chapter 1",
       "to-chapter-3": "Chapter 3",
-      "bridge": "Bridge"
+      "chapter-2-community-intro": "Chapter 2 community intro"
     }
   }
 }

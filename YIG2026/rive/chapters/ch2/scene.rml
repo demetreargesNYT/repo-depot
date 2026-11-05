@@ -57639,17 +57639,17 @@
     </Artboard>
     <SVGAsset file="chapter-2-rive-import.svg" height="1067" width="1495" assetId="7187791" name="chapter-2-rive-import" id="1:16"/>
     <DataEnumCustom name="Scene" id="1:9001">
-        <DataEnumValue key="intro" value="intro" id="1:9100"/>
+        <DataEnumValue key="chapter-2" value="chapter-2" id="1:9100"/>
         <DataEnumValue key="wordle" value="wordle" id="1:9101"/>
         <DataEnumValue key="connections" value="connections" id="1:9102"/>
         <DataEnumValue key="strands" value="strands" id="1:9103"/>
         <DataEnumValue key="spelling-bee" value="spelling-bee" id="1:9104"/>
         <DataEnumValue key="mini" value="mini" id="1:9105"/>
         <DataEnumValue key="midi" value="midi" id="1:9106"/>
-        <DataEnumValue key="daily" value="daily" id="1:9107"/>
+        <DataEnumValue key="crossword" value="crossword" id="1:9107"/>
         <DataEnumValue key="to-chapter-3" value="to-chapter-3" id="1:9108"/>
         <DataEnumValue key="from-chapter-1" value="from-chapter-1" id="1:9109"/>
-        <DataEnumValue key="bridge" value="bridge" id="1:9110"/>
+        <DataEnumValue key="chapter-2-community-intro" value="chapter-2-community-intro" id="1:9110"/>
     </DataEnumCustom>
     <DataEnumCustom name="Direction" id="1:9002">
         <DataEnumValue key="forward" value="forward" id="1:9200"/>
