@@ -9,10 +9,10 @@ ball never uses the pad, and the big hex never moves.
   3  eager: three quick little hops in place, each with a small gather; the plate flips on each landing, a little faster each time
   4  showing off: a deeper gather and a slight lean, one bigger hop, a proud landing; the plate spins like a top, slowing to a stop on
      its starting face, while the ball watches with a faint, eased roll
-  5  the honey moment: the ball hops down onto the coaster's big hex and lands soft, staying squashed 0.3 s longer, then leans towards
-     the mug with a small upward stretch and pops loose
-  6  home: it arcs in front of the block's lower-left corner (overlapping it: depth) and over the mug's left rim, drops in (the hidden reset), and the mug gives one
-     small proud wobble
+  5  bounce down: the ball hops down onto the coaster's big hex and bounces off it (keeping about 75 to 80 percent), up and left into the lily
+     pad's lower right face (drawn at 107 degrees), which knocks it back up and right (88 percent kept); the pad gives a little
+  6  home: that ricochet carries it in front of the block's lower-left corner (overlapping it: depth) and over the mug's left rim; it
+     drops in (the hidden reset), and the mug gives one small proud wobble
 
 One gravity (0.40), every flight a whole-frame parabola. Squash and stretch about the ball's bottom (Ball_01_Scale), volume constant;
 a lean is a turn of Ball_01_Scale about the contact point, with the spin pivot turned back by the same angle so the dot only turns with
@@ -48,15 +48,17 @@ CALM1, CALM1_DX = 60, -3.0                 # after the hops: a faint roll back
 BIG_GATHER, BIG_VX, BIG_T, BIG_LEAN = 18, -0.25, 36, math.radians(-3.0)
 TOP_AT, TOP_N, TOP_TURNS = 2, 150, 8       # the top spin: 8 half turns (4 whole) over 2.5 s, slowing to a stop
 WATCH_AT, WATCH_N, WATCH_DX = 22, 134, 5.0     # it watches until the top has stopped
-CALM2, CALM2_DX = 56, -2.0
+CALM2, CALM2_DX = 56, -5.0
 DOWN_GATHER = 9
-HONEY_SETTLE, HONEY_ROCK = 5, 1.4          # the sticky landing rolls on 5 frames and rocks back 1.4 px
-HONEY_HOLD, PULL_N, PULL_LEAN = 18, 18, math.radians(4.0)
+PAD_FACES = {"the lily pad's upper right slant": (PAD[0], PAD[5]), "the lily pad's lower right face": (PAD[5], PAD[4]),
+             "the lily pad's bottom": (PAD[4], PAD[3])}
+PAD_NODE = (627.625, 658.929)              # the lily pad's node (it turns about it)
+PAD_GIVE, PAD_TILT = 3.2, math.radians(1.6)   # how far the hit pushes the pad (along the hit), and its tilt
 HOME_BEAT = 84                             # hidden in the mug after the catch before the loop starts again
 
 # squash and stretch (maximums from CLAUDE.md: gather 5, landing 6, big landing 8, flight stretch 3 on the fastest moves only)
 SQ = dict(mug_gather=0.04, land1=0.05, hop_gather=0.02, hop_land=0.03, big_gather=0.045, proud=0.075, down_gather=0.03,
-          honey=0.07, pull=0.02)
+          coaster=0.06, pad_hit=0.03)
 
 ease = lambda u: 0.0 if u <= 0 else 1.0 if u >= 1 else (4 * u ** 3 if u < 0.5 else 1 - (-2 * u + 2) ** 3 / 2)
 sine = lambda u: 0.0 if u <= 0 else 1.0 if u >= 1 else 0.5 - 0.5 * math.cos(math.pi * u)
@@ -176,55 +178,113 @@ def mug_pose(c, c_catch):
     return sx, sy, rho, (MUG_BASE[0] - (rx * c_ - ry * s_), MUG_BASE[1] - (rx * s_ + ry * c_))
 
 
-def plan_honey(x_s, BT, YC, Rc):
-    """The hop down from the block (from x_s) to the coaster's big hex, and the hop from there into the mug, chosen together for the
-    most room: the hop down keeps clear of the block's left side and the lily pad; the hop into the mug threads the gap between the
-    block's lower-left corner and the mug's left rim, crosses the rim's line inside the opening and is hidden before the far wall."""
+def settle(u, A, T=24, ov=0.22):
+    """A give of A under a hit, one small overshoot back the other way, still at T frames (0.4 s)."""
+    if u <= 0 or u >= T:
+        return 0.0
+    T1 = 0.55 * T
+    return A * math.sin(math.pi * u / T1) if u < T1 else -ov * A * math.sin(math.pi * (u - T1) / (T - T1))
+
+
+def first_pad_hit(p, v, Rc, tmax=70.0):
+    """The first contact of a flight (from p with velocity v) with the lily pad's right-hand faces: (time, centre, face, normal),
+    or None if it misses them or meets a corner instead of a face."""
+    t, step = 0.0, 0.25
+    while t < tmax:
+        t += step
+        q = (p[0] + v[0] * t, p[1] + v[1] * t + 0.2 * t * t)
+        if min(seg_dist(q, a, b) for a, b in PAD_FACES.values()) <= Rc:
+            lo, hi = t - step, t
+            for _ in range(40):
+                m = (lo + hi) / 2
+                qm = (p[0] + v[0] * m, p[1] + v[1] * m + 0.2 * m * m)
+                if min(seg_dist(qm, a, b) for a, b in PAD_FACES.values()) <= Rc:
+                    hi = m
+                else:
+                    lo = m
+            qh = (p[0] + v[0] * hi, p[1] + v[1] * hi + 0.2 * hi * hi)
+            name, (a, b) = min(PAD_FACES.items(), key=lambda kv: seg_dist(qh, *kv[1]))
+            dx, dy = b[0] - a[0], b[1] - a[1]
+            u = ((qh[0] - a[0]) * dx + (qh[1] - a[1]) * dy) / (dx * dx + dy * dy)
+            if not 0.08 <= u <= 0.92:
+                return None
+            n = (dy / math.hypot(dx, dy), -dx / math.hypot(dx, dy))
+            if (qh[0] - a[0]) * n[0] + (qh[1] - a[1]) * n[1] < 0:
+                n = (-n[0], -n[1])
+            return hi, qh, name, n
+        if q[1] - 23.865 < COPY_Y:
+            return None
+    return None
+
+
+def plan_bounces(x_s, BT, YC, Rc):
+    """The hop down from the block (from x_s) onto the coaster's big hex, the bounce off it into the lily pad's face, and the
+    ricochet from there into the mug, chosen together: the hop down keeps clear of the block's side and the pad; each contact keeps 72
+    to 90 percent of its speed; the ricochet keeps clear of the pad and the mug's rim, passes in front of the block's corner clearly
+    overlapping it or clearly apart (never a near-miss), crosses the rim's line inside the opening and is hidden before the far wall."""
     best = None
-    for T in range(36, 54):
-        for xl10 in range(6980, 7300, 10):
-            xl = xl10 / 10
+    for T in range(34, 56):
+        for xl2 in range(1400, 1500):
+            xl = xl2 / 2
             vx = (xl - x_s) / T
             vy0 = (YC - BT - 0.2 * T * T) / T
-            if not -5.5 <= vy0 <= -2.0:
+            if not -5.5 <= vy0 <= -1.5:
                 continue
             c_down = 99.0
             for k in range(1, 2 * T):
                 t = k / 2
                 q = (x_s + vx * t, BT + vy0 * t + 0.2 * t * t)
-                if q[1] - 23.865 < COPY_Y:
-                    c_down = -1
-                    break
                 c_down = min(c_down, clearance(q, block=t >= 3))
             if c_down < 24.4:
                 continue
-            xc = xl + vx * HONEY_SETTLE / 2 + HONEY_ROCK
-            for T2 in range(24, 44):
-                for vxi in range(100, 180):
-                    vx2 = vxi / 40
-                    # it crosses the rim's line (y 668) on frame T2, coming down
-                    vy2 = (668 - YC - 0.2 * T2 * T2) / T2
-                    if vy2 + 0.4 * T2 <= 0:
+            vin = (vx, vy0 + 0.2 * (2 * T - 1))
+            for ec in (0.72, 0.74, 0.76, 0.78, 0.80, 0.84, 0.88):
+                for ktc in (0.85, 0.92, 1.0):
+                    vo = (vin[0] * ktc, -vin[1] * ec)
+                    kc = math.hypot(*vo) / math.hypot(*vin)
+                    if not 0.72 <= kc <= 0.9:
                         continue
-                    cross = xc + vx2 * T2
-                    if not 796 <= cross <= 810:
+                    h = first_pad_hit((xl, YC), (vo[0], vo[1] + 0.2), Rc)
+                    if not h:
                         continue
-                    c_in, deep, t = 99.0, -99.0, 0.0
-                    while True:
-                        t += 0.5
-                        q = (xc + vx2 * t, YC + vy2 * t + 0.2 * t * t)
-                        if q[1] >= HIDE_Y and vy2 + 0.4 * t > 0:
-                            break
-                        c_in = min(c_in, clearance(q, block=False, pad=False))
-                        deep = max(deep, 23.865 - block_signed(q))
-                    # it passes in front of the block's lower-left corner, clearly overlapping it (never a near-miss)
-                    if q[0] > 818 or c_in < 25.5 or not OVERLAP[0] <= deep <= OVERLAP[1] or q_top(xc, YC, vy2) < COPY_Y:
+                    tc, qc, face, n = h
+                    vc = (vo[0], vo[1] + 0.2 + 0.4 * tc)
+                    vn = vc[0] * n[0] + vc[1] * n[1]
+                    if vn >= 0:
                         continue
-                    score = min(c_down, c_in)
-                    if best is None or score > best[0]:
-                        best = (score, T, xl, vx, vy0, xc, T2, vx2, vy2, c_down, c_in, deep)
-    assert best, "no hop down and into the mug clears the block, the pad and the rim"
-    return best
+                    vt = (vc[0] - vn * n[0], vc[1] - vn * n[1])
+                    for ep in (0.75, 0.8, 0.85, 0.9):
+                        for ktp in (0.85, 0.92):
+                            w = (ktp * vt[0] - ep * vn * n[0], ktp * vt[1] - ep * vn * n[1])
+                            kp = math.hypot(*w) / math.hypot(*vc)
+                            if not 0.72 <= kp <= 0.9 or w[0] <= 0:
+                                continue
+                            c_rim, cross, deep, cpad, t, ok = 99.0, None, -99.0, 99.0, 0.0, True
+                            while True:
+                                t += 0.5
+                                q = (qc[0] + w[0] * t, qc[1] + w[1] * t + 0.2 * t * t)
+                                if q[1] - 23.865 < COPY_Y or t > 90:
+                                    ok = False
+                                    break
+                                down = w[1] + 0.4 * t > 0
+                                if down and q[1] >= 668 and cross is None:
+                                    cross = q[0]
+                                if down and q[1] >= HIDE_Y:
+                                    break
+                                c_rim = min(c_rim, min(math.dist(q, r) for r in RIM))
+                                deep = max(deep, 23.865 - block_signed(q))
+                                if t > 1.5:
+                                    cpad = min(cpad, min(seg_dist(q, a, b) for a, b in PAD_FACES.values()))
+                            if not ok or cross is None or not 796 <= cross <= 810 or q[0] > 818:
+                                continue
+                            if c_rim < 25.5 or cpad < Rc + 2 or not (deep <= -3 or OVERLAP[0] <= deep <= OVERLAP[1]):
+                                continue
+                            score = min(c_rim - 25.5, c_down - 24.4)
+                            if best is None or score > best[0]:
+                                best = (score, dict(T=T, xl=xl, vx=vx, vy0=vy0, vo=vo, kc=kc, tc=tc, qc=qc, face=face, n=n, w=w, kp=kp,
+                                                    cross=cross, deep=deep, c_rim=c_rim, c_down=c_down))
+    assert best, "no bounce chain from the block to the big hex, the lily pad and the mug works"
+    return best[1]
 
 
 OVERLAP = (9.0, 16.0)                      # how deep the ball's outline crosses into the block's corner on the way into the mug (px)
@@ -292,32 +352,32 @@ def build(doc, scene, sheet):
     tr.roll_sine(-1.0, DOWN_GATHER)
     gathers.append((tr.f - DOWN_GATHER, tr.f, SQ["down_gather"]))
     x_s = tr.pos[-1][0]
-    plan = plan_honey(x_s, BT, YC, RC)
-    _, T_d, x_l, vx_d, vy_d, x_c, T2, vx2, vy2, c_down, c_in, deep = plan
-    _, c_honey = tr.hop(vx_d, T_d, YC, "the coaster's big hex (honey)", w_air=0.25 * vx_d / R, vy0=vy_d)
-    tr.roll_out(vx_d, HONEY_SETTLE)                        # sticky: it rolls on only a touch, then rocks back
-    tr.roll_sine(x_c - tr.pos[-1][0], 10)
-    while tr.f < c_honey + 5 + HONEY_HOLD + 10:
-        tr.roll_sine(0.0, 1)
-    c_pull = tr.f
-    tr.still(PULL_N)                                       # leaning towards the mug and stretching up, pulling free
-    leans.append((c_pull, tr.f, PULL_LEAN, 8))
-    pull = (c_pull, tr.f)
-    go2 = tr.f
-    x0, y0 = tr.pos[-1]
-    t = 0
-    c_catch = c_hid = None
-    w2 = 0.25 * vx2 / R
+    P = plan_bounces(x_s, BT, YC, RC)
+    c_go_down, c_coaster = tr.hop(P["vx"], P["T"], YC, "the coaster's big hex", w_air=0.25 * P["vx"] / R, vy0=P["vy0"])
+    # off the big hex (it grips: the turn follows its sideways speed), into the pad's face, and off that into the mug
+    (x0, y0), vo, tc, qc, n, w = tr.pos[-1], P["vo"], P["tc"], P["qc"], P["n"], P["w"]
+    w_air = vo[0] / R
+    tang = (-n[1], n[0])
+    w_pad = 0.5 * w_air + 0.5 * (w[0] * tang[0] + w[1] * tang[1]) / R
+    k, c_catch = 0, None
     while True:
-        t += 1
-        p = (x0 + vx2 * t, y0 + vy2 * t + 0.2 * t * t)
-        tr.put(p, w2)
-        if c_catch is None and p[1] >= 668 and vy2 + 0.4 * t > 0:
+        k += 1
+        if k < tc:
+            p = (x0 + vo[0] * k, y0 + (vo[1] + 0.2) * k + 0.2 * k * k)
+            tr.put(p, w_air)
+        else:
+            u = k - tc
+            p = (qc[0] + w[0] * u, qc[1] + w[1] * u + 0.2 * u * u)
+            tr.put(p, w_pad)
+        if c_catch is None and k > tc and p[1] >= 668 and w[1] + 0.4 * (k - tc) > 0:
             c_catch, cross = tr.f, p
-        if p[1] >= HIDE_Y and vy2 + 0.4 * t > 0:
+        if k > tc and p[1] >= HIDE_Y and w[1] + 0.4 * (k - tc) > 0:
             c_hid = tr.f
             break
-    tr.flights.append((go2, t, vx2, vy2))
+    c_pad = c_coaster + math.ceil(tc)
+    tr.landings.append((c_pad, P["face"], math.hypot(vo[0], vo[1] + 0.4 * tc)))
+    tr.flights.append((c_coaster, math.floor(tc), vo[0], vo[1] + 0.2))
+    tr.flights.append((c_pad, c_hid - c_pad, w[0], w[1] + 0.4 * (c_pad - c_coaster - tc)))
     # hidden in the mug: it keeps falling to the bottom, the mug catches it, then it settles back to its starting place
     vxh, vyh = tr.pos[-1][0] - tr.pos[-2][0], tr.pos[-1][1] - tr.pos[-2][1]
     hx, hy = tr.pos[-1]
@@ -370,17 +430,7 @@ def build(doc, scene, sheet):
         for land in hop_lands:
             v += land_pulse(g - land, SQ["hop_land"])
         v += land_pulse(g - c_proud, SQ["proud"], down=4, back=7, after=4)
-        u = g - c_honey                                    # the honey landing: soft, held 0.3 s longer, then let go
-        if 0 <= u <= 5:
-            v += SQ["honey"] * smooth(u / 5)
-        elif 5 < u <= 5 + HONEY_HOLD:
-            v += SQ["honey"] * (1 - 0.08 * smooth((u - 5) / HONEY_HOLD))
-        elif 5 + HONEY_HOLD < u <= 5 + HONEY_HOLD + 10:
-            v += SQ["honey"] * 0.92 * (1 - smooth((u - 5 - HONEY_HOLD) / 10))
-        if pull[0] <= g <= pull[1]:                        # the small upward stretch as it pulls free
-            v -= SQ["pull"] * smooth((g - pull[0]) / (pull[1] - pull[0]))
-        elif pull[1] < g <= pull[1] + 6:
-            v -= SQ["pull"] * (1 - smooth((g - pull[1]) / 6))
+        v += land_pulse(g - c_coaster, SQ["coaster"])
         s[g] = v
         for a, b, ang, back in leans:
             if a <= g <= b:
@@ -399,10 +449,11 @@ def build(doc, scene, sheet):
     assert max(s) <= 0.08 + 1e-9 and min(s) >= -0.03 - 1e-9, (max(s), min(s))
     assert abs(s[0] - s[L]) < 1e-9 and abs(lean[0] - lean[L]) < 1e-9
     cyc = Cycle(L)
+    hs = [land_pulse(g - c_pad, SQ["pad_hit"], down=2, back=6, after=2) for g in range(L + 1)]   # the hit on the pad's face: across
     for g in range(L + 1):
         cyc.put(g, pos[g], "air")
-        cyc.sy[g] = 1 - s[g]
-        cyc.sx[g] = 1 / (1 - s[g])                         # volume constant
+        cyc.sy[g] = (1 - s[g]) / (1 - hs[g])
+        cyc.sx[g] = (1 - hs[g]) / (1 - s[g])               # volume constant
     th_spin = [th[g] - lean[g] for g in range(L + 1)]      # the dot turns only with the travel, not with the lean
 
     # ------------------------------------------------------------------ the pieces' keys
@@ -419,6 +470,10 @@ def build(doc, scene, sheet):
         pieces.append((mug, "scaleY", ser(lambda g: pose[g][1]), intro_series(scene, sheet, ROOM, mug, "scaleY")))
         pieces.append((mug, "rotation", ser(lambda g: pose[g][2]), None))
     pieces.append((art.scale, "rotation", ser(lambda g: lean[g]), None))
+    # the lily pad gives under the hit: pushed along the hit a little, tilted a little, one small overshoot, still in 0.4 s
+    pieces.append(("9:504", "x", ser(lambda g: PAD_NODE[0] - n[0] * settle(g - c_pad, PAD_GIVE)), None))
+    pieces.append(("9:504", "y", ser(lambda g: PAD_NODE[1] - n[1] * settle(g - c_pad, PAD_GIVE)), intro_series(scene, sheet, ROOM, "9:504", "y")))
+    pieces.append(("9:504", "rotation", ser(lambda g: settle(g - c_pad, PAD_TILT)), None))
 
     # the plate: one coin turn per flip (half a turn of |cos|: it ends on the face it started on), then the top's spin, slowing down
     for (a, n), (b, _) in zip(flips, flips[1:] + [top]):
@@ -462,13 +517,15 @@ def build(doc, scene, sheet):
         assert pos[g][1] - 23.865 >= COPY_Y - 1e-6, ("the ball's top above the copy line", g, pos[g])
         if pos[g][1] < HIDE_Y:
             assert 560 <= pos[g][0] <= 935, ("outside the phone frame", g)
-    on_top = [pos[g][0] for g in range(c_land1, go2) if abs(pos[g][1] - BT) < 1e-6]
+    on_top = [pos[g][0] for g in range(c_land1, c_go_down) if abs(pos[g][1] - BT) < 1e-6]
     assert min(on_top) >= 782 and max(on_top) <= 838, ("rolling off the block's top", min(on_top), max(on_top))
     assert 793 <= cross[0] <= 821, ("the ball misses the mug's opening", cross)
 
     sec = lambda g: f"{(T0 + g) / 60:.2f} s"
     beats = [f"pop {sec(go)}", f"block {sec(c_land1)}", f"plate turns {sec(flips[0][0])}", f"glance {sec(c_gl)}",
              "hops " + ", ".join(sec(x) for x in hop_lands), f"gather {sec(c_big)}", f"proud landing {sec(c_proud)}",
-             f"top spin {sec(top[0])} to {sec(top[0] + top[1])}", f"hop down {sec(c_honey - T_d)}", f"honey {sec(c_honey)}",
-             f"pulls free {sec(c_pull)}", f"into the mug {sec(c_catch)} (in front of the block's corner, {deep:.1f} px over it; {c_in:.1f} from the rim; down {c_down:.1f})"]
+             f"top spin {sec(top[0])} to {sec(top[0] + top[1])}", f"hop down {sec(c_go_down)}", f"big hex {sec(c_coaster)} ({P['kc']:.0%} kept)",
+             f"{P['face']} {sec(c_coaster + tc)} ({P['kp']:.0%} kept)",
+             f"into the mug {sec(c_catch)} (crosses x {cross[0]:.0f}; in front of the block's corner, {P['deep']:.1f} px over it; "
+             f"{P['c_rim']:.1f} from the rim; hop down {P['c_down']:.1f} clear)"]
     return f"{ROOM}: " + ", ".join(beats) + f"; loop {L / 60:.2f} s ({L} frames)"
