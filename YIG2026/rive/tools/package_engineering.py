@@ -1,6 +1,6 @@
 """Build the one engineering package for all three Rive files, and zip it.
 
-    python3 tools/package_engineering.py
+    python3 tools/package_engineering.py --working     (the working tree's chapters; `npm run package` uses tools/package_from_tags.py)
 
 Builds the unzipped package in .cache/scratch.nosync/shared/yig-engineering-package/ and writes only the zip to deliver/
 (deliver/yig-engineering-package.zip; neither is in git). The unzipped folder stays out of the iCloud-synced Desktop, so a rebuild
@@ -10,7 +10,7 @@ leaves no "core 2"-style conflict copies; its path is printed at the end, to ope
      scratch copy first, so the delivered .riv has only the main artboard. The built files are checked: the artboard,
      the state machine and the view model are there by name, and no working artboard is
   3. the package is assembled in two folders: core/ (the three .riv files, the engineering guide, the text CSS and the desktop arrow art:
-     everything engineering needs) and reference/ (optional: the React example, our integration file and a standalone page that plays
+     everything engineering needs; core/card-flow.md is the card-by-card spec) and reference/ (optional: the React example, our integration file and a standalone page that plays
      the whole experience), plus a five-line README at the root
   4. the guide and the README carry no internal version numbers, git references or names only we would understand (checked)
 """
@@ -113,7 +113,7 @@ def reference_integration():
 def readme():
     return """# Year in Games 2026: Rive files for engineering
 
-Read `core/engineering-guide.md` first. It has everything you need to build with these files.
+Read `core/engineering-guide.md` first. It has everything you need to build with these files. `core/card-flow.md` lists every card in order for both flows.
 
 This replaces the Nov 3 package. Scene names have changed; use the names in the guide.
 
@@ -123,6 +123,7 @@ This replaces the Nov 3 package. Scene names have changed; use the names in the 
 |---|---|
 | `start-chapter-1.riv`, `chapter-2.riv`, `chapters-3-4-end.riv` | The three Rive files |
 | `engineering-guide.md` | The guide |
+| `card-flow.md` | Every card in order, for both flows: scene, settings, copy wait and when it is skipped |
 | `yig-text-motion.css` | The copy motion and waits |
 | `ui-desktop-button.svg` | The desktop arrow button |
 
@@ -163,6 +164,7 @@ def assemble(files):
     for chapter, data in files.items():
         (core / RIVS[chapter]).write_bytes(data)
     shutil.copy(REPO / "docs" / "engineering-guide.md", core / "engineering-guide.md")
+    shutil.copy(REPO / "docs" / "card-flow.md", core / "card-flow.md")
     shutil.copy(REPO / "engineering" / "yig-text-motion.css", core / "yig-text-motion.css")
     shutil.copy(REPO / "art" / "global" / "ui-desktop-button.svg", core / "ui-desktop-button.svg")      # the desktop arrow art: engineering needs it, so it is in core/ (the demo page keeps its own copy)
     (core / "ui-desktop-button.svg").chmod(0o644)
@@ -192,10 +194,22 @@ def scrub():
             for n, line in enumerate(path.read_text().splitlines(), 1):
                 if bad.search(line) or (path.suffix == ".md" and ours.search(line)):
                     problems.append(f"{path.relative_to(OUT)}:{n}: {line.strip()[:100]}")
+    # card-flow.md also gets the public pages' check (no person, design file, pull request, local path or server) and the old-name
+    # check: none of the Nov 3 scene names, which are fine only in the guide's last section. Its frame names (such as chapter-1--intro)
+    # are the design files' names, so the word "intro" is checked in the Scene column instead (a scene that isn't in the enum fails the harness test).
+    import public_copy      # here, not at the top: public_copy imports this file
+    flow = OUT / "core" / "card-flow.md"
+    old = re.compile(r"chapter-1-card-\d|chapter-3-bird|\bad-3\b|\bdaily\b|\bbridge\b|`intro`", re.I)
+    for n, line in enumerate(flow.read_text().splitlines(), 1):
+        hit = public_copy.INTERNAL.search(line) or old.search(line)
+        if hit:
+            problems.append(f"core/card-flow.md:{n}: {hit.group(0)!r} in {line.strip()[:100]}")
     return problems
 
 
-def main():
+def main(src_for=None):
+    """`src_for(chapter)` gives the folder to build a chapter from (tools/package_from_tags.py passes each tag's files);
+    without it the build reads chapters/<chapter>, the working tree."""
     for chapter in RIVS:
         out = check_chapter.run(chapter)
         failed = [t for ok, t in out if not ok]
@@ -204,7 +218,7 @@ def main():
     print(f"rule checks pass for {', '.join(RIVS)}")
     scratch.SCRATCH.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="package-", dir=scratch.SCRATCH) as tmp:
-        files = {c: build(c, Path(tmp)) for c in RIVS}
+        files = {c: build(c, Path(tmp), src=src_for(c) if src_for else None) for c in RIVS}
     assemble(files)
     problems = scrub()
     if problems:
@@ -224,4 +238,7 @@ def main():
 
 
 if __name__ == "__main__":
+    if "--working" not in sys.argv:
+        sys.exit("This builds from chapters/, which can hold art that isn't in Rive. Use `npm run package` (tools/package_from_tags.py), "
+                 "or pass --working to build from the working tree on purpose.")
     main()

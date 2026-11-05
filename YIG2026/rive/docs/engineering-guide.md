@@ -47,7 +47,7 @@ All settings are on the `Backdrop` view model. Set them in this order: `directio
 
 ## Scenes
 
-In flow order. Regi/Sub means a registered player or a subscriber. Anon means an anonymous player. A game qualifies with 10 or more completed puzzles in 2026. A Regi/Sub player with no qualifying game gets the Anon cards.
+In flow order. Regi/Sub means a registered player or a subscriber. Anon means an anonymous player. A game qualifies with 10 or more completed puzzles in 2026. A Regi/Sub player with no qualifying game gets the Anon cards. `card-flow.md` lists every card in order for both flows.
 
 | Scene | File | Regi/Sub cards | Anon cards | Skip when |
 |---|---|---|---|---|
@@ -57,7 +57,7 @@ In flow order. Regi/Sub means a registered player or a subscriber. Anon means an
 | `chapter-1`, `chapter-1-2` … `chapter-1-5` | 1 | The five Chapter 1 cards, one scene each | Same | Never. |
 | `from-chapter-1` | 2 | No card | No card | Always. File 2 opens here. |
 | `chapter-2` | 2 | Chapter 2 opener | Chapter 2 opener | Never. |
-| `wordle`, `connections`, `spelling-bee`, `mini`, `midi`, `crossword`, `strands` | 2 | Each qualifying game's cards, `lockup` true. In Chapter 2.5, one community card for each other community game, `lockup` false. | One community card each for Connections, Spelling Bee, The Mini and Strands, `lockup` false | The game doesn't qualify. The Midi and The Crossword have no community cards. |
+| `wordle`, `connections`, `spelling-bee`, `mini`, `midi`, `crossword`, `strands` | 2 | Each qualifying game's cards, `lockup` true. In Chapter 2.5, one community card for each other community game, `lockup` false. | One community card each for Connections, Spelling Bee, The Mini and Strands, `lockup` false | The game doesn't qualify. A community card is dropped only when its game is the player's one qualifying game; The Mini's community card stands in for The Mini, The Midi and The Crossword, so a player whose one game is The Midi or The Crossword sees all five. |
 | `chapter-2-community-intro` | 2 | Chapter 2.5's first card | No card | The player doesn't have exactly one qualifying game. |
 | `to-chapter-3` | 2 | No card | Ad 3 | Regi/Sub: always. Anon: the player has already seen Ad 3. |
 | `ad` | 3 | No card | No card | Always. File 3 opens here. It is not Ad 3. |

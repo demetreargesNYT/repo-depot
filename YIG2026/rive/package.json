@@ -13,7 +13,8 @@
     "suite": "caffeinate -i python3 tools/suite.py",
     "smoke": "caffeinate -i python3 tools/suite.py --smoke",
     "finesse": "python3 tools/finesse.py",
-    "package": "python3 tools/package_engineering.py",
+    "package": "python3 tools/package_from_tags.py",
+    "cardflow": "node --experimental-strip-types --no-warnings harness/card-flow-test.mjs",
     "public": "python3 tools/public_copy.py",
     "open-package": "test -d .cache/scratch.nosync/shared/yig-engineering-package || python3 tools/package_engineering.py && open .cache/scratch.nosync/shared/yig-engineering-package"
   }

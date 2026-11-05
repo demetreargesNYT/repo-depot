@@ -12,6 +12,7 @@
 import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { parseDoc, docCards } from "./card-flow.mjs";   // docs/card-flow.md, the spec that ships next to the guide
 import { chromeProfile } from "./scratch.mjs";   // Chrome's profile goes in .cache/scratch.nosync/, never /tmp
 
 const args = process.argv.slice(2);
@@ -69,32 +70,28 @@ async function browser(width, height) {
 
 const shownCopy = "[...document.querySelectorAll('.yig-text')].filter((e) => !e.hidden).map((e) => e.dataset.copyFrame).join(',')";
 
-// What each flow's card list must be, written out from the rules in the engineering guide (not read from the page)
+// The sample players (these are the page's own)
 const ORDER = ["wordle", "connections", "spelling-bee", "mini", "midi", "crossword", "strands"];
 const PER_GAME = { wordle: 4, connections: 5, "spelling-bee": 2, mini: 1, midi: 1, crossword: 1, strands: 1 };
-const COMMUNITY = ["wordle", "connections", "spelling-bee", "mini", "strands"];
 const COMPLETED = {
   "wordle-only": { wordle: 212, connections: 7, mini: 3 }, "midi-only": { midi: 40, crossword: 4 }, "connections-only": { wordle: 4, connections: 120, strands: 2 },
   "all-seven": Object.fromEntries(ORDER.map((g) => [g, 50])), "several-games": { wordle: 212, connections: 7, strands: 30, "spelling-bee": 64, mini: 50, midi: 40, crossword: 90 }, none: { wordle: 3, connections: 2 },
 };
 const BADGES = { "wordle-only": [5, 9], "midi-only": [3, 0], "connections-only": [0, 3], "all-seven": [0, 0], "several-games": [0, 14], none: [0, 0] };
-function expectedCards(flow, player) {
+// What each flow's card list must be: the document docs/card-flow.md, read by card-flow.mjs (not the page, not the integration).
+// This page's sample players have fewer cards per game than the design files (PER_GAME), so a game's later cards drop out.
+const CARD_FLOW = parseDoc();
+function expectedDoc(flow, player) {
   const own = ORDER.filter((g) => (COMPLETED[player][g] ?? 0) >= 10);
-  const anon = flow === "anon" || own.length === 0;
-  const out = ["1:loading", "1:start", "1:ad", "1:chapter-1", "1:chapter-1-2", "1:chapter-1-3", "1:chapter-1-4", "1:chapter-1-5", "1:ad", "2:chapter-2"];
-  if (anon) {
-    out.push(...COMMUNITY.filter((g) => g !== "wordle").map((g) => `2:${g}`), "2:to-chapter-3", "3:chapter-3", "3:chapter-3-2", "3:chapter-3-event-badges", "3:chapter-3-event-badges");
-  } else {
-    for (const g of own) for (let i = 0; i < PER_GAME[g]; i++) out.push(`2:${g}`);
-    if (own.length === 1) out.push("2:chapter-2-community-intro", ...COMMUNITY.filter((g) => g !== own[0]).map((g) => `2:${g}`));
-    out.push("3:chapter-3", "3:chapter-3-2");
-    if (BADGES[player][1] > 0) out.push("3:chapter-3-personal-badges");   // personal badges first, then event badges
-    if (BADGES[player][0] > 0) out.push("3:chapter-3-event-badges");
-  }
-  out.push("3:chapter-4", "3:chapter-4-top-game", "3:chapter-4-editor-video", "3:end");
-  if (!anon) out.push("3:share");
-  return out;
+  return docCards(CARD_FLOW, flow, { own, cardsPerGame: PER_GAME, personal: BADGES[player][1], events: BADGES[player][0], top: own[0] ?? "wordle" });   // BADGES is [event, personal]
 }
+const expectedCards = (flow, player) => expectedDoc(flow, player).map((c) => `${c.file}:${c.scene}`);
+// the settings the document gives a card, as the page's card carries them (lockup is false on a community card)
+const settingsOfPageCard = (c) => ({
+  ...(c.file === 2 && ORDER.includes(c.scene) ? { lockup: String(!c.community) } : {}),
+  ...(c.reveal !== undefined ? { reveal: String(c.reveal) } : {}),
+  ...(c.topGame ? { topGame: c.topGame } : {}),
+});
 
 const runs = [];
 for (const flow of FLOWS) for (const player of flow === "sub" ? PLAYERS : ["wordle-only"]) for (const size of SIZES) runs.push([flow, player, size]);
@@ -104,12 +101,15 @@ for (const [flow, player, size] of runs) {
     const RANGE = NEXT_RANGE || BACK_RANGE;
     await b.nav(`${BASE}${PATH}?flow=${flow}&player=${player}${RANGE ? `&jump=${RANGE[0]}` : ""}`);
     for (let i = 0; i < 150 && !(await b.ev("!!window.yigExperience")); i++) await sleep(100);
-    const cards = await b.ev("window.yigExperience.cards.map((c) => ({ file: c.file, scene: c.scene, reveal: c.reveal, icon: c.icon, ad: !!c.ad, community: !!c.community }))");
+    const cards = await b.ev("window.yigExperience.cards.map((c) => ({ file: c.file, scene: c.scene, reveal: c.reveal, topGame: c.topGame, icon: c.icon, ad: !!c.ad, community: !!c.community }))");
     const st = () => b.ev("window.yigExperience.state()");
     const tag = `${flow}${flow === "sub" ? " " + player : ""} · ${label} ${w}x${h}`;
     const want = expectedCards(flow, player);
     const got = cards.map((c) => `${c.file}:${c.scene}`);
     check(JSON.stringify(got) === JSON.stringify(want), `${tag}: the card list is the guide's (${got.length} cards)` + (JSON.stringify(got) === JSON.stringify(want) ? "" : `; got ${got.join(" ")} / want ${want.join(" ")}`));
+    const wantDoc = expectedDoc(flow, player);
+    const settingsBad = cards.map((c, i) => (JSON.stringify(settingsOfPageCard(c)) === JSON.stringify(wantDoc[i]?.settings) && !!c.ad === !!wantDoc[i]?.ad ? null : `${i} ${c.scene}`)).filter(Boolean);
+    check(!settingsBad.length, `${tag}: each card's settings (lockup, reveal, topGame) and ad tag are card-flow.md's${settingsBad.length ? ": " + settingsBad.slice(0, 3).join(", ") : ""}`);
     // the ad cards are Ad 1 (the first File 1 `ad`), Ad 2 (the one after chapter-1-5) and, for anonymous players, Ad 3
     // (File 2's `to-chapter-3`); the badge cards (File 3's chapter-3-*-badges scenes) are not ads
     const adsWant = [2, want.indexOf("2:chapter-2") - 1, ...(flow === "anon" || want.includes("2:to-chapter-3") ? [want.indexOf("2:to-chapter-3")] : [])];

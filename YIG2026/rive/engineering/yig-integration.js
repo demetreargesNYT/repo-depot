@@ -45,7 +45,7 @@ const ROOMS = [
 const roomOf = (file, scene) => ROOMS.find(([f, list]) => f === file && list.includes(scene))?.[1][0] ?? scene;
 // The order of the games in Chapter 2, and of Chapter 2.5's community cards, is ours by default and yours to change: the
 // page that builds the card list reads these two constants. Rive plays any order, because each move just sets the next
-// scene. COMMUNITY_GAMES are the games that have community cards (The Midi and The Crossword have none).
+// scene. COMMUNITY_GAMES are the games that have community cards; The Mini's stands in for all three crosswords, so The Midi and The Crossword have none of their own.
 const GAME_ORDER = ["wordle", "connections", "spelling-bee", "mini", "midi", "crossword", "strands"];
 const COMMUNITY_GAMES = ["wordle", "connections", "spelling-bee", "mini", "strands"];
 // The two first-visit copy times live in yig-text-motion.css, as --yig-first-visit (2s) and --yig-lockup (3.2s), and are

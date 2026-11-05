@@ -226,7 +226,7 @@ const QUALIFIES = 10;
 // The order of the games (and of the community cards) is one constant, ours by default and yours to change. Rive plays any
 // order, because each move just sets the next scene.
 const GAME_ORDER = ["wordle", "connections", "spelling-bee", "mini", "midi", "crossword", "strands"];
-const COMMUNITY_ORDER = GAME_ORDER.filter((game) => ["wordle", "connections", "spelling-bee", "mini", "strands"].includes(game)); // The Midi and The Crossword have none
+const COMMUNITY_ORDER = GAME_ORDER.filter((game) => ["wordle", "connections", "spelling-bee", "mini", "strands"].includes(game)); // The Mini's stands in for all three crosswords: The Midi and The Crossword have none of their own
 function buildCards(p) {
   // The file opens on the empty Chapter 1 room (where File 1 ends and Ad 2 plays): always the first card, with no copy.
   // The first tap pans from it into the opener.

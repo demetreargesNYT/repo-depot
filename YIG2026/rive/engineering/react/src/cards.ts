@@ -4,7 +4,8 @@ import type { Card, Game, Stats } from './types'
 // any order, because each move just sets the next scene.
 export const GAME_ORDER: Game[] = ['wordle', 'connections', 'spelling-bee', 'mini', 'midi', 'crossword', 'strands']
 
-// The games that have community cards (The Midi and The Crossword have none)
+// The games that have community cards. The Mini's stands in for all three crosswords, so The Midi and The Crossword have none of
+// their own: a community card is dropped only when its game is the player's one qualifying game, so a Midi or Crossword player gets all five.
 export const COMMUNITY_GAMES: Game[] = ['wordle', 'connections', 'spelling-bee', 'mini', 'strands']
 
 // Chapter 2.5's community cards: the community games in GAME_ORDER, leaving out the player's own game

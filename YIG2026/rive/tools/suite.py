@@ -45,7 +45,7 @@ started = []                         # the process groups this run started and c
 
 STATE = REPO / ".cache" / "suite-state.json"   # what passed, and the inputs it passed with (git-ignored)
 SHEETS = {"ch1": "docs/rooms-ch1.md", "ch2": "docs/rooms.md", "ch3": "docs/rooms-ch3.md"}
-SMOKE_INPUTS = {"the reference code": "engineering", "the harness": "harness", "the guide": "docs/engineering-guide.md", "the test runner": "tools/suite.py"}
+SMOKE_INPUTS = {"the reference code": "engineering", "the harness": "harness", "the guide": "docs/engineering-guide.md", "the card flow": "docs/card-flow.md", "the test runner": "tools/suite.py"}
 
 PLAYERS = ["wordle-only", "midi-only", "connections-only", "several-games", "all-seven", "none"]
 
@@ -98,6 +98,7 @@ def pieces():
     for ch in ("ch1", "ch2", "ch3"):
         out.append(piece(f"rule checks {ch}", ["python3", "tools/check.py", ch], tier="both", chapter=ch))
     out.append(piece("unit tests", ["python3", "-m", "unittest", "discover", "-s", "tools/tests"], tier="both"))
+    out.append(piece("card flow (docs/card-flow.md against cards.ts)", ["node", "--experimental-strip-types", "--no-warnings", "harness/card-flow-test.mjs"], tier="both"))
     for ch in ("ch1", "ch2", "ch3"):
         out.append(piece(f"loop motion {ch}", ["python3", "tools/loop_motion.py", ch], tier="both", chapter=ch))
     for ch in ("ch1", "ch2", "ch3"):
@@ -113,7 +114,7 @@ def pieces():
     out.append(piece("experience harness sub phone", experience(None, None, "sub", "phone", "connections-only"), tier="smoke", needs="harness"))
     out.append(piece("experience harness anon phone", experience(None, None, "anon", "phone", "wordle-only"), tier="smoke", needs="harness"))
     out.append(piece("Finesse panel", ["node", "harness/finesse-test.mjs"], needs="harness"))
-    out.append(piece("build the package", ["python3", "tools/package_engineering.py"]))
+    out.append(piece("build the package", ["python3", "tools/package_from_tags.py"]))
     for player in PLAYERS:
         out.append(piece(f"package demo sub phone {player}", experience(PACKAGE, "/reference/example/", "sub", "phone", player), needs="package"))
     out.append(piece("package demo sub desktop connections-only", experience(PACKAGE, "/reference/example/", "sub", "desktop", "connections-only"), needs="package"))

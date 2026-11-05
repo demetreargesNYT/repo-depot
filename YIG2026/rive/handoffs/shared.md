@@ -1,4 +1,4 @@
-# Handoff: shared-files session (2026-11-05, end of day), for the next shared-files chat
+# Handoff: shared-files session (2026-11-05, end of day; updated later the same day), for the next shared-files chat
 
 **Rooms owned:** none. This session owns the harness, `CLAUDE.md`, `docs/`, the shared tools in `tools/`, `engineering/`, the package script and the public pages. Read `CLAUDE.md` first, especially "The engineering contract" and "Pushing on your own".
 
@@ -41,3 +41,9 @@ Sections in order: one line under the title ("This replaces the Nov 3 package. S
 1. Add the Mini-community sentence to the guide's Scenes table, then rebuild the package from the tags (also picks up the favicon lines) and rerun the old-name search and the timing-demo check.
 2. Rerun `npm run text` and `npm run experience` against the new community-intro wait.
 3. Move `package_from_tags.py` into `tools/`.
+
+## Update, later on 2026-11-05
+
+- **`docs/card-flow.md` ships as `core/card-flow.md`** (linked from the README): rules, then two tables (Registered and subscribers, Anonymous) with Frame, File, Scene, Settings, Copy wait, Skip when. The first column header is "Frame" (the package scrub rejects the word Figma). `harness/card-flow.mjs` reads it; `npm run cardflow` (`harness/card-flow-test.mjs`, a suite piece) builds `engineering/react/src/cards.ts`'s card list for 16 players and compares scenes, order, settings, ad tags and copy waits; `experience-test.mjs` takes its expected card list and settings from the same document. The "Skip when" column is a fixed set of sentences: a new one has to be taught to `included()` in `card-flow.mjs`.
+- **The Mini-community rule** is now in the guide's Scenes table and in the comments of `cards.ts`, `yig-integration.js` and `harness/index.html`.
+- **The package is built from tags:** `npm run package` is `tools/package_from_tags.py` (newest `rive/<ch>-*` tag per chapter). `tools/package_engineering.py` needs `--working`. The suite's "build the package" piece uses the tag build too.
