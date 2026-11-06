@@ -224,6 +224,57 @@ def cell_tracks(total, hits):
     return out, hits
 
 
+OPEN_AT = 82        # frame where the lid is fully open
+
+
+def peek_rows(rot0):
+    """The return into the picture (note 1), ending on the pose the loop starts from. Everything happens on the painting's green hill (its crest
+    is y 556 at the ball's x, and the front hill is drawn over the ball): the ball pops up from out of sight until its top edge clears the crest,
+    holds a beat, dips back, springs up and lands on the crest, holds, one tiny prep hop in place, then the loop's own gather and jump follow.
+    Every rise and fall is a parabola at gravity 0.40. The dot looks down while the ball peeks and comes round to the front on the way up.
+    Returns (rows, index of the landing on the crest)."""
+    x = 595.739
+    y_rest = 551.677
+    rows = []
+    ease_io = lambda u: u * u * (3 - 2 * u)
+
+    def row(foot, mult, rot, squash=0.0):
+        ky = mult * (1 - squash)
+        rows.append((x, foot, rot, mult / (1 - squash) if squash else mult, ky))
+    m_peek = 0.75 / B
+    glance = 2.2
+    for t in range(1, 6):                                       # pops up from 582.5 (out of sight behind the hill) to 577.5 (v 2, 5 frames): the top clears the crest by about 5
+        row(582.5 - 2.0 * t + 0.2 * t * t, m_peek, rot0 + glance)
+    for _ in range(6):                                          # a beat
+        row(577.5, m_peek, rot0 + glance)
+    for k in range(4):                                          # dips back down slightly
+        row(577.5 + 3.5 * ease_io((k + 1) / 4), m_peek, rot0 + glance)
+    v, T_up = 5.25, 13                                          # springs up from 581 to its apex 546.6 (13 frames), falls 5 frames and lands on the crest
+    for t in range(1, T_up + 1):
+        u = t / T_up
+        row(581 - v * t + 0.2 * t * t, m_peek + (1.0 - m_peek) * ease_io(u), rot0 + glance * (1 - ease_io(u)))
+    apex = rows[-1][1]
+    for u in range(1, 6):
+        row(apex + 0.2 * u * u, 1.0, rot0)
+    rows[-1] = (x, y_rest, rot0, 1.0, 1.0)
+    land = len(rows) - 1
+    for sq in (0.03, 0.02, 0.01):                               # lands with a 3 percent squash and settles
+        row(y_rest, 1.0, rot0, sq)
+    for _ in range(2):                                          # a beat
+        row(y_rest, 1.0, rot0)
+    for sq in (0.015, 0.03, 0.03):                              # gather for the prep hop
+        row(y_rest, 1.0, rot0, sq)
+    T = 10                                                      # one tiny hop in place (5 units)
+    h = G * T * T / 8
+    for k in range(1, T + 1):
+        u = k / T
+        row(y_rest - 4 * h * u * (1 - u), 1.0, rot0)
+    row(y_rest, 1.0, rot0, 0.03)
+    row(y_rest, 1.0, rot0, 0.01)
+    rows.append((x, y_rest, rot0, 1.0, 1.0))                    # the loop's first pose
+    return rows, land
+
+
 def clock_hit_frame(tracks):
     """The old frame where the ball is closest to the clock (its left edge, x 845, y 477..513 for the ball's centre, which is 17 above y)."""
     best = (1e9, None)
@@ -277,7 +328,7 @@ def build(scene):
     for _, yy in BOX_FIX:
         rows.append((x, yy, r, kx, ky))
     hidden_from = len(rows)                                      # old frame 268's place: out of sight
-    reentry = [old_row(t) for t in range(342, 417)]
+    reentry, land_idx = peek_rows(rot0)                                   # note 1: out of sight behind the hill, a peek, a dip, up onto the crest, a prep hop
     hid = LOOP + 1 - hidden_from - len(reentry)
     assert hid > 40, hid
     hold_row = rows[-1]
@@ -285,6 +336,7 @@ def build(scene):
     rows += reentry
     assert len(rows) == LOOP + 1, (len(rows), LOOP + 1)
     reentry_first = hidden_from + hid
+    up_on_crest = reentry_first + land_idx
 
     # the ball's tracks
     vals = {"x": {i: r[0] for i, r in enumerate(rows)}, "y": {i: r[1] for i, r in enumerate(rows)}, "rot": {i: r[2] for i, r in enumerate(rows)},
@@ -296,13 +348,30 @@ def build(scene):
 
     # everything the ball touches, from the old keys, warped: [0,62] as it was, [62,151] over the new stretch, [151,268] shifted, hidden, back
     segs = [(0, 62, 0, 62), (62, launch, 62, 151), (launch, launch + 117, 151, 268), (launch + 117, launch + 117 + hid, 268, 341), (launch + 117 + hid, LOOP, 341, 416)]
-    assert segs[-1][1] - segs[-1][0] == 75 and launch + 117 == hidden_from - 1, (segs, hidden_from)
+    assert segs[-1][1] - segs[-1][0] == len(reentry) and launch + 117 == hidden_from - 1, (segs, hidden_from)
     w = Warp(segs)
     for key, tr in raw.items():
         if key[0] in (BALL, BALL_S, BALL_SPIN):
             continue
         loop[key] = resample(tr, w)
 
+    # the picture frame's front comes off once the ball is up on the crest (it did when the old rise ended)
+    kind, ks, hs = loop[("9:691", "opacity")]
+    ks = [(f, v) for f, v in ks]
+    ks = [(up_on_crest if (v == 0.0 and f > 300) else f, v) for f, v in ks]
+    loop[("9:691", "opacity")] = (kind, ks, hs)
+    # note 2: the ring box lid opens in a short ramp (62 to 82), and a disco sparkle pops on the ring once it is fully open
+    kind, ks, hs = loop[("9:1386", "rotation")]
+    full = ks[[i for i, k in enumerate(ks) if k[0] >= 234][0]][1]            # the lid's open angle
+    ramp = [(f, full * (1 - (1 - (f - 61) / 21) ** 2)) for f in range(62, 83)]
+    ks = [k for k in ks if k[0] <= 61] + ramp + [k for k in ks if k[0] >= 235]
+    loop[("9:1386", "rotation")] = (kind, ks, hs)
+    SP = OPEN_AT
+    env_scale = [(0, 0.0), (SP, 0.0), (SP + 1, 0.1916), (SP + 2, 0.3644), (SP + 3, 0.5016), (SP + 4, 0.5897), (SP + 5, 0.62), (SP + 6, 0.6096), (SP + 7, 0.5805), (SP + 8, 0.5362),
+                 (SP + 9, 0.48), (SP + 10, 0.4154), (SP + 11, 0.3457), (SP + 12, 0.2743), (SP + 13, 0.2046), (SP + 14, 0.14), (SP + 15, 0.0838), (SP + 16, 0.0395), (SP + 17, 0.0104), (SP + 18, 0.0), (LOOP, 0.0)]
+    loop[("RING_STAR", "scaleX")] = ("linear", env_scale, set())
+    loop[("RING_STAR", "scaleY")] = ("linear", env_scale, set())
+    loop[("RING_SPARKLE", "opacity")] = ("hold", [(0, 0.0), (SP + 1, 1.0), (SP + 17, 0.0), (LOOP, 0.0)], set())
     # the clock: the old digits go, 12:00 flickers on the pink panel (never a hole), the old digits come back; the face wobbles
     hit = launch + (chit - 151)
     loop[(DIGITS_A, "opacity")] = ("hold", [(0, 1.0), (hit, 0.0), (hit + 34, 1.0), (LOOP, 1.0)], set())

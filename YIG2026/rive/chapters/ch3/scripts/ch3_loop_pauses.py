@@ -166,6 +166,21 @@ def main():
     gid, lines = digits_b(n)
     doc.lines[a_i:a_i] = ["                        " + l for l in lines]
     ids = {"DIGITS_B": gid}
+    # note 2: one of the disco ball's sparkles (a copy of "Chapter 3 Sparkle 3", same star, same outline) on the ring, first child so it draws on top
+    si_ = doc.idx("9:33769")
+    spark = doc.lines[si_:doc.end(si_) + 1]
+    remap = {}
+    def new_id(m):
+        remap.setdefault(m.group(1), n())
+        return f'id="{remap[m.group(1)]}"'
+    spark = [re.sub(r'\bid="([^"]+)"', new_id, l) for l in spark]
+    spark = [re.sub(r'sourceId="[^"]+"', f'sourceId="{FLOOR_CLIP}"', l) for l in spark]
+    spark[0] = '<Shape x="27" y="14" rotation="0.7" name="Ring Sparkle" opacity="0" ' + 'id="' + remap["9:33769"] + '">'
+    spark[1] = spark[1].replace('<PointsPath isClosed="true"', '<PointsPath name="Ring Sparkle Star" isClosed="true"')
+    ids["RING_SPARKLE"] = remap["9:33769"]
+    ids["RING_STAR"] = remap["9:33770"]
+    ring_i = doc.idx("9:1385")
+    doc.lines[ring_i + 1:ring_i + 1] = ["                        " + l.strip() if k in (0, len(spark) - 1) else "                            " + l.strip() for k, l in enumerate(spark)]
     # name the calendar cells' colours so each reads as its own property in the checks
     cells = {}
     for r, row in enumerate(T.CELL_ROWS):
@@ -194,7 +209,8 @@ def main():
 
     # 2. every property the Loop keys is also held at rest in the Intro, Waiting and Built (checks want it; no pixel changes)
     rest = [(T.FACE, "scaleX", 1.0), (T.FACE, "scaleY", 1.0), (T.FACE, "rotation", 0.0), (T.DIGITS_A, "opacity", 1.0), (ids["DIGITS_B"], "opacity", 0.0),
-            (T.BIRD, "y", 541.5), (T.BIRD_LEG2, "y", 541.5)]
+            (T.BIRD, "y", 541.5), (T.BIRD_LEG2, "y", 541.5),
+            (ids["RING_SPARKLE"], "opacity", 0.0), (ids["RING_STAR"], "scaleX", 0.0), (ids["RING_STAR"], "scaleY", 0.0)]
     for anim, ks in (("Chapter 3 Intro", lambda v: [(0, v, "hold"), (191, v, "hold")]), ("Chapter 3 Waiting", lambda v: [(0, v, "hold")]), ("Chapter 3 Built", lambda v: [(0, v, "hold")])):
         for o, prop, v in rest:
             doc.set_prop(anim, o, prop, ks(v))
