@@ -59215,6 +59215,125 @@
                 </KeyedProperty>
             </KeyedObject>
         </LinearAnimation>
+        <LinearAnimation fps="60" duration="90" loopValue="oneShot" name="Chapter 4 Ball Exit" id="9:104249">
+            <KeyedObject objectId="9:43975" id="9:104250">
+                <KeyedProperty property="x" id="9:104251">
+                    <KeyFrameDouble value="747" id="9:104252"/>
+                    <KeyFrameDouble value="747" interpolationType="linear" frame="26" id="9:104253"/>
+                    <KeyFrameDouble value="1212" interpolationType="linear" frame="57" id="9:104254"/>
+                    <KeyFrameDouble value="1569" frame="85" id="9:104255"/>
+                    <KeyFrameDouble value="1569" frame="90" id="9:104256"/>
+                </KeyedProperty>
+                <KeyedProperty property="y" id="9:104257">
+                    <KeyFrameDouble value="696.5576" id="9:104258"/>
+                    <KeyFrameDouble value="696.5576" interpolationType="cubic" frame="26" id="9:104259">
+                        <CubicEaseInterpolator x1="0.3333" y1="0.6458" x2="0.6667" y2="0.9792" id="9:104260"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="648.5576" interpolationType="cubic" frame="41" id="9:104261">
+                        <CubicEaseInterpolator x1="0.3333" y1="-0.0222" x2="0.6667" y2="0.3111" id="9:104262"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="696.5576" frame="57" id="9:104263"/>
+                    <KeyFrameDouble value="696.5576" interpolationType="cubic" frame="59" id="9:104264">
+                        <CubicEaseInterpolator x1="0.3333" y1="0.6667" x2="0.6667" y2="1.0" id="9:104265"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="662.7576" interpolationType="cubic" frame="72" id="9:104266">
+                        <CubicEaseInterpolator x1="0.3333" y1="0.0" x2="0.6667" y2="0.3333" id="9:104267"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="696.5576" frame="85" id="9:104268"/>
+                    <KeyFrameDouble value="696.5576" frame="90" id="9:104269"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:43978" id="9:104270">
+                <KeyedProperty property="rotation" id="9:104271">
+                    <KeyFrameDouble value="-0.26" interpolationType="cubic" id="9:104272">
+                        <CubicEaseInterpolator x1="0.65" y1="0" x2="0.35" y2="1" id="9:104273"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="0.24" frame="10" id="9:104274"/>
+                    <KeyFrameDouble value="0.24" interpolationType="linear" frame="26" id="9:104275"/>
+                    <KeyFrameDouble value="0.5" interpolationType="linear" frame="57" id="9:104276"/>
+                    <KeyFrameDouble value="0.8" frame="85" id="9:104277"/>
+                    <KeyFrameDouble value="0.8" frame="90" id="9:104278"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:43976" id="9:104279">
+                <KeyedProperty property="scaleX" id="9:104280">
+                    <KeyFrameDouble value="1.2" id="9:104281"/>
+                    <KeyFrameDouble value="1.2" interpolationType="cubic" frame="14" id="9:104282">
+                        <CubicEaseInterpolator x1="0.65" y1="0" x2="0.35" y2="1" id="9:104283"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="1.32" frame="24" id="9:104284"/>
+                    <KeyFrameDouble value="1.32" interpolationType="cubic" frame="26" id="9:104285">
+                        <CubicEaseInterpolator x1="0.33" y1="1" x2="0.68" y2="1" id="9:104286"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="1.165" interpolationType="linear" frame="30" id="9:104287"/>
+                    <KeyFrameDouble value="1.165" interpolationType="cubic" frame="54" id="9:104288">
+                        <CubicEaseInterpolator x1="0.65" y1="0" x2="0.35" y2="1" id="9:104289"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="1.344" interpolationType="cubic" frame="57" id="9:104290">
+                        <CubicEaseInterpolator x1="0.33" y1="1" x2="0.68" y2="1" id="9:104291"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="1.165" frame="61" id="9:104292"/>
+                    <KeyFrameDouble value="1.165" frame="90" id="9:104293"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY" id="9:104294">
+                    <KeyFrameDouble value="1.2" id="9:104295"/>
+                    <KeyFrameDouble value="1.2" interpolationType="cubic" frame="14" id="9:104296">
+                        <CubicEaseInterpolator x1="0.65" y1="0" x2="0.35" y2="1" id="9:104297"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="1.08" frame="24" id="9:104298"/>
+                    <KeyFrameDouble value="1.08" interpolationType="cubic" frame="26" id="9:104299">
+                        <CubicEaseInterpolator x1="0.33" y1="1" x2="0.68" y2="1" id="9:104300"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="1.236" interpolationType="linear" frame="30" id="9:104301"/>
+                    <KeyFrameDouble value="1.236" interpolationType="cubic" frame="54" id="9:104302">
+                        <CubicEaseInterpolator x1="0.65" y1="0" x2="0.35" y2="1" id="9:104303"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="1.056" interpolationType="cubic" frame="57" id="9:104304">
+                        <CubicEaseInterpolator x1="0.33" y1="1" x2="0.68" y2="1" id="9:104305"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="1.236" frame="61" id="9:104306"/>
+                    <KeyFrameDouble value="1.236" frame="90" id="9:104307"/>
+                </KeyedProperty>
+            </KeyedObject>
+        </LinearAnimation>
+        <LinearAnimation fps="60" duration="100" loopValue="oneShot" name="Chapter 4 Ball Return" id="9:104308">
+            <KeyedObject objectId="9:43975" id="9:104309">
+                <KeyedProperty property="x" id="9:104310">
+                    <KeyFrameDouble value="1560" interpolationType="cubic" id="9:104311">
+                        <CubicEaseInterpolator x1="0.3333" y1="0.6667" x2="0.6667" y2="1.0" id="9:104312"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="741.5" interpolationType="cubic" frame="72" id="9:104313">
+                        <CubicEaseInterpolator x1="0.37" y1="0" x2="0.63" y2="1" id="9:104314"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="747" frame="100" id="9:104315"/>
+                </KeyedProperty>
+                <KeyedProperty property="y" id="9:104316">
+                    <KeyFrameDouble value="696.5576" id="9:104317"/>
+                    <KeyFrameDouble value="696.5576" frame="100" id="9:104318"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:43978" id="9:104319">
+                <KeyedProperty property="rotation" id="9:104320">
+                    <KeyFrameDouble value="38.0645" interpolationType="cubic" id="9:104321">
+                        <CubicEaseInterpolator x1="0.3333" y1="0.6667" x2="0.6667" y2="1.0" id="9:104322"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="-0.5193" interpolationType="cubic" frame="72" id="9:104323">
+                        <CubicEaseInterpolator x1="0.37" y1="0" x2="0.63" y2="1" id="9:104324"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="-0.26" frame="100" id="9:104325"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:43976" id="9:104326">
+                <KeyedProperty property="scaleX" id="9:104327">
+                    <KeyFrameDouble value="1.2" id="9:104328"/>
+                    <KeyFrameDouble value="1.2" frame="100" id="9:104329"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY" id="9:104330">
+                    <KeyFrameDouble value="1.2" id="9:104331"/>
+                    <KeyFrameDouble value="1.2" frame="100" id="9:104332"/>
+                </KeyedProperty>
+            </KeyedObject>
+        </LinearAnimation>
         <LinearAnimation duration="420" loopValue="loop" name="Chapter 4 Loop" id="9:14005">
         </LinearAnimation>
         <LinearAnimation duration="300" loopValue="loop" name="Chapter 4 Fireworks Loop" id="16:1220">
@@ -74997,293 +75116,284 @@
                 </KeyedProperty>
             </KeyedObject>
             <KeyedObject objectId="9:46176" id="9:46197">
-                <KeyedProperty property="x" id="9:46198">
-                    <KeyFrameDouble value="166.7898" interpolationType="linear" id="9:46199"/>
-                    <KeyFrameDouble value="166.7898" interpolationType="linear" frame="3" id="9:46200"/>
-                    <KeyFrameDouble value="175.7468" interpolationType="linear" frame="4" id="9:46201"/>
-                    <KeyFrameDouble value="184.6178" interpolationType="linear" frame="5" id="9:46202"/>
-                    <KeyFrameDouble value="193.4027" interpolationType="linear" frame="6" id="9:46203"/>
-                    <KeyFrameDouble value="202.1016" interpolationType="linear" frame="7" id="9:46204"/>
-                    <KeyFrameDouble value="210.7145" interpolationType="linear" frame="8" id="9:46205"/>
-                    <KeyFrameDouble value="219.2414" interpolationType="linear" frame="9" id="9:46206"/>
-                    <KeyFrameDouble value="227.6823" interpolationType="linear" frame="10" id="9:46207"/>
-                    <KeyFrameDouble value="236.0371" interpolationType="linear" frame="11" id="9:46208"/>
-                    <KeyFrameDouble value="244.3059" interpolationType="linear" frame="12" id="9:46209"/>
-                    <KeyFrameDouble value="252.4887" interpolationType="linear" frame="13" id="9:46210"/>
-                    <KeyFrameDouble value="260.5855" interpolationType="linear" frame="14" id="9:46211"/>
-                    <KeyFrameDouble value="268.5963" interpolationType="linear" frame="15" id="9:46212"/>
-                    <KeyFrameDouble value="276.521" interpolationType="linear" frame="16" id="9:46213"/>
-                    <KeyFrameDouble value="284.3597" interpolationType="linear" frame="17" id="9:46214"/>
-                    <KeyFrameDouble value="292.1124" interpolationType="linear" frame="18" id="9:46215"/>
-                    <KeyFrameDouble value="299.779" interpolationType="linear" frame="19" id="9:46216"/>
-                    <KeyFrameDouble value="307.3597" interpolationType="linear" frame="20" id="9:46217"/>
-                    <KeyFrameDouble value="314.8543" interpolationType="linear" frame="21" id="9:46218"/>
-                    <KeyFrameDouble value="322.2629" interpolationType="linear" frame="22" id="9:46219"/>
-                    <KeyFrameDouble value="329.5855" interpolationType="linear" frame="23" id="9:46220"/>
-                    <KeyFrameDouble value="336.8221" interpolationType="linear" frame="24" id="9:46221"/>
-                    <KeyFrameDouble value="343.9726" interpolationType="linear" frame="25" id="9:46222"/>
-                    <KeyFrameDouble value="351.0371" interpolationType="linear" frame="26" id="9:46223"/>
-                    <KeyFrameDouble value="358.0156" interpolationType="linear" frame="27" id="9:46224"/>
-                    <KeyFrameDouble value="364.9081" interpolationType="linear" frame="28" id="9:46225"/>
-                    <KeyFrameDouble value="371.7145" interpolationType="linear" frame="29" id="9:46226"/>
-                    <KeyFrameDouble value="378.435" interpolationType="linear" frame="30" id="9:46227"/>
-                    <KeyFrameDouble value="385.0694" interpolationType="linear" frame="31" id="9:46228"/>
-                    <KeyFrameDouble value="391.6178" interpolationType="linear" frame="32" id="9:46229"/>
-                    <KeyFrameDouble value="398.0801" interpolationType="linear" frame="33" id="9:46230"/>
-                    <KeyFrameDouble value="404.4565" interpolationType="linear" frame="34" id="9:46231"/>
-                    <KeyFrameDouble value="410.7468" interpolationType="linear" frame="35" id="9:46232"/>
-                    <KeyFrameDouble value="416.9511" interpolationType="linear" frame="36" id="9:46233"/>
-                    <KeyFrameDouble value="423.0694" interpolationType="linear" frame="37" id="9:46234"/>
-                    <KeyFrameDouble value="429.1016" interpolationType="linear" frame="38" id="9:46235"/>
-                    <KeyFrameDouble value="435.0479" interpolationType="linear" frame="39" id="9:46236"/>
-                    <KeyFrameDouble value="440.9081" interpolationType="linear" frame="40" id="9:46237"/>
-                    <KeyFrameDouble value="446.6823" interpolationType="linear" frame="41" id="9:46238"/>
-                    <KeyFrameDouble value="452.3704" interpolationType="linear" frame="42" id="9:46239"/>
-                    <KeyFrameDouble value="457.9726" interpolationType="linear" frame="43" id="9:46240"/>
-                    <KeyFrameDouble value="463.4887" interpolationType="linear" frame="44" id="9:46241"/>
-                    <KeyFrameDouble value="468.9188" interpolationType="linear" frame="45" id="9:46242"/>
-                    <KeyFrameDouble value="474.2629" interpolationType="linear" frame="46" id="9:46243"/>
-                    <KeyFrameDouble value="479.521" interpolationType="linear" frame="47" id="9:46244"/>
-                    <KeyFrameDouble value="484.693" interpolationType="linear" frame="48" id="9:46245"/>
-                    <KeyFrameDouble value="489.779" interpolationType="linear" frame="49" id="9:46246"/>
-                    <KeyFrameDouble value="494.779" interpolationType="linear" frame="50" id="9:46247"/>
-                    <KeyFrameDouble value="499.693" interpolationType="linear" frame="51" id="9:46248"/>
-                    <KeyFrameDouble value="504.521" interpolationType="linear" frame="52" id="9:46249"/>
-                    <KeyFrameDouble value="509.2629" interpolationType="linear" frame="53" id="9:46250"/>
-                    <KeyFrameDouble value="513.9188" interpolationType="linear" frame="54" id="9:46251"/>
-                    <KeyFrameDouble value="518.4887" interpolationType="linear" frame="55" id="9:46252"/>
-                    <KeyFrameDouble value="522.9726" interpolationType="linear" frame="56" id="9:46253"/>
-                    <KeyFrameDouble value="527.3704" interpolationType="linear" frame="57" id="9:46254"/>
-                    <KeyFrameDouble value="531.6823" interpolationType="linear" frame="58" id="9:46255"/>
-                    <KeyFrameDouble value="535.9081" interpolationType="linear" frame="59" id="9:46256"/>
-                    <KeyFrameDouble value="540.0479" interpolationType="linear" frame="60" id="9:46257"/>
-                    <KeyFrameDouble value="544.1016" interpolationType="linear" frame="61" id="9:46258"/>
-                    <KeyFrameDouble value="548.0694" interpolationType="linear" frame="62" id="9:46259"/>
-                    <KeyFrameDouble value="551.9511" interpolationType="linear" frame="63" id="9:46260"/>
-                    <KeyFrameDouble value="555.7468" interpolationType="linear" frame="64" id="9:46261"/>
-                    <KeyFrameDouble value="559.4565" interpolationType="linear" frame="65" id="9:46262"/>
-                    <KeyFrameDouble value="563.0801" interpolationType="linear" frame="66" id="9:46263"/>
-                    <KeyFrameDouble value="566.6178" interpolationType="linear" frame="67" id="9:46264"/>
-                    <KeyFrameDouble value="570.0694" interpolationType="linear" frame="68" id="9:46265"/>
-                    <KeyFrameDouble value="573.435" interpolationType="linear" frame="69" id="9:46266"/>
-                    <KeyFrameDouble value="576.7145" interpolationType="linear" frame="70" id="9:46267"/>
-                    <KeyFrameDouble value="579.9081" interpolationType="linear" frame="71" id="9:46268"/>
-                    <KeyFrameDouble value="583.0156" interpolationType="linear" frame="72" id="9:46269"/>
-                    <KeyFrameDouble value="586.0371" interpolationType="linear" frame="73" id="9:46270"/>
-                    <KeyFrameDouble value="588.9726" interpolationType="linear" frame="74" id="9:46271"/>
-                    <KeyFrameDouble value="591.8221" interpolationType="linear" frame="75" id="9:46272"/>
-                    <KeyFrameDouble value="594.5855" interpolationType="linear" frame="76" id="9:46273"/>
-                    <KeyFrameDouble value="597.2629" interpolationType="linear" frame="77" id="9:46274"/>
-                    <KeyFrameDouble value="599.8543" interpolationType="linear" frame="78" id="9:46275"/>
-                    <KeyFrameDouble value="602.3597" interpolationType="linear" frame="79" id="9:46276"/>
-                    <KeyFrameDouble value="604.779" interpolationType="linear" frame="80" id="9:46277"/>
-                    <KeyFrameDouble value="607.1124" interpolationType="linear" frame="81" id="9:46278"/>
-                    <KeyFrameDouble value="609.3597" interpolationType="linear" frame="82" id="9:46279"/>
-                    <KeyFrameDouble value="611.521" interpolationType="linear" frame="83" id="9:46280"/>
-                    <KeyFrameDouble value="613.5963" interpolationType="linear" frame="84" id="9:46281"/>
-                    <KeyFrameDouble value="615.5855" interpolationType="linear" frame="85" id="9:46282"/>
-                    <KeyFrameDouble value="617.4887" interpolationType="linear" frame="86" id="9:46283"/>
-                    <KeyFrameDouble value="619.3059" interpolationType="linear" frame="87" id="9:46284"/>
-                    <KeyFrameDouble value="621.0371" interpolationType="linear" frame="88" id="9:46285"/>
-                    <KeyFrameDouble value="622.6823" interpolationType="linear" frame="89" id="9:46286"/>
-                    <KeyFrameDouble value="624.2414" interpolationType="linear" frame="90" id="9:46287"/>
-                    <KeyFrameDouble value="625.7145" interpolationType="linear" frame="91" id="9:46288"/>
-                    <KeyFrameDouble value="627.1016" interpolationType="linear" frame="92" id="9:46289"/>
-                    <KeyFrameDouble value="628.4027" interpolationType="linear" frame="93" id="9:46290"/>
-                    <KeyFrameDouble value="629.6178" interpolationType="linear" frame="94" id="9:46291"/>
-                    <KeyFrameDouble value="630.7468" interpolationType="linear" frame="95" id="9:46292"/>
-                    <KeyFrameDouble value="631.7898" interpolationType="linear" frame="96" id="9:46293"/>
-                    <KeyFrameDouble value="632.6648" interpolationType="linear" frame="97" id="9:46294"/>
-                    <KeyFrameDouble value="633.2898" interpolationType="linear" frame="98" id="9:46295"/>
-                    <KeyFrameDouble value="633.6648" interpolationType="linear" frame="99" id="9:46296"/>
-                    <KeyFrameDouble value="633.7898" interpolationType="linear" frame="100" id="9:46297"/>
-                    <KeyFrameDouble value="633.7898" interpolationType="linear" frame="191" id="9:46298"/>
+                <KeyedProperty property="x" id="9:104449">
+                    <KeyFrameDouble value="-830" id="9:104450"/>
+                    <KeyFrameDouble value="-830" interpolationType="linear" frame="48" id="9:104451"/>
+                    <KeyFrameDouble value="-765.3185" interpolationType="linear" frame="49" id="9:104452"/>
+                    <KeyFrameDouble value="-701.297" interpolationType="linear" frame="50" id="9:104453"/>
+                    <KeyFrameDouble value="-638.5354" interpolationType="linear" frame="51" id="9:104454"/>
+                    <KeyFrameDouble value="-577.5275" interpolationType="linear" frame="52" id="9:104455"/>
+                    <KeyFrameDouble value="-518.6381" interpolationType="linear" frame="53" id="9:104456"/>
+                    <KeyFrameDouble value="-462.1024" interpolationType="linear" frame="54" id="9:104457"/>
+                    <KeyFrameDouble value="-408.0406" interpolationType="linear" frame="55" id="9:104458"/>
+                    <KeyFrameDouble value="-356.4812" interpolationType="linear" frame="56" id="9:104459"/>
+                    <KeyFrameDouble value="-307.3856" interpolationType="linear" frame="57" id="9:104460"/>
+                    <KeyFrameDouble value="-260.6697" interpolationType="linear" frame="58" id="9:104461"/>
+                    <KeyFrameDouble value="-216.2217" interpolationType="linear" frame="59" id="9:104462"/>
+                    <KeyFrameDouble value="-173.9145" interpolationType="linear" frame="60" id="9:104463"/>
+                    <KeyFrameDouble value="-133.6157" interpolationType="linear" frame="61" id="9:104464"/>
+                    <KeyFrameDouble value="-95.1933" interpolationType="linear" frame="62" id="9:104465"/>
+                    <KeyFrameDouble value="-58.5196" interpolationType="linear" frame="63" id="9:104466"/>
+                    <KeyFrameDouble value="-23.4734" interpolationType="linear" frame="64" id="9:104467"/>
+                    <KeyFrameDouble value="8.657" interpolationType="linear" frame="65" id="9:104468"/>
+                    <KeyFrameDouble value="39.3535" interpolationType="linear" frame="66" id="9:104469"/>
+                    <KeyFrameDouble value="68.7132" interpolationType="linear" frame="67" id="9:104470"/>
+                    <KeyFrameDouble value="96.8253" interpolationType="linear" frame="68" id="9:104471"/>
+                    <KeyFrameDouble value="123.7717" interpolationType="linear" frame="69" id="9:104472"/>
+                    <KeyFrameDouble value="149.6272" interpolationType="linear" frame="70" id="9:104473"/>
+                    <KeyFrameDouble value="174.4604" interpolationType="linear" frame="71" id="9:104474"/>
+                    <KeyFrameDouble value="198.3341" interpolationType="linear" frame="72" id="9:104475"/>
+                    <KeyFrameDouble value="221.3059" interpolationType="linear" frame="73" id="9:104476"/>
+                    <KeyFrameDouble value="243.4283" interpolationType="linear" frame="74" id="9:104477"/>
+                    <KeyFrameDouble value="264.7498" interpolationType="linear" frame="75" id="9:104478"/>
+                    <KeyFrameDouble value="285.3149" interpolationType="linear" frame="76" id="9:104479"/>
+                    <KeyFrameDouble value="305.1645" interpolationType="linear" frame="77" id="9:104480"/>
+                    <KeyFrameDouble value="324.3362" interpolationType="linear" frame="78" id="9:104481"/>
+                    <KeyFrameDouble value="342.8649" interpolationType="linear" frame="79" id="9:104482"/>
+                    <KeyFrameDouble value="360.7826" interpolationType="linear" frame="80" id="9:104483"/>
+                    <KeyFrameDouble value="378.1193" interpolationType="linear" frame="81" id="9:104484"/>
+                    <KeyFrameDouble value="394.9024" interpolationType="linear" frame="82" id="9:104485"/>
+                    <KeyFrameDouble value="411.1575" interpolationType="linear" frame="83" id="9:104486"/>
+                    <KeyFrameDouble value="426.9086" interpolationType="linear" frame="84" id="9:104487"/>
+                    <KeyFrameDouble value="442.1777" interpolationType="linear" frame="85" id="9:104488"/>
+                    <KeyFrameDouble value="456.9855" interpolationType="linear" frame="86" id="9:104489"/>
+                    <KeyFrameDouble value="471.3514" interpolationType="linear" frame="87" id="9:104490"/>
+                    <KeyFrameDouble value="485.2934" interpolationType="linear" frame="88" id="9:104491"/>
+                    <KeyFrameDouble value="498.8285" interpolationType="linear" frame="89" id="9:104492"/>
+                    <KeyFrameDouble value="511.9723" interpolationType="linear" frame="90" id="9:104493"/>
+                    <KeyFrameDouble value="524.74" interpolationType="linear" frame="91" id="9:104494"/>
+                    <KeyFrameDouble value="537.1453" interpolationType="linear" frame="92" id="9:104495"/>
+                    <KeyFrameDouble value="549.2015" interpolationType="linear" frame="93" id="9:104496"/>
+                    <KeyFrameDouble value="561.0748" interpolationType="linear" frame="94" id="9:104497"/>
+                    <KeyFrameDouble value="572.9232" interpolationType="linear" frame="95" id="9:104498"/>
+                    <KeyFrameDouble value="584.7465" interpolationType="linear" frame="96" id="9:104499"/>
+                    <KeyFrameDouble value="596.5448" interpolationType="linear" frame="97" id="9:104500"/>
+                    <KeyFrameDouble value="608.3181" interpolationType="linear" frame="98" id="9:104501"/>
+                    <KeyFrameDouble value="620.0665" interpolationType="linear" frame="99" id="9:104502"/>
+                    <KeyFrameDouble value="631.7898" interpolationType="linear" frame="100" id="9:104503"/>
+                    <KeyFrameDouble value="633.7585" interpolationType="linear" frame="101" id="9:104504"/>
+                    <KeyFrameDouble value="635.1648" interpolationType="linear" frame="102" id="9:104505"/>
+                    <KeyFrameDouble value="636.0085" interpolationType="linear" frame="103" id="9:104506"/>
+                    <KeyFrameDouble value="636.2898" interpolationType="linear" frame="104" id="9:104507"/>
+                    <KeyFrameDouble value="636.2534" interpolationType="linear" frame="105" id="9:104508"/>
+                    <KeyFrameDouble value="636.1513" interpolationType="linear" frame="106" id="9:104509"/>
+                    <KeyFrameDouble value="635.9946" interpolationType="linear" frame="107" id="9:104510"/>
+                    <KeyFrameDouble value="635.7942" interpolationType="linear" frame="108" id="9:104511"/>
+                    <KeyFrameDouble value="635.5609" interpolationType="linear" frame="109" id="9:104512"/>
+                    <KeyFrameDouble value="635.3058" interpolationType="linear" frame="110" id="9:104513"/>
+                    <KeyFrameDouble value="635.0398" interpolationType="linear" frame="111" id="9:104514"/>
+                    <KeyFrameDouble value="634.7738" interpolationType="linear" frame="112" id="9:104515"/>
+                    <KeyFrameDouble value="634.5187" interpolationType="linear" frame="113" id="9:104516"/>
+                    <KeyFrameDouble value="634.2854" interpolationType="linear" frame="114" id="9:104517"/>
+                    <KeyFrameDouble value="634.085" interpolationType="linear" frame="115" id="9:104518"/>
+                    <KeyFrameDouble value="633.9283" interpolationType="linear" frame="116" id="9:104519"/>
+                    <KeyFrameDouble value="633.8262" interpolationType="linear" frame="117" id="9:104520"/>
+                    <KeyFrameDouble value="633.7898" interpolationType="linear" frame="118" id="9:104521"/>
+                    <KeyFrameDouble value="633.7898" frame="191" id="9:104522"/>
+                </KeyedProperty>
+                <KeyedProperty property="y" id="9:104599">
+                    <KeyFrameDouble value="2400" id="9:104600"/>
+                    <KeyFrameDouble value="2400" frame="47" id="9:104601"/>
+                    <KeyFrameDouble value="660.8" interpolationType="cubic" frame="48" id="9:104602">
+                        <CubicEaseInterpolator x1="0.3333" y1="0.0" x2="0.6667" y2="0.3333" id="9:104603"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="673.6" interpolationType="cubic" frame="56" id="9:104604">
+                        <CubicEaseInterpolator x1="0.3333" y1="0.2222" x2="0.6667" y2="0.5556" id="9:104605"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="712" frame="64" id="9:104606"/>
+                    <KeyFrameDouble value="712" frame="191" id="9:104607"/>
                 </KeyedProperty>
             </KeyedObject>
             <KeyedObject objectId="9:46179" id="9:46305">
-                <KeyedProperty property="rotation" id="9:46306">
-                    <KeyFrameDouble interpolationType="linear" id="9:46307"/>
-                    <KeyFrameDouble interpolationType="linear" frame="3" id="9:46308"/>
-                    <KeyFrameDouble value="0.563" interpolationType="linear" frame="4" id="9:46309"/>
-                    <KeyFrameDouble value="1.1205" interpolationType="linear" frame="5" id="9:46310"/>
-                    <KeyFrameDouble value="1.6727" interpolationType="linear" frame="6" id="9:46311"/>
-                    <KeyFrameDouble value="2.2194" interpolationType="linear" frame="7" id="9:46312"/>
-                    <KeyFrameDouble value="2.7608" interpolationType="linear" frame="8" id="9:46313"/>
-                    <KeyFrameDouble value="3.2967" interpolationType="linear" frame="9" id="9:46314"/>
-                    <KeyFrameDouble value="3.8273" interpolationType="linear" frame="10" id="9:46315"/>
-                    <KeyFrameDouble value="4.3524" interpolationType="linear" frame="11" id="9:46316"/>
-                    <KeyFrameDouble value="4.8721" interpolationType="linear" frame="12" id="9:46317"/>
-                    <KeyFrameDouble value="5.3864" interpolationType="linear" frame="13" id="9:46318"/>
-                    <KeyFrameDouble value="5.8953" interpolationType="linear" frame="14" id="9:46319"/>
-                    <KeyFrameDouble value="6.3988" interpolationType="linear" frame="15" id="9:46320"/>
-                    <KeyFrameDouble value="6.8969" interpolationType="linear" frame="16" id="9:46321"/>
-                    <KeyFrameDouble value="7.3896" interpolationType="linear" frame="17" id="9:46322"/>
-                    <KeyFrameDouble value="7.8769" interpolationType="linear" frame="18" id="9:46323"/>
-                    <KeyFrameDouble value="8.3587" interpolationType="linear" frame="19" id="9:46324"/>
-                    <KeyFrameDouble value="8.8352" interpolationType="linear" frame="20" id="9:46325"/>
-                    <KeyFrameDouble value="9.3063" interpolationType="linear" frame="21" id="9:46326"/>
-                    <KeyFrameDouble value="9.7719" interpolationType="linear" frame="22" id="9:46327"/>
-                    <KeyFrameDouble value="10.2322" interpolationType="linear" frame="23" id="9:46328"/>
-                    <KeyFrameDouble value="10.687" interpolationType="linear" frame="24" id="9:46329"/>
-                    <KeyFrameDouble value="11.1364" interpolationType="linear" frame="25" id="9:46330"/>
-                    <KeyFrameDouble value="11.5805" interpolationType="linear" frame="26" id="9:46331"/>
-                    <KeyFrameDouble value="12.0191" interpolationType="linear" frame="27" id="9:46332"/>
-                    <KeyFrameDouble value="12.4523" interpolationType="linear" frame="28" id="9:46333"/>
-                    <KeyFrameDouble value="12.8801" interpolationType="linear" frame="29" id="9:46334"/>
-                    <KeyFrameDouble value="13.3025" interpolationType="linear" frame="30" id="9:46335"/>
-                    <KeyFrameDouble value="13.7195" interpolationType="linear" frame="31" id="9:46336"/>
-                    <KeyFrameDouble value="14.1311" interpolationType="linear" frame="32" id="9:46337"/>
-                    <KeyFrameDouble value="14.5372" interpolationType="linear" frame="33" id="9:46338"/>
-                    <KeyFrameDouble value="14.938" interpolationType="linear" frame="34" id="9:46339"/>
-                    <KeyFrameDouble value="15.3334" interpolationType="linear" frame="35" id="9:46340"/>
-                    <KeyFrameDouble value="15.7233" interpolationType="linear" frame="36" id="9:46341"/>
-                    <KeyFrameDouble value="16.1079" interpolationType="linear" frame="37" id="9:46342"/>
-                    <KeyFrameDouble value="16.487" interpolationType="linear" frame="38" id="9:46343"/>
-                    <KeyFrameDouble value="16.8608" interpolationType="linear" frame="39" id="9:46344"/>
-                    <KeyFrameDouble value="17.2291" interpolationType="linear" frame="40" id="9:46345"/>
-                    <KeyFrameDouble value="17.592" interpolationType="linear" frame="41" id="9:46346"/>
-                    <KeyFrameDouble value="17.9495" interpolationType="linear" frame="42" id="9:46347"/>
-                    <KeyFrameDouble value="18.3016" interpolationType="linear" frame="43" id="9:46348"/>
-                    <KeyFrameDouble value="18.6483" interpolationType="linear" frame="44" id="9:46349"/>
-                    <KeyFrameDouble value="18.9896" interpolationType="linear" frame="45" id="9:46350"/>
-                    <KeyFrameDouble value="19.3255" interpolationType="linear" frame="46" id="9:46351"/>
-                    <KeyFrameDouble value="19.656" interpolationType="linear" frame="47" id="9:46352"/>
-                    <KeyFrameDouble value="19.9811" interpolationType="linear" frame="48" id="9:46353"/>
-                    <KeyFrameDouble value="20.3008" interpolationType="linear" frame="49" id="9:46354"/>
-                    <KeyFrameDouble value="20.615" interpolationType="linear" frame="50" id="9:46355"/>
-                    <KeyFrameDouble value="20.9239" interpolationType="linear" frame="51" id="9:46356"/>
-                    <KeyFrameDouble value="21.2273" interpolationType="linear" frame="52" id="9:46357"/>
-                    <KeyFrameDouble value="21.5254" interpolationType="linear" frame="53" id="9:46358"/>
-                    <KeyFrameDouble value="21.818" interpolationType="linear" frame="54" id="9:46359"/>
-                    <KeyFrameDouble value="22.1052" interpolationType="linear" frame="55" id="9:46360"/>
-                    <KeyFrameDouble value="22.3871" interpolationType="linear" frame="56" id="9:46361"/>
-                    <KeyFrameDouble value="22.6635" interpolationType="linear" frame="57" id="9:46362"/>
-                    <KeyFrameDouble value="22.9345" interpolationType="linear" frame="58" id="9:46363"/>
-                    <KeyFrameDouble value="23.2001" interpolationType="linear" frame="59" id="9:46364"/>
-                    <KeyFrameDouble value="23.4603" interpolationType="linear" frame="60" id="9:46365"/>
-                    <KeyFrameDouble value="23.7151" interpolationType="linear" frame="61" id="9:46366"/>
-                    <KeyFrameDouble value="23.9645" interpolationType="linear" frame="62" id="9:46367"/>
-                    <KeyFrameDouble value="24.2085" interpolationType="linear" frame="63" id="9:46368"/>
-                    <KeyFrameDouble value="24.447" interpolationType="linear" frame="64" id="9:46369"/>
-                    <KeyFrameDouble value="24.6802" interpolationType="linear" frame="65" id="9:46370"/>
-                    <KeyFrameDouble value="24.9079" interpolationType="linear" frame="66" id="9:46371"/>
-                    <KeyFrameDouble value="25.1303" interpolationType="linear" frame="67" id="9:46372"/>
-                    <KeyFrameDouble value="25.3472" interpolationType="linear" frame="68" id="9:46373"/>
-                    <KeyFrameDouble value="25.5588" interpolationType="linear" frame="69" id="9:46374"/>
-                    <KeyFrameDouble value="25.7649" interpolationType="linear" frame="70" id="9:46375"/>
-                    <KeyFrameDouble value="25.9656" interpolationType="linear" frame="71" id="9:46376"/>
-                    <KeyFrameDouble value="26.1609" interpolationType="linear" frame="72" id="9:46377"/>
-                    <KeyFrameDouble value="26.3509" interpolationType="linear" frame="73" id="9:46378"/>
-                    <KeyFrameDouble value="26.5354" interpolationType="linear" frame="74" id="9:46379"/>
-                    <KeyFrameDouble value="26.7145" interpolationType="linear" frame="75" id="9:46380"/>
-                    <KeyFrameDouble value="26.8881" interpolationType="linear" frame="76" id="9:46381"/>
-                    <KeyFrameDouble value="27.0564" interpolationType="linear" frame="77" id="9:46382"/>
-                    <KeyFrameDouble value="27.2193" interpolationType="linear" frame="78" id="9:46383"/>
-                    <KeyFrameDouble value="27.3768" interpolationType="linear" frame="79" id="9:46384"/>
-                    <KeyFrameDouble value="27.5288" interpolationType="linear" frame="80" id="9:46385"/>
-                    <KeyFrameDouble value="27.6755" interpolationType="linear" frame="81" id="9:46386"/>
-                    <KeyFrameDouble value="27.8167" interpolationType="linear" frame="82" id="9:46387"/>
-                    <KeyFrameDouble value="27.9526" interpolationType="linear" frame="83" id="9:46388"/>
-                    <KeyFrameDouble value="28.083" interpolationType="linear" frame="84" id="9:46389"/>
-                    <KeyFrameDouble value="28.208" interpolationType="linear" frame="85" id="9:46390"/>
-                    <KeyFrameDouble value="28.3277" interpolationType="linear" frame="86" id="9:46391"/>
-                    <KeyFrameDouble value="28.4419" interpolationType="linear" frame="87" id="9:46392"/>
-                    <KeyFrameDouble value="28.5507" interpolationType="linear" frame="88" id="9:46393"/>
-                    <KeyFrameDouble value="28.6541" interpolationType="linear" frame="89" id="9:46394"/>
-                    <KeyFrameDouble value="28.7521" interpolationType="linear" frame="90" id="9:46395"/>
-                    <KeyFrameDouble value="28.8447" interpolationType="linear" frame="91" id="9:46396"/>
-                    <KeyFrameDouble value="28.9319" interpolationType="linear" frame="92" id="9:46397"/>
-                    <KeyFrameDouble value="29.0136" interpolationType="linear" frame="93" id="9:46398"/>
-                    <KeyFrameDouble value="29.09" interpolationType="linear" frame="94" id="9:46399"/>
-                    <KeyFrameDouble value="29.161" interpolationType="linear" frame="95" id="9:46400"/>
-                    <KeyFrameDouble value="29.2265" interpolationType="linear" frame="96" id="9:46401"/>
-                    <KeyFrameDouble value="29.2815" interpolationType="linear" frame="97" id="9:46402"/>
-                    <KeyFrameDouble value="29.3208" interpolationType="linear" frame="98" id="9:46403"/>
-                    <KeyFrameDouble value="29.3444" interpolationType="linear" frame="99" id="9:46404"/>
-                    <KeyFrameDouble value="29.3522" interpolationType="linear" frame="100" id="9:46405"/>
-                    <KeyFrameDouble value="29.3522" interpolationType="linear" frame="191" id="9:46406"/>
+                <KeyedProperty property="rotation" id="9:104524">
+                    <KeyFrameDouble value="-12.3688" id="9:104525"/>
+                    <KeyFrameDouble value="-12.3688" interpolationType="linear" frame="48" id="9:104526"/>
+                    <KeyFrameDouble value="-11.4889" interpolationType="linear" frame="49" id="9:104527"/>
+                    <KeyFrameDouble value="-10.6089" interpolationType="linear" frame="50" id="9:104528"/>
+                    <KeyFrameDouble value="-9.729" interpolationType="linear" frame="51" id="9:104529"/>
+                    <KeyFrameDouble value="-8.8491" interpolationType="linear" frame="52" id="9:104530"/>
+                    <KeyFrameDouble value="-7.9691" interpolationType="linear" frame="53" id="9:104531"/>
+                    <KeyFrameDouble value="-7.0892" interpolationType="linear" frame="54" id="9:104532"/>
+                    <KeyFrameDouble value="-6.2093" interpolationType="linear" frame="55" id="9:104533"/>
+                    <KeyFrameDouble value="-5.3293" interpolationType="linear" frame="56" id="9:104534"/>
+                    <KeyFrameDouble value="-4.4494" interpolationType="linear" frame="57" id="9:104535"/>
+                    <KeyFrameDouble value="-3.5694" interpolationType="linear" frame="58" id="9:104536"/>
+                    <KeyFrameDouble value="-2.6895" interpolationType="linear" frame="59" id="9:104537"/>
+                    <KeyFrameDouble value="-1.8096" interpolationType="linear" frame="60" id="9:104538"/>
+                    <KeyFrameDouble value="-0.9296" interpolationType="linear" frame="61" id="9:104539"/>
+                    <KeyFrameDouble value="-0.0497" interpolationType="linear" frame="62" id="9:104540"/>
+                    <KeyFrameDouble value="0.8303" interpolationType="linear" frame="63" id="9:104541"/>
+                    <KeyFrameDouble value="1.7102" interpolationType="linear" frame="64" id="9:104542"/>
+                    <KeyFrameDouble value="2.502" interpolationType="linear" frame="65" id="9:104543"/>
+                    <KeyFrameDouble value="3.2923" interpolationType="linear" frame="66" id="9:104544"/>
+                    <KeyFrameDouble value="4.081" interpolationType="linear" frame="67" id="9:104545"/>
+                    <KeyFrameDouble value="4.8681" interpolationType="linear" frame="68" id="9:104546"/>
+                    <KeyFrameDouble value="5.6537" interpolationType="linear" frame="69" id="9:104547"/>
+                    <KeyFrameDouble value="6.4377" interpolationType="linear" frame="70" id="9:104548"/>
+                    <KeyFrameDouble value="7.2201" interpolationType="linear" frame="71" id="9:104549"/>
+                    <KeyFrameDouble value="8.0009" interpolationType="linear" frame="72" id="9:104550"/>
+                    <KeyFrameDouble value="8.7802" interpolationType="linear" frame="73" id="9:104551"/>
+                    <KeyFrameDouble value="9.5579" interpolationType="linear" frame="74" id="9:104552"/>
+                    <KeyFrameDouble value="10.334" interpolationType="linear" frame="75" id="9:104553"/>
+                    <KeyFrameDouble value="11.1086" interpolationType="linear" frame="76" id="9:104554"/>
+                    <KeyFrameDouble value="11.8815" interpolationType="linear" frame="77" id="9:104555"/>
+                    <KeyFrameDouble value="12.653" interpolationType="linear" frame="78" id="9:104556"/>
+                    <KeyFrameDouble value="13.4228" interpolationType="linear" frame="79" id="9:104557"/>
+                    <KeyFrameDouble value="14.1911" interpolationType="linear" frame="80" id="9:104558"/>
+                    <KeyFrameDouble value="14.9578" interpolationType="linear" frame="81" id="9:104559"/>
+                    <KeyFrameDouble value="15.7229" interpolationType="linear" frame="82" id="9:104560"/>
+                    <KeyFrameDouble value="16.4865" interpolationType="linear" frame="83" id="9:104561"/>
+                    <KeyFrameDouble value="17.2484" interpolationType="linear" frame="84" id="9:104562"/>
+                    <KeyFrameDouble value="18.0089" interpolationType="linear" frame="85" id="9:104563"/>
+                    <KeyFrameDouble value="18.7677" interpolationType="linear" frame="86" id="9:104564"/>
+                    <KeyFrameDouble value="19.525" interpolationType="linear" frame="87" id="9:104565"/>
+                    <KeyFrameDouble value="20.2807" interpolationType="linear" frame="88" id="9:104566"/>
+                    <KeyFrameDouble value="21.0348" interpolationType="linear" frame="89" id="9:104567"/>
+                    <KeyFrameDouble value="21.7873" interpolationType="linear" frame="90" id="9:104568"/>
+                    <KeyFrameDouble value="22.5383" interpolationType="linear" frame="91" id="9:104569"/>
+                    <KeyFrameDouble value="23.2877" interpolationType="linear" frame="92" id="9:104570"/>
+                    <KeyFrameDouble value="24.0356" interpolationType="linear" frame="93" id="9:104571"/>
+                    <KeyFrameDouble value="24.7819" interpolationType="linear" frame="94" id="9:104572"/>
+                    <KeyFrameDouble value="25.5266" interpolationType="linear" frame="95" id="9:104573"/>
+                    <KeyFrameDouble value="26.2697" interpolationType="linear" frame="96" id="9:104574"/>
+                    <KeyFrameDouble value="27.0112" interpolationType="linear" frame="97" id="9:104575"/>
+                    <KeyFrameDouble value="27.7512" interpolationType="linear" frame="98" id="9:104576"/>
+                    <KeyFrameDouble value="28.4897" interpolationType="linear" frame="99" id="9:104577"/>
+                    <KeyFrameDouble value="29.2265" interpolationType="linear" frame="100" id="9:104578"/>
+                    <KeyFrameDouble value="29.3502" interpolationType="linear" frame="101" id="9:104579"/>
+                    <KeyFrameDouble value="29.4386" interpolationType="linear" frame="102" id="9:104580"/>
+                    <KeyFrameDouble value="29.4917" interpolationType="linear" frame="103" id="9:104581"/>
+                    <KeyFrameDouble value="29.5093" interpolationType="linear" frame="104" id="9:104582"/>
+                    <KeyFrameDouble value="29.507" interpolationType="linear" frame="105" id="9:104583"/>
+                    <KeyFrameDouble value="29.5006" interpolationType="linear" frame="106" id="9:104584"/>
+                    <KeyFrameDouble value="29.4908" interpolationType="linear" frame="107" id="9:104585"/>
+                    <KeyFrameDouble value="29.4782" interpolationType="linear" frame="108" id="9:104586"/>
+                    <KeyFrameDouble value="29.4635" interpolationType="linear" frame="109" id="9:104587"/>
+                    <KeyFrameDouble value="29.4475" interpolationType="linear" frame="110" id="9:104588"/>
+                    <KeyFrameDouble value="29.4308" interpolationType="linear" frame="111" id="9:104589"/>
+                    <KeyFrameDouble value="29.414" interpolationType="linear" frame="112" id="9:104590"/>
+                    <KeyFrameDouble value="29.398" interpolationType="linear" frame="113" id="9:104591"/>
+                    <KeyFrameDouble value="29.3834" interpolationType="linear" frame="114" id="9:104592"/>
+                    <KeyFrameDouble value="29.3708" interpolationType="linear" frame="115" id="9:104593"/>
+                    <KeyFrameDouble value="29.3609" interpolationType="linear" frame="116" id="9:104594"/>
+                    <KeyFrameDouble value="29.3545" interpolationType="linear" frame="117" id="9:104595"/>
+                    <KeyFrameDouble value="29.3522" interpolationType="linear" frame="118" id="9:104596"/>
+                    <KeyFrameDouble value="29.3522" frame="191" id="9:104597"/>
                 </KeyedProperty>
             </KeyedObject>
             <KeyedObject objectId="9:27872" id="9:46413">
-                <KeyedProperty property="x" id="9:46414">
-                    <KeyFrameDouble value="211.957" interpolationType="linear" id="9:46415"/>
-                    <KeyFrameDouble value="211.957" interpolationType="linear" frame="96" id="9:46416"/>
-                    <KeyFrameDouble value="212.069" interpolationType="linear" frame="97" id="9:46417"/>
-                    <KeyFrameDouble value="212.373" interpolationType="linear" frame="98" id="9:46418"/>
-                    <KeyFrameDouble value="212.821" interpolationType="linear" frame="99" id="9:46419"/>
-                    <KeyFrameDouble value="213.365" interpolationType="linear" frame="100" id="9:46420"/>
-                    <KeyFrameDouble value="213.957" interpolationType="linear" frame="101" id="9:46421"/>
-                    <KeyFrameDouble value="214.549" interpolationType="linear" frame="102" id="9:46422"/>
-                    <KeyFrameDouble value="215.093" interpolationType="linear" frame="103" id="9:46423"/>
-                    <KeyFrameDouble value="215.541" interpolationType="linear" frame="104" id="9:46424"/>
-                    <KeyFrameDouble value="215.845" interpolationType="linear" frame="105" id="9:46425"/>
-                    <KeyFrameDouble value="215.957" interpolationType="linear" frame="106" id="9:46426"/>
-                    <KeyFrameDouble value="215.929" interpolationType="linear" frame="107" id="9:46427"/>
-                    <KeyFrameDouble value="215.853" interpolationType="linear" frame="108" id="9:46428"/>
-                    <KeyFrameDouble value="215.741" interpolationType="linear" frame="109" id="9:46429"/>
-                    <KeyFrameDouble value="215.605" interpolationType="linear" frame="110" id="9:46430"/>
-                    <KeyFrameDouble value="215.457" interpolationType="linear" frame="111" id="9:46431"/>
-                    <KeyFrameDouble value="215.309" interpolationType="linear" frame="112" id="9:46432"/>
-                    <KeyFrameDouble value="215.173" interpolationType="linear" frame="113" id="9:46433"/>
-                    <KeyFrameDouble value="215.061" interpolationType="linear" frame="114" id="9:46434"/>
-                    <KeyFrameDouble value="214.985" interpolationType="linear" frame="115" id="9:46435"/>
-                    <KeyFrameDouble value="214.957" interpolationType="linear" frame="116" id="9:46436"/>
-                    <KeyFrameDouble value="214.957" interpolationType="linear" frame="191" id="9:46437"/>
+                <KeyedProperty property="x" id="9:104643">
+                    <KeyFrameDouble value="211.957" id="9:104644"/>
+                    <KeyFrameDouble value="211.957" interpolationType="cubic" frame="100" id="9:104645">
+                        <CubicEaseInterpolator x1="0.33" y1="1" x2="0.68" y2="1" id="9:104646"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="218.457" interpolationType="cubic" frame="108" id="9:104647">
+                        <CubicEaseInterpolator x1="0.65" y1="0" x2="0.35" y2="1" id="9:104648"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="214.957" frame="120" id="9:104649"/>
+                    <KeyFrameDouble value="214.957" frame="191" id="9:104650"/>
                 </KeyedProperty>
             </KeyedObject>
             <KeyedObject objectId="9:27860" id="9:46444">
-                <KeyedProperty property="x" id="9:46445">
-                    <KeyFrameDouble value="173.043" interpolationType="linear" id="9:46446"/>
-                    <KeyFrameDouble value="173.043" interpolationType="linear" frame="98" id="9:46447"/>
-                    <KeyFrameDouble value="172.9319" interpolationType="linear" frame="99" id="9:46448"/>
-                    <KeyFrameDouble value="172.6541" interpolationType="linear" frame="100" id="9:46449"/>
-                    <KeyFrameDouble value="172.293" interpolationType="linear" frame="101" id="9:46450"/>
-                    <KeyFrameDouble value="171.9319" interpolationType="linear" frame="102" id="9:46451"/>
-                    <KeyFrameDouble value="171.6541" interpolationType="linear" frame="103" id="9:46452"/>
-                    <KeyFrameDouble value="171.543" interpolationType="linear" frame="104" id="9:46453"/>
-                    <KeyFrameDouble value="171.585" interpolationType="linear" frame="105" id="9:46454"/>
-                    <KeyFrameDouble value="171.699" interpolationType="linear" frame="106" id="9:46455"/>
-                    <KeyFrameDouble value="171.867" interpolationType="linear" frame="107" id="9:46456"/>
-                    <KeyFrameDouble value="172.071" interpolationType="linear" frame="108" id="9:46457"/>
-                    <KeyFrameDouble value="172.293" interpolationType="linear" frame="109" id="9:46458"/>
-                    <KeyFrameDouble value="172.515" interpolationType="linear" frame="110" id="9:46459"/>
-                    <KeyFrameDouble value="172.719" interpolationType="linear" frame="111" id="9:46460"/>
-                    <KeyFrameDouble value="172.887" interpolationType="linear" frame="112" id="9:46461"/>
-                    <KeyFrameDouble value="173.001" interpolationType="linear" frame="113" id="9:46462"/>
-                    <KeyFrameDouble value="173.043" interpolationType="linear" frame="114" id="9:46463"/>
-                    <KeyFrameDouble value="173.043" interpolationType="linear" frame="191" id="9:46464"/>
+                <KeyedProperty property="x" id="9:104652">
+                    <KeyFrameDouble value="173.043" id="9:104653"/>
+                    <KeyFrameDouble value="173.043" interpolationType="cubic" frame="102" id="9:104654">
+                        <CubicEaseInterpolator x1="0.33" y1="1" x2="0.68" y2="1" id="9:104655"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="171.043" interpolationType="cubic" frame="108" id="9:104656">
+                        <CubicEaseInterpolator x1="0.65" y1="0" x2="0.35" y2="1" id="9:104657"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="173.043" frame="118" id="9:104658"/>
+                    <KeyFrameDouble value="173.043" frame="191" id="9:104659"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:46177" id="9:104625">
+                <KeyedProperty property="scaleX" id="9:104609">
+                    <KeyFrameDouble value="0.9" id="9:104610"/>
+                    <KeyFrameDouble value="0.8738" frame="48" id="9:104611"/>
+                    <KeyFrameDouble value="0.8738" interpolationType="cubic" frame="61" id="9:104612">
+                        <CubicEaseInterpolator x1="0.65" y1="0" x2="0.35" y2="1" id="9:104613"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="1.008" interpolationType="cubic" frame="64" id="9:104614">
+                        <CubicEaseInterpolator x1="0.33" y1="1" x2="0.68" y2="1" id="9:104615"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="0.8865" interpolationType="cubic" frame="67" id="9:104616">
+                        <CubicEaseInterpolator x1="0.65" y1="0" x2="0.35" y2="1" id="9:104617"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="0.9" frame="76" id="9:104618"/>
+                    <KeyFrameDouble value="0.9" interpolationType="cubic" frame="98" id="9:104619">
+                        <CubicEaseInterpolator x1="0.33" y1="1" x2="0.68" y2="1" id="9:104620"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="0.954" interpolationType="cubic" frame="100" id="9:104621">
+                        <CubicEaseInterpolator x1="0.65" y1="0" x2="0.35" y2="1" id="9:104622"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="0.9" frame="105" id="9:104623"/>
+                    <KeyFrameDouble value="0.9" frame="191" id="9:104624"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY" id="9:104626">
+                    <KeyFrameDouble value="0.9" id="9:104627"/>
+                    <KeyFrameDouble value="0.927" frame="48" id="9:104628"/>
+                    <KeyFrameDouble value="0.927" interpolationType="cubic" frame="61" id="9:104629">
+                        <CubicEaseInterpolator x1="0.65" y1="0" x2="0.35" y2="1" id="9:104630"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="0.792" interpolationType="cubic" frame="64" id="9:104631">
+                        <CubicEaseInterpolator x1="0.33" y1="1" x2="0.68" y2="1" id="9:104632"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="0.9135" interpolationType="cubic" frame="67" id="9:104633">
+                        <CubicEaseInterpolator x1="0.65" y1="0" x2="0.35" y2="1" id="9:104634"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="0.9" frame="76" id="9:104635"/>
+                    <KeyFrameDouble value="0.9" interpolationType="cubic" frame="98" id="9:104636">
+                        <CubicEaseInterpolator x1="0.33" y1="1" x2="0.68" y2="1" id="9:104637"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="0.846" interpolationType="cubic" frame="100" id="9:104638">
+                        <CubicEaseInterpolator x1="0.65" y1="0" x2="0.35" y2="1" id="9:104639"/>
+                    </KeyFrameDouble>
+                    <KeyFrameDouble value="0.9" frame="105" id="9:104640"/>
+                    <KeyFrameDouble value="0.9" frame="191" id="9:104641"/>
                 </KeyedProperty>
             </KeyedObject>
         </LinearAnimation>
         <LinearAnimation fps="60" duration="1" name="End Waiting" id="9:32192">
-            <KeyedObject objectId="9:31248" id="9:31771">
-                <KeyedProperty property="x" id="9:31769">
-                    <KeyFrameDouble value="1600" frame="0" id="9:31770"/>
+            <KeyedObject objectId="9:31248" id="9:104670">
+                <KeyedProperty property="x" id="9:104671">
+                    <KeyFrameDouble value="1600" id="9:104672"/>
                 </KeyedProperty>
             </KeyedObject>
-            <KeyedObject objectId="9:31249" id="9:31774">
-                <KeyedProperty property="x" id="9:31772">
-                    <KeyFrameDouble value="1600" frame="0" id="9:31773"/>
+            <KeyedObject objectId="9:31249" id="9:104673">
+                <KeyedProperty property="x" id="9:104674">
+                    <KeyFrameDouble value="1600" id="9:104675"/>
                 </KeyedProperty>
             </KeyedObject>
-            <KeyedObject objectId="9:46176" id="9:46299">
-                <KeyedProperty property="x" id="9:46300">
-                    <KeyFrameDouble value="166.7898" id="9:46301"/>
+            <KeyedObject objectId="9:46176" id="9:104676">
+                <KeyedProperty property="x" id="9:104677">
+                    <KeyFrameDouble value="-830" id="9:104678"/>
+                </KeyedProperty>
+                <KeyedProperty property="y" id="9:104679">
+                    <KeyFrameDouble value="2400" id="9:104680"/>
                 </KeyedProperty>
             </KeyedObject>
-            <KeyedObject objectId="9:46179" id="9:46407">
-                <KeyedProperty property="rotation" id="9:46408">
-                    <KeyFrameDouble id="9:46409"/>
+            <KeyedObject objectId="9:46179" id="9:104681">
+                <KeyedProperty property="rotation" id="9:104682">
+                    <KeyFrameDouble value="-12.3688" id="9:104683"/>
                 </KeyedProperty>
             </KeyedObject>
-            <KeyedObject objectId="9:27872" id="9:46438">
-                <KeyedProperty property="x" id="9:46439">
-                    <KeyFrameDouble value="211.957" id="9:46440"/>
+            <KeyedObject objectId="9:27872" id="9:104684">
+                <KeyedProperty property="x" id="9:104685">
+                    <KeyFrameDouble value="211.957" id="9:104686"/>
                 </KeyedProperty>
             </KeyedObject>
-            <KeyedObject objectId="9:27860" id="9:46465">
-                <KeyedProperty property="x" id="9:46466">
-                    <KeyFrameDouble value="173.043" id="9:46467"/>
+            <KeyedObject objectId="9:27860" id="9:104687">
+                <KeyedProperty property="x" id="9:104688">
+                    <KeyFrameDouble value="173.043" id="9:104689"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:46177" id="9:104690">
+                <KeyedProperty property="scaleX" id="9:104691">
+                    <KeyFrameDouble value="0.9" id="9:104692"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY" id="9:104693">
+                    <KeyFrameDouble value="0.9" id="9:104694"/>
                 </KeyedProperty>
             </KeyedObject>
         </LinearAnimation>
@@ -75302,6 +75412,9 @@
                 <KeyedProperty property="x" id="9:46303">
                     <KeyFrameDouble value="633.7898" id="9:46304"/>
                 </KeyedProperty>
+                <KeyedProperty property="y" id="9:104661">
+                    <KeyFrameDouble value="712" id="9:104662"/>
+                </KeyedProperty>
             </KeyedObject>
             <KeyedObject objectId="9:46179" id="9:46410">
                 <KeyedProperty property="rotation" id="9:46411">
@@ -75316,6 +75429,14 @@
             <KeyedObject objectId="9:27860" id="9:46468">
                 <KeyedProperty property="x" id="9:46469">
                     <KeyFrameDouble value="173.043" id="9:46470"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="9:46177" id="9:104666">
+                <KeyedProperty property="scaleX" id="9:104664">
+                    <KeyFrameDouble value="0.9" id="9:104665"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY" id="9:104667">
+                    <KeyFrameDouble value="0.9" id="9:104668"/>
                 </KeyedProperty>
             </KeyedObject>
         </LinearAnimation>
@@ -96604,40 +96725,6 @@
                             <TransitionValueEnumComparator value="1:9300" id="9:90877" />
                         </TransitionViewModelCondition>
                     </StateTransition>
-                    <StateTransition stateToId="9:83258" duration="0" id="9:90878">
-                        <TransitionViewModelCondition opValue="equal" id="9:90879">
-                            <TransitionPropertyViewModelComparator id="9:90880">
-                                <BindablePropertyEnum id="9:90881">
-                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="9:90882" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9108" id="9:90883" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90884">
-                            <TransitionPropertyViewModelComparator id="9:90885">
-                                <BindablePropertyBoolean id="9:90886">
-                                    <DataBindContext sourcePathIds="1:14-1:3310" propertyKey="634" id="9:90887" />
-                                </BindablePropertyBoolean>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueBooleanComparator value="true" id="9:90888" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90889">
-                            <TransitionPropertyViewModelComparator id="9:90890">
-                                <BindablePropertyEnum id="9:90891">
-                                    <DataBindContext sourcePathIds="1:14-1:3400" propertyKey="637" id="9:90892" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9108" id="9:90893" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90894">
-                            <TransitionPropertyViewModelComparator id="9:90895">
-                                <BindablePropertyEnum id="9:90896">
-                                    <DataBindContext sourcePathIds="1:14-1:3300" propertyKey="637" id="9:90897" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9300" id="9:90898" />
-                        </TransitionViewModelCondition>
-                    </StateTransition>
                     <StateTransition stateToId="9:83259" duration="0" id="9:83304">
                         <TransitionViewModelCondition opValue="equal" id="9:83284">
                             <TransitionPropertyViewModelComparator id="9:83285">
@@ -96704,40 +96791,6 @@
                                 </BindablePropertyEnum>
                             </TransitionPropertyViewModelComparator>
                             <TransitionValueEnumComparator value="1:9301" id="9:90835" />
-                        </TransitionViewModelCondition>
-                    </StateTransition>
-                    <StateTransition stateToId="9:83259" duration="0" id="9:90836">
-                        <TransitionViewModelCondition opValue="equal" id="9:90837">
-                            <TransitionPropertyViewModelComparator id="9:90838">
-                                <BindablePropertyEnum id="9:90839">
-                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="9:90840" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9108" id="9:90841" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90842">
-                            <TransitionPropertyViewModelComparator id="9:90843">
-                                <BindablePropertyBoolean id="9:90844">
-                                    <DataBindContext sourcePathIds="1:14-1:3310" propertyKey="634" id="9:90845" />
-                                </BindablePropertyBoolean>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueBooleanComparator value="true" id="9:90846" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90847">
-                            <TransitionPropertyViewModelComparator id="9:90848">
-                                <BindablePropertyEnum id="9:90849">
-                                    <DataBindContext sourcePathIds="1:14-1:3400" propertyKey="637" id="9:90850" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9108" id="9:90851" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90852">
-                            <TransitionPropertyViewModelComparator id="9:90853">
-                                <BindablePropertyEnum id="9:90854">
-                                    <DataBindContext sourcePathIds="1:14-1:3300" propertyKey="637" id="9:90855" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9301" id="9:90856" />
                         </TransitionViewModelCondition>
                     </StateTransition>
                     <StateTransition stateToId="9:83260" duration="0" id="9:83325">
@@ -96808,40 +96861,6 @@
                             <TransitionValueEnumComparator value="1:9302" id="9:90793" />
                         </TransitionViewModelCondition>
                     </StateTransition>
-                    <StateTransition stateToId="9:83260" duration="0" id="9:90794">
-                        <TransitionViewModelCondition opValue="equal" id="9:90795">
-                            <TransitionPropertyViewModelComparator id="9:90796">
-                                <BindablePropertyEnum id="9:90797">
-                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="9:90798" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9108" id="9:90799" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90800">
-                            <TransitionPropertyViewModelComparator id="9:90801">
-                                <BindablePropertyBoolean id="9:90802">
-                                    <DataBindContext sourcePathIds="1:14-1:3310" propertyKey="634" id="9:90803" />
-                                </BindablePropertyBoolean>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueBooleanComparator value="true" id="9:90804" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90805">
-                            <TransitionPropertyViewModelComparator id="9:90806">
-                                <BindablePropertyEnum id="9:90807">
-                                    <DataBindContext sourcePathIds="1:14-1:3400" propertyKey="637" id="9:90808" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9108" id="9:90809" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90810">
-                            <TransitionPropertyViewModelComparator id="9:90811">
-                                <BindablePropertyEnum id="9:90812">
-                                    <DataBindContext sourcePathIds="1:14-1:3300" propertyKey="637" id="9:90813" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9302" id="9:90814" />
-                        </TransitionViewModelCondition>
-                    </StateTransition>
                     <StateTransition stateToId="9:83261" duration="0" id="9:83346">
                         <TransitionViewModelCondition opValue="equal" id="9:83326">
                             <TransitionPropertyViewModelComparator id="9:83327">
@@ -96908,40 +96927,6 @@
                                 </BindablePropertyEnum>
                             </TransitionPropertyViewModelComparator>
                             <TransitionValueEnumComparator value="1:9303" id="9:90751" />
-                        </TransitionViewModelCondition>
-                    </StateTransition>
-                    <StateTransition stateToId="9:83261" duration="0" id="9:90752">
-                        <TransitionViewModelCondition opValue="equal" id="9:90753">
-                            <TransitionPropertyViewModelComparator id="9:90754">
-                                <BindablePropertyEnum id="9:90755">
-                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="9:90756" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9108" id="9:90757" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90758">
-                            <TransitionPropertyViewModelComparator id="9:90759">
-                                <BindablePropertyBoolean id="9:90760">
-                                    <DataBindContext sourcePathIds="1:14-1:3310" propertyKey="634" id="9:90761" />
-                                </BindablePropertyBoolean>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueBooleanComparator value="true" id="9:90762" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90763">
-                            <TransitionPropertyViewModelComparator id="9:90764">
-                                <BindablePropertyEnum id="9:90765">
-                                    <DataBindContext sourcePathIds="1:14-1:3400" propertyKey="637" id="9:90766" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9108" id="9:90767" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90768">
-                            <TransitionPropertyViewModelComparator id="9:90769">
-                                <BindablePropertyEnum id="9:90770">
-                                    <DataBindContext sourcePathIds="1:14-1:3300" propertyKey="637" id="9:90771" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9303" id="9:90772" />
                         </TransitionViewModelCondition>
                     </StateTransition>
                     <StateTransition stateToId="9:83262" duration="0" id="9:83367">
@@ -97012,40 +96997,6 @@
                             <TransitionValueEnumComparator value="1:9304" id="9:90709" />
                         </TransitionViewModelCondition>
                     </StateTransition>
-                    <StateTransition stateToId="9:83262" duration="0" id="9:90710">
-                        <TransitionViewModelCondition opValue="equal" id="9:90711">
-                            <TransitionPropertyViewModelComparator id="9:90712">
-                                <BindablePropertyEnum id="9:90713">
-                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="9:90714" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9108" id="9:90715" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90716">
-                            <TransitionPropertyViewModelComparator id="9:90717">
-                                <BindablePropertyBoolean id="9:90718">
-                                    <DataBindContext sourcePathIds="1:14-1:3310" propertyKey="634" id="9:90719" />
-                                </BindablePropertyBoolean>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueBooleanComparator value="true" id="9:90720" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90721">
-                            <TransitionPropertyViewModelComparator id="9:90722">
-                                <BindablePropertyEnum id="9:90723">
-                                    <DataBindContext sourcePathIds="1:14-1:3400" propertyKey="637" id="9:90724" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9108" id="9:90725" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90726">
-                            <TransitionPropertyViewModelComparator id="9:90727">
-                                <BindablePropertyEnum id="9:90728">
-                                    <DataBindContext sourcePathIds="1:14-1:3300" propertyKey="637" id="9:90729" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9304" id="9:90730" />
-                        </TransitionViewModelCondition>
-                    </StateTransition>
                     <StateTransition stateToId="9:83262" duration="0" id="9:83388">
                         <TransitionViewModelCondition opValue="equal" id="9:83368">
                             <TransitionPropertyViewModelComparator id="9:83369">
@@ -97112,40 +97063,6 @@
                                 </BindablePropertyEnum>
                             </TransitionPropertyViewModelComparator>
                             <TransitionValueEnumComparator value="1:9305" id="9:90667" />
-                        </TransitionViewModelCondition>
-                    </StateTransition>
-                    <StateTransition stateToId="9:83262" duration="0" id="9:90668">
-                        <TransitionViewModelCondition opValue="equal" id="9:90669">
-                            <TransitionPropertyViewModelComparator id="9:90670">
-                                <BindablePropertyEnum id="9:90671">
-                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="9:90672" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9108" id="9:90673" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90674">
-                            <TransitionPropertyViewModelComparator id="9:90675">
-                                <BindablePropertyBoolean id="9:90676">
-                                    <DataBindContext sourcePathIds="1:14-1:3310" propertyKey="634" id="9:90677" />
-                                </BindablePropertyBoolean>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueBooleanComparator value="true" id="9:90678" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90679">
-                            <TransitionPropertyViewModelComparator id="9:90680">
-                                <BindablePropertyEnum id="9:90681">
-                                    <DataBindContext sourcePathIds="1:14-1:3400" propertyKey="637" id="9:90682" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9108" id="9:90683" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90684">
-                            <TransitionPropertyViewModelComparator id="9:90685">
-                                <BindablePropertyEnum id="9:90686">
-                                    <DataBindContext sourcePathIds="1:14-1:3300" propertyKey="637" id="9:90687" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9305" id="9:90688" />
                         </TransitionViewModelCondition>
                     </StateTransition>
                     <StateTransition stateToId="9:83262" duration="0" id="9:83409">
@@ -97216,40 +97133,6 @@
                             <TransitionValueEnumComparator value="1:9306" id="9:90625" />
                         </TransitionViewModelCondition>
                     </StateTransition>
-                    <StateTransition stateToId="9:83262" duration="0" id="9:90626">
-                        <TransitionViewModelCondition opValue="equal" id="9:90627">
-                            <TransitionPropertyViewModelComparator id="9:90628">
-                                <BindablePropertyEnum id="9:90629">
-                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="9:90630" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9108" id="9:90631" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90632">
-                            <TransitionPropertyViewModelComparator id="9:90633">
-                                <BindablePropertyBoolean id="9:90634">
-                                    <DataBindContext sourcePathIds="1:14-1:3310" propertyKey="634" id="9:90635" />
-                                </BindablePropertyBoolean>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueBooleanComparator value="true" id="9:90636" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90637">
-                            <TransitionPropertyViewModelComparator id="9:90638">
-                                <BindablePropertyEnum id="9:90639">
-                                    <DataBindContext sourcePathIds="1:14-1:3400" propertyKey="637" id="9:90640" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9108" id="9:90641" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90642">
-                            <TransitionPropertyViewModelComparator id="9:90643">
-                                <BindablePropertyEnum id="9:90644">
-                                    <DataBindContext sourcePathIds="1:14-1:3300" propertyKey="637" id="9:90645" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9306" id="9:90646" />
-                        </TransitionViewModelCondition>
-                    </StateTransition>
                     <StateTransition stateToId="9:83257" duration="0" id="9:83425">
                         <TransitionViewModelCondition opValue="equal" id="9:83410">
                             <TransitionPropertyViewModelComparator id="9:83411">
@@ -97302,32 +97185,6 @@
                             <TransitionValueEnumComparator value="1:9107" id="9:90588" />
                         </TransitionViewModelCondition>
                     </StateTransition>
-                    <StateTransition stateToId="9:83257" duration="0" id="9:90589">
-                        <TransitionViewModelCondition opValue="equal" id="9:90590">
-                            <TransitionPropertyViewModelComparator id="9:90591">
-                                <BindablePropertyEnum id="9:90592">
-                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="9:90593" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9108" id="9:90594" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90595">
-                            <TransitionPropertyViewModelComparator id="9:90596">
-                                <BindablePropertyBoolean id="9:90597">
-                                    <DataBindContext sourcePathIds="1:14-1:3310" propertyKey="634" id="9:90598" />
-                                </BindablePropertyBoolean>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueBooleanComparator value="false" id="9:90599" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90600">
-                            <TransitionPropertyViewModelComparator id="9:90601">
-                                <BindablePropertyEnum id="9:90602">
-                                    <DataBindContext sourcePathIds="1:14-1:3400" propertyKey="637" id="9:90603" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9108" id="9:90604" />
-                        </TransitionViewModelCondition>
-                    </StateTransition>
                     <StateTransition stateToId="9:83258" duration="0" id="9:83446">
                         <TransitionViewModelCondition opValue="equal" id="9:83426">
                             <TransitionPropertyViewModelComparator id="9:83427">
@@ -97362,7 +97219,7 @@
                             <TransitionValueEnumComparator value="1:9300" id="9:83445"/>
                         </TransitionViewModelCondition>
                     </StateTransition>
-                    <StateTransition stateToId="9:83258" duration="0" id="9:90531">
+                    <StateTransition stateToId="9:104334" duration="0" id="9:90531">
                         <TransitionViewModelCondition opValue="equal" id="9:90532">
                             <TransitionPropertyViewModelComparator id="9:90533">
                                 <BindablePropertyEnum id="9:90534">
@@ -97394,40 +97251,6 @@
                                 </BindablePropertyEnum>
                             </TransitionPropertyViewModelComparator>
                             <TransitionValueEnumComparator value="1:9300" id="9:90551" />
-                        </TransitionViewModelCondition>
-                    </StateTransition>
-                    <StateTransition stateToId="9:83258" duration="0" id="9:90552">
-                        <TransitionViewModelCondition opValue="equal" id="9:90553">
-                            <TransitionPropertyViewModelComparator id="9:90554">
-                                <BindablePropertyEnum id="9:90555">
-                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="9:90556" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9108" id="9:90557" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90558">
-                            <TransitionPropertyViewModelComparator id="9:90559">
-                                <BindablePropertyBoolean id="9:90560">
-                                    <DataBindContext sourcePathIds="1:14-1:3310" propertyKey="634" id="9:90561" />
-                                </BindablePropertyBoolean>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueBooleanComparator value="true" id="9:90562" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90563">
-                            <TransitionPropertyViewModelComparator id="9:90564">
-                                <BindablePropertyEnum id="9:90565">
-                                    <DataBindContext sourcePathIds="1:14-1:2855" propertyKey="637" id="9:90566" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9201" id="9:90567" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90568">
-                            <TransitionPropertyViewModelComparator id="9:90569">
-                                <BindablePropertyEnum id="9:90570">
-                                    <DataBindContext sourcePathIds="1:14-1:3300" propertyKey="637" id="9:90571" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9300" id="9:90572" />
                         </TransitionViewModelCondition>
                     </StateTransition>
                     <StateTransition stateToId="9:83259" duration="0" id="9:83467">
@@ -97464,7 +97287,7 @@
                             <TransitionValueEnumComparator value="1:9301" id="9:83466"/>
                         </TransitionViewModelCondition>
                     </StateTransition>
-                    <StateTransition stateToId="9:83259" duration="0" id="9:90489">
+                    <StateTransition stateToId="9:104334" duration="0" id="9:90489">
                         <TransitionViewModelCondition opValue="equal" id="9:90490">
                             <TransitionPropertyViewModelComparator id="9:90491">
                                 <BindablePropertyEnum id="9:90492">
@@ -97496,40 +97319,6 @@
                                 </BindablePropertyEnum>
                             </TransitionPropertyViewModelComparator>
                             <TransitionValueEnumComparator value="1:9301" id="9:90509" />
-                        </TransitionViewModelCondition>
-                    </StateTransition>
-                    <StateTransition stateToId="9:83259" duration="0" id="9:90510">
-                        <TransitionViewModelCondition opValue="equal" id="9:90511">
-                            <TransitionPropertyViewModelComparator id="9:90512">
-                                <BindablePropertyEnum id="9:90513">
-                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="9:90514" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9108" id="9:90515" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90516">
-                            <TransitionPropertyViewModelComparator id="9:90517">
-                                <BindablePropertyBoolean id="9:90518">
-                                    <DataBindContext sourcePathIds="1:14-1:3310" propertyKey="634" id="9:90519" />
-                                </BindablePropertyBoolean>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueBooleanComparator value="true" id="9:90520" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90521">
-                            <TransitionPropertyViewModelComparator id="9:90522">
-                                <BindablePropertyEnum id="9:90523">
-                                    <DataBindContext sourcePathIds="1:14-1:2855" propertyKey="637" id="9:90524" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9201" id="9:90525" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90526">
-                            <TransitionPropertyViewModelComparator id="9:90527">
-                                <BindablePropertyEnum id="9:90528">
-                                    <DataBindContext sourcePathIds="1:14-1:3300" propertyKey="637" id="9:90529" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9301" id="9:90530" />
                         </TransitionViewModelCondition>
                     </StateTransition>
                     <StateTransition stateToId="9:83260" duration="0" id="9:83488">
@@ -97566,7 +97355,7 @@
                             <TransitionValueEnumComparator value="1:9302" id="9:83487"/>
                         </TransitionViewModelCondition>
                     </StateTransition>
-                    <StateTransition stateToId="9:83260" duration="0" id="9:90447">
+                    <StateTransition stateToId="9:104334" duration="0" id="9:90447">
                         <TransitionViewModelCondition opValue="equal" id="9:90448">
                             <TransitionPropertyViewModelComparator id="9:90449">
                                 <BindablePropertyEnum id="9:90450">
@@ -97598,40 +97387,6 @@
                                 </BindablePropertyEnum>
                             </TransitionPropertyViewModelComparator>
                             <TransitionValueEnumComparator value="1:9302" id="9:90467" />
-                        </TransitionViewModelCondition>
-                    </StateTransition>
-                    <StateTransition stateToId="9:83260" duration="0" id="9:90468">
-                        <TransitionViewModelCondition opValue="equal" id="9:90469">
-                            <TransitionPropertyViewModelComparator id="9:90470">
-                                <BindablePropertyEnum id="9:90471">
-                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="9:90472" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9108" id="9:90473" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90474">
-                            <TransitionPropertyViewModelComparator id="9:90475">
-                                <BindablePropertyBoolean id="9:90476">
-                                    <DataBindContext sourcePathIds="1:14-1:3310" propertyKey="634" id="9:90477" />
-                                </BindablePropertyBoolean>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueBooleanComparator value="true" id="9:90478" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90479">
-                            <TransitionPropertyViewModelComparator id="9:90480">
-                                <BindablePropertyEnum id="9:90481">
-                                    <DataBindContext sourcePathIds="1:14-1:2855" propertyKey="637" id="9:90482" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9201" id="9:90483" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90484">
-                            <TransitionPropertyViewModelComparator id="9:90485">
-                                <BindablePropertyEnum id="9:90486">
-                                    <DataBindContext sourcePathIds="1:14-1:3300" propertyKey="637" id="9:90487" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9302" id="9:90488" />
                         </TransitionViewModelCondition>
                     </StateTransition>
                     <StateTransition stateToId="9:83261" duration="0" id="9:83509">
@@ -97668,7 +97423,7 @@
                             <TransitionValueEnumComparator value="1:9303" id="9:83508"/>
                         </TransitionViewModelCondition>
                     </StateTransition>
-                    <StateTransition stateToId="9:83261" duration="0" id="9:90405">
+                    <StateTransition stateToId="9:104334" duration="0" id="9:90405">
                         <TransitionViewModelCondition opValue="equal" id="9:90406">
                             <TransitionPropertyViewModelComparator id="9:90407">
                                 <BindablePropertyEnum id="9:90408">
@@ -97700,40 +97455,6 @@
                                 </BindablePropertyEnum>
                             </TransitionPropertyViewModelComparator>
                             <TransitionValueEnumComparator value="1:9303" id="9:90425" />
-                        </TransitionViewModelCondition>
-                    </StateTransition>
-                    <StateTransition stateToId="9:83261" duration="0" id="9:90426">
-                        <TransitionViewModelCondition opValue="equal" id="9:90427">
-                            <TransitionPropertyViewModelComparator id="9:90428">
-                                <BindablePropertyEnum id="9:90429">
-                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="9:90430" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9108" id="9:90431" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90432">
-                            <TransitionPropertyViewModelComparator id="9:90433">
-                                <BindablePropertyBoolean id="9:90434">
-                                    <DataBindContext sourcePathIds="1:14-1:3310" propertyKey="634" id="9:90435" />
-                                </BindablePropertyBoolean>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueBooleanComparator value="true" id="9:90436" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90437">
-                            <TransitionPropertyViewModelComparator id="9:90438">
-                                <BindablePropertyEnum id="9:90439">
-                                    <DataBindContext sourcePathIds="1:14-1:2855" propertyKey="637" id="9:90440" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9201" id="9:90441" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90442">
-                            <TransitionPropertyViewModelComparator id="9:90443">
-                                <BindablePropertyEnum id="9:90444">
-                                    <DataBindContext sourcePathIds="1:14-1:3300" propertyKey="637" id="9:90445" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9303" id="9:90446" />
                         </TransitionViewModelCondition>
                     </StateTransition>
                     <StateTransition stateToId="9:83262" duration="0" id="9:83530">
@@ -97770,7 +97491,7 @@
                             <TransitionValueEnumComparator value="1:9304" id="9:83529"/>
                         </TransitionViewModelCondition>
                     </StateTransition>
-                    <StateTransition stateToId="9:83262" duration="0" id="9:90363">
+                    <StateTransition stateToId="9:104334" duration="0" id="9:90363">
                         <TransitionViewModelCondition opValue="equal" id="9:90364">
                             <TransitionPropertyViewModelComparator id="9:90365">
                                 <BindablePropertyEnum id="9:90366">
@@ -97802,40 +97523,6 @@
                                 </BindablePropertyEnum>
                             </TransitionPropertyViewModelComparator>
                             <TransitionValueEnumComparator value="1:9304" id="9:90383" />
-                        </TransitionViewModelCondition>
-                    </StateTransition>
-                    <StateTransition stateToId="9:83262" duration="0" id="9:90384">
-                        <TransitionViewModelCondition opValue="equal" id="9:90385">
-                            <TransitionPropertyViewModelComparator id="9:90386">
-                                <BindablePropertyEnum id="9:90387">
-                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="9:90388" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9108" id="9:90389" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90390">
-                            <TransitionPropertyViewModelComparator id="9:90391">
-                                <BindablePropertyBoolean id="9:90392">
-                                    <DataBindContext sourcePathIds="1:14-1:3310" propertyKey="634" id="9:90393" />
-                                </BindablePropertyBoolean>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueBooleanComparator value="true" id="9:90394" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90395">
-                            <TransitionPropertyViewModelComparator id="9:90396">
-                                <BindablePropertyEnum id="9:90397">
-                                    <DataBindContext sourcePathIds="1:14-1:2855" propertyKey="637" id="9:90398" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9201" id="9:90399" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90400">
-                            <TransitionPropertyViewModelComparator id="9:90401">
-                                <BindablePropertyEnum id="9:90402">
-                                    <DataBindContext sourcePathIds="1:14-1:3300" propertyKey="637" id="9:90403" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9304" id="9:90404" />
                         </TransitionViewModelCondition>
                     </StateTransition>
                     <StateTransition stateToId="9:83262" duration="0" id="9:83551">
@@ -97872,7 +97559,7 @@
                             <TransitionValueEnumComparator value="1:9305" id="9:83550"/>
                         </TransitionViewModelCondition>
                     </StateTransition>
-                    <StateTransition stateToId="9:83262" duration="0" id="9:90321">
+                    <StateTransition stateToId="9:104334" duration="0" id="9:90321">
                         <TransitionViewModelCondition opValue="equal" id="9:90322">
                             <TransitionPropertyViewModelComparator id="9:90323">
                                 <BindablePropertyEnum id="9:90324">
@@ -97904,40 +97591,6 @@
                                 </BindablePropertyEnum>
                             </TransitionPropertyViewModelComparator>
                             <TransitionValueEnumComparator value="1:9305" id="9:90341" />
-                        </TransitionViewModelCondition>
-                    </StateTransition>
-                    <StateTransition stateToId="9:83262" duration="0" id="9:90342">
-                        <TransitionViewModelCondition opValue="equal" id="9:90343">
-                            <TransitionPropertyViewModelComparator id="9:90344">
-                                <BindablePropertyEnum id="9:90345">
-                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="9:90346" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9108" id="9:90347" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90348">
-                            <TransitionPropertyViewModelComparator id="9:90349">
-                                <BindablePropertyBoolean id="9:90350">
-                                    <DataBindContext sourcePathIds="1:14-1:3310" propertyKey="634" id="9:90351" />
-                                </BindablePropertyBoolean>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueBooleanComparator value="true" id="9:90352" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90353">
-                            <TransitionPropertyViewModelComparator id="9:90354">
-                                <BindablePropertyEnum id="9:90355">
-                                    <DataBindContext sourcePathIds="1:14-1:2855" propertyKey="637" id="9:90356" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9201" id="9:90357" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90358">
-                            <TransitionPropertyViewModelComparator id="9:90359">
-                                <BindablePropertyEnum id="9:90360">
-                                    <DataBindContext sourcePathIds="1:14-1:3300" propertyKey="637" id="9:90361" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9305" id="9:90362" />
                         </TransitionViewModelCondition>
                     </StateTransition>
                     <StateTransition stateToId="9:83262" duration="0" id="9:83572">
@@ -97974,7 +97627,7 @@
                             <TransitionValueEnumComparator value="1:9306" id="9:83571"/>
                         </TransitionViewModelCondition>
                     </StateTransition>
-                    <StateTransition stateToId="9:83262" duration="0" id="9:90279">
+                    <StateTransition stateToId="9:104334" duration="0" id="9:90279">
                         <TransitionViewModelCondition opValue="equal" id="9:90280">
                             <TransitionPropertyViewModelComparator id="9:90281">
                                 <BindablePropertyEnum id="9:90282">
@@ -98006,40 +97659,6 @@
                                 </BindablePropertyEnum>
                             </TransitionPropertyViewModelComparator>
                             <TransitionValueEnumComparator value="1:9306" id="9:90299" />
-                        </TransitionViewModelCondition>
-                    </StateTransition>
-                    <StateTransition stateToId="9:83262" duration="0" id="9:90300">
-                        <TransitionViewModelCondition opValue="equal" id="9:90301">
-                            <TransitionPropertyViewModelComparator id="9:90302">
-                                <BindablePropertyEnum id="9:90303">
-                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="9:90304" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9108" id="9:90305" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90306">
-                            <TransitionPropertyViewModelComparator id="9:90307">
-                                <BindablePropertyBoolean id="9:90308">
-                                    <DataBindContext sourcePathIds="1:14-1:3310" propertyKey="634" id="9:90309" />
-                                </BindablePropertyBoolean>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueBooleanComparator value="true" id="9:90310" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90311">
-                            <TransitionPropertyViewModelComparator id="9:90312">
-                                <BindablePropertyEnum id="9:90313">
-                                    <DataBindContext sourcePathIds="1:14-1:2855" propertyKey="637" id="9:90314" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9201" id="9:90315" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90316">
-                            <TransitionPropertyViewModelComparator id="9:90317">
-                                <BindablePropertyEnum id="9:90318">
-                                    <DataBindContext sourcePathIds="1:14-1:3300" propertyKey="637" id="9:90319" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9306" id="9:90320" />
                         </TransitionViewModelCondition>
                     </StateTransition>
                     <StateTransition stateToId="9:83257" duration="0" id="9:83588">
@@ -98094,32 +97713,6 @@
                             <TransitionValueEnumComparator value="1:9201" id="9:90262" />
                         </TransitionViewModelCondition>
                     </StateTransition>
-                    <StateTransition stateToId="9:83257" duration="0" id="9:90263">
-                        <TransitionViewModelCondition opValue="equal" id="9:90264">
-                            <TransitionPropertyViewModelComparator id="9:90265">
-                                <BindablePropertyEnum id="9:90266">
-                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="9:90267" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9108" id="9:90268" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90269">
-                            <TransitionPropertyViewModelComparator id="9:90270">
-                                <BindablePropertyBoolean id="9:90271">
-                                    <DataBindContext sourcePathIds="1:14-1:3310" propertyKey="634" id="9:90272" />
-                                </BindablePropertyBoolean>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueBooleanComparator value="false" id="9:90273" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90274">
-                            <TransitionPropertyViewModelComparator id="9:90275">
-                                <BindablePropertyEnum id="9:90276">
-                                    <DataBindContext sourcePathIds="1:14-1:2855" propertyKey="637" id="9:90277" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9201" id="9:90278" />
-                        </TransitionViewModelCondition>
-                    </StateTransition>
                     <StateTransition stateToId="9:83254" duration="0" id="9:83599">
                         <TransitionViewModelCondition opValue="equal" id="9:83589">
                             <TransitionPropertyViewModelComparator id="9:83590">
@@ -98154,24 +97747,6 @@
                                 </BindablePropertyEnum>
                             </TransitionPropertyViewModelComparator>
                             <TransitionValueEnumComparator value="1:9200" id="9:90235" />
-                        </TransitionViewModelCondition>
-                    </StateTransition>
-                    <StateTransition stateToId="9:83254" duration="0" id="9:90236">
-                        <TransitionViewModelCondition opValue="equal" id="9:90237">
-                            <TransitionPropertyViewModelComparator id="9:90238">
-                                <BindablePropertyEnum id="9:90239">
-                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="9:90240" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9108" id="9:90241" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90242">
-                            <TransitionPropertyViewModelComparator id="9:90243">
-                                <BindablePropertyEnum id="9:90244">
-                                    <DataBindContext sourcePathIds="1:14-1:2855" propertyKey="637" id="9:90245" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9200" id="9:90246" />
                         </TransitionViewModelCondition>
                     </StateTransition>
                     <StateTransition stateToId="9:83253" duration="0" id="9:83600"/>
@@ -98211,7 +97786,7 @@
                             <TransitionValueEnumComparator value="1:9300" id="9:83620"/>
                         </TransitionViewModelCondition>
                     </StateTransition>
-                    <StateTransition stateToId="9:83258" duration="0" id="9:90183">
+                    <StateTransition stateToId="9:104334" duration="0" id="9:90183">
                         <TransitionViewModelCondition opValue="equal" id="9:90184">
                             <TransitionPropertyViewModelComparator id="9:90185">
                                 <BindablePropertyEnum id="9:90186">
@@ -98243,40 +97818,6 @@
                                 </BindablePropertyEnum>
                             </TransitionPropertyViewModelComparator>
                             <TransitionValueEnumComparator value="1:9300" id="9:90203" />
-                        </TransitionViewModelCondition>
-                    </StateTransition>
-                    <StateTransition stateToId="9:83258" duration="0" id="9:90204">
-                        <TransitionViewModelCondition opValue="equal" id="9:90205">
-                            <TransitionPropertyViewModelComparator id="9:90206">
-                                <BindablePropertyEnum id="9:90207">
-                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="9:90208" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9108" id="9:90209" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90210">
-                            <TransitionPropertyViewModelComparator id="9:90211">
-                                <BindablePropertyBoolean id="9:90212">
-                                    <DataBindContext sourcePathIds="1:14-1:3310" propertyKey="634" id="9:90213" />
-                                </BindablePropertyBoolean>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueBooleanComparator value="true" id="9:90214" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90215">
-                            <TransitionPropertyViewModelComparator id="9:90216">
-                                <BindablePropertyEnum id="9:90217">
-                                    <DataBindContext sourcePathIds="1:14-1:2855" propertyKey="637" id="9:90218" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9201" id="9:90219" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90220">
-                            <TransitionPropertyViewModelComparator id="9:90221">
-                                <BindablePropertyEnum id="9:90222">
-                                    <DataBindContext sourcePathIds="1:14-1:3300" propertyKey="637" id="9:90223" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9300" id="9:90224" />
                         </TransitionViewModelCondition>
                     </StateTransition>
                     <StateTransition stateToId="9:83259" duration="0" id="9:83642">
@@ -98313,7 +97854,7 @@
                             <TransitionValueEnumComparator value="1:9301" id="9:83641"/>
                         </TransitionViewModelCondition>
                     </StateTransition>
-                    <StateTransition stateToId="9:83259" duration="0" id="9:90141">
+                    <StateTransition stateToId="9:104334" duration="0" id="9:90141">
                         <TransitionViewModelCondition opValue="equal" id="9:90142">
                             <TransitionPropertyViewModelComparator id="9:90143">
                                 <BindablePropertyEnum id="9:90144">
@@ -98345,40 +97886,6 @@
                                 </BindablePropertyEnum>
                             </TransitionPropertyViewModelComparator>
                             <TransitionValueEnumComparator value="1:9301" id="9:90161" />
-                        </TransitionViewModelCondition>
-                    </StateTransition>
-                    <StateTransition stateToId="9:83259" duration="0" id="9:90162">
-                        <TransitionViewModelCondition opValue="equal" id="9:90163">
-                            <TransitionPropertyViewModelComparator id="9:90164">
-                                <BindablePropertyEnum id="9:90165">
-                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="9:90166" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9108" id="9:90167" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90168">
-                            <TransitionPropertyViewModelComparator id="9:90169">
-                                <BindablePropertyBoolean id="9:90170">
-                                    <DataBindContext sourcePathIds="1:14-1:3310" propertyKey="634" id="9:90171" />
-                                </BindablePropertyBoolean>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueBooleanComparator value="true" id="9:90172" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90173">
-                            <TransitionPropertyViewModelComparator id="9:90174">
-                                <BindablePropertyEnum id="9:90175">
-                                    <DataBindContext sourcePathIds="1:14-1:2855" propertyKey="637" id="9:90176" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9201" id="9:90177" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90178">
-                            <TransitionPropertyViewModelComparator id="9:90179">
-                                <BindablePropertyEnum id="9:90180">
-                                    <DataBindContext sourcePathIds="1:14-1:3300" propertyKey="637" id="9:90181" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9301" id="9:90182" />
                         </TransitionViewModelCondition>
                     </StateTransition>
                     <StateTransition stateToId="9:83260" duration="0" id="9:83663">
@@ -98415,7 +97922,7 @@
                             <TransitionValueEnumComparator value="1:9302" id="9:83662"/>
                         </TransitionViewModelCondition>
                     </StateTransition>
-                    <StateTransition stateToId="9:83260" duration="0" id="9:90099">
+                    <StateTransition stateToId="9:104334" duration="0" id="9:90099">
                         <TransitionViewModelCondition opValue="equal" id="9:90100">
                             <TransitionPropertyViewModelComparator id="9:90101">
                                 <BindablePropertyEnum id="9:90102">
@@ -98447,40 +97954,6 @@
                                 </BindablePropertyEnum>
                             </TransitionPropertyViewModelComparator>
                             <TransitionValueEnumComparator value="1:9302" id="9:90119" />
-                        </TransitionViewModelCondition>
-                    </StateTransition>
-                    <StateTransition stateToId="9:83260" duration="0" id="9:90120">
-                        <TransitionViewModelCondition opValue="equal" id="9:90121">
-                            <TransitionPropertyViewModelComparator id="9:90122">
-                                <BindablePropertyEnum id="9:90123">
-                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="9:90124" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9108" id="9:90125" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90126">
-                            <TransitionPropertyViewModelComparator id="9:90127">
-                                <BindablePropertyBoolean id="9:90128">
-                                    <DataBindContext sourcePathIds="1:14-1:3310" propertyKey="634" id="9:90129" />
-                                </BindablePropertyBoolean>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueBooleanComparator value="true" id="9:90130" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90131">
-                            <TransitionPropertyViewModelComparator id="9:90132">
-                                <BindablePropertyEnum id="9:90133">
-                                    <DataBindContext sourcePathIds="1:14-1:2855" propertyKey="637" id="9:90134" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9201" id="9:90135" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90136">
-                            <TransitionPropertyViewModelComparator id="9:90137">
-                                <BindablePropertyEnum id="9:90138">
-                                    <DataBindContext sourcePathIds="1:14-1:3300" propertyKey="637" id="9:90139" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9302" id="9:90140" />
                         </TransitionViewModelCondition>
                     </StateTransition>
                     <StateTransition stateToId="9:83261" duration="0" id="9:83684">
@@ -98517,7 +97990,7 @@
                             <TransitionValueEnumComparator value="1:9303" id="9:83683"/>
                         </TransitionViewModelCondition>
                     </StateTransition>
-                    <StateTransition stateToId="9:83261" duration="0" id="9:90057">
+                    <StateTransition stateToId="9:104334" duration="0" id="9:90057">
                         <TransitionViewModelCondition opValue="equal" id="9:90058">
                             <TransitionPropertyViewModelComparator id="9:90059">
                                 <BindablePropertyEnum id="9:90060">
@@ -98549,40 +98022,6 @@
                                 </BindablePropertyEnum>
                             </TransitionPropertyViewModelComparator>
                             <TransitionValueEnumComparator value="1:9303" id="9:90077" />
-                        </TransitionViewModelCondition>
-                    </StateTransition>
-                    <StateTransition stateToId="9:83261" duration="0" id="9:90078">
-                        <TransitionViewModelCondition opValue="equal" id="9:90079">
-                            <TransitionPropertyViewModelComparator id="9:90080">
-                                <BindablePropertyEnum id="9:90081">
-                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="9:90082" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9108" id="9:90083" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90084">
-                            <TransitionPropertyViewModelComparator id="9:90085">
-                                <BindablePropertyBoolean id="9:90086">
-                                    <DataBindContext sourcePathIds="1:14-1:3310" propertyKey="634" id="9:90087" />
-                                </BindablePropertyBoolean>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueBooleanComparator value="true" id="9:90088" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90089">
-                            <TransitionPropertyViewModelComparator id="9:90090">
-                                <BindablePropertyEnum id="9:90091">
-                                    <DataBindContext sourcePathIds="1:14-1:2855" propertyKey="637" id="9:90092" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9201" id="9:90093" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90094">
-                            <TransitionPropertyViewModelComparator id="9:90095">
-                                <BindablePropertyEnum id="9:90096">
-                                    <DataBindContext sourcePathIds="1:14-1:3300" propertyKey="637" id="9:90097" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9303" id="9:90098" />
                         </TransitionViewModelCondition>
                     </StateTransition>
                     <StateTransition stateToId="9:83262" duration="0" id="9:83705">
@@ -98619,7 +98058,7 @@
                             <TransitionValueEnumComparator value="1:9304" id="9:83704"/>
                         </TransitionViewModelCondition>
                     </StateTransition>
-                    <StateTransition stateToId="9:83262" duration="0" id="9:90015">
+                    <StateTransition stateToId="9:104334" duration="0" id="9:90015">
                         <TransitionViewModelCondition opValue="equal" id="9:90016">
                             <TransitionPropertyViewModelComparator id="9:90017">
                                 <BindablePropertyEnum id="9:90018">
@@ -98651,40 +98090,6 @@
                                 </BindablePropertyEnum>
                             </TransitionPropertyViewModelComparator>
                             <TransitionValueEnumComparator value="1:9304" id="9:90035" />
-                        </TransitionViewModelCondition>
-                    </StateTransition>
-                    <StateTransition stateToId="9:83262" duration="0" id="9:90036">
-                        <TransitionViewModelCondition opValue="equal" id="9:90037">
-                            <TransitionPropertyViewModelComparator id="9:90038">
-                                <BindablePropertyEnum id="9:90039">
-                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="9:90040" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9108" id="9:90041" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90042">
-                            <TransitionPropertyViewModelComparator id="9:90043">
-                                <BindablePropertyBoolean id="9:90044">
-                                    <DataBindContext sourcePathIds="1:14-1:3310" propertyKey="634" id="9:90045" />
-                                </BindablePropertyBoolean>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueBooleanComparator value="true" id="9:90046" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90047">
-                            <TransitionPropertyViewModelComparator id="9:90048">
-                                <BindablePropertyEnum id="9:90049">
-                                    <DataBindContext sourcePathIds="1:14-1:2855" propertyKey="637" id="9:90050" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9201" id="9:90051" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90052">
-                            <TransitionPropertyViewModelComparator id="9:90053">
-                                <BindablePropertyEnum id="9:90054">
-                                    <DataBindContext sourcePathIds="1:14-1:3300" propertyKey="637" id="9:90055" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9304" id="9:90056" />
                         </TransitionViewModelCondition>
                     </StateTransition>
                     <StateTransition stateToId="9:83262" duration="0" id="9:83726">
@@ -98721,7 +98126,7 @@
                             <TransitionValueEnumComparator value="1:9305" id="9:83725"/>
                         </TransitionViewModelCondition>
                     </StateTransition>
-                    <StateTransition stateToId="9:83262" duration="0" id="9:89973">
+                    <StateTransition stateToId="9:104334" duration="0" id="9:89973">
                         <TransitionViewModelCondition opValue="equal" id="9:89974">
                             <TransitionPropertyViewModelComparator id="9:89975">
                                 <BindablePropertyEnum id="9:89976">
@@ -98753,40 +98158,6 @@
                                 </BindablePropertyEnum>
                             </TransitionPropertyViewModelComparator>
                             <TransitionValueEnumComparator value="1:9305" id="9:89993" />
-                        </TransitionViewModelCondition>
-                    </StateTransition>
-                    <StateTransition stateToId="9:83262" duration="0" id="9:89994">
-                        <TransitionViewModelCondition opValue="equal" id="9:89995">
-                            <TransitionPropertyViewModelComparator id="9:89996">
-                                <BindablePropertyEnum id="9:89997">
-                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="9:89998" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9108" id="9:89999" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90000">
-                            <TransitionPropertyViewModelComparator id="9:90001">
-                                <BindablePropertyBoolean id="9:90002">
-                                    <DataBindContext sourcePathIds="1:14-1:3310" propertyKey="634" id="9:90003" />
-                                </BindablePropertyBoolean>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueBooleanComparator value="true" id="9:90004" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90005">
-                            <TransitionPropertyViewModelComparator id="9:90006">
-                                <BindablePropertyEnum id="9:90007">
-                                    <DataBindContext sourcePathIds="1:14-1:2855" propertyKey="637" id="9:90008" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9201" id="9:90009" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:90010">
-                            <TransitionPropertyViewModelComparator id="9:90011">
-                                <BindablePropertyEnum id="9:90012">
-                                    <DataBindContext sourcePathIds="1:14-1:3300" propertyKey="637" id="9:90013" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9305" id="9:90014" />
                         </TransitionViewModelCondition>
                     </StateTransition>
                     <StateTransition stateToId="9:83262" duration="0" id="9:83747">
@@ -98823,7 +98194,7 @@
                             <TransitionValueEnumComparator value="1:9306" id="9:83746"/>
                         </TransitionViewModelCondition>
                     </StateTransition>
-                    <StateTransition stateToId="9:83262" duration="0" id="9:89931">
+                    <StateTransition stateToId="9:104334" duration="0" id="9:89931">
                         <TransitionViewModelCondition opValue="equal" id="9:89932">
                             <TransitionPropertyViewModelComparator id="9:89933">
                                 <BindablePropertyEnum id="9:89934">
@@ -98855,40 +98226,6 @@
                                 </BindablePropertyEnum>
                             </TransitionPropertyViewModelComparator>
                             <TransitionValueEnumComparator value="1:9306" id="9:89951" />
-                        </TransitionViewModelCondition>
-                    </StateTransition>
-                    <StateTransition stateToId="9:83262" duration="0" id="9:89952">
-                        <TransitionViewModelCondition opValue="equal" id="9:89953">
-                            <TransitionPropertyViewModelComparator id="9:89954">
-                                <BindablePropertyEnum id="9:89955">
-                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="9:89956" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9108" id="9:89957" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:89958">
-                            <TransitionPropertyViewModelComparator id="9:89959">
-                                <BindablePropertyBoolean id="9:89960">
-                                    <DataBindContext sourcePathIds="1:14-1:3310" propertyKey="634" id="9:89961" />
-                                </BindablePropertyBoolean>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueBooleanComparator value="true" id="9:89962" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:89963">
-                            <TransitionPropertyViewModelComparator id="9:89964">
-                                <BindablePropertyEnum id="9:89965">
-                                    <DataBindContext sourcePathIds="1:14-1:2855" propertyKey="637" id="9:89966" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9201" id="9:89967" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:89968">
-                            <TransitionPropertyViewModelComparator id="9:89969">
-                                <BindablePropertyEnum id="9:89970">
-                                    <DataBindContext sourcePathIds="1:14-1:3300" propertyKey="637" id="9:89971" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9306" id="9:89972" />
                         </TransitionViewModelCondition>
                     </StateTransition>
                     <StateTransition stateToId="9:83257" duration="0" id="9:83763">
@@ -98943,32 +98280,6 @@
                             <TransitionValueEnumComparator value="1:9201" id="9:89914" />
                         </TransitionViewModelCondition>
                     </StateTransition>
-                    <StateTransition stateToId="9:83257" duration="0" id="9:89915">
-                        <TransitionViewModelCondition opValue="equal" id="9:89916">
-                            <TransitionPropertyViewModelComparator id="9:89917">
-                                <BindablePropertyEnum id="9:89918">
-                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="9:89919" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9108" id="9:89920" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:89921">
-                            <TransitionPropertyViewModelComparator id="9:89922">
-                                <BindablePropertyBoolean id="9:89923">
-                                    <DataBindContext sourcePathIds="1:14-1:3310" propertyKey="634" id="9:89924" />
-                                </BindablePropertyBoolean>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueBooleanComparator value="false" id="9:89925" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:89926">
-                            <TransitionPropertyViewModelComparator id="9:89927">
-                                <BindablePropertyEnum id="9:89928">
-                                    <DataBindContext sourcePathIds="1:14-1:2855" propertyKey="637" id="9:89929" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9201" id="9:89930" />
-                        </TransitionViewModelCondition>
-                    </StateTransition>
                     <StateTransition stateToId="9:83254" duration="0" id="9:83774">
                         <TransitionViewModelCondition opValue="equal" id="9:83764">
                             <TransitionPropertyViewModelComparator id="9:83765">
@@ -99003,24 +98314,6 @@
                                 </BindablePropertyEnum>
                             </TransitionPropertyViewModelComparator>
                             <TransitionValueEnumComparator value="1:9200" id="9:89887" />
-                        </TransitionViewModelCondition>
-                    </StateTransition>
-                    <StateTransition stateToId="9:83254" duration="0" id="9:89888">
-                        <TransitionViewModelCondition opValue="equal" id="9:89889">
-                            <TransitionPropertyViewModelComparator id="9:89890">
-                                <BindablePropertyEnum id="9:89891">
-                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="9:89892" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9108" id="9:89893" />
-                        </TransitionViewModelCondition>
-                        <TransitionViewModelCondition opValue="equal" id="9:89894">
-                            <TransitionPropertyViewModelComparator id="9:89895">
-                                <BindablePropertyEnum id="9:89896">
-                                    <DataBindContext sourcePathIds="1:14-1:2855" propertyKey="637" id="9:89897" />
-                                </BindablePropertyEnum>
-                            </TransitionPropertyViewModelComparator>
-                            <TransitionValueEnumComparator value="1:9200" id="9:89898" />
                         </TransitionViewModelCondition>
                     </StateTransition>
                 </AnimationState>
@@ -99736,6 +99029,16 @@
                     </StateTransition>
                 </AnimationState>
                 <AnimationState animationId="9:75734" x="1360" y="0" id="9:83258">
+                    <StateTransition stateToId="9:104333" duration="200" id="9:104359">
+                        <TransitionViewModelCondition opValue="equal" id="9:104360">
+                            <TransitionPropertyViewModelComparator id="9:104361">
+                                <BindablePropertyEnum id="9:104362">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="9:104363"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9108" id="9:104364"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
                     <StateTransition stateToId="9:83257" duration="600" id="9:83993">
                         <TransitionViewModelCondition opValue="equal" id="9:83983">
                             <TransitionPropertyViewModelComparator id="9:83984">
@@ -99792,6 +99095,16 @@
                     </StateTransition>
                 </AnimationState>
                 <AnimationState animationId="9:75735" x="1560" y="0" id="9:83259">
+                    <StateTransition stateToId="9:104333" duration="200" id="9:104353">
+                        <TransitionViewModelCondition opValue="equal" id="9:104354">
+                            <TransitionPropertyViewModelComparator id="9:104355">
+                                <BindablePropertyEnum id="9:104356">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="9:104357"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9108" id="9:104358"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
                     <StateTransition stateToId="9:83257" duration="600" id="9:84004">
                         <TransitionViewModelCondition opValue="equal" id="9:83994">
                             <TransitionPropertyViewModelComparator id="9:83995">
@@ -99848,6 +99161,16 @@
                     </StateTransition>
                 </AnimationState>
                 <AnimationState animationId="9:75736" x="1760" y="0" id="9:83260">
+                    <StateTransition stateToId="9:104333" duration="200" id="9:104347">
+                        <TransitionViewModelCondition opValue="equal" id="9:104348">
+                            <TransitionPropertyViewModelComparator id="9:104349">
+                                <BindablePropertyEnum id="9:104350">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="9:104351"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9108" id="9:104352"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
                     <StateTransition stateToId="9:83257" duration="600" id="9:84015">
                         <TransitionViewModelCondition opValue="equal" id="9:84005">
                             <TransitionPropertyViewModelComparator id="9:84006">
@@ -99904,6 +99227,16 @@
                     </StateTransition>
                 </AnimationState>
                 <AnimationState animationId="9:75737" x="1960" y="0" id="9:83261">
+                    <StateTransition stateToId="9:104333" duration="200" id="9:104341">
+                        <TransitionViewModelCondition opValue="equal" id="9:104342">
+                            <TransitionPropertyViewModelComparator id="9:104343">
+                                <BindablePropertyEnum id="9:104344">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="9:104345"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9108" id="9:104346"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
                     <StateTransition stateToId="9:83257" duration="600" id="9:84026">
                         <TransitionViewModelCondition opValue="equal" id="9:84016">
                             <TransitionPropertyViewModelComparator id="9:84017">
@@ -99960,6 +99293,16 @@
                     </StateTransition>
                 </AnimationState>
                 <AnimationState animationId="9:75738" x="2160" y="0" id="9:83262">
+                    <StateTransition stateToId="9:104333" duration="200" id="9:104335">
+                        <TransitionViewModelCondition opValue="equal" id="9:104336">
+                            <TransitionPropertyViewModelComparator id="9:104337">
+                                <BindablePropertyEnum id="9:104338">
+                                    <DataBindContext sourcePathIds="1:14-1:2713" propertyKey="637" id="9:104339"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9108" id="9:104340"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
                     <StateTransition stateToId="9:83257" duration="600" id="9:84037">
                         <TransitionViewModelCondition opValue="equal" id="9:84027">
                             <TransitionPropertyViewModelComparator id="9:84028">
@@ -100012,6 +99355,147 @@
                                 </BindablePropertyBoolean>
                             </TransitionPropertyViewModelComparator>
                             <TransitionValueBooleanComparator value="false" id="9:89564" />
+                        </TransitionViewModelCondition>
+                    </StateTransition>
+                </AnimationState>
+                <AnimationState animationId="9:104249" x="1000" y="400" id="9:104333">
+                    <StateTransition stateToId="9:83253" duration="0" enableExitTime="true" exitTimeIsPercetange="true" exitTime="100" id="9:104448"/>
+                </AnimationState>
+                <AnimationState animationId="9:104308" x="1000" y="600" id="9:104334">
+                    <StateTransition stateToId="9:83258" duration="0" enableExitTime="true" exitTimeIsPercetange="true" exitTime="100" id="9:104365">
+                        <TransitionViewModelCondition opValue="equal" id="9:104366">
+                            <TransitionPropertyViewModelComparator id="9:104367">
+                                <BindablePropertyBoolean id="9:104368">
+                                    <DataBindContext sourcePathIds="1:14-1:3310" propertyKey="634" id="9:104369"/>
+                                </BindablePropertyBoolean>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueBooleanComparator value="true" id="9:104370"/>
+                        </TransitionViewModelCondition>
+                        <TransitionViewModelCondition opValue="equal" id="9:104371">
+                            <TransitionPropertyViewModelComparator id="9:104372">
+                                <BindablePropertyEnum id="9:104373">
+                                    <DataBindContext sourcePathIds="1:14-1:3300" propertyKey="637" id="9:104374"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9300" id="9:104375"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
+                    <StateTransition stateToId="9:83259" duration="0" enableExitTime="true" exitTimeIsPercetange="true" exitTime="100" id="9:104376">
+                        <TransitionViewModelCondition opValue="equal" id="9:104377">
+                            <TransitionPropertyViewModelComparator id="9:104378">
+                                <BindablePropertyBoolean id="9:104379">
+                                    <DataBindContext sourcePathIds="1:14-1:3310" propertyKey="634" id="9:104380"/>
+                                </BindablePropertyBoolean>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueBooleanComparator value="true" id="9:104381"/>
+                        </TransitionViewModelCondition>
+                        <TransitionViewModelCondition opValue="equal" id="9:104382">
+                            <TransitionPropertyViewModelComparator id="9:104383">
+                                <BindablePropertyEnum id="9:104384">
+                                    <DataBindContext sourcePathIds="1:14-1:3300" propertyKey="637" id="9:104385"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9301" id="9:104386"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
+                    <StateTransition stateToId="9:83260" duration="0" enableExitTime="true" exitTimeIsPercetange="true" exitTime="100" id="9:104387">
+                        <TransitionViewModelCondition opValue="equal" id="9:104388">
+                            <TransitionPropertyViewModelComparator id="9:104389">
+                                <BindablePropertyBoolean id="9:104390">
+                                    <DataBindContext sourcePathIds="1:14-1:3310" propertyKey="634" id="9:104391"/>
+                                </BindablePropertyBoolean>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueBooleanComparator value="true" id="9:104392"/>
+                        </TransitionViewModelCondition>
+                        <TransitionViewModelCondition opValue="equal" id="9:104393">
+                            <TransitionPropertyViewModelComparator id="9:104394">
+                                <BindablePropertyEnum id="9:104395">
+                                    <DataBindContext sourcePathIds="1:14-1:3300" propertyKey="637" id="9:104396"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9302" id="9:104397"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
+                    <StateTransition stateToId="9:83261" duration="0" enableExitTime="true" exitTimeIsPercetange="true" exitTime="100" id="9:104398">
+                        <TransitionViewModelCondition opValue="equal" id="9:104399">
+                            <TransitionPropertyViewModelComparator id="9:104400">
+                                <BindablePropertyBoolean id="9:104401">
+                                    <DataBindContext sourcePathIds="1:14-1:3310" propertyKey="634" id="9:104402"/>
+                                </BindablePropertyBoolean>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueBooleanComparator value="true" id="9:104403"/>
+                        </TransitionViewModelCondition>
+                        <TransitionViewModelCondition opValue="equal" id="9:104404">
+                            <TransitionPropertyViewModelComparator id="9:104405">
+                                <BindablePropertyEnum id="9:104406">
+                                    <DataBindContext sourcePathIds="1:14-1:3300" propertyKey="637" id="9:104407"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9303" id="9:104408"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
+                    <StateTransition stateToId="9:83262" duration="0" enableExitTime="true" exitTimeIsPercetange="true" exitTime="100" id="9:104409">
+                        <TransitionViewModelCondition opValue="equal" id="9:104410">
+                            <TransitionPropertyViewModelComparator id="9:104411">
+                                <BindablePropertyBoolean id="9:104412">
+                                    <DataBindContext sourcePathIds="1:14-1:3310" propertyKey="634" id="9:104413"/>
+                                </BindablePropertyBoolean>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueBooleanComparator value="true" id="9:104414"/>
+                        </TransitionViewModelCondition>
+                        <TransitionViewModelCondition opValue="equal" id="9:104415">
+                            <TransitionPropertyViewModelComparator id="9:104416">
+                                <BindablePropertyEnum id="9:104417">
+                                    <DataBindContext sourcePathIds="1:14-1:3300" propertyKey="637" id="9:104418"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9304" id="9:104419"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
+                    <StateTransition stateToId="9:83262" duration="0" enableExitTime="true" exitTimeIsPercetange="true" exitTime="100" id="9:104420">
+                        <TransitionViewModelCondition opValue="equal" id="9:104421">
+                            <TransitionPropertyViewModelComparator id="9:104422">
+                                <BindablePropertyBoolean id="9:104423">
+                                    <DataBindContext sourcePathIds="1:14-1:3310" propertyKey="634" id="9:104424"/>
+                                </BindablePropertyBoolean>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueBooleanComparator value="true" id="9:104425"/>
+                        </TransitionViewModelCondition>
+                        <TransitionViewModelCondition opValue="equal" id="9:104426">
+                            <TransitionPropertyViewModelComparator id="9:104427">
+                                <BindablePropertyEnum id="9:104428">
+                                    <DataBindContext sourcePathIds="1:14-1:3300" propertyKey="637" id="9:104429"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9305" id="9:104430"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
+                    <StateTransition stateToId="9:83262" duration="0" enableExitTime="true" exitTimeIsPercetange="true" exitTime="100" id="9:104431">
+                        <TransitionViewModelCondition opValue="equal" id="9:104432">
+                            <TransitionPropertyViewModelComparator id="9:104433">
+                                <BindablePropertyBoolean id="9:104434">
+                                    <DataBindContext sourcePathIds="1:14-1:3310" propertyKey="634" id="9:104435"/>
+                                </BindablePropertyBoolean>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueBooleanComparator value="true" id="9:104436"/>
+                        </TransitionViewModelCondition>
+                        <TransitionViewModelCondition opValue="equal" id="9:104437">
+                            <TransitionPropertyViewModelComparator id="9:104438">
+                                <BindablePropertyEnum id="9:104439">
+                                    <DataBindContext sourcePathIds="1:14-1:3300" propertyKey="637" id="9:104440"/>
+                                </BindablePropertyEnum>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueEnumComparator value="1:9306" id="9:104441"/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
+                    <StateTransition stateToId="9:83257" duration="0" enableExitTime="true" exitTimeIsPercetange="true" exitTime="100" id="9:104442">
+                        <TransitionViewModelCondition opValue="equal" id="9:104443">
+                            <TransitionPropertyViewModelComparator id="9:104444">
+                                <BindablePropertyBoolean id="9:104445">
+                                    <DataBindContext sourcePathIds="1:14-1:3310" propertyKey="634" id="9:104446"/>
+                                </BindablePropertyBoolean>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueBooleanComparator value="false" id="9:104447"/>
                         </TransitionViewModelCondition>
                     </StateTransition>
                 </AnimationState>
