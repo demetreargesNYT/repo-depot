@@ -52,6 +52,40 @@ class RivePush(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertFalse(self.lock.exists())
 
+    def test_timed_out_push_fails_quickly_even_when_a_helper_holds_the_output(self):
+        # the CLI starts a helper that keeps its output open, then hangs: the limit must still end it, and it is a failure
+        rive = self.fake_rive("sleep 60 &\nsleep 60")
+        t0 = time.time()
+        code, message = P.push("ch1", "x", rive=rive, lock=self.lock, limit=2)
+        self.assertLess(time.time() - t0, 10)
+        self.assertEqual(code, 1)
+        self.assertIn("PUSH FAILED", message)
+        self.assertIn("timed out", message)
+        self.assertFalse(self.lock.exists())
+
+    def test_helper_left_running_after_a_good_push_does_not_hold_it_up(self):
+        rive = self.fake_rive('sleep 60 &\necho "file 2692475 updated, revision 49500002"')
+        t0 = time.time()
+        code, message = P.push("ch1", "x", rive=rive, lock=self.lock, limit=30)
+        self.assertLess(time.time() - t0, 10)
+        self.assertEqual(code, 0)
+        self.assertIn("revision 49500002", message)
+
+    def test_cli_runs_with_no_stdin_and_no_browser(self):
+        rive = self.fake_rive(f'echo "tui=$RIVE_NO_TUI" >> "{self.log}"\nread line && echo "read stdin" >> "{self.log}"\nexit 0')
+        P.push("ch1", "x", rive=rive, lock=self.lock, limit=5)
+        calls = self.log.read_text()
+        self.assertIn("tui=1", calls)
+        self.assertNotIn("read stdin", calls)
+
+    def test_main_exits_non_zero_when_the_push_fails(self):
+        original = P.push
+        P.push = lambda ch, name: (1, "PUSH FAILED: test")
+        try:
+            self.assertEqual(P.main(["ch1", "x"]), 1)
+        finally:
+            P.push = original
+
     def test_up_to_date_has_no_revision(self):
         code, message = P.push("ch3", "x", rive=self.fake_rive('echo "already up to date"'), lock=self.lock)
         self.assertEqual(code, 0)

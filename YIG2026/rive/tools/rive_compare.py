@@ -12,7 +12,8 @@ It also builds the pulled copy, to check that what is in Rive builds here.
 Elements are matched by id (an element without one by its place under the nearest element that has one). Numbers are equal
 within float32 rounding. An attribute on one side only whose value is its default (0 or false, or one of DEFAULTS_BY below,
 such as an ease's y2 of 1) is a value the pull leaves out, and isn't a difference. The report lists added and removed elements, a changed tag or parent, and changed values, by element name.
-Exit code 0 when Rive matches the last push, 1 when it has Editor edits (or the pull failed). Each step has a time limit.
+Exit code 0 when Rive matches the last push, 1 when it has Editor edits (or the pull failed or timed out). The pull and the build
+each run through tools/rive_cli.py with a 3 minute limit.
 """
 import os
 import subprocess
@@ -21,12 +22,13 @@ import time
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
+import rive_cli
 import scratch
 
 REPO = Path(__file__).resolve().parent.parent
 RIVE = os.path.expanduser("~/.rive/bin/rive")
-PULL_LIMIT = 300        # seconds
-BUILD_LIMIT = 300
+PULL_LIMIT = rive_cli.LIMIT     # seconds (3 minutes each; both take a few seconds)
+BUILD_LIMIT = rive_cli.LIMIT
 DEFAULTS = {"0", "0.0", "false"}  # a value the pull leaves out on any element
 # ...and the ones it leaves out on one kind of element only (read from pulls of all three files, 2026-11-03)
 DEFAULTS_BY = {("CubicEaseInterpolator", "y2"): "1", ("CubicEaseInterpolator", "x1"): "0.42", ("CubicEaseInterpolator", "x2"): "0.58",
@@ -151,11 +153,7 @@ def report(title, diff):
 
 
 def run(cmd, limit, cwd=None):
-    try:
-        r = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, timeout=limit)
-        return r.returncode, (r.stdout + r.stderr).strip()
-    except subprocess.TimeoutExpired:
-        return None, f"hit the {limit} s limit"
+    return rive_cli.run(cmd, limit, cwd)        # own process group, no stdin, no browser, killed at the limit
 
 
 def one(ch):

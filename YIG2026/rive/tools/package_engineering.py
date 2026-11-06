@@ -26,6 +26,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import check_chapter  # noqa: E402
+import rive_cli  # noqa: E402
 from rml_read import REPO, Scene, chapter_dir  # noqa: E402
 import scratch  # noqa: E402  scratch output goes in .cache/scratch.nosync/, never /tmp
 from xml_fragments import parse, ser  # noqa: E402
@@ -57,10 +58,10 @@ def build(chapter, work, src=None):
             root.remove(ab)
             removed.append(ab.get("name"))
     (dst / "scene.rml").write_text(ser(root))
-    r = subprocess.run([RIVE, str(dst), "--publish"], capture_output=True, text=True)
+    code, log = rive_cli.run([RIVE, str(dst), "--publish"])      # 3 minute limit, no stdin, own process group
     out = sorted((dst / "build").glob("*.riv"), key=lambda p: p.stat().st_mtime)
-    if r.returncode or not out:
-        fail(f"building {chapter} failed:\n{r.stdout}\n{r.stderr}")
+    if code != 0 or not out:
+        fail(f"building {chapter} failed:\n{log[-3000:]}")
     data = out[-1].read_bytes()
     manifest = scene.manifest
     for name in (manifest["artboard"], manifest["stateMachine"], manifest["viewModel"]):

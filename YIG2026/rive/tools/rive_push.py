@@ -13,23 +13,26 @@ Run `python3 tools/rive_compare.py <ch>` and get Demetre's approval first; commi
 A new revision also refreshes every public page in the same step: tools/public_copy.py rebuilds the pages in the repo-root docs/
 folder (the marketing page with the pushed chapter's .riv, and the two reference pages), commits only that folder and pushes main
 to GitHub, so the public pages always match Rive. `--no-public` skips that (for a push you don't want published yet).
-Exit code 0 when pushed (or already up to date), 1 when the push failed, 2 when another session holds the lock, 3 when Rive
-took the push but the public pages were not refreshed, committed or pushed (the message says which; `npm run public` redoes it).
+Exit code 0 when pushed (or already up to date), 1 when the push failed or timed out, 2 when another session holds the lock, 3 when
+Rive took the push but the public pages were not refreshed, committed or pushed (the message says which; `npm run public` redoes it).
+The CLI runs through tools/rive_cli.py with a 3 minute limit; a timeout is a failure (exit 1, "PUSH FAILED"), never a 0. Run this
+tool as a plain command: piped into `tail` or `grep`, the shell reports the pipe's exit code, not this tool's.
 """
 import json
 import os
 import re
 import signal
-import subprocess
 import sys
 import time
 import uuid
 from pathlib import Path
 
+import rive_cli
+
 REPO = Path(__file__).resolve().parent.parent
 RIVE = os.path.expanduser("~/.rive/bin/rive")
 LOCK = REPO / ".cache" / "rive-push.lock"
-PUSH_LIMIT = 600        # seconds
+PUSH_LIMIT = rive_cli.LIMIT   # seconds (3 minutes)
 STALE = 15 * 60         # seconds: a lock older than this is reported as stale
 
 
@@ -104,20 +107,17 @@ def push(ch, name, rive=RIVE, lock=LOCK, limit=PUSH_LIMIT):
     previous = signal.signal(signal.SIGTERM, lambda *_: sys.exit(1))     # a kill still runs the finally below
     try:
         cmd = [rive, "push", str(REPO / "chapters" / ch), "--yes", f"--name={name}"]
-        try:
-            r = subprocess.run(cmd, capture_output=True, text=True, timeout=limit)
-            code, output = r.returncode, (r.stdout + r.stderr).strip()
-        except subprocess.TimeoutExpired:
-            code, output = None, f"hit the {limit} s limit"
-        except OSError as e:
-            code, output = None, f"could not run the Rive CLI ({e})"
+        code, output = rive_cli.run(cmd, limit)
     finally:
         release_lock(lock, token)
         signal.signal(signal.SIGTERM, previous)
     if output:
         print(output)
+    if code is None:
+        return 1, (f"PUSH FAILED: the push of {ch} timed out or could not start (above); the lock is released. Rive may still have "
+                   f"taken it: run python3 tools/rive_compare.py {ch} (\"the push would change 0\" means it landed) before anything else.")
     if code != 0:
-        return 1, f"push of {ch} FAILED (exit {code}); the lock is released. Nothing to commit."
+        return 1, f"PUSH FAILED: the push of {ch} exited {code} (above); the lock is released. Nothing to commit."
     if "already up to date" in output:
         return 0, f"{ch}: Rive was already up to date; no new revision. The lock is released."
     rev = revision_of(output)

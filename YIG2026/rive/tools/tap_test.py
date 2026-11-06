@@ -103,6 +103,11 @@ def prepare(src, first, second, T, hide):
         # second game's layer: Waiting -> Intro fires after T seconds, not on "scene == n"
         waiting = next(st for st in layers[second].findall("AnimationState") if st.find("StateTransition") is not None)
         next(a for a in ab.iter("LinearAnimation") if a.get("id") == waiting.get("animationId")).set("duration", frames)
+        # keep only the transition into "<second> Intro": File 1's Waiting also has the Built transitions (startScene), which can come first
+        intro_state = next(st.get("id") for st in layers[second].findall("AnimationState") if st.get("animationId") == anims[f"{second} Intro"].get("id"))
+        for tr in list(waiting.findall("StateTransition")):
+            if tr.get("stateToId") != intro_state:
+                waiting.remove(tr)
         at_exit_time(waiting.find("StateTransition"))
 
     for n in ab.iter("Node"):
