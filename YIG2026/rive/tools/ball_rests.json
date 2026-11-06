@@ -36,18 +36,26 @@
     {
       "chapter": "ch2",
       "room": "The Mini",
-      "from": 10.4,
-      "to": 11.25,
+      "from": 10.62,
+      "to": 11.97,
       "why": "out of sight inside F1 while R turns its first quarter",
-      "approved": "Demetre, 2026-11-06 (rests for a ball hidden inside an object)"
+      "approved": "Demetre, 2026-11-06 (rests for a ball hidden inside an object; bounds re-read from the committed file after Mini round 3)"
     },
     {
       "chapter": "ch2",
       "room": "The Mini",
-      "from": 12.88,
-      "to": 14.13,
+      "from": 13.67,
+      "to": 14.8,
       "why": "out of sight inside T while R turns its second quarter",
-      "approved": "Demetre, 2026-11-06 (rests for a ball hidden inside an object)"
+      "approved": "Demetre, 2026-11-06 (rests for a ball hidden inside an object; bounds re-read from the committed file after Mini round 3)"
+    },
+    {
+      "chapter": "ch2",
+      "room": "The Mini",
+      "from": 19.78,
+      "to": 21.47,
+      "why": "out of sight inside F1 as the loop ends, until it starts again (across the loop's seam)",
+      "approved": "Demetre, 2026-11-06 (rests for a ball hidden inside an object; bounds re-read from the committed file after Mini round 3)"
     }
   ]
 }

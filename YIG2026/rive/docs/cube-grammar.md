@@ -13,7 +13,7 @@ Read this before you touch a cube in any room: The Mini, The Midi, The Crossword
 
 | Move | Mechanics and timing (the Mini) | Ease | Built with |
 |---|---|---|---|
-| **Quarter turn** | 90 degrees about the vertical axis, left to right unless said otherwise; 34 frames (0.57 s) to 3.5 degrees past, a 10 frame (0.17 s) settle; lands square on a face. Never a partial tip. | Cubic in and out, then smooth | `Cube` pose `turn`; `mini.py` `turn_state`, `TURN_N`, `SETTLE_N`, `OVER` |
+| **Quarter turn** | 90 degrees about the vertical axis, left to right unless said otherwise; 34 frames (0.57 s) to 3.5 degrees past, a 10 frame (0.17 s) settle; lands square on a face. Never a partial tip. The lowest bottom corner stays on the floor line at every angle (`cube3d.Cube.world` lifts the turning cube by the amount its nearest corner would dip, and the correction fades out within 6 degrees of a face, so it is exactly nothing at 0 and 90 degrees and the follow-through isn't a second swing). | Cubic in and out, then smooth | `Cube` pose `turn`; `mini.py` `turn_state`, `TURN_N`, `SETTLE_N`, `OVER` |
 | **Lid open** | Hinged on the back edge. Lift 20 frames to 96 degrees (4 past open), settle 10: 0.5 s. No press-down: a lid gets its life from the lift's ease, the overshoot and the bump, and the cube never moves. | Smooth then ease-out (`lift_ease`) | pose `lid`; `joint_state` "open", `FULL` |
 | **Lid close** | Falls under its own weight, 14 frames (accelerating), one soft bump of 1.5 degrees over 7: 0.35 s. | Gravity (t squared) | `joint_state` "shut" |
 | **Half-open peek** | The lid lifts to 38 degrees (1.5 past) in 16, settles 8, drops back in 10 with a 1.2 degree bump over 6. | As the lid | `CRACK` |
