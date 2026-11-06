@@ -1,4 +1,13 @@
 {
   "_about": "Deliberate rests: stretches where the ball may be motionless for more than 0.6 s without tools/ball_speed.py --contacts flagging it PARKED (docs/ball-character.md, 'Checks'). Each entry: chapter, room (as ball_speed names it), from and to in Finesse-panel seconds (the loop's first pass: the intro is 0 to 3.2, the loop starts at 3.2; a rest that runs across the loop's seam may end after the loop's end), why (the moment it is for: the gather before a big move, the beat before a reveal, hidden inside an object), and who approved it and when. Keep rests short and few; a rest is a choice, not a default. They live here, not as comments in scene.rml, because a rive pull rewrites scene.rml and drops comments.",
-  "rests": []
+  "rests": [
+    {
+      "chapter": "ch1",
+      "room": "Start",
+      "from": 1.77,
+      "to": 3.25,
+      "why": "the bird drops onto the ball in Start's intro and lands; the ball holds still under it until the idle sway begins",
+      "approved": "Demetre, 2026-11-06"
+    }
+  ]
 }
