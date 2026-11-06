@@ -46,6 +46,55 @@ def positions(sheet, anim, chain, frames, n):
 
 G_STD = 0.40
 
+# "The jump" (docs/ball-character.md): the approved character arc, measured from Wordle's jump (loop frames 221 to 250, y 654.85 to 552.11
+# and back to 600.11): one fast launch step of 20.6 units that eases out (cubic: each step about 0.85 of the one before) over 15 frames to a
+# floaty peak (under 2 units a frame for 11 frames), then a fall that accelerates (cubic ease-in) over 15 frames to 8.5 a frame at contact.
+# It is not a 0.40 parabola, so a flight that follows it is accepted as well as a strict parabola; the parabola stays the rule for every
+# other flight (a long free fall: its speed grows by a steady 0.40 a frame, so its last step is only twice its mean, not three times).
+# The rise or the fall may stand alone (a hop onto a higher surface ends in the float, a drop starts in it), and any hold at the peak
+# (the ball hidden in a box) is part of the float. Shape, not a fit: the numbers below are the tolerances.
+JUMP_FAST = 2.2          # the launch step (rise) or the contact step (fall) is at least this many times the mean step; a parabola is 2.0
+JUMP_MIN_STEP = 4.0      # ... and at least this many units: not a creep
+JUMP_FRAMES = (6, 26)    # the rise, and the fall, each last this many frames (holds at the peak not counted)
+JUMP_FLOAT = 4           # frames under 2 units a frame (holds included), at least
+JUMP_MONO = 0.35         # units a frame: how much a step may go the wrong way (a rise slowing down must not speed up again)
+HOLD = 0.05              # a step under this is a hold
+
+
+def _eased(steps, rising):
+    """The steps (positive magnitudes, in time order) of one side of a jump. A rise starts fast and slows; a fall starts slow and speeds up."""
+    if not JUMP_FRAMES[0] <= len(steps) <= JUMP_FRAMES[1]:
+        return False
+    fast = steps[0] if rising else steps[-1]
+    if fast < JUMP_MIN_STEP or fast < JUMP_FAST * (sum(steps) / len(steps)):
+        return False
+    pairs = zip(steps, steps[1:])
+    return all((b <= a + JUMP_MONO) if rising else (b >= a - JUMP_MONO) for a, b in pairs)
+
+
+def follows_jump(dy):
+    """True when the vertical steps dy (units a frame, down positive), from the launch frame to the last frame before contact, follow
+    the jump: a fast eased-out rise and/or an eased-in fall with a float between (see above). Horizontal travel is ignored."""
+    d = list(dy)
+    while d and abs(d[0]) < HOLD:
+        d.pop(0)
+    while d and abs(d[-1]) < HOLD:
+        d.pop()
+    if len(d) < 8 or sum(1 for x in dy if abs(x) < 2.0) < JUMP_FLOAT:
+        return False
+    p = next((i for i, x in enumerate(d) if x >= HOLD), len(d))        # the first frame that falls: the rise is before it
+    rise = [-x for x in d[:p] if x < 0]
+    fall = [x for x in d[p:] if x > 0]
+    if len(rise) and max(rise) < 2.5:                                  # a slow drift up before a drop is part of the float
+        rise = []
+    if len(fall) and max(fall) < 2.0:                                  # a slow settle after a hop onto a higher surface is too
+        fall = []
+    if not rise and not fall:
+        return False
+    return (not rise or _eased(rise, True)) and (not fall or _eased(fall, False))
+
+
+
 
 def fit_segment(vs):
     """Mean acceleration over a run of velocities."""
@@ -105,7 +154,10 @@ def contacts_report(pts, t_of, tmax_report):
         a0, a1, vs, a, kind = seg
         if kind == "flight" and len(vs) >= 6:
             g = a[1]
-            if abs(g - G_STD) > 0.04:
+            w0 = contacts[k - 1][2] if k > 0 else a0                       # from the launch frame, which the contact before holds
+            w1 = contacts[k][2] - 1 if k < len(contacts) else a1           # to the frame before the landing
+            window = [v[x][1] for x in range(w0, w1 + 1)]
+            if abs(g - G_STD) > 0.04 and not follows_jump(window):
                 msg = f"flight at {t_of(a0):.2f} to {t_of(a1 + 1):.2f} s falls at {g:.2f} per frame squared, not {G_STD:.2f}"
                 flags.append((t_of(a0), msg))
         if kind == "roll" and len(vs) >= 6:
@@ -348,7 +400,11 @@ def parked_fails_for(ch, room, scene):
     if old.returncode:
         return True
     return room_print(ET.fromstring(old.stdout), room) != room_print(scene.root, room)
-STILL_POS, STILL_TURN, STILL_SCALE = 0.3, 0.5, 0.005      # units, degrees, scale: less than this over the stretch is "motionless"
+# "Motionless" is a range over the whole stretch, not a distance from its first frame: the ball moves no more than STILL_POS units in x
+# or in y, its dot turns no more than STILL_TURN degrees and its squash changes no more than STILL_SCALE of its size. A dot swaying a degree and a
+# squash of a percent or two is still a parked ball (the Mini's top cube, 6.70 to 7.68 s, was missed with 0.3 units, 0.5 degrees and
+# 0.005 measured from the first frame); an idle roll of a few units, a glance or a hop is not.
+STILL_POS, STILL_TURN, STILL_SCALE = 2.0, 3.0, 0.03     # units, degrees, fraction of the ball's size
 RESTS = Path(__file__).resolve().parent / "ball_rests.json"
 
 
@@ -393,25 +449,29 @@ def rests_for(chapter, room):
 
 
 def parked_report(tracks, t_of, loop_s, tmax, rests):
-    """Stretches of more than PARKED frames where the ball neither moves, turns nor squashes, outside a declared rest. tracks: one
+    """Stretches of more than PARKED frames where the ball neither moves, turns nor squashes (within STILL_POS, STILL_TURN and STILL_SCALE), outside a declared rest. tracks: one
     entry per frame of the sequence (intro tail, then the loop twice); t_of(i): its Finesse time. A rest covers a frame when the
     frame's time, or that time one loop earlier (the rest runs across the seam), falls inside it. Frames where the ball can't be seen
-    don't count, and nor does the stillness the sequence starts with (the ball waiting through its room's arrival, until its pieces
-    are in place: CLAUDE.md, "The ball's role")."""
+    don't count. The sequence starts at Finesse 1.67 s, when the room's pan (1.65 s) is over, so the ball's wait for its room to arrive
+    isn't read; stillness after that is (the Mini's ball sat in its box from 2.1 to 3.5 s and an earlier version of this check skipped it)."""
     def resting(i):
         t = t_of(i)
         return not tracks[i][5] or any(a <= tt <= b for a, b, _ in rests for tt in (t, t - loop_s, t + loop_s))
     flags, i, n = [], 0, len(tracks)
     while i < n:
-        x0, y0, r0, sx0, sy0, _ = tracks[i]
+        x, y, r, sx, sy, _ = tracks[i]
+        lo_ = [x, y, r, sx, sy]
+        hi_ = list(lo_)
         j = i
         while j + 1 < n:
-            x, y, r, sx, sy, _ = tracks[j + 1]
-            if math.hypot(x - x0, y - y0) > STILL_POS or abs(r - r0) > STILL_TURN or abs(sx - sx0) > STILL_SCALE or abs(sy - sy0) > STILL_SCALE:
+            nxt = tracks[j + 1][:5]
+            l2, h2 = [min(a, b) for a, b in zip(lo_, nxt)], [max(a, b) for a, b in zip(hi_, nxt)]
+            if h2[0] - l2[0] > STILL_POS or h2[1] - l2[1] > STILL_POS or h2[2] - l2[2] > STILL_TURN or (h2[3] - l2[3]) > STILL_SCALE * h2[3] or (h2[4] - l2[4]) > STILL_SCALE * h2[4]:
                 break
+            lo_, hi_ = l2, h2
             j += 1
         length = sum(1 for k in range(i, j + 1) if not resting(k))
-        if length > PARKED and t_of(i) <= tmax and i > 0:
+        if length > PARKED and t_of(i) <= tmax:
             flags.append((t_of(i), f"PARKED: the ball is motionless for {(j - i + 1) / 60:.2f} s from {t_of(i):.2f} s ({length} frames outside a declared rest; "
                                    f"the most is {PARKED}, or declare the rest in tools/ball_rests.json)"))
         i = j + 1

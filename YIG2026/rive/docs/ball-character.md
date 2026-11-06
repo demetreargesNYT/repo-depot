@@ -23,6 +23,22 @@ Read this before you touch the ball in any room. It adds a vocabulary to CLAUDE.
 
 Also in the reference rooms: Wordle's **dribble** (a landing that bounces twice more, 24 then 12 units high, before it rolls off) and card 4's **balance** (rolls and pauses on a narrow top while the piece tilts under it, 0.06 radians per 8 units).
 
+## The jump
+
+The approved character arc (Demetre, 2026-11-06). Measured from Wordle's jump, loop frames 221 to 250 (y 654.85 up to 552.11 and down to 600.11; the same shape is in Connections' jump at 2.15 s and in the Mini's hops). It is **not** a 0.40 parabola:
+
+| Part | Frames | Speed (units a frame) |
+|---|---|---|
+| Launch | 1 | 20.6 on the first frame (the ball leaves from a hold) |
+| Rise | 15 (221 to 235) | a cubic ease-out: each step about 0.85 of the one before, 20.6, 17.5, 14.8, 12.3, 10.1, 8.1 ... 0.3; launch step = 3 x height / frames |
+| Float | 11 frames under 2 (7 under 1) | 1.5 at the start of the float, 0.04 at the peak, 1.5 on the way down |
+| Fall | 15 (236 to 250) | a cubic ease-in: 0.1, 0.2, 0.5, 0.7, 1.1, 1.5, 2.0, 2.5, 3.2, 3.9, 4.6, 5.5, 6.4, 7.4 and 8.5 at contact (the ideal ease reaches 9.0) |
+| Landing | 1 | the landing squash (Wordle's 20 to 22%) |
+
+(You will see "about 5 frames under 2 units" quoted for the float; the file has 11. The peak is flat for about 7.)
+
+`python3 tools/ball_speed.py <ch> "<room>" --contacts` accepts a flight that follows this shape, as well as a strict 0.40 parabola (`follows_jump`). Shape, not a fit: a rise whose first step is at least 4 units and 2.2 times its mean step and which never speeds up again by more than 0.35, a float with at least 4 frames under 2 units (a hold at the peak, such as a ball hidden in a box, counts), and a fall whose last step is at least 4 units and 2.2 times its mean step and never slows by more than 0.35. Rise and fall each last 6 to 26 frames. Either side may stand alone: a hop onto a higher surface ends in the float, and a drop out of a box starts in it. A strict parabola has its last step only twice its mean step, so it never passes as a jump: the parabola stays the rule for long free falls and everything else. Scale does not matter, so the Mini's small hops (a 6 unit launch over 12 frames) pass too.
+
 ## Timing laws
 
 - The ball is never motionless more than 0.6 s (36 frames) outside a declared rest.
@@ -50,15 +66,19 @@ Beats are chosen to fit the moment, never listed in order. A loop that performs 
 
 `python3 tools/ball_speed.py <ch> "<room>" --contacts` (part of `npm run finesse`) already flags, per CLAUDE.md "The ball's physics": flights whose gravity isn't 0.40, bounces that keep less than 70% of their speed, launches faster than the arrival, turn-rounds off a near-flat surface, downhill rolls that slow (and uphill ones that speed up), and jitter (hitch, lurch, stall, buzz) on the ball and every moving piece. The flags Demetre accepted are in `tools/ball_speed_accepted.json`.
 
-New (2026-11-06): **PARKED**, a stretch of more than 36 frames outside a declared rest where the ball moves less than 0.3 units, turns less than 0.5 degrees and its squash changes less than 0.005. Frames where the ball can't be seen (faded out, shrunk away or off the artboard) don't count, nor does the wait at the very start while its room arrives. A ball hidden by a clip inside an object can't be told from a visible one: declare that wait as a rest.
+New (2026-11-06): **PARKED**, a stretch of more than 36 frames outside a declared rest where the ball is practically motionless: over the whole stretch it moves no more than 2 units in x or in y, its dot turns no more than 3 degrees and its squash changes no more than 3% of its size. (The first version measured from the stretch's first frame with 0.3 units, 0.5 degrees and 0.5%, so a dot swaying a degree or a squash of a percent made a parked ball look alive, and the Mini's top cube went unreported. An idle roll of a few units, a glance or a hop is still not stillness.) The check reads the room from Finesse 1.67 s, when the pan is over, so the wait for the room to arrive isn't read; stillness after that is. Frames where the ball can't be seen (faded out, shrunk away, off the artboard) don't count. A ball hidden by a clip inside an object can't be told from a visible one: declare that wait as a rest.
+
+A rest declared across the loop's seam also covers the same stretch of the intro and of the next pass (the check shifts every rest by one loop length either way), so a seam rest at the end of the loop excuses the intro's tail too.
 
 **Declaring a rest:** add a named range to `tools/ball_rests.json`: chapter, room, `from` and `to` in Finesse-panel seconds (the intro is 0 to 3.2; a rest across the loop's seam may end after the loop's end), why, and who approved it. It isn't a comment in `scene.rml`, because a `rive pull` rewrites that file and drops comments.
 
 **It fails only for rooms changed after 2026-11-06.** A room fails on PARKED when its own pieces and timelines differ from its chapter's last commit of that day (ids aside); the rooms as they stood then keep reporting their stillness without failing (`PARKED_FAILS`, `PARKED_CUTOFF` in `tools/ball_speed.py`). Declared on 2026-11-06, the ball hidden inside an object or waiting under its room's arrival: Start (under the bird, 1.77 to 3.25 s), Chapter 1 card 1 (behind the clock's door), Spelling Bee (in the mug), The Crossword (in the hollow bar), The Mini (in F1, then in T, while R turns). Still reported, real stillness, for Demetre to rule on the next time each room is touched:
 
-| Room | Visible stillness |
+| Room | Visible stillness (2026-11-06, with the 2 unit / 3 degree / 3% thresholds) |
 |---|---|
-| Wordle | 0.77 s from 3.07 s, after the intro's landing; 2.35 s from 8.68 s, the end of the loop and across the seam |
-| Chapter 1 card 5 | 0.70 s from 3.10 s and 0.82 s from 10.75 s on the floor before a try; 1.08 s from 7.93 s on the cube's top beside the bot |
-| Community | 2.28 s from 2.13 s and 7.08 s from 5.35 s, the ball with the bird on top between hops |
-| End | the whole 5 s loop, the ball in the pile |
+| Wordle | 0.82 s from 3.05 s, after the intro's landing; 2.52 s from 8.55 s, the end of the loop and across the seam |
+| Chapter 1 card 5 | 0.78 s from 3.02 s and 0.83 s from 10.73 s on the floor before a try; 1.13 s from 7.90 s on the cube's top beside the bot |
+| Chapter 1 Start | 1.25 s from 3.95 s (the ball under the bird at the end of the idle sway) |
+| Spelling Bee | 0.68 s from 3.30 s and 0.70 s from 8.35 s |
+| Chapter 3 | 0.85 s from 12.07 s |
+| End | 1.30 s from 1.90 s and the whole 5 s loop, the ball in the pile |
