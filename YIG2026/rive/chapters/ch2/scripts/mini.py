@@ -415,13 +415,12 @@ class Path:
         self.jumps.add(self.now)
         self.put(p, "rest")
 
-    def hop(self, p1, T, gather=0.0, stretch=0.0, flip=0.0, glances=(), zp=None, xp=None, xz=False, label="hop"):
-        """From rest to a landing at p1: T frames, a parabola at 0.40 in height; X and depth in a straight line, or eased between two
-        moments of the flight (xp, zp = (from, to), fractions of the flight; still before and after). It leaves from a gather and stretches
-        while it is fast; `flip` adds that many turns of the dot over the second half of the flight; `glances` is [(frame, angle)] eased
-        between. Returns (vx, vy, vz, vy at landing)."""
+    def hop(self, p1, T, gather=0.0, stretch=0.0, flip=0.0, glances=(), zp=None, xp=None, xz=False, H=24.0, land_amp=0.0, label="hop"):
+        """From rest to a landing at p1 in T frames, Wordle's jump (hop_points): a fast launch out of the gather that eases out to a
+        floaty peak H above the higher end, then a fall that accelerates into contact. It stretches in the first frames of the flight, while
+        it is fastest; on the contact frame itself it is squashed by land_amp (Path.land springs it back); `glances` is [(frame, angle)]
+        eased between. Returns (vx, 0, vz, the fall speed at contact)."""
         p0 = self.at
-        vy = (p1[1] - p0[1]) / T - 0.5 * G * T
         vx, vz = (p1[0] - p0[0]) / T, (p1[2] - p0[2]) / T
         f_go = self.now
         w = 0.0                                   # leaving a rest, it leaves with no spin and keeps none in the air; its dot only glances
@@ -430,39 +429,52 @@ class Path:
         raw = [smooth(min(1.0, max(0.0, (t - 0.45 * T) / (0.5 * T)))) for t in range(0, T + 1)]
         dflip = [raw[t] - raw[t - 1] for t in range(1, T + 1)]
         tot = sum(dflip) or 1.0
-        pts = hop_points(p0, p1, T, zp, xp, xz)
+        pts = hop_points(p0, p1, T, zp, xp, xz, H)
+        Tu = max(6, int(round(0.5 * T)))
         for t in range(1, T + 1):
             u = smooth(min(1.0, t / 3))
-            sq = -gather * (1 - u) + stretch * u * (1 - smooth((t - 3) / 12))
+            sq = -gather * (1 - u) + stretch * u * (1 - smooth((t - 3) / (0.6 * Tu)))
             gl = g0
             for (fa, ga), (fb, gb) in zip(keys, keys[1:]):
                 if fa <= t <= fb:
                     gl = ga + (gb - ga) * ease_io((t - fa) / max(1, fb - fa))
                 elif t > fb:
                     gl = gb
-            self.put(pts[t], "air" if t < T else "roll", w=w + flip * 2 * math.pi * dflip[t - 1] / tot, gl=gl, sq=sq if t < T else 0.0)
-        self.notes.append((label, f_go, self.now - 1, min(y for _, y, _ in self.p[f_go:]), (vx, vy, vz)))
-        return vx, vy, vz, vy + G * T
+            self.put(pts[t], "air" if t < T else "roll", w=w + flip * 2 * math.pi * dflip[t - 1] / tot, gl=gl, sq=sq if t < T else -land_amp)
+        self.notes.append((label, f_go, self.now - 1, min(y for _, y, _ in self.p[f_go:]), (vx, 0.0, vz)))
+        return vx, 0.0, vz, pts[T][1] - pts[T - 1][1]
 
     def land(self, vk, n, amp):
-        """After a landing: it keeps vk of its sideways speed and rolls to a stop over n frames (the speed falling to zero), with one
-        squash of amp that springs back within 12 frames. Returns where it stops."""
-        assert n >= 12
+        """After the contact frame (squashed by amp): it keeps vk of its sideways speed and rolls to a stop over n frames (the speed falling
+        to zero) while the squash springs back over 12 frames (0.2 s), one tiny spring past rest, then still. Returns where it stops."""
+        assert n >= 20
         p = self.at
         x0, prev = p[0], p[0]
         for t in range(1, n + 1):
             x = x0 + vk * n / 2 * (1 - (1 - t / n) ** 2)
-            sq = -amp * math.sin(math.pi * min(1.0, t / 12)) ** 2 if t < 12 else 0.0
-            if 12 <= t < 20:
-                sq = 0.25 * amp * math.sin(math.pi * (t - 12) / 8) ** 2          # one tiny spring past rest, then still
+            sq = -amp * (1 - smooth(t / 12)) if t <= 12 else 0.0
+            if 12 < t < 20:
+                sq = 0.2 * amp * math.sin(math.pi * (t - 12) / 8) ** 2
             self.put((x, p[1], p[2]), "roll", w=(x - prev) / R_BALL, sq=sq)
             prev = x
         return self.at
 
+    def rise(self, dy, n, ease="out", gl=None, sq=0.0):
+        """The ball moves straight up (dy < 0) or down (dy > 0) in n frames: eased out for a quick rise, eased in for a drop."""
+        p0, g0 = self.at, self.gl[-1]
+        for t in range(1, n + 1):
+            u = t / n
+            e = 1 - (1 - u) ** 3 if ease == "out" else u ** 3
+            self.put((p0[0], p0[1] + dy * e, p0[2]), "air", gl=g0 + ((gl if gl is not None else g0) - g0) * smooth(u), sq=sq * math.sin(math.pi * u))
 
-def hop_points(p0, p1, T, zp=None, xp=None, xz=False):
-    """The flight: height in a parabola; depth and sideways in a straight line, or each eased between two moments of the flight."""
-    vy = (p1[1] - p0[1]) / T - 0.5 * G * T
+
+def hop_points(p0, p1, T, zp=None, xp=None, xz=False, H=24.0, tu=0.5):
+    """The flight, Wordle's jump (measured: it leaves in one fast frame, 20 units, eases out over 15 frames to a floaty peak, then falls
+    14 frames, accelerating to contact): height eases out (cubic) up to the peak, which is H above the higher end, then eases in (cubic)
+    down to the landing. Depth and sideways in a straight line, or each eased between two moments of the flight."""
+    ya = min(p0[1], p1[1]) - H
+    Tu = max(6, int(round(tu * T)))
+    Td = T - Tu
     out = []
     for t in range(0, T + 1):
         uz = t / T if zp is None else smooth((t / T - zp[0]) / (zp[1] - zp[0]))
@@ -472,7 +484,13 @@ def hop_points(p0, p1, T, zp=None, xp=None, xz=False):
             ux = max(0.0, (t / T - xp[0]) / (1.0 - xp[0])) ** 2
         else:
             ux = smooth((t / T - xp[0]) / (xp[1] - xp[0]))
-        out.append((p0[0] + (p1[0] - p0[0]) * ux, p0[1] + vy * t + 0.5 * G * t * t, p0[2] + (p1[2] - p0[2]) * uz))
+        if t <= Tu:
+            u = t / Tu
+            y = p0[1] + (ya - p0[1]) * (1 - (1 - u) ** 3)
+        else:
+            v = (t - Tu) / Td
+            y = ya + (p1[1] - ya) * v ** 3
+        out.append((p0[0] + (p1[0] - p0[0]) * ux, y, p0[2] + (p1[2] - p0[2]) * uz))
     return out
 
 
@@ -500,23 +518,27 @@ def top_ok(pts):
     return all(screen(q)[1] - R_BALL >= COPY_Y + 6 for q in pts)
 
 
-def plan_hop(p0, p1, Ts, shells, zps=(None,), xps=(None,), margin=1.5, extra=None):
-    """The shortest flight (time, depth profile, sideways profile) that keeps the ball `margin` clear of every rectangle on its way (the
-    last two frames are the landing and may touch) and passes `extra(points)`; if none does, the one that clears best.
-    Returns (T, zp, xp, how clear, whether it is clear)."""
+HS = (10.0, 18.0, 28.0, 40.0, 56.0, 80.0)      # how high above the higher end the peak may be, lowest first
+
+
+def plan_hop(p0, p1, Ts, shells, zps=(None,), xps=(None,), margin=1.5, extra=None, Hs=HS):
+    """The shortest flight (time, lowest peak, depth profile, sideways profile) that keeps the ball `margin` clear of every rectangle on
+    its way (the last two frames are the landing and may touch) and passes `extra(points)`; if none does, the one that clears best.
+    Returns (T, zp, xp, H, how clear, whether it is clear)."""
     best = None
     for T in Ts:
-        for zp in zps:
-            for xp in xps:
-                pts = hop_points(p0, p1, T, zp, xp)
-                worst = min(gap(q, shells)[0] for q in pts[1:T - 1])
-                end = min(gap(q, shells)[0] for q in pts[T - 1:])
-                ok = extra(pts) if extra else True
-                if worst >= margin and end >= -0.5 and ok:
-                    return T, zp, xp, worst, True
-                score = min(worst, end + margin) - (0 if ok else 100)
-                if best is None or score > best[3]:
-                    best = (T, zp, xp, score, False)
+        for H in Hs:
+            for zp in zps:
+                for xp in xps:
+                    pts = hop_points(p0, p1, T, zp, xp, False, H)
+                    worst = min(gap(q, shells)[0] for q in pts[1:T - 1])
+                    end = min(gap(q, shells)[0] for q in pts[T - 1:])
+                    ok = extra(pts) if extra else True
+                    if worst >= margin and end >= -0.5 and ok:
+                        return T, zp, xp, H, worst, True
+                    score = min(worst, end + margin) - (0 if ok else 100)
+                    if best is None or score > best[4]:
+                        best = (T, zp, xp, H, score, False)
     return best
 
 
@@ -622,12 +644,12 @@ def build(doc, scene, sheet):
     YT = TOPY - RC                                 # on a cube top
     YTT = TOPY - S_ - RC                           # on the top cube's top
     IN_F1 = (722.0, YB, 40.0)
-    LAND_F1 = (726.0, YB, 40.0)                    # where the hop in lands (clear of F1's left face on the screen); it settles back to IN_F1                      # inside F1, wholly behind its front square
+    LAND_F1 = (726.0, YB, 46.0)                    # where the hop in lands (clear of F1's left face on the screen); it settles back to IN_F1                      # inside F1, wholly behind its front square
     ON_F2 = (797.0, YT, 42.0)                      # on F2's top
     ON_T = (862.0, YTT, 126.0)                     # where the climb lands on T's top (it rolls on to about x 893)
     ON_L0 = (655.0, YT, 96.0)                     # where the hop to L0 lands; it rolls on to about x 644, clear of F1's open lid
     IN_R = (975.0, YB, 125.0)                      # inside R, against its right wall, hidden behind its front square
-    IN_T = (880.0, TOPY - RC, 126.0)               # inside T, wholly behind its front face and its flap
+    IN_T = (886.0, TOPY - RC, 126.0)               # inside T, wholly behind its front face and its flap
     END_WALK = (717.0, YT, 125.0)                  # the road's end, beside L0 and clear of its lifting lid
     IN_L0 = (637.0, YB, 118.0)                     # inside L0, wholly behind its front square
     RIM = Y0                                       # the front row's front squares' top edge on the screen
@@ -651,9 +673,9 @@ def build(doc, scene, sheet):
 
     def run_hop(p1, Ts, shells, zps=(None,), xps=(None,), apex_limit=True, under=(), **kw):
         extra = lambda pts: (top_ok(pts) if apex_limit else True) and all(behind_ok(pts, k_, f_) for k_, f_ in under)
-        T, zp, xp, worst, ok = plan_hop(P.at, p1, Ts, shells, zps, xps, extra=extra)
-        assert ok, (tuple(round(v) for v in P.at), tuple(round(v) for v in p1), "no clear flight", T, zp, xp, round(worst, 1))
-        return T, zp, xp
+        T, zp, xp, H, worst, ok = plan_hop(P.at, p1, Ts, shells, zps, xps, extra=extra)
+        assert ok, (tuple(round(v) for v in P.at), tuple(round(v) for v in p1), "no clear flight", T, zp, xp, H, round(worst, 1))
+        return T, zp, xp, H
 
     # ------------------------------------------------------------ 1 out: F1's lid opens, the ball bounces on F2's lid and up onto T
     n0 = P.now
@@ -663,31 +685,30 @@ def build(doc, scene, sheet):
     seg("move", "F1's lid opens (eased lift, past open, settle); the ball gathers inside", n0)
     n0 = P.now
     sh_open = poses_for_plan(F1={"lid": OPEN_PLAN})
-    T1, zp1, xp1 = run_hop(ON_F2, range(27, 56), sh_open, (None,), [(a, 1.0) for a in (0.0, 0.1, 0.2, 0.3, 0.4, 0.5)])
+    T1, zp1, xp1, H1 = run_hop(ON_F2, range(24, 56), sh_open, (None,), [None] + [(a, 1.0) for a in (0.0, 0.1, 0.2, 0.3, 0.4, 0.5)])
     f_h1 = P.now
-    P.hop(ON_F2, T1, gather=0.10, stretch=0.05, zp=zp1, xp=xp1,
+    P.hop(ON_F2, T1, gather=0.10, stretch=0.05, zp=zp1, xp=xp1, H=H1, land_amp=0.18,
           glances=[(0.25 * T1, math.radians(-10)), (0.65 * T1, math.radians(8))], label="out of F1 onto F2's lid")
     marks["h1"] = (f_h1, P.now - 1)
-    P.squash_to(-0.18, 3)                                      # the bounce on F2's closed lid: a deep squash (18 percent) ...
-    P.squash_to(-0.09, 5)                                      # ... that springs into the gather for the climb
+    P.squash_to(-0.09, 5)                                      # the contact frame was the deep squash (18 percent); it springs into the gather for the climb
     seg("move", f"the ball jumps out of F1 and bounces on F2's closed lid ({T1} frames in the air)", n0)
     n0 = P.now
-    for _ in range(2):                                         # the landing roll carries on at the speed the climb arrives with: pick the landing so it ends about x 885
-        T2, zp2, xp2 = run_hop(ON_T, range(27, 56), sh_open, [None] + [(a, b) for a in (0.0, 0.2, 0.35, 0.5) for b in (0.6, 0.8, 0.95)],
-                               [None, (0.0, 1.0), (0.2, 1.0), (0.4, 1.0)])
-        pts_ = hop_points(P.at, ON_T, T2, zp2, xp2)
+    climb_xp = [None, (0.0, 1.0), (0.2, 1.0), (0.4, 1.0)]
+    climb_zp = [None] + [(a_, b_) for a_ in (0.0, 0.2, 0.35, 0.5) for b_ in (0.6, 0.8, 0.95)]
+    for _ in range(3):                                         # the landing roll carries on at the speed the climb arrives with: pick the landing so it ends about x 885
+        T2, zp2, xp2, H2 = run_hop(ON_T, range(24, 56), sh_open, climb_zp, climb_xp)
+        pts_ = hop_points(P.at, ON_T, T2, zp2, xp2, False, H2)
         v_end = pts_[-1][0] - pts_[-2][0]
         ON_T = (885.0 - 0.8 * v_end * 16 / 2, ON_T[1], ON_T[2])
-    T2, zp2, xp2 = run_hop(ON_T, range(27, 56), sh_open, [None] + [(a, b) for a in (0.0, 0.2, 0.35, 0.5) for b in (0.6, 0.8, 0.95)],
-                           [None, (0.0, 1.0), (0.2, 1.0), (0.4, 1.0)])
-    pts_ = hop_points(P.at, ON_T, T2, zp2, xp2)
+    T2, zp2, xp2, H2 = run_hop(ON_T, range(24, 56), sh_open, climb_zp, climb_xp)
+    pts_ = hop_points(P.at, ON_T, T2, zp2, xp2, False, H2)
     v_end = pts_[-1][0] - pts_[-2][0]
     f_h2 = P.now
-    vx2, *_ = P.hop(ON_T, T2, gather=0.09, stretch=0.05, zp=zp2, xp=xp2,
-                    glances=[(0.2 * T2, math.radians(-14)), (0.6 * T2, math.radians(12))], label="up onto T's top")
+    P.hop(ON_T, T2, gather=0.09, stretch=0.05, zp=zp2, xp=xp2, H=H2, land_amp=0.18,
+          glances=[(0.2 * T2, math.radians(-14)), (0.6 * T2, math.radians(12))], label="up onto T's top")
     marks["h2"] = (f_h2, P.now - 1)
     lid_f1.append((f_h2 + 8, "shut", FULL))                    # F1's lid closes behind it
-    P.land(0.8 * v_end, 16, 0.18)                                    # rolls on at the speed it arrived with, easing to a stop
+    P.land(0.8 * v_end, 22, 0.18)                              # rolls on at the speed it arrived with, easing to a stop
     seg("move", f"it springs on up onto T's top ({T2} frames in the air); F1's lid falls shut behind it, one bump", n0)
 
     # ------------------------------------------------------------ 2 idle on T's top while F1 turns a quarter, a beat, a quarter
@@ -710,9 +731,8 @@ def build(doc, scene, sheet):
 
     def beat_hop(n):
         P.squash_to(-0.09, 9)                                  # a visible gather, then the count
-        P.hop((P.at[0], ty, P.at[2]), n, gather=0.09, stretch=0.04, label="little hop on T")
-        P.squash_to(-0.15, 3)
-        P.squash_to(0.0, 8)
+        P.hop((P.at[0], ty, P.at[2]), n, gather=0.09, stretch=0.04, H=26.0, land_amp=0.15, label="little hop on T")
+        P.land(0.0, 20, 0.15)
 
     beats = [lambda: (P.glance_to(math.radians(-10), 7), P.hold(4, sway=math.radians(1.0), period=14)),
              lambda: beat_pair(-24, 13, 14, gl=math.radians(-5)),
@@ -740,9 +760,9 @@ def build(doc, scene, sheet):
     kf = 0.12 * 22 / 2                                         # the landing roll carries it on by kf of the flight's sideways speed
     xs3 = P.at[0]
     ON_L0 = ((639.0 + kf * xs3 / 26) / (1 + kf / 26), YT, 96.0)    # land so the roll ends at about x 639, clear of F1's open lid
-    T3, zp3, xp3 = run_hop(ON_L0, list(range(27, 41)) + list(range(41, 70, 2)), poses_for_plan(), [None, (0.0, 0.5), (0.3, 0.8)], [None, (0.0, 1.0), (0.1, 1.0)])
+    T3, zp3, xp3, H3 = run_hop(ON_L0, list(range(24, 41)) + list(range(41, 70, 2)), poses_for_plan(), [None, (0.0, 0.5), (0.3, 0.8)], [None, (0.0, 1.0), (0.1, 1.0)])
     f_h3b = P.now
-    vx3, *_ = P.hop(ON_L0, T3, gather=0.10, stretch=0.05, zp=zp3, xp=xp3, label="across to L0")
+    vx3, *_ = P.hop(ON_L0, T3, gather=0.10, stretch=0.05, zp=zp3, xp=xp3, H=H3, land_amp=0.18, label="across to L0")
     marks["h3"] = (f_h3b, P.now - 1)
     P.land(0.12 * vx3, 22, 0.18)
     seg("move", f"as the second turn lands it bounces across to L0's top ({T3} frames in the air)", n0)
@@ -758,17 +778,20 @@ def build(doc, scene, sheet):
     seg("move", "L0's top: the ball looks at F1, whose lid opens, and gathers", n0)
     n0 = P.now
     sh4 = poses_for_plan(F1={"lid": OPEN_PLAN})
-    T4, zp4, xp4 = run_hop(LAND_F1, range(36, 100, 2), sh4, [None],
-                           [(a, 1.0) for a in (0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7)], under=(("F1", "left"),))
+    T4, zp4, xp4, H4 = run_hop(LAND_F1, range(30, 100, 2), sh4, [None, (0.0, 0.4), (0.1, 0.5), (0.2, 0.6)],
+                               [(a_, 1.0) for a_ in (0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7)], under=(("F1", "left"),))
     f_h4 = P.now
-    P.hop(LAND_F1, T4, gather=0.10, stretch=0.04, flip=FLIP, zp=zp4, xp=xp4,
+    P.hop(LAND_F1, T4, gather=0.10, stretch=0.04, flip=FLIP, zp=zp4, xp=xp4, H=H4, land_amp=0.10,
           glances=[(0.40 * T4, math.radians(6)), (0.50 * T4, math.radians(24)), (0.62 * T4, math.radians(6))], label="into F1")
     marks["h4"] = (f_h4, P.now - 1)
-    for t in range(1, 7):
-        P.put(P.at, "rest", sq=P.sq[-1] * (1 - t / 6))
-    P.roll_to(IN_F1[0], 10, gl=0.0)
+    P.land(0.0, 20, 0.10)
+    P.rise(-20.0, 8, gl=math.radians(6))                       # note 5: it sits up in the opening, its top showing over the rim ...
+    P.hold(5, sway=math.radians(1.5), period=10)
     f_shut4 = P.now
-    lid_f1.append((P.now, "shut", FULL))
+    lid_f1.append((P.now, "shut", FULL))                       # ... until the lid comes down on it
+    P.hold(15, sway=math.radians(1.5), period=10)             # the lid falls (14 frames) onto its top
+    f_sink = P.now
+    P.rise(+20.0, 6, ease="in", gl=0.0)                        # and only then does it sink, under the lid
     seg("move", f"it hops over the rim into F1 ({T4} frames) and the lid falls shut at once, one bump", n0)
 
     # ------------------------------------------------------------ 5 R turns; the ball moves on to R and peeks out of its lid
@@ -786,17 +809,22 @@ def build(doc, scene, sheet):
     seg("move", "R's black lid cracks open (the ball has moved in unseen)", n0)
     n0 = P.now
     P.squash_to(-0.09, 9)
-    P.hop(IN_R, 24, gather=0.09, stretch=0.04, glances=[(8, math.radians(-16)), (15, math.radians(14))], label="peek out of R")
-    marks["peek"] = (n0, P.now - 1)
-    P.squash_to(0.0, 4)
-    P.glance_to(math.radians(-14), 10)
-    P.glance_to(math.radians(10), 12)
-    P.glance_to(0.0, 8)
-    seg("move", "the ball rises into the crack, looks about with its dot, and ducks", n0)
+    f_pk0 = P.now
+    P.rise(-28.0, 10, gl=math.radians(-12), sq=0.04)           # note 6: it rises quickly into the crack ...
+    P.glance_to(math.radians(-16), 10)                         # ... and stays up, its dot looking about, for about 0.9 s ...
+    P.hold(8, sway=math.radians(1.5), period=10)
+    P.glance_to(math.radians(14), 14)
+    P.hold(8, sway=math.radians(1.5), period=10)
+    P.glance_to(math.radians(-8), 10)
+    P.hold(6, sway=math.radians(1.5), period=10)
+    P.glance_to(0.0, 6)
+    f_pkdrop = P.now
+    lid_r.append((f_pkdrop + 4, "shut", CRACK))                # ... and only drops just before the lid closes on it
+    P.rise(+28.0, 8, ease="in", gl=0.0)
+    marks["peek"] = (f_pk0, P.now - 1)
+    seg("move", "the ball rises into the crack, stays up with its dot looking about, and drops just before the lid shuts", n0)
     n0 = P.now
-    P.hold(2)
-    lid_r.append((P.now, "shut", CRACK))
-    P.hold(shut_n(CRACK) + 3)
+    P.hold(shut_n(CRACK) + 3 - 4)
     f_jt = P.now
     P.jump_to(IN_T)                                            # out of sight in R, and on the next frame out of sight in T
     P.hold(4)
@@ -836,9 +864,9 @@ def build(doc, scene, sheet):
     n0 = P.now
     sh5 = poses_for_plan(L0={"lid": OPEN_PLAN}, F1={"lid": math.pi}, T={"flap": math.pi / 2})
     IN_L0 = (636.0, YB, 120.0)                                 # as far right as a ballistic drop over L0's wall allows
-    T5, zp5, xp5 = run_hop(IN_L0, range(40, 100, 2), sh5, [None], [None], apex_limit=True)
+    T5, zp5, xp5, H5 = run_hop(IN_L0, range(40, 100, 2), sh5, [None], [None], apex_limit=True)
     f_h5 = P.now
-    P.hop(IN_L0, T5, gather=0.10, stretch=0.04, zp=zp5, xp=xp5, label="into L0")
+    P.hop(IN_L0, T5, gather=0.10, stretch=0.04, zp=zp5, xp=xp5, H=H5, land_amp=0.10, label="into L0")
     marks["h5"] = (f_h5, P.now - 1)
     for t in range(1, 7):
         P.put(P.at, "rest", sq=P.sq[-1] * (1 - t / 6))
@@ -905,8 +933,9 @@ def build(doc, scene, sheet):
         f[f"{k} left"] = face(k, "left", fill=sides[1], show=unc if k == "R" else None, **glide)
         f[f"{k} right"] = face(k, "right", fill=sides[1], **glide)
         f[f"{k} turntop"] = face(k, "top", fill=lf, name=lid_name(k, "Top Turning"), show=turning)
-        f[f"{k} lid"] = face(k, "top", "lid", fill=lf, name=lid_name(k, "Lid"), lid=True, show=at_rest)
-        f[f"{k} lid in"] = face(k, "top", "lid", True, fill=lf, name=lid_name(k, "Lid Inside"), lid=True, show=at_rest)
+        f[f"{k} lid"] = face(k, "top", "lid", fill=lf, name=lid_name(k, "Lid"), lid=True, show=lambda p: at_rest(p) and p.get("lcover", 0) == 0)
+        f[f"{k} lid in"] = face(k, "top", "lid", True, fill=lf, name=lid_name(k, "Lid Inside"), lid=True,
+                                show=lambda p: at_rest(p) and p.get("lcover", 0) == 0)
         f[f"{k} open"] = face(k, "top", fill=DARK_IN, name=lid_name(k, "Opening"), fixed={}, show=opn)
     f["F2 left"] = face("F2", "left", fill=DARK)               # note 1: every cube keeps its left side, even where another cube covers it
     f["F2 front"] = face("F2", "front", fill=DARK)
@@ -920,6 +949,9 @@ def build(doc, scene, sheet):
     f["T flap in"] = face("T", "left", "flap", True, name=f"{NAMES['T']} Flap Inside")
     f["T open"] = face("T", "left", fill=DARK_IN, name=f"{NAMES['T']} Opening", fixed={}, show=opn)
     f["F1 cover"] = face("F1", "front", name=f"{NAMES['F1']} Front Cover", show=cvr)
+    f["F1 lid cover"] = face("F1", "top", "lid", name=f"{NAMES['F1']} Lid Cover", lid=True, show=lambda p: at_rest(p) and p.get("lcover", 0) > 0)
+    f["F1 lid in cover"] = face("F1", "top", "lid", True, name=f"{NAMES['F1']} Lid Inside Cover", lid=True,
+                                show=lambda p: at_rest(p) and p.get("lcover", 0) > 0)
     f["L0 cover"] = face("L0", "front", name=f"{NAMES['L0']} Front Cover", show=cvr)
     f["R cover"] = face("R", "left", fill=DARK, name=f"{NAMES['R']} Front Cover", show=cvr)
     f["T front cover"] = face("T", "front", name=f"{NAMES['T']} Front Cover", show=lambda p: p.get("cf", 0) > 0)
@@ -951,7 +983,15 @@ def build(doc, scene, sheet):
     c_tp_on = f_jt - 2
     c_tp_off = next(g for g in range(f_flap, f_flap + 60)
                     if poly_dist(sc_(g), f["T flap"].outline(geo[g]["T"])) > R_BALL + 1.0)
+    # F1's lid comes down on the ball while its top still shows over the rim: from the frame before the falling lid first meets the ball on the
+    # screen until the ball has sunk, the lid is drawn over the ball
+    lid_faces_ = [f["F1 lid"], f["F1 lid in"]]
+    lid_hits = lambda g: any(fc_.visible(geo[g]["F1"]) and poly_dist(sc_(g), fc_.outline(geo[g]["F1"])) < R_BALL + 0.5 for fc_ in lid_faces_)
+    g_hit = next(g for g in range(f_shut4, f_sink + 1) if lid_hits(g))
+    c_lc_on, c_lc_off = g_hit - 1, f_sink + 8
+    assert not lid_hits(c_lc_on) and not lid_hits(c_lc_on - 1), ("the lid meets the ball too fast to swap", g_hit)
     cover = {"F1": lambda g: 1 if (g < c_f1_off or g >= c_f1_on) else 0,
+             "lc": lambda g: 1 if c_lc_on <= g < c_lc_off else 0,
              "L0": lambda g: 1 if c_l0_on <= g < c_l0_off else 0,
              "R": lambda g: 1 if c_r_on <= g < c_r_off else 0,
              "cf": lambda g: 1 if c_tf_on <= g < c_tf_off else 0,
@@ -959,13 +999,13 @@ def build(doc, scene, sheet):
 
     def poses_at(g):
         o = dict(geo[g])
-        o["F1"] = {**geo[g]["F1"], "cover": cover["F1"](g), "ov": opening(lid_f1, g)}
+        o["F1"] = {**geo[g]["F1"], "cover": cover["F1"](g), "ov": opening(lid_f1, g), "lcover": cover["lc"](g)}
         o["L0"] = {**geo[g]["L0"], "cover": cover["L0"](g), "ov": opening(lid_l0, g)}
         o["R"] = {**geo[g]["R"], "cover": cover["R"](g), "ov": opening(lid_r, g)}
         o["T"] = {**geo[g]["T"], "cf": cover["cf"](g), "cp": cover["cp"](g), "ov": opening(flap_t, g)}
         return o
     poses = [poses_at(g) for g in range(Lc + 1)]
-    flags = ("cover", "ov", "cf", "cp")
+    flags = ("cover", "ov", "cf", "cp", "lcover")
     pk = lambda p: tuple(round(x, 9) for v in p.values() for x in (v if isinstance(v, tuple) else (v,)))
     geom = lambda p: {kk: v for kk, v in p.items() if kk not in flags}
     for k in CELLS:
@@ -986,7 +1026,7 @@ def build(doc, scene, sheet):
         "S": ["L0 front", "L0 back", "L0 turntop", "L0 lid", "L0 lid in", "L0 open", "L0 left", "L0 right"],
         "Q": ["T front", "T top", "T flap", "T flap in", "T open"],
         "P": ["M front", "M left", "M top", "R front", "R back", "R turntop", "R lid", "R lid in", "R open", "R left", "R right"],
-        "C": ["F1 cover", "L0 cover", "R cover", "T front cover", "T flap cover"],
+        "C": ["F1 lid cover", "F1 lid in cover", "F1 cover", "L0 cover", "R cover", "T front cover", "T flap cover"],
     }
     for lst in groups.values():
         for nm in list(lst):
@@ -1053,9 +1093,10 @@ def build(doc, scene, sheet):
                         layer_bad.append((g, nm, "face in front of the ball", round(zb - zf, 1)))
     # a cover swaps with its under copy only where the ball is out of sight or clear of its outline
     pops = []
-    for key, names in (("F1", ["F1 cover"]), ("L0", ["L0 cover"]), ("R", ["R cover"]), ("T", ["T front cover", "T flap cover"])):
+    for key, names in (("F1", ["F1 cover", "F1 lid cover", "F1 lid in cover"]), ("L0", ["L0 cover"]), ("R", ["R cover"]), ("T", ["T front cover", "T flap cover"])):
         for nm in names:
-            fl = {"F1 cover": "cover", "L0 cover": "cover", "R cover": "cover", "T front cover": "cf", "T flap cover": "cp"}[nm]
+            fl = {"F1 cover": "cover", "L0 cover": "cover", "R cover": "cover", "T front cover": "cf", "T flap cover": "cp",
+                  "F1 lid cover": "lcover", "F1 lid in cover": "lcover"}[nm]
             for g in range(1, Lc + 1):
                 if poses[g][key].get(fl, 0) != poses[g - 1][key].get(fl, 0):
                     for h in (g - 1, g):
@@ -1137,6 +1178,8 @@ def build(doc, scene, sheet):
 
     # ---------------------------------------------------------------- the pieces' keys
     pieces, vertex_ids, moving_tracks = [], [], 0
+    shape_vids = {sid: vids for _, fc_ in drawn for sid, vids in fc_.shapes}
+    toggles, fall_frames = set(), []                           # the frames where a face is switched on or off, and where one goes out
     # through the arrival the ball waits inside F1 (it is not drawn until F1 has landed) and F1's cover is not on until then
     own_opacity = {"F1 front": lambda fr: 1.0 if fr < LANDED else 0.0, "F1 cover": lambda fr: 0.0 if fr < LANDED else 1.0}
     if os.environ.get("MINI_DEBUG"):
@@ -1155,6 +1198,12 @@ def build(doc, scene, sheet):
     for nm, fc in drawn:
         ps = [poses[g][key_of[fc.cube]] for g in range(Lc + 1)]
         for (oid, prop), vals in fc.tracks(ps, ident).items():
+            if prop == "opacity":
+                for g_ in range(1, Lc + 1):
+                    if (vals[g_ - 1] > 0.5) != (vals[g_] > 0.5):
+                        toggles.update((g_ - 1, g_))
+                        if vals[g_ - 1] > 0.5:
+                            fall_frames.append((shape_vids[oid], g_ - 1))
             if max(vals) - min(vals) < 1e-6:
                 continue
             assert abs(vals[0] - vals[Lc]) < 1e-6, (nm, oid, prop, vals[0], vals[Lc])
@@ -1186,9 +1235,22 @@ def build(doc, scene, sheet):
                 b += 1
             r = wrap(cw[g] + cur[g])                           # how far the dot is from up when the ball stops
             if abs(r) > 0.02 and b - g + 1 >= 4:
-                m = min(int(min(18, 8 + abs(r) * 7)), b - g + 1)
-                for t in range(1, Lc + 1 - g):
-                    cur[g + t] += -r * smooth(min(1.0, t / m))
+                s0_ = g
+                while s0_ > 0 and P.mode[s0_ - 1] == "roll" and math.dist(P.p[s0_ - 1], P.p[s0_]) > 0.02:
+                    s0_ -= 1
+                D_ = sum(abs(P.p[h + 1][0] - P.p[h][0]) for h in range(s0_, g))
+                if g - s0_ >= 6 and D_ > 20.0:
+                    # note 7: the roll's turn is spread over the whole roll (in step with the distance), so the dot always turns with the travel
+                    run_ = 0.0
+                    for h in range(s0_ + 1, g + 1):
+                        run_ += abs(P.p[h][0] - P.p[h - 1][0])
+                        cur[h] += -r * run_ / D_
+                    for h in range(g + 1, Lc + 1):
+                        cur[h] += -r
+                else:                                          # (a stop after a hop: the dot settles in a few frames)
+                    m = min(int(min(18, 8 + abs(r) * 7)), b - g + 1)
+                    for t in range(1, Lc + 1 - g):
+                        cur[g + t] += -r * smooth(min(1.0, t / m))
                 dot_fixes.append((g, math.degrees(r)))
             g = b + 1
         else:
@@ -1233,6 +1295,7 @@ def build(doc, scene, sheet):
             next_same = g < Lc and keys_[g] == keys_[g + 1]
             if (next_same and not prev_same) or (prev_same and not next_same):
                 edges.add(g)
+    edges |= toggles                                           # a face going on or off keeps a key on the frame before and the frame itself
     protect_loop = {(g - phase0) % Lc + j for g in edges for j in (0, Lc) if (g - phase0) % Lc + j <= Lc}
     wl = {}
     for oid, prop, fn, _own in pieces:
@@ -1299,6 +1362,11 @@ def build(doc, scene, sheet):
     for an in (f"{ROOM} Intro", f"{ROOM} Loop"):
         held_ops += hold_keys(an, shape_ids, ("opacity",))
 
+    # note 1: a face that goes out on frame g stays exactly where it was until then (hold keys), so a playhead a hair before g never sees it
+    # half way to its hidden position while it is still opaque
+    for vids_, fr_ in fall_frames:
+        hold_keys(f"{ROOM} Loop", vids_, ("x", "y"), frames=[(fr_ - phase0) % Lc])
+
     # a shut lid is exactly its cube's still top
     flush, flush_at = 0.0, None
     lid_faces = [fc for _, fc in drawn if getattr(fc, "part", None) == "lid" and not fc.flip]
@@ -1309,6 +1377,8 @@ def build(doc, scene, sheet):
         for g in range(1, Lc):
             if not (pk(geom(ps[g])) == pk(geom(ps[g - 1])) == pk(geom(ps[g + 1])) and ps[g]["lid"] == 0):
                 continue
+            if not (fc.visible(ps[g]) and fc.visible(ps[g - 1]) and fc.visible(ps[g + 1])):
+                continue                                   # (a hidden lid is not drawn, so it may be anywhere)
             ref = fc.cube.quad(fc.face, None, {})
             for vid, (rx_, ry_) in zip(fc.shapes[0][1], ref):
                 for prop, ref_v in (("x", rx_), ("y", ry_)):
@@ -1316,7 +1386,7 @@ def build(doc, scene, sheet):
                     if r_ is not None:
                         d_ = abs(c3.value_at(r_, (g - phase0) % Lc) - ref_v)
                         if d_ > flush:
-                            flush, flush_at = d_, (fc.name, g, prop)
+                            flush, flush_at = d_, (fc.name, g, prop, round(ps[g]["lid"], 6), round(ref_v, 3), round(c3.value_at(r_, (g - phase0) % Lc), 3), [round(c3.value_at(r_, (g + dd - phase0) % Lc), 2) for dd in (-3, -2, -1, 1, 2, 3)])
     assert flush < 0.05, ("a shut lid is not flush with its cube", flush, flush_at)
 
     # ---------------------------------------------------------------- the report
