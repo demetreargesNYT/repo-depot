@@ -40,7 +40,7 @@ import re
 import xml.etree.ElementTree as ET
 
 import cube3d as c3
-from cube3d import Cube, Face, TurnSide, TurnTop, LIGHT, DARK
+from cube3d import Cube, Face, LIGHT, DARK
 
 DARK_IN = "FF131313"                        # the inside of an open cube: a touch darker than the sides, so it has depth (note 4)
 from common import CENTER_IN_SCALE, BallArt, Cycle, _set_attrs, emit, plane_x, prepare_ball, smooth
@@ -98,7 +98,7 @@ CRACK = dict(amp=math.radians(38), back=1.3, lift_n=24, settle_n=0, fall_n=10, b
 FOLD = dict(amp=math.pi, back=0.0, lift_n=40, settle_n=0, up_n=12, apex=math.radians(100), fall_n=16, bump_n=7,
             bump=math.radians(1.5))                         # F1's lid right over onto the empty cell behind it
 FLAP = dict(amp=math.pi / 2, fall_n=26, bump_n=10, bump=math.radians(2.2), n=20, shut_bump_n=7, shut_bump=math.radians(1.5))
-TURN_N, SETTLE_N, OVER = 42, 0, 0.0                        # a quarter turn: 0.7 s, eased in and out, onto the face and no further (note 3)
+TURN_N, SETTLE_N, OVER = 34, 10, math.radians(3.5)         # a quarter turn: 0.57 s, a 3.5 degree follow-through, a 0.17 s settle (the weight that makes it a turn)
 TURN_TOTAL = TURN_N + SETTLE_N
 QUARTER = math.pi / 2
 GL_UP = math.radians(-12)                  # a glance up and to the left (the dot turns anticlockwise)
@@ -624,7 +624,7 @@ def build(doc, scene, sheet):
     IN_F1 = (722.0, YB, 40.0)
     LAND_F1 = (726.0, YB, 40.0)                    # where the hop in lands (clear of F1's left face on the screen); it settles back to IN_F1                      # inside F1, wholly behind its front square
     ON_F2 = (797.0, YT, 42.0)                      # on F2's top
-    ON_T = (872.0, YTT, 126.0)                     # on T's top (it rolls on from the landing)
+    ON_T = (862.0, YTT, 126.0)                     # where the climb lands on T's top (it rolls on to about x 893)
     ON_L0 = (655.0, YT, 96.0)                     # where the hop to L0 lands; it rolls on to about x 644, clear of F1's open lid
     IN_R = (975.0, YB, 125.0)                      # inside R, against its right wall, hidden behind its front square
     IN_T = (880.0, TOPY - RC, 126.0)               # inside T, wholly behind its front face and its flap
@@ -658,27 +658,36 @@ def build(doc, scene, sheet):
     # ------------------------------------------------------------ 1 out: F1's lid opens, the ball bounces on F2's lid and up onto T
     n0 = P.now
     lid_f1.append((P.now, "open", FULL))
-    P.hold(10)
-    P.squash_to(-0.05, 6)                                      # gathers inside as the lid swings up
+    P.hold(7)
+    P.squash_to(-0.10, 9)                                      # gathers inside as the lid swings up: 10 percent over 0.15 s
     seg("move", "F1's lid opens (eased lift, past open, settle); the ball gathers inside", n0)
     n0 = P.now
     sh_open = poses_for_plan(F1={"lid": OPEN_PLAN})
-    T1, zp1, xp1 = run_hop(ON_F2, range(30, 56), sh_open, (None,), [(a, 1.0) for a in (0.0, 0.1, 0.2, 0.3, 0.4, 0.5)])
+    T1, zp1, xp1 = run_hop(ON_F2, range(27, 56), sh_open, (None,), [(a, 1.0) for a in (0.0, 0.1, 0.2, 0.3, 0.4, 0.5)])
     f_h1 = P.now
-    P.hop(ON_F2, T1, gather=0.05, stretch=0.03, zp=zp1, xp=xp1,
+    P.hop(ON_F2, T1, gather=0.10, stretch=0.05, zp=zp1, xp=xp1,
           glances=[(0.25 * T1, math.radians(-10)), (0.65 * T1, math.radians(8))], label="out of F1 onto F2's lid")
     marks["h1"] = (f_h1, P.now - 1)
-    P.squash_to(-0.07, 4)                                      # the bounce on F2's closed lid: a deep squash and away again
+    P.squash_to(-0.18, 3)                                      # the bounce on F2's closed lid: a deep squash (18 percent) ...
+    P.squash_to(-0.09, 5)                                      # ... that springs into the gather for the climb
     seg("move", f"the ball jumps out of F1 and bounces on F2's closed lid ({T1} frames in the air)", n0)
     n0 = P.now
-    T2, zp2, xp2 = run_hop(ON_T, range(30, 56), sh_open, [None] + [(a, b) for a in (0.0, 0.2, 0.35, 0.5) for b in (0.6, 0.8, 0.95)],
+    for _ in range(2):                                         # the landing roll carries on at the speed the climb arrives with: pick the landing so it ends about x 885
+        T2, zp2, xp2 = run_hop(ON_T, range(27, 56), sh_open, [None] + [(a, b) for a in (0.0, 0.2, 0.35, 0.5) for b in (0.6, 0.8, 0.95)],
+                               [None, (0.0, 1.0), (0.2, 1.0), (0.4, 1.0)])
+        pts_ = hop_points(P.at, ON_T, T2, zp2, xp2)
+        v_end = pts_[-1][0] - pts_[-2][0]
+        ON_T = (885.0 - 0.8 * v_end * 16 / 2, ON_T[1], ON_T[2])
+    T2, zp2, xp2 = run_hop(ON_T, range(27, 56), sh_open, [None] + [(a, b) for a in (0.0, 0.2, 0.35, 0.5) for b in (0.6, 0.8, 0.95)],
                            [None, (0.0, 1.0), (0.2, 1.0), (0.4, 1.0)])
+    pts_ = hop_points(P.at, ON_T, T2, zp2, xp2)
+    v_end = pts_[-1][0] - pts_[-2][0]
     f_h2 = P.now
-    vx2, *_ = P.hop(ON_T, T2, gather=0.07, stretch=0.03, zp=zp2, xp=xp2,
+    vx2, *_ = P.hop(ON_T, T2, gather=0.09, stretch=0.05, zp=zp2, xp=xp2,
                     glances=[(0.2 * T2, math.radians(-14)), (0.6 * T2, math.radians(12))], label="up onto T's top")
     marks["h2"] = (f_h2, P.now - 1)
     lid_f1.append((f_h2 + 8, "shut", FULL))                    # F1's lid closes behind it
-    P.land(0.6 * vx2, 22, 0.07)
+    P.land(0.8 * v_end, 16, 0.18)                                    # rolls on at the speed it arrived with, easing to a stop
     seg("move", f"it springs on up onto T's top ({T2} frames in the air); F1's lid falls shut behind it, one bump", n0)
 
     # ------------------------------------------------------------ 2 idle on T's top while F1 turns a quarter, a beat, a quarter
@@ -700,16 +709,17 @@ def build(doc, scene, sheet):
         P.roll_snap(-d, n2, gl=0.0)
 
     def beat_hop(n):
-        P.squash_to(-0.04, 4)
-        P.hop((P.at[0], ty, P.at[2]), n, gather=0.04, stretch=0.02, label="little hop on T")
-        P.squash_to(0.0, 3)
+        P.squash_to(-0.09, 9)                                  # a visible gather, then the count
+        P.hop((P.at[0], ty, P.at[2]), n, gather=0.09, stretch=0.04, label="little hop on T")
+        P.squash_to(-0.15, 3)
+        P.squash_to(0.0, 8)
 
     beats = [lambda: (P.glance_to(math.radians(-10), 7), P.hold(4, sway=math.radians(1.0), period=14)),
              lambda: beat_pair(-24, 13, 14, gl=math.radians(-5)),
-             lambda: beat_hop(16),
+             lambda: beat_hop(24),
              lambda: beat_pair(+32, 15, 15, gl=math.radians(8), mid=6),
              lambda: (P.glance_to(math.radians(-6), 7), P.hold(3, sway=math.radians(1.0), period=12)),
-             lambda: beat_hop(18),
+             lambda: beat_hop(24),
              lambda: beat_pair(-18, 12, 12)]
     k = 0
     while P.now < f_h3 - 12:
@@ -726,12 +736,15 @@ def build(doc, scene, sheet):
 
     # ------------------------------------------------------------ 3 across to L0
     n0 = P.now
-    P.squash_to(-0.05, 4)
-    T3, zp3, xp3 = run_hop(ON_L0, range(36, 70, 2), poses_for_plan(), [None, (0.0, 0.5), (0.3, 0.8)], [None, (0.0, 1.0), (0.1, 1.0)])
+    P.squash_to(-0.10, 9)
+    kf = 0.12 * 22 / 2                                         # the landing roll carries it on by kf of the flight's sideways speed
+    xs3 = P.at[0]
+    ON_L0 = ((639.0 + kf * xs3 / 26) / (1 + kf / 26), YT, 96.0)    # land so the roll ends at about x 639, clear of F1's open lid
+    T3, zp3, xp3 = run_hop(ON_L0, list(range(27, 41)) + list(range(41, 70, 2)), poses_for_plan(), [None, (0.0, 0.5), (0.3, 0.8)], [None, (0.0, 1.0), (0.1, 1.0)])
     f_h3b = P.now
-    vx3, *_ = P.hop(ON_L0, T3, gather=0.05, stretch=0.03, zp=zp3, xp=xp3, label="across to L0")
+    vx3, *_ = P.hop(ON_L0, T3, gather=0.10, stretch=0.05, zp=zp3, xp=xp3, label="across to L0")
     marks["h3"] = (f_h3b, P.now - 1)
-    P.land(0.3 * vx3, 22, 0.07)
+    P.land(0.12 * vx3, 22, 0.18)
     seg("move", f"as the second turn lands it bounces across to L0's top ({T3} frames in the air)", n0)
 
     # ------------------------------------------------------------ 4 in: F1's lid opens, the ball jumps in, the lid shuts at once
@@ -740,15 +753,15 @@ def build(doc, scene, sheet):
     f_open4 = P.now
     lid_f1.append((P.now, "open", FULL))
     P.glance_to(math.radians(6), 12)
-    P.squash_to(-0.05, 8)
+    P.squash_to(-0.10, 12)                                     # the big leap: a bigger, longer gather
     P.hold(max(0, open_n(FULL) - 30 + 2))
     seg("move", "L0's top: the ball looks at F1, whose lid opens, and gathers", n0)
     n0 = P.now
     sh4 = poses_for_plan(F1={"lid": OPEN_PLAN})
-    T4, zp4, xp4 = run_hop(LAND_F1, range(36, 76, 2), sh4, [None],
-                           [(a, 1.0) for a in (0.0, 0.2, 0.35, 0.5, 0.6)], under=(("F1", "left"),))
+    T4, zp4, xp4 = run_hop(LAND_F1, range(36, 100, 2), sh4, [None],
+                           [(a, 1.0) for a in (0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7)], under=(("F1", "left"),))
     f_h4 = P.now
-    P.hop(LAND_F1, T4, gather=0.05, stretch=0.03, flip=FLIP, zp=zp4, xp=xp4,
+    P.hop(LAND_F1, T4, gather=0.10, stretch=0.04, flip=FLIP, zp=zp4, xp=xp4,
           glances=[(0.40 * T4, math.radians(6)), (0.50 * T4, math.radians(24)), (0.62 * T4, math.radians(6))], label="into F1")
     marks["h4"] = (f_h4, P.now - 1)
     for t in range(1, 7):
@@ -772,8 +785,8 @@ def build(doc, scene, sheet):
     P.hold(10)
     seg("move", "R's black lid cracks open (the ball has moved in unseen)", n0)
     n0 = P.now
-    P.squash_to(-0.04, 5)
-    P.hop(IN_R, 24, gather=0.04, stretch=0.02, glances=[(8, math.radians(-16)), (15, math.radians(14))], label="peek out of R")
+    P.squash_to(-0.09, 9)
+    P.hop(IN_R, 24, gather=0.09, stretch=0.04, glances=[(8, math.radians(-16)), (15, math.radians(14))], label="peek out of R")
     marks["peek"] = (n0, P.now - 1)
     P.squash_to(0.0, 4)
     P.glance_to(math.radians(-14), 10)
@@ -818,14 +831,14 @@ def build(doc, scene, sheet):
     P.glance_to(math.radians(4), 12)
     P.hold(max(0, open_n(FULL) - 22 + 2))                     # the lid is swinging up
     P.roll_to(704.0, 14, gl=0.0)                               # it steps up to the edge
-    P.squash_to(-0.05, 8)
+    P.squash_to(-0.10, 12)                                     # the big leap: a bigger, longer gather
     seg("move", "L0's lid lifts (hinged at the back); the ball looks and gathers", n0)
     n0 = P.now
     sh5 = poses_for_plan(L0={"lid": OPEN_PLAN}, F1={"lid": math.pi}, T={"flap": math.pi / 2})
     IN_L0 = (636.0, YB, 120.0)                                 # as far right as a ballistic drop over L0's wall allows
     T5, zp5, xp5 = run_hop(IN_L0, range(40, 100, 2), sh5, [None], [None], apex_limit=True)
     f_h5 = P.now
-    P.hop(IN_L0, T5, gather=0.05, stretch=0.03, zp=zp5, xp=xp5, label="into L0")
+    P.hop(IN_L0, T5, gather=0.10, stretch=0.04, zp=zp5, xp=xp5, label="into L0")
     marks["h5"] = (f_h5, P.now - 1)
     for t in range(1, 7):
         P.put(P.at, "rest", sq=P.sq[-1] * (1 - t / 6))
@@ -882,16 +895,16 @@ def build(doc, scene, sheet):
     cvr = lambda p: p.get("cover", 0) > 0
     unc = lambda p: p.get("cover", 0) == 0
     opn = lambda p: p.get("ov", 0) > 0
+    glide = dict(glide_min=8, wrap_glide=True)               # the faces a cube's second quarter turn hands over to the first's again
     f = {}
     for k, light_lid in (("F1", True), ("L0", True), ("R", False)):
         lf = LIGHT if light_lid else DARK
         sides = {"F1": (LIGHT, DARK), "L0": (LIGHT, DARK), "R": (LIGHT, DARK)}[k]
-        side = lambda fc_, fill_, **kw: TurnSide(CUBE[k], fc_, fill=fill_, name=f"{NAMES[k]} {fc_.title()}", **kw)
-        f[f"{k} front"] = side("front", sides[0], show=unc)
-        f[f"{k} back"] = side("back", sides[0], show=unc)
-        f[f"{k} left"] = side("left", sides[1], show=unc if k == "R" else None)
-        f[f"{k} right"] = side("right", sides[1])
-        f[f"{k} turntop"] = TurnTop(CUBE[k], fill=lf, name=lid_name(k, "Top Turning"), show=turning)
+        f[f"{k} front"] = face(k, "front", fill=sides[0], show=unc, **glide)
+        f[f"{k} back"] = face(k, "back", fill=sides[0], show=unc, **glide)
+        f[f"{k} left"] = face(k, "left", fill=sides[1], show=unc if k == "R" else None, **glide)
+        f[f"{k} right"] = face(k, "right", fill=sides[1], **glide)
+        f[f"{k} turntop"] = face(k, "top", fill=lf, name=lid_name(k, "Top Turning"), show=turning)
         f[f"{k} lid"] = face(k, "top", "lid", fill=lf, name=lid_name(k, "Lid"), lid=True, show=at_rest)
         f[f"{k} lid in"] = face(k, "top", "lid", True, fill=lf, name=lid_name(k, "Lid Inside"), lid=True, show=at_rest)
         f[f"{k} open"] = face(k, "top", fill=DARK_IN, name=lid_name(k, "Opening"), fixed={}, show=opn)
@@ -906,9 +919,9 @@ def build(doc, scene, sheet):
     f["T flap"] = face("T", "left", "flap", name=f"{NAMES['T']} Flap", show=lambda p: p.get("cp", 0) == 0)
     f["T flap in"] = face("T", "left", "flap", True, name=f"{NAMES['T']} Flap Inside")
     f["T open"] = face("T", "left", fill=DARK_IN, name=f"{NAMES['T']} Opening", fixed={}, show=opn)
-    f["F1 cover"] = TurnSide(CUBE["F1"], "front", name=f"{NAMES['F1']} Front Cover", show=cvr)
-    f["L0 cover"] = TurnSide(CUBE["L0"], "front", name=f"{NAMES['L0']} Front Cover", show=cvr)
-    f["R cover"] = TurnSide(CUBE["R"], "left", fill=DARK, name=f"{NAMES['R']} Front Cover", show=cvr)
+    f["F1 cover"] = face("F1", "front", name=f"{NAMES['F1']} Front Cover", show=cvr)
+    f["L0 cover"] = face("L0", "front", name=f"{NAMES['L0']} Front Cover", show=cvr)
+    f["R cover"] = face("R", "left", fill=DARK, name=f"{NAMES['R']} Front Cover", show=cvr)
     f["T front cover"] = face("T", "front", name=f"{NAMES['T']} Front Cover", show=lambda p: p.get("cf", 0) > 0)
     f["T flap cover"] = face("T", "left", "flap", name=f"{NAMES['T']} Flap Cover", show=lambda p: p.get("cp", 0) > 0)
     key_of = {CUBE[k]: k for k in CELLS}
@@ -1142,22 +1155,6 @@ def build(doc, scene, sheet):
     for nm, fc in drawn:
         ps = [poses[g][key_of[fc.cube]] for g in range(Lc + 1)]
         for (oid, prop), vals in fc.tracks(ps, ident).items():
-            kc = key_of[fc.cube]
-            if isinstance(fc, TurnSide) and not isinstance(fc, TurnTop) and kc in rel and prop != "opacity":
-                vals = list(vals)
-                a_end = {"F1": turn_f1, "R": turn_r, "L0": turn_l0}[kc][-1][0] + TURN_TOTAL
-                g_r = rel[kc]
-                if fc.face in ("front", "left"):                  # out of sight until the hand-over: its corners glide to where it comes back
-                    for g_ in range(a_end - 1, g_r):
-                        vals[g_] = vals[a_end - 1] + (vals[g_r] - vals[a_end - 1]) * (g_ - a_end + 1) / (g_r - a_end + 1)
-                else:                                             # out of sight from the hand-over: its corners glide on to where the seam leaves it
-                    last = vals[g_r - 1]
-                    for g_ in range(g_r, Lc):
-                        vals[g_] = last + (vals[Lc] - last) * (g_ - g_r + 1) / (Lc - g_r + 1)
-            if os.environ.get("MINI_DEBUG") and isinstance(fc, TurnSide) and prop == "x":
-                jumps_ = [(round(3.2 + g_ / 60, 2), round(vals[g_ + 1] - vals[g_], 1)) for g_ in range(Lc) if abs(vals[g_ + 1] - vals[g_]) > 20]
-                if jumps_:
-                    print("  jumps", nm, jumps_[:8])
             if max(vals) - min(vals) < 1e-6:
                 continue
             assert abs(vals[0] - vals[Lc]) < 1e-6, (nm, oid, prop, vals[0], vals[Lc])
