@@ -1,4 +1,6 @@
-"""One time (2026-11-04, round 3): Chapter 1 card 5 restaged from Figma: one cube that turns in, Wordle Bot on top, the ball's three tries.
+"""Regenerates the whole Chapter 1 Card 5 room: refuses chapters/ch1/scene.rml once it has changed since commit 3596ae7 (tools/regen_guard.py).
+
+One time (2026-11-04, round 3): Chapter 1 card 5 restaged from Figma: one cube that turns in, Wordle Bot on top, the ball's three tries.
 
     python3 chapters/ch1/ch1_card_5_r3.py                                dry run: the beats, the contacts and the clearances
     python3 chapters/ch1/ch1_card_5_r3.py --scene <copy> --write         rebuild the room in a copy (a helper's scratch scene.rml)
@@ -42,6 +44,8 @@ import ch1_cards_234 as c234                                                    
 from ch1_cards_234 import Ball, INTRO, emit_room, round_ball, dip, phone_y, COPY_BOTTOM   # noqa: E402
 from ball_motion import smooth                                                  # noqa: E402
 from rml_edit import Doc, num                                                   # noqa: E402
+import regen_guard                                                              # noqa: E402
+WRITTEN_AGAINST = "3596ae7"     # the file as round 2 left it (see above)
 
 SCENE = RIVE_ROOT / "chapters" / "ch1" / "scene.rml"
 BOT_FILE = RIVE_ROOT / ".cache" / "scratch.nosync" / "ch1" / "wordle-bot" / "scene.rml"
@@ -876,7 +880,7 @@ def main(argv):
     for n, l in enumerate(doc.lines):
         if re.match(r"^\s*<KeyFrame\w+\b(?![^>]*\bid=)", l):
             doc.lines[n] = re.sub(r"(/?>)\s*$", f' id="{doc.new_id()}"\\1', l, count=1)
-    doc.save()
+    regen_guard.save(doc, WRITTEN_AGAINST, __file__)
     print("wrote", scene)
     return 0
 

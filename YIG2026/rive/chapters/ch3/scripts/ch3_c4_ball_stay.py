@@ -1,4 +1,6 @@
-"""Chapter 4: the ball arrives on card 1 to see the city, stays for good, and celebrates on card 2 (Demetre, 2026-11-04).
+"""Regenerates the whole Chapter 4 ball (its animations and its layer): refuses chapters/ch3/scene.rml once it has changed since commit 35883e9 (tools/regen_guard.py).
+
+Chapter 4: the ball arrives on card 1 to see the city, stays for good, and celebrates on card 2 (Demetre, 2026-11-04).
 
     python3 chapters/ch3/scripts/ch3_c4_ball_stay.py [--scene PATH]            prints the plan and the measured numbers, writes nothing
     python3 chapters/ch3/scripts/ch3_c4_ball_stay.py [--scene PATH] --write    adds the ball's animations and its one layer
@@ -24,6 +26,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "tools"))
 from ball_motion import smooth
 from rml_edit import Doc, bake
+import regen_guard
+WRITTEN_AGAINST = "35883e9"     # the file before this script's commit (0178eec)
 from rml_read import Scene, chapter_dir
 
 args = sys.argv[1:]
@@ -414,7 +418,7 @@ def main():
     out.append("            </StateMachineLayer>")
     si = max(i for i, l in enumerate(doc.lines) if l.strip() == "</StateMachine>")
     doc.lines[si:si] = out
-    doc.save()
+    regen_guard.save(doc, WRITTEN_AGAINST, __file__)
     print(f"wrote {SCENE}")
 
 

@@ -1,4 +1,6 @@
-"""Chapter 3 card 1 (scene chapter-3): the illustrator's c3s1 animation brought in as they made it (Demetre, 2026-11-03).
+"""Regenerates the whole Chapter 3 room from the illustrator's file: refuses chapters/ch3/scene.rml once it has changed since commit 8923ea3 (tools/regen_guard.py).
+
+Chapter 3 card 1 (scene chapter-3): the illustrator's c3s1 animation brought in as they made it (Demetre, 2026-11-03).
 
     python3 chapters/ch3/scripts/ch3_c3s1_import.py --write
 
@@ -28,6 +30,8 @@ import xml.etree.ElementTree as ET
 
 from import_room import ILLUSTRATOR, Rig, read_keys, value_at
 from rml_edit import Doc, bake, num
+import regen_guard
+WRITTEN_AGAINST = "8923ea3"     # the file before this script's commit (a757356)
 from rml_read import Scene, chapter_dir
 
 SCENE = chapter_dir("ch3") / "scene.rml"
@@ -155,7 +159,7 @@ def main():
         doc.set_prop(intro, oid, prop, k)
         doc.set_prop(f"{ROOM} Waiting", oid, prop, [(0, k[0][1], "hold")])
         doc.set_prop(f"{ROOM} Built", oid, prop, [(0, k[-1][1], "hold")])
-    doc.save()
+    regen_guard.save(doc, WRITTEN_AGAINST, __file__)
     # the join: every property the Loop keys is held by the Intro at the Loop's first frame (and so by Waiting and Built), so the
     # room arrives on their frame 0 and comes back to it
     sc2 = Scene(SCENE)
@@ -175,7 +179,7 @@ def main():
             doc.set_prop(f"{ROOM} Waiting", oid, prop, [(0, v, "hold")])
             doc.set_prop(f"{ROOM} Built", oid, prop, [(0, v, "hold")])
             joined += 1
-    doc.save()
+    regen_guard.save(doc, WRITTEN_AGAINST, __file__)
     print(f"joined {joined} properties to the intro (held at the Loop's first frame)")
     print(f"wrote {SCENE}: their Ball animation ({n} frames) into {loop}; not applied (the disco ball): "
           + "; ".join(SKIPPED[o] for o in skipped))

@@ -1,4 +1,6 @@
-"""Chapter 4: the player's ball keeps c4s1's journey at a near-normal size, with a small hop for an ending (Demetre, 2026-11-03).
+"""Regenerates the whole Chapter 4 ball journey: refuses chapters/ch3/scene.rml once it has changed since commit 101e2a3 (tools/regen_guard.py).
+
+Chapter 4: the player's ball keeps c4s1's journey at a near-normal size, with a small hop for an ending (Demetre, 2026-11-03).
 
     python3 chapters/ch3/scripts/ch3_c4_ball.py --write      once, on the scene as committed in 101e2a3 (c4s1 imported as drawn)
 
@@ -23,6 +25,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "tools"))
 from import_room import ILLUSTRATOR, Rig, affine, compose, extent, read_keys, value_at
 from rml_edit import Doc, bake, num
+import regen_guard
+WRITTEN_AGAINST = "101e2a3"     # the scene this was run on, once (see above)
 from rml_read import Scene, chapter_dir
 from rooms_sheet import Sheet
 
@@ -183,7 +187,7 @@ def main():
         doc.set_prop(loop, oid, prop, lk_)
         doc.set_prop(f"{ROOM} Waiting", oid, prop, [(0, iv[0], "hold")])
         doc.set_prop(f"{ROOM} Built", oid, prop, [(0, iv[INTRO - 1], "hold")])
-    doc.save()
+    regen_guard.save(doc, WRITTEN_AGAINST, __file__)
     top = min(centre(f)[1] - rad(f) for f in range(LAUNCH, hidden))
     xs = [centre(f)[0] for f in range(12, hidden)]
     print(f"wrote {SCENE}: starts at {T0 / 60:.2f} s; size {min(size.values()):.2f} to {max(size.values()):.2f}; the hop off the tower at "

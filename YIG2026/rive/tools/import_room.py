@@ -1,4 +1,6 @@
-"""Bring one of the illustrator's rooms into a chapter, copying their loop exactly.
+"""Regenerates a whole room from the illustrator's file: refuses a chapter's scene.rml once it has changed since commit 68f2e11 (tools/regen_guard.py; a copy with --out is fine).
+
+Bring one of the illustrator's rooms into a chapter, copying their loop exactly.
 
     python3 tools/import_room.py tools/rooms/spelling-bee.json                     into chapters/ch2
     python3 tools/import_room.py tools/rooms/spelling-bee.json --out .cache/scratch.nosync/try      into a copy of the chapter instead
@@ -32,8 +34,11 @@ import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
+import regen_guard
 import svg_to_rml
 from rml_read import REPO, chapter_dir
+
+WRITTEN_AGAINST = "68f2e11"     # the files before this tool's first commit (a6ea77c); every room it brought in has been tuned since
 
 # The illustrator's file (Rive file 2668591) is a read-only copy kept in a folder git ignores. It is pulled again
 # when missing. Nothing in this repo ever pushes to it or edits it.
@@ -1259,6 +1264,7 @@ def main(argv):
     source = REPO / cfg["illustrator"] if cfg.get("illustrator") else args.illustrator      # a config may name its own art (the Loading placeholder)
     build = Build(cfg, text, ET.parse(ensure_illustrator(source)).getroot())
     pieces = build.build()
+    regen_guard.check(scene, WRITTEN_AGAINST, __file__)      # a chapter's real file: only as it was when the rooms first came in
     scene.write_text(splice(text, pieces))
     print(f"{cfg['room']} added to {scene}")
     if build.fixes:

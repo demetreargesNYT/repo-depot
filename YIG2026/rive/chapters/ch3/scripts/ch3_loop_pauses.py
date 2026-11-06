@@ -1,4 +1,6 @@
-"""Chapter 3's 10.6 s loop (Demetre, 2026-11-05, second round: the dance, the dim and the light spots are gone). Writes it into the scene.
+"""Regenerates the whole Chapter 3 loop: refuses chapters/ch3/scene.rml once it has changed since commit c72d210 (tools/regen_guard.py).
+
+Chapter 3's 10.6 s loop (Demetre, 2026-11-05, second round: the dance, the dim and the light spots are gone). Writes it into the scene.
 
     python3 chapters/ch3/scripts/ch3_loop_pauses.py --scene PATH            # a dry run: PATH is rewritten only with --write
     python3 chapters/ch3/scripts/ch3_loop_pauses.py --scene PATH --write
@@ -20,6 +22,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "tools"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from rml_edit import Doc  # noqa: E402
+import regen_guard  # noqa: E402
+WRITTEN_AGAINST = "c72d210"     # the scene after the pin 1 and pin 2 fixes, before the first dance (see above)
 from rml_read import chapter_dir  # noqa: E402
 import ch3_loop_tracks as T  # noqa: E402
 
@@ -231,7 +235,7 @@ def main():
     doc.lines[si:si] = lay
     print(meta)
     if "--write" in argv:
-        doc.save()
+        regen_guard.save(doc, WRITTEN_AGAINST, __file__)
         print("written", path)
 
 

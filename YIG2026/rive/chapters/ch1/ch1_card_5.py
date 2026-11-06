@@ -1,4 +1,6 @@
-"""One time (2026-11-03, the finesse round): Chapter 1 card 5 gets Wordle Bot, the blocks at 70 percent, and the ball's climb.
+"""Regenerates the whole Chapter 1 Card 5 room: refuses chapters/ch1/scene.rml once it has changed since commit 2ac7464 (tools/regen_guard.py).
+
+One time (2026-11-03, the finesse round): Chapter 1 card 5 gets Wordle Bot, the blocks at 70 percent, and the ball's climb.
 
     python3 chapters/ch1/ch1_card_5.py            dry run: prints the beats and clearances, writes nothing
     python3 chapters/ch1/ch1_card_5.py --write    rewrite chapters/ch1/scene.rml
@@ -36,6 +38,8 @@ import ch1_cards_234 as c234                                                    
 from ch1_cards_234 import Ball, INTRO, emit_room, round_ball, dip, phone_y, COPY_BOTTOM   # noqa: E402
 from ball_motion import smooth                                                            # noqa: E402
 from rml_edit import Doc, num                                                             # noqa: E402
+import regen_guard                                                                        # noqa: E402
+WRITTEN_AGAINST = "2ac7464"     # the file as it was before this work (see above)
 
 SCENE = RIVE_ROOT / "chapters" / "ch1" / "scene.rml"
 BOT_FILE = RIVE_ROOT / ".cache" / "scratch.nosync" / "ch1" / "wordle-bot" / "scene.rml"
@@ -580,7 +584,7 @@ def main(argv):
     for n, l in enumerate(doc.lines):                         # the poses' keys need ids too
         if re.match(r"^\s*<KeyFrame\w+\b(?![^>]*\bid=)", l):
             doc.lines[n] = re.sub(r"(/?>)\s*$", f' id="{doc.new_id()}"\\1', l, count=1)
-    doc.save()
+    regen_guard.save(doc, WRITTEN_AGAINST, __file__)
     print("wrote", SCENE)
     return 0
 

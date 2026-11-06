@@ -1,4 +1,6 @@
-"""Chapter 3 card 2 (scene chapter-3-bird, room "Bird on Ball"): the standard ball grows under c3s1's bird (Demetre, 2026-11-03).
+"""Regenerates the whole Bird on Ball room (since removed): refuses chapters/ch3/scene.rml once it has changed since commit ff5ca3c (tools/regen_guard.py).
+
+Chapter 3 card 2 (scene chapter-3-bird, room "Bird on Ball"): the standard ball grows under c3s1's bird (Demetre, 2026-11-03).
 
     python3 chapters/ch3/scripts/ch3_bird_on_ball.py --write      once, on the scene as committed in ff5ca3c
 
@@ -16,6 +18,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "tools"))
 from ball_motion import pulse
 from rml_edit import Doc, bake, num
+import regen_guard
+WRITTEN_AGAINST = "ff5ca3c"     # the scene this was run on, once (see above)
 from rml_read import Scene, chapter_dir
 
 SCENE = chapter_dir("ch3") / "scene.rml"
@@ -150,7 +154,7 @@ def main():
         doc.set_prop(loop, oid, prop, bake(lv, fr_l))
         doc.set_prop(waiting, oid, prop, [(0, iv[0], "hold")])
         doc.set_prop(built, oid, prop, [(0, iv[INTRO - 1], "hold")])
-    doc.save()
+    regen_guard.save(doc, WRITTEN_AGAINST, __file__)
     print(f"wrote {SCENE}: {ROOM}: grows {GROW[0] / 60:.2f} to {GROW[1] / 60:.2f} s (peak {max(size(f) for f in fr_i):.3f}); the bird hops at "
           f"{HOP / 60:.2f} s ({v_up:.1f} a frame up, apex y {apex_y:.0f}), lands {LAND / 60:.2f} s on y {land_y:.1f}; the rise's gravity {g_up:.2f}")
 

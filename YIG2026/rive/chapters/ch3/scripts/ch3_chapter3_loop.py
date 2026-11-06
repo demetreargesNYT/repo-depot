@@ -1,4 +1,6 @@
-"""REJECTED (Demetre, 2026-11-03: bring in c3s1 itself instead; see ch3_c3s1_import.py). Kept because it built the disco ball's
+"""Regenerates the whole Chapter 3 loop (rejected version): refuses chapters/ch3/scene.rml once it has changed since commit 340b2c7 (tools/regen_guard.py).
+
+REJECTED (Demetre, 2026-11-03: bring in c3s1 itself instead; see ch3_c3s1_import.py). Kept because it built the disco ball's
 facet spin and sparkles (facet_keys, SPARKS, spark), which stay in the room; the saved copy is chapters/ch3/disco-saved.json.
 
 Chapter 3 card 1 (scene chapter-3): the illustrator's ball journey (their file 2668591, artboard NYT_YIG_c3s1, animation "Ball"),
@@ -34,6 +36,8 @@ import sys
 
 from ball_motion import pulse, smooth, spring
 from rml_edit import Doc, bake, num
+import regen_guard
+WRITTEN_AGAINST = "340b2c7"     # rive/ch3-chapter-1-polish-startscene (see above)
 from rml_read import Scene, chapter_dir
 
 SCENE = chapter_dir("ch3") / "scene.rml"
@@ -624,7 +628,7 @@ def write(j, theta):
             doc.set_any(loop, cid, "colorValue", "color", facet_keys(colours, col, list(fr_l), lambda k: PHASE0 + k))
     doc.pose_from(intro, waiting, last=False)
     doc.pose_from(intro, built, last=True)
-    doc.save()
+    regen_guard.save(doc, WRITTEN_AGAINST, __file__)
     print(f"wrote {SCENE}")
 
 

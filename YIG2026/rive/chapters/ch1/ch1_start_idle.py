@@ -1,4 +1,6 @@
-"""One time (2026-11-04): Start's bouncing-ball-and-bird loop replaced by Chapter 3 card 2's ball, bird and idle loop.
+"""Regenerates the whole Start room's loop: refuses chapters/ch1/scene.rml once it has changed since commit 7e137b4 (tools/regen_guard.py).
+
+One time (2026-11-04): Start's bouncing-ball-and-bird loop replaced by Chapter 3 card 2's ball, bird and idle loop.
 
     python3 chapters/ch1/ch1_start_idle.py            dry run: what it would copy
     python3 chapters/ch1/ch1_start_idle.py --write    rewrite chapters/ch1/scene.rml
@@ -23,6 +25,8 @@ from pathlib import Path
 RIVE_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(RIVE_ROOT / "tools"))
 from rml_edit import Doc, num                                    # noqa: E402
+import regen_guard                                               # noqa: E402
+WRITTEN_AGAINST = "7e137b4"     # the file before this script's commit (125b175)
 
 SCENE = RIVE_ROOT / "chapters" / "ch1" / "scene.rml"
 CH3 = RIVE_ROOT / "chapters" / "ch3" / "scene.rml"               # read only
@@ -119,7 +123,7 @@ def main(argv):
         new.set("objectId", vmap[ko.get("objectId")])
         out += ser(new, 12)
     doc.lines[j:j] = out
-    doc.save()
+    regen_guard.save(doc, WRITTEN_AGAINST, __file__)
     print(f"wrote {SCENE}")
     return 0
 

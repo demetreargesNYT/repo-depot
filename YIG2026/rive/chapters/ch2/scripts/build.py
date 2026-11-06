@@ -1,4 +1,6 @@
-"""Rebuild Chapter 2's scene.rml: the 2026-11-03 delivery's scene (common.BASE_REV), then the step 1 spin fix, then the rooms given,
+"""Regenerates the whole Chapter 2 file: with --real it refuses chapters/ch2/scene.rml once it has changed since commit ed0e522 or since its own last build (tools/regen_guard.py).
+
+Rebuild Chapter 2's scene.rml: the 2026-11-03 delivery's scene (common.BASE_REV), then the step 1 spin fix, then the rooms given,
 in order. Run from anywhere:
 
     python3 chapters/ch2/scripts/build.py --real bee mini strands daily midi     writes chapters/ch2/scene.rml
@@ -16,7 +18,12 @@ import sys
 from pathlib import Path
 
 from common import RIVE_DIR, Doc, Scene, Sheet, base_text
+import regen_guard
 import wordle_connections_spin
+
+# The file the room scripts were last folded against: the real file may be rebuilt when it is this commit's, or this script's own last
+# build. After an Editor pull or a hand edit, fold the change into the room's script, commit, and move this to that commit.
+WRITTEN_AGAINST = "ed0e522"
 
 out = os.environ.get("CH2_OUT")
 if "--out" in sys.argv:                 # the flag, in place of the CH2_OUT environment variable
@@ -35,6 +42,7 @@ elif "--real" in sys.argv:
     sys.argv.remove("--real")
 else:
     sys.exit("set CH2_OUT=<a copy folder>, or pass --real to write chapters/ch2/scene.rml")
+regen_guard.check(SCENE, WRITTEN_AGAINST, __file__)        # only the real file is checked; a copy (--out) is always rebuilt
 SCENE.write_text(base_text())
 wordle_connections_spin.apply(SCENE)
 scene = Scene(SCENE)
@@ -43,4 +51,5 @@ doc = Doc(SCENE)
 for name in sys.argv[1:]:
     print(importlib.import_module(name).build(doc, scene, sheet))
 doc.save()
+regen_guard.stamp(SCENE, __file__)
 print("wrote", SCENE)

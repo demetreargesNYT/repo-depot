@@ -1,4 +1,6 @@
-"""One time (2026-11-02, kept for the finesse round): new ball loops for Chapter 1 cards 2, 3 and 4 (finesse round 4), and the rest-window fix to card 1's spin.
+"""Regenerates the whole loops of Chapter 1 cards 2, 3 and 4: refuses chapters/ch1/scene.rml once it has changed since commit 24d59d5 (tools/regen_guard.py).
+
+One time (2026-11-02, kept for the finesse round): new ball loops for Chapter 1 cards 2, 3 and 4 (finesse round 4), and the rest-window fix to card 1's spin.
 
     python3 tools/ch1_cards_234.py --cards 2            dry run: prints each beat and the clearances, writes nothing
     python3 tools/ch1_cards_234.py --cards 2 --write    rewrite chapters/ch1/scene.rml
@@ -23,6 +25,9 @@ from ball_motion import G, Path, arc, bezier, fall_height, gravity, pulse, relea
 from ball_physics import G as GP
 from rml_edit import Doc, bake
 from rml_read import Scene, chapter_dir
+import regen_guard
+
+WRITTEN_AGAINST = "24d59d5"     # b409b42~1: the file as it was before this work (see above)
 
 SCENE = chapter_dir("ch1") / "scene.rml"
 INTRO = 192
@@ -1280,7 +1285,7 @@ def main(argv):
     for c in cards:
         {2: card2, 3: card3, 4: card4, 31: card3_round4}[c](doc, "--write" in argv)
     if "--write" in argv:
-        doc.save()
+        regen_guard.save(doc, WRITTEN_AGAINST, __file__)
         print("wrote", SCENE)
     return 0
 

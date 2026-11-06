@@ -295,6 +295,80 @@ def piece_jitter(sheet, scene, intro, loop, n, lo, t_of, flags, skip_nodes, repe
             jitter_track(f"{name} {prop}", vals, prop, t_of, flags, skip=wrap)
 
 
+PARKED = 36                 # frames (0.6 s): the longest the ball may be motionless outside a declared rest (docs/ball-character.md)
+# Reported but not failing yet (2026-11-06): the reference rooms Wordle and Start, and eight more, break the rule as they stand, so it
+# fails nothing until Demetre rules on them (declare their rests in tools/ball_rests.json, or fix them). Then set this to True.
+PARKED_FAILS = False
+STILL_POS, STILL_TURN, STILL_SCALE = 0.3, 0.5, 0.005      # units, degrees, scale: less than this over the stretch is "motionless"
+RESTS = Path(__file__).resolve().parent / "ball_rests.json"
+
+
+def ball_tracks(sheet, anim, chain, frames):
+    """[(x, y, turn in degrees, scaleX, scaleY, seen)] of the ball on each frame: the chain's position, the turn and scale of every node
+    under the ball's top node (its spin pivot, its squash), and whether it can be seen (not faded out, not shrunk away, on the
+    artboard; a ball hidden by a clip inside an object can't be told apart from a visible one: declare that as a rest)."""
+    keys = sheet.anim_keys(anim)
+    nodes = list(chain[-1].iter("Node"))
+    # what decides whether the ball shows: its body (Ball_01_Base) and every node from it up to the ball's top node (not the other
+    # shapes under the ball, such as a clip's hidden source or a spare copy, which may be at opacity 0 all along)
+    body = next((e for e in chain[-1].iter("Shape") if e.get("name") == "Ball_01_Base"), None)
+    shapes = ([body] if body is not None else []) + [e for e in chain[-1].iter("Node") if body is not None and body in e.iter()]
+
+    def val(node, prop, f, default):
+        k = keys.get(node.get("id"), {}).get(prop)
+        return k.at(f) if k is not None else float(node.get(prop, default))
+    out = []
+    for f in frames:
+        x = sum(val(n, "x", f, 0) for n in chain)
+        y = sum(val(n, "y", f, 0) for n in chain)
+        turn = math.degrees(sum(val(n, "rotation", f, 0) for n in nodes))
+        sx = sy = 1.0
+        for n in nodes:
+            sx *= val(n, "scaleX", f, 1)
+            sy *= val(n, "scaleY", f, 1)
+        op = 1.0
+        for n in shapes:
+            op *= val(n, "opacity", f, 1)
+        seen = op > 0.05 and abs(sx * sy) > 0.01 and -60 < x < 1555 and -60 < y < 1127
+        out.append((x, y, turn, sx, sy, seen))
+    return out
+
+
+def rests_for(chapter, room):
+    """The rests declared for this room in tools/ball_rests.json: [(from, to, why)] in Finesse-panel seconds."""
+    try:
+        entries = json.loads(RESTS.read_text())["rests"]
+    except (OSError, ValueError, KeyError):
+        return []
+    return [(float(e["from"]), float(e["to"]), e.get("why", "")) for e in entries if e.get("chapter") == chapter and e.get("room") == room]
+
+
+def parked_report(tracks, t_of, loop_s, tmax, rests):
+    """Stretches of more than PARKED frames where the ball neither moves, turns nor squashes, outside a declared rest. tracks: one
+    entry per frame of the sequence (intro tail, then the loop twice); t_of(i): its Finesse time. A rest covers a frame when the
+    frame's time, or that time one loop earlier (the rest runs across the seam), falls inside it. Frames where the ball can't be seen
+    don't count, and nor does the stillness the sequence starts with (the ball waiting through its room's arrival, until its pieces
+    are in place: CLAUDE.md, "The ball's role")."""
+    def resting(i):
+        t = t_of(i)
+        return not tracks[i][5] or any(a <= tt <= b for a, b, _ in rests for tt in (t, t - loop_s, t + loop_s))
+    flags, i, n = [], 0, len(tracks)
+    while i < n:
+        x0, y0, r0, sx0, sy0, _ = tracks[i]
+        j = i
+        while j + 1 < n:
+            x, y, r, sx, sy, _ = tracks[j + 1]
+            if math.hypot(x - x0, y - y0) > STILL_POS or abs(r - r0) > STILL_TURN or abs(sx - sx0) > STILL_SCALE or abs(sy - sy0) > STILL_SCALE:
+                break
+            j += 1
+        length = sum(1 for k in range(i, j + 1) if not resting(k))
+        if length > PARKED and t_of(i) <= tmax and i > 0:
+            flags.append((t_of(i), f"PARKED: the ball is motionless for {(j - i + 1) / 60:.2f} s from {t_of(i):.2f} s ({length} frames outside a declared rest; "
+                                   f"the most is {PARKED}, or declare the rest in tools/ball_rests.json)"))
+        i = j + 1
+    return flags
+
+
 ACCEPTED = Path(__file__).resolve().parent / "ball_speed_accepted.json"
 
 
@@ -354,6 +428,14 @@ def main(argv):
         # Finesse timecode of sequence index i: intro frame lo + i, or 192 + loop frame (first pass); the second pass repeats the loop
         t_of = lambda i: (lo + i) / 60.0
         flags = contacts_report(seq, t_of, (192 + n + 40) / 60.0)
+        tracks = ball_tracks(sheet, intro, chain, range(lo, 192)) + ball_tracks(sheet, loop, chain, range(n)) * 2
+        rests = rests_for(chapter, room)
+        parked = parked_report(tracks, t_of, n / 60.0, (192 + n) / 60.0, rests)
+        parked = sorted({(round(t, 3), m_) for t, m_ in parked})
+        if PARKED_FAILS:
+            flags, parked = sorted(set(flags) | set(parked)), []
+        for a, b, why in rests:
+            print(f"declared rest {a:.2f} to {b:.2f} s: {why}")
         entries = accepted_for(chapter, room)
         print()
         open_ = print_flags("the ball", flags, entries)
@@ -362,6 +444,10 @@ def main(argv):
         tmax = (192 + n + 40) / 60.0
         jit = sorted({(round(t, 3), m_) for t, m_ in jit if t <= tmax})
         open_ += print_flags("jitter on the pieces", jit, entries)
+        if parked:
+            print(f"parked, reported only (PARKED_FAILS is off until Demetre rules on the rooms that break it): {len(parked)}")
+            for _, m_ in parked:
+                print(f"  - {m_}")
         print(f"\n{'PASS' if not open_ else 'FAIL'}  {room}: {open_} open flag{'s' if open_ != 1 else ''}" + ("" if not open_ else " (fix them, or ask Demetre to accept them in tools/ball_speed_accepted.json)"))
         return 1 if open_ else 0
     lo = int(argv[argv.index("--from") + 1]) if "--from" in argv else 120

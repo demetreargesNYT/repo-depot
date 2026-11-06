@@ -1,4 +1,6 @@
-"""Chapter 4 (scene chapter-4): the illustrator's ball journey brought in as they made it, with our standard ball (Demetre, 2026-11-03).
+"""Regenerates the whole Chapter 4 ball journey from the illustrator's file: refuses chapters/ch3/scene.rml once it has changed since commit d65c7ea (tools/regen_guard.py).
+
+Chapter 4 (scene chapter-4): the illustrator's ball journey brought in as they made it, with our standard ball (Demetre, 2026-11-03).
 
     python3 chapters/ch3/scripts/ch3_c4s1_import.py --write      once, on the scene as committed in d65c7ea
 
@@ -21,6 +23,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "tools"))
 from import_room import ILLUSTRATOR, Rig, read_keys, value_at
 from rml_edit import Doc, bake, num
+import regen_guard
+WRITTEN_AGAINST = "d65c7ea"     # the scene this was run on, once (see above)
 from rml_read import Scene, chapter_dir
 from rooms_sheet import Sheet
 
@@ -135,7 +139,7 @@ def main():
         ko2.set("objectId", ours)
         new += element_lines(ko2, 12, nid)
     doc.lines[b:b] = new
-    doc.save()
+    regen_guard.save(doc, WRITTEN_AGAINST, __file__)
 
     # ---- the rig (size and squash) and the dot's turn, on every frame
     jk = {kp.get("property"): read_keys(kp) for ko in ball.findall("KeyedObject") if ko.get("objectId") == joystick.get("id") for kp in ko.findall("KeyedProperty")}
@@ -154,7 +158,7 @@ def main():
     doc.set_prop(loop, b01, "scaleX", bake({f: size[f] * (1 + (SQUASH[0] - 1) * sq[f]) for f in range(n + 1)}, range(n + 1)))
     doc.set_prop(loop, b01, "scaleY", bake({f: size[f] * (1 + (SQUASH[1] - 1) * sq[f]) for f in range(n + 1)}, range(n + 1)))
     doc.set_prop(loop, spin, "rotation", bake(th, range(n + 1)))
-    doc.save()
+    regen_guard.save(doc, WRITTEN_AGAINST, __file__)
 
     # ---- the join: the intro (and so Waiting and Built) holds every Loop property at the Loop's first frame
     sc3 = Scene(SCENE)
@@ -169,7 +173,7 @@ def main():
             doc.set_prop(intro, oid, prop, [(0, v, "hold"), (INTRO - 1, v, "hold")])
             doc.set_prop(f"{ROOM} Waiting", oid, prop, [(0, v, "hold")])
             doc.set_prop(f"{ROOM} Built", oid, prop, [(0, v, "hold")])
-    doc.save()
+    regen_guard.save(doc, WRITTEN_AGAINST, __file__)
     turns = th[n] / (2 * math.pi)
     print(f"wrote {SCENE}: {ROOM} Loop is their Ball ({n} frames) on: " + ", ".join(f"{a} -> {b}" for a, b in mapped)
           + f"; the dot turns {turns:.2f} times a loop")
