@@ -8,6 +8,46 @@
       "to": 3.25,
       "why": "the bird drops onto the ball in Start's intro and lands; the ball holds still under it until the idle sway begins",
       "approved": "Demetre, 2026-11-06"
+    },
+    {
+      "chapter": "ch1",
+      "room": "Chapter 1 Card 1",
+      "from": 12.9,
+      "to": 15.95,
+      "why": "out of sight behind the cuckoo clock's door for the 3 s pause before it slides out again (across the loop's seam)",
+      "approved": "Demetre, 2026-11-06 (rests for a ball hidden inside an object)"
+    },
+    {
+      "chapter": "ch2",
+      "room": "Spelling Bee",
+      "from": 12.43,
+      "to": 13.93,
+      "why": "out of sight inside the mug (centre y 734, below the rim) before it comes out again",
+      "approved": "Demetre, 2026-11-06 (rests for a ball hidden inside an object)"
+    },
+    {
+      "chapter": "ch2",
+      "room": "The Crossword",
+      "from": 7.73,
+      "to": 8.86,
+      "why": "out of sight inside the hollow bar (centre y 628, below its top edge at 598) before the next run",
+      "approved": "Demetre, 2026-11-06 (rests for a ball hidden inside an object)"
+    },
+    {
+      "chapter": "ch2",
+      "room": "The Mini",
+      "from": 10.4,
+      "to": 11.25,
+      "why": "out of sight inside F1 while R turns its first quarter",
+      "approved": "Demetre, 2026-11-06 (rests for a ball hidden inside an object)"
+    },
+    {
+      "chapter": "ch2",
+      "room": "The Mini",
+      "from": 12.88,
+      "to": 14.13,
+      "why": "out of sight inside T while R turns its second quarter",
+      "approved": "Demetre, 2026-11-06 (rests for a ball hidden inside an object)"
     }
   ]
 }

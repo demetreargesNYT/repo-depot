@@ -4,7 +4,10 @@ Everything returns plain numbers per frame (60 per second). Positions are in art
 """
 import math
 
-G = 0.2                       # px per frame squared: the fall every flight is checked against (a 30-frame fall drops 90 px)
+# Artboard units per frame squared: the project's one gravity (CLAUDE.md, "The ball's physics"; ball_physics.G and ball_speed's check).
+# It was 0.2 until 2026-11-06; Chapter 1 cards 2 to 4 (tools/ch1_cards_234.py, now history) were built with that, and card 4's softer
+# hops are accepted as they are (tools/ball_speed_accepted.json).
+G = 0.40                      # a 30-frame fall drops 180
 
 
 def arc(p0, p1, n, h, xe=1.0):

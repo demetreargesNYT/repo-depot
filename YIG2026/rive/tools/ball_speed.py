@@ -296,9 +296,58 @@ def piece_jitter(sheet, scene, intro, loop, n, lo, t_of, flags, skip_nodes, repe
 
 
 PARKED = 36                 # frames (0.6 s): the longest the ball may be motionless outside a declared rest (docs/ball-character.md)
-# Reported but not failing yet (2026-11-06): the reference rooms Wordle and Start, and eight more, break the rule as they stand, so it
-# fails nothing until Demetre rules on them (declare their rests in tools/ball_rests.json, or fix them). Then set this to True.
-PARKED_FAILS = False
+# PARKED fails only for a room changed after 2026-11-06 (Demetre, 2026-11-06): a room whose own pieces and timelines differ from the
+# chapter's last commit of that day. The rooms as they stood then keep reporting their stillness without failing, until he rules on
+# each the next time it is touched (docs/ball-character.md lists them).
+PARKED_FAILS = "after 2026-11-06"
+PARKED_CUTOFF = "2026-11-07 00:00"
+
+
+def chapter_name(arg, room):
+    """ch1, ch2 or ch3 for a chapter name, or for a copy of one (a scratch folder): the chapter whose file has this room."""
+    if arg in ("ch1", "ch2", "ch3"):
+        return arg
+    for ch in ("ch1", "ch2", "ch3"):
+        p = Path(__file__).resolve().parent.parent / "chapters" / ch / "scene.rml"
+        if f'name="{room} Room"' in p.read_text():
+            return ch
+    return arg
+
+
+def room_print(root, room):
+    """The room's own content: its Room node's whole subtree and every timeline named after it, as text. Ids and the references to
+    them are blanked (Chapter 2's build renumbers every id on each rebuild, which changes no room), and so is the layout whitespace."""
+    import xml.etree.ElementTree as ET
+    parts = []
+    for e in root.iter():
+        if (e.tag == "Node" and e.get("name") == f"{room} Room") or (e.tag == "LinearAnimation" and (e.get("name") or "").startswith(f"{room} ")):
+            text = ET.tostring(e, encoding="unicode")
+            text = re.sub(r'"\d+:\d+"', '"#"', text)
+            parts.append(re.sub(r">\s+<", "><", text))
+    return "\n".join(sorted(parts))
+
+
+def parked_fails_for(ch, room, scene):
+    """True when PARKED should fail for this room: it differs from (or didn't exist in) the chapter's last commit before the cutoff.
+    Before the cutoff (on 2026-11-06 itself) nothing fails."""
+    import datetime
+    import subprocess
+    import xml.etree.ElementTree as ET
+    if not PARKED_FAILS:
+        return False
+    cutoff = datetime.datetime.strptime(PARKED_CUTOFF, "%Y-%m-%d %H:%M")
+    if datetime.datetime.now() < cutoff:
+        return False
+    repo = Path(__file__).resolve().parent.parent
+    rel = f"chapters/{ch}/scene.rml"
+    sha = subprocess.run(["git", "log", "-1", f"--before={PARKED_CUTOFF}", "--format=%H", "--", rel], cwd=repo,
+                         capture_output=True, text=True).stdout.strip()
+    if not sha:
+        return True
+    old = subprocess.run(["git", "show", f"{sha}:./{rel}"], cwd=repo, capture_output=True, text=True)
+    if old.returncode:
+        return True
+    return room_print(ET.fromstring(old.stdout), room) != room_print(scene.root, room)
 STILL_POS, STILL_TURN, STILL_SCALE = 0.3, 0.5, 0.005      # units, degrees, scale: less than this over the stretch is "motionless"
 RESTS = Path(__file__).resolve().parent / "ball_rests.json"
 
@@ -429,14 +478,15 @@ def main(argv):
         t_of = lambda i: (lo + i) / 60.0
         flags = contacts_report(seq, t_of, (192 + n + 40) / 60.0)
         tracks = ball_tracks(sheet, intro, chain, range(lo, 192)) + ball_tracks(sheet, loop, chain, range(n)) * 2
-        rests = rests_for(chapter, room)
+        ch = chapter_name(chapter, room)                      # a copy (a scratch folder) reads its chapter's rests and accepted flags
+        rests = rests_for(ch, room)
         parked = parked_report(tracks, t_of, n / 60.0, (192 + n) / 60.0, rests)
         parked = sorted({(round(t, 3), m_) for t, m_ in parked})
-        if PARKED_FAILS:
+        if parked and parked_fails_for(ch, room, s):
             flags, parked = sorted(set(flags) | set(parked)), []
         for a, b, why in rests:
             print(f"declared rest {a:.2f} to {b:.2f} s: {why}")
-        entries = accepted_for(chapter, room)
+        entries = accepted_for(ch, room)
         print()
         open_ = print_flags("the ball", flags, entries)
         jit = []
@@ -445,7 +495,7 @@ def main(argv):
         jit = sorted({(round(t, 3), m_) for t, m_ in jit if t <= tmax})
         open_ += print_flags("jitter on the pieces", jit, entries)
         if parked:
-            print(f"parked, reported only (PARKED_FAILS is off until Demetre rules on the rooms that break it): {len(parked)}")
+            print(f"parked, reported only (this room is unchanged since 2026-11-06; it fails once the room changes): {len(parked)}")
             for _, m_ in parked:
                 print(f"  - {m_}")
         print(f"\n{'PASS' if not open_ else 'FAIL'}  {room}: {open_} open flag{'s' if open_ != 1 else ''}" + ("" if not open_ else " (fix them, or ask Demetre to accept them in tools/ball_speed_accepted.json)"))

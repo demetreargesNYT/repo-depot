@@ -32,7 +32,7 @@ Also in the reference rooms: Wordle's **dribble** (a landing that bounces twice 
 - Snappy hops are 0.35 to 0.45 s in the air (Wordle's are 0.43 and 0.5); the geometry decides when one must be longer (the Mini's hops between cubes are 0.47 to 0.97 s).
 - Squash maximums: CLAUDE.md, "Squash and stretch stay subtle".
 
-Where the reference rooms differ from these, as measured: Wordle's landings squash 20 to 22% and card 4's 9% (CLAUDE.md's maximum is 8%); Wordle stays fully still 2.35 s around its loop's seam; no room glances as fast as 4 to 6 frames or peeks as long as 0.8 s. Don't copy those parts; ask Demetre if a room seems to need them.
+Where the reference rooms differ from these, as measured: Wordle stays fully still 2.35 s around its loop's seam; no room glances as fast as 4 to 6 frames or peeks as long as 0.8 s. Don't copy those parts; ask Demetre if a room seems to need them.
 
 Beats are chosen to fit the moment, never listed in order. A loop that performs every beat is a routine, not a character.
 
@@ -54,11 +54,11 @@ New (2026-11-06): **PARKED**, a stretch of more than 36 frames outside a declare
 
 **Declaring a rest:** add a named range to `tools/ball_rests.json`: chapter, room, `from` and `to` in Finesse-panel seconds (the intro is 0 to 3.2; a rest across the loop's seam may end after the loop's end), why, and who approved it. It isn't a comment in `scene.rml`, because a `rive pull` rewrites that file and drops comments.
 
-**It reports and does not fail yet.** The reference rooms break it as they stand, so `PARKED_FAILS` in `tools/ball_speed.py` stays off until Demetre rules on them:
+**It fails only for rooms changed after 2026-11-06.** A room fails on PARKED when its own pieces and timelines differ from its chapter's last commit of that day (ids aside); the rooms as they stood then keep reporting their stillness without failing (`PARKED_FAILS`, `PARKED_CUTOFF` in `tools/ball_speed.py`). Declared on 2026-11-06, the ball hidden inside an object or waiting under its room's arrival: Start (under the bird, 1.77 to 3.25 s), Chapter 1 card 1 (behind the clock's door), Spelling Bee (in the mug), The Crossword (in the hollow bar), The Mini (in F1, then in T, while R turns). Still reported, real stillness, for Demetre to rule on the next time each room is touched:
 
-| Room | Stillness |
+| Room | Visible stillness |
 |---|---|
-| Wordle | 0.77 s from 3.07 s (after the intro's landing); 2.35 s from 8.68 s (the end of the loop and across the seam) |
-| Start | 1.48 s from 1.77 s (under the bird, before the sway) |
-| Chapter 1 card 4 | passes |
-| Also reported | Chapter 1 cards 1 and 5, Community, Spelling Bee, The Crossword, The Mini, End |
+| Wordle | 0.77 s from 3.07 s, after the intro's landing; 2.35 s from 8.68 s, the end of the loop and across the seam |
+| Chapter 1 card 5 | 0.70 s from 3.10 s and 0.82 s from 10.75 s on the floor before a try; 1.08 s from 7.93 s on the cube's top beside the bot |
+| Community | 2.28 s from 2.13 s and 7.08 s from 5.35 s, the ball with the bird on top between hops |
+| End | the whole 5 s loop, the ball in the pile |
