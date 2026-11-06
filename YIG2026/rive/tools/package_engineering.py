@@ -57,7 +57,7 @@ def build(chapter, work, src=None):
             root.remove(ab)
             removed.append(ab.get("name"))
     (dst / "scene.rml").write_text(ser(root))
-    r = subprocess.run([RIVE, str(dst), "--once"], capture_output=True, text=True)
+    r = subprocess.run([RIVE, str(dst), "--publish"], capture_output=True, text=True)
     out = sorted((dst / "build").glob("*.riv"), key=lambda p: p.stat().st_mtime)
     if r.returncode or not out:
         fail(f"building {chapter} failed:\n{r.stdout}\n{r.stderr}")

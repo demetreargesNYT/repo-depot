@@ -1,7 +1,7 @@
 """Print the byte size of a Rive file, without the raw Rive command line.
 
     python3 tools/rive_size.py <file.riv>             its size on disk
-    python3 tools/rive_size.py <project folder>       builds the project (`rive <folder> --once`, which writes the .riv into
+    python3 tools/rive_size.py <project folder>       builds the project (`rive <folder> --publish`, which writes the .riv into
                                                       the folder's build/ as any build does) and prints the size it reports
 
 A folder given as 1, 2 or 3 (or ch1, ch2, ch3) means chapters/<ch>. Nothing is pushed or published. Exit code 0 on success,
@@ -40,7 +40,7 @@ def main(argv):
         print(f"rive_size: {argv[0]!r} is neither a .riv file nor a Rive project folder (no rive.yaml)")
         return 1
     try:
-        r = subprocess.run([RIVE, str(target), "--once"], capture_output=True, text=True, timeout=LIMIT)
+        r = subprocess.run([RIVE, str(target), "--publish"], capture_output=True, text=True, timeout=LIMIT)
     except subprocess.TimeoutExpired:
         print(f"rive_size: the build hit the {LIMIT} s limit")
         return 1

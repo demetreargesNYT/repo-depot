@@ -60,9 +60,9 @@ function ensureBuilt(project = projectDir) {
   if (built && fs.statSync(built).mtimeMs >= scene) return Promise.resolve({ built, rebuilt: false });
   if (!building.has(project)) {
     building.set(project, new Promise((resolve, reject) => {
-      execFile(rive, [project, "--once"], (err, stdout, stderr) => {
+      execFile(rive, [project, "--publish"], (err, stdout, stderr) => {   // --once was removed in CLI 1.9.1; --publish writes the .riv
         building.delete(project);
-        if (err) return reject(new Error(`rive --once failed:\n${stdout}\n${stderr}`));
+        if (err) return reject(new Error(`rive --publish failed:\n${stdout}\n${stderr}`));
         resolve({ built: newestBuild(project), rebuilt: true });
       });
     }));

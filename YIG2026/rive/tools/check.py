@@ -40,13 +40,17 @@ def rive_json(args):
 def build_checks(project):
     out = []
     v = rive_json([str(project), "--verify"])
-    out.append((v.get("success", False) and not v.get("errors"), f"rive --verify: {len(v.get('errors', []))} error(s), {len(v.get('warnings', []))} warning(s)"))
+    out.append((v.get("success", False) and not v.get("errors"), f"rive --verify: {len(v.get('errors', []))} error(s), {len(v.get('warnings', []))} warning(s) (warnings don't fail the check)"))
     ins = subprocess.run([RIVE, "inspect", str(project), "--summary"], capture_output=True, text=True)
     try:
-        problems = json.loads(ins.stdout)["problems"]
+        found = json.loads(ins.stdout)["problems"]
     except (json.JSONDecodeError, KeyError):
-        problems = ["inspect output could not be read"]
-    out.append((not problems, f"rive inspect: {len(problems)} problem(s)" + ("" if not problems else f" {problems[:2]}")))
+        found = [{"severity": "error", "message": "inspect output could not be read"}]
+    # Rive CLI 1.9.1 reports warnings (mostly "interpolated-step", a linear key that jumps a whole value in one frame) beside errors.
+    # Only errors fail the check; the warnings are counted, because our loops use such steps on purpose.
+    problems = [p for p in found if not isinstance(p, dict) or p.get("severity", "error") == "error"]
+    warned = len(found) - len(problems)
+    out.append((not problems, f"rive inspect: {len(problems)} error(s), {warned} warning(s) (warnings don't fail the check)" + ("" if not problems else f" {problems[:2]}")))
     return out
 
 
@@ -139,7 +143,7 @@ def rooms_are_separate(chapter):
             continue
         for ko in anim.findall("KeyedObject"):
             oid = ko.get("objectId")
-            if name.endswith(" Colors") or name == "Chapter 3 Dim":      # the one named exception (2026-11-05), see check_chapter.DIM_POSE
+            if name.endswith(" Colors"):
                 ok = oid in background
             else:
                 ok = room_of.get(oid) == owner
