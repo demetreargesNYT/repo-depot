@@ -76,3 +76,14 @@ class Parked(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ParkedLateStart(unittest.TestCase):
+    def test_a_run_that_starts_after_a_squash_is_found(self):
+        # a landing squash for 10 frames, then 50 frames with only a dot sway: the run from the first frame breaks at the squash, but the
+        # run from the frame after it is the parked ball
+        import math
+        landing = [(100.0, 200.0, 0.0, 1.7, 1.7 * (1 - 0.1 * math.sin(math.pi * i / 10)), True) for i in range(10)]
+        sway = [(100.0, 200.0, 1.2 * math.sin(i / 6.0), 1.7, 1.7, True) for i in range(50)]
+        flags = B.parked_report(landing + sway, lambda i: 5.0 + i / 60.0, 100.0, 1000.0, [])
+        self.assertEqual(len(flags), 1)

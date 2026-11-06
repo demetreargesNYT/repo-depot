@@ -457,24 +457,34 @@ def parked_report(tracks, t_of, loop_s, tmax, rests):
     def resting(i):
         t = t_of(i)
         return not tracks[i][5] or any(a <= tt <= b for a, b, _ in rests for tt in (t, t - loop_s, t + loop_s))
-    flags, i, n = [], 0, len(tracks)
-    while i < n:
-        x, y, r, sx, sy, _ = tracks[i]
-        lo_ = [x, y, r, sx, sy]
+    n = len(tracks)
+    quiet = lambda lo_, hi_: (hi_[0] - lo_[0] <= STILL_POS and hi_[1] - lo_[1] <= STILL_POS and hi_[2] - lo_[2] <= STILL_TURN
+                              and hi_[3] - lo_[3] <= STILL_SCALE * hi_[3] and hi_[4] - lo_[4] <= STILL_SCALE * hi_[4])
+    # for every start frame, the longest quiet run from it; a run that starts a few frames later can outlast one that starts at an
+    # outlier (a landing squash), so every start is tried, not just the frame after the last run
+    runs = []
+    for i in range(n):
+        lo_ = list(tracks[i][:5])
         hi_ = list(lo_)
         j = i
         while j + 1 < n:
-            nxt = tracks[j + 1][:5]
-            l2, h2 = [min(a, b) for a, b in zip(lo_, nxt)], [max(a, b) for a, b in zip(hi_, nxt)]
-            if h2[0] - l2[0] > STILL_POS or h2[1] - l2[1] > STILL_POS or h2[2] - l2[2] > STILL_TURN or (h2[3] - l2[3]) > STILL_SCALE * h2[3] or (h2[4] - l2[4]) > STILL_SCALE * h2[4]:
+            q = tracks[j + 1][:5]
+            l2, h2 = [min(a, b) for a, b in zip(lo_, q)], [max(a, b) for a, b in zip(hi_, q)]
+            if not quiet(l2, h2):
                 break
             lo_, hi_ = l2, h2
             j += 1
         length = sum(1 for k in range(i, j + 1) if not resting(k))
         if length > PARKED and t_of(i) <= tmax:
-            flags.append((t_of(i), f"PARKED: the ball is motionless for {(j - i + 1) / 60:.2f} s from {t_of(i):.2f} s ({length} frames outside a declared rest; "
-                                   f"the most is {PARKED}, or declare the rest in tools/ball_rests.json)"))
-        i = j + 1
+            runs.append((length, i, j))
+    flags, taken = [], set()
+    for length, i, j in sorted(runs, reverse=True):         # the longest first; runs that overlap one already reported are the same stillness
+        if any(k in taken for k in range(i, j + 1)):
+            continue
+        taken.update(range(i, j + 1))
+        flags.append((t_of(i), f"PARKED: the ball is motionless for {(j - i + 1) / 60:.2f} s from {t_of(i):.2f} s ({length} frames outside a declared rest; "
+                               f"the most is {PARKED}, or declare the rest in tools/ball_rests.json)"))
+    flags.sort()
     return flags
 
 
