@@ -142,6 +142,11 @@ class Cube:
             return rotate(p, (0.0, -h[1], h[2]), (1.0, 0.0, 0.0), -pose["lid"])      # the front edge rises
         if part == "lidl" and pose.get("lidl"):
             return rotate(p, (-h[0], -h[1], 0.0), (0.0, 0.0, 1.0), -pose["lidl"])   # hinged on its left edge: the right edge rises
+        if part == "flap" and pose.get("flap"):
+            # a side face hinged on its bottom edge, falling outwards to the left: the top edge swings out and down
+            a = pose["flap"]
+            dx, dy = p[0] + h[0], p[1] - h[1]
+            return (-h[0] + dx * math.cos(a) + dy * math.sin(a), h[1] - dx * math.sin(a) + dy * math.cos(a), p[2])
         if part == "door" and pose.get("door"):
             return turn_y(p, (-h[0], 0.0, -h[2]), pose["door"])                         # the free edge swings towards the viewer
         return p
@@ -244,8 +249,10 @@ class Face:
 
     Every shape's vertices are keyed to its corners, and its opacity to whether the face faces the viewer."""
 
-    def __init__(self, cube, face, part=None, flip=False, pattern=None, fill=LIGHT, name=None, show=None, fixed=None, two_sided=False):
+    def __init__(self, cube, face, part=None, flip=False, pattern=None, fill=LIGHT, name=None, show=None, fixed=None, two_sided=False,
+                 glide_min=None, wrap_glide=False):
         self.fixed, self.two_sided = fixed, two_sided     # fixed: a pose it is always drawn at (no vertex keys); two_sided: no culling
+        self.glide_min, self.wrap_glide = glide_min, wrap_glide    # glide_min: hides this short still glide; wrap_glide: after its last showing it glides to the seam pose
         self.cube, self.face, self.part, self.flip = cube, face, part, flip
         self.pattern, self.fill = pattern, fill
         self.name = name or f"{cube.name} {face.title()}" + (f" {part.title()}" if part else "") + (" Inside" if flip else "")
@@ -310,7 +317,12 @@ class Face:
                             continue
                         a = max((h for h in shown if h < g), default=None)
                         b = min((h for h in shown if h > g), default=None)
-                        if a is None or b is None or b - a < HIDDEN_GLIDE:
+                        gm = HIDDEN_GLIDE if self.glide_min is None else self.glide_min
+                        if self.wrap_glide and a is not None and b is None and n - 1 - a >= gm:
+                            b = n - 1        # after its last showing it glides on to where the seam leaves it
+                            if g == b:
+                                continue
+                        if a is None or b is None or b - a < gm:
                             continue        # before the first or after the last frame it shows (the seam), or a short hide
                         u = (g - a) / (b - a)
                         pts[g] = (pts[a][0] + (pts[b][0] - pts[a][0]) * u, pts[a][1] + (pts[b][1] - pts[a][1]) * u)
