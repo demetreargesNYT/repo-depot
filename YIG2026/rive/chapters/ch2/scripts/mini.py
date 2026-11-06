@@ -518,6 +518,7 @@ def top_ok(pts):
     return all(screen(q)[1] - R_BALL >= COPY_Y + 6 for q in pts)
 
 
+HIGH = (30.0, 40.0, 56.0, 80.0)               # the travelling hops go up before they go along: a real apex, at least 30 above the higher end
 HS = (10.0, 18.0, 28.0, 40.0, 56.0, 80.0)      # how high above the higher end the peak may be, lowest first
 
 
@@ -671,9 +672,9 @@ def build(doc, scene, sheet):
         d.update(kw)
         return all_shells(d)
 
-    def run_hop(p1, Ts, shells, zps=(None,), xps=(None,), apex_limit=True, under=(), **kw):
+    def run_hop(p1, Ts, shells, zps=(None,), xps=(None,), apex_limit=True, under=(), Hs=HS, **kw):
         extra = lambda pts: (top_ok(pts) if apex_limit else True) and all(behind_ok(pts, k_, f_) for k_, f_ in under)
-        T, zp, xp, H, worst, ok = plan_hop(P.at, p1, Ts, shells, zps, xps, extra=extra)
+        T, zp, xp, H, worst, ok = plan_hop(P.at, p1, Ts, shells, zps, xps, extra=extra, Hs=Hs)
         assert ok, (tuple(round(v) for v in P.at), tuple(round(v) for v in p1), "no clear flight", T, zp, xp, H, round(worst, 1))
         return T, zp, xp, H
 
@@ -685,7 +686,7 @@ def build(doc, scene, sheet):
     seg("move", "F1's lid opens (eased lift, past open, settle); the ball gathers inside", n0)
     n0 = P.now
     sh_open = poses_for_plan(F1={"lid": OPEN_PLAN})
-    T1, zp1, xp1, H1 = run_hop(ON_F2, range(24, 56), sh_open, (None,), [None] + [(a, 1.0) for a in (0.0, 0.1, 0.2, 0.3, 0.4, 0.5)])
+    T1, zp1, xp1, H1 = run_hop(ON_F2, range(32, 60), sh_open, (None,), [None] + [(a, 1.0) for a in (0.0, 0.1, 0.2, 0.3, 0.4, 0.5)], Hs=HIGH)
     f_h1 = P.now
     P.hop(ON_F2, T1, gather=0.10, stretch=0.05, zp=zp1, xp=xp1, H=H1, land_amp=0.18,
           glances=[(0.25 * T1, math.radians(-10)), (0.65 * T1, math.radians(8))], label="out of F1 onto F2's lid")
@@ -696,11 +697,11 @@ def build(doc, scene, sheet):
     climb_xp = [None, (0.0, 1.0), (0.2, 1.0), (0.4, 1.0)]
     climb_zp = [None] + [(a_, b_) for a_ in (0.0, 0.2, 0.35, 0.5) for b_ in (0.6, 0.8, 0.95)]
     for _ in range(3):                                         # the landing roll carries on at the speed the climb arrives with: pick the landing so it ends about x 885
-        T2, zp2, xp2, H2 = run_hop(ON_T, range(24, 56), sh_open, climb_zp, climb_xp)
+        T2, zp2, xp2, H2 = run_hop(ON_T, range(32, 60), sh_open, climb_zp, climb_xp, Hs=HIGH)
         pts_ = hop_points(P.at, ON_T, T2, zp2, xp2, False, H2)
         v_end = pts_[-1][0] - pts_[-2][0]
         ON_T = (885.0 - 0.8 * v_end * 16 / 2, ON_T[1], ON_T[2])
-    T2, zp2, xp2, H2 = run_hop(ON_T, range(24, 56), sh_open, climb_zp, climb_xp)
+    T2, zp2, xp2, H2 = run_hop(ON_T, range(32, 60), sh_open, climb_zp, climb_xp, Hs=HIGH)
     pts_ = hop_points(P.at, ON_T, T2, zp2, xp2, False, H2)
     v_end = pts_[-1][0] - pts_[-2][0]
     f_h2 = P.now
@@ -722,25 +723,34 @@ def build(doc, scene, sheet):
     x_lo, x_hi = 858.0, 902.0
     ty = YTT
 
-    def beat_pair(dx, n1, n2, gl=None, mid=4):
-        """A roll out and the same roll back (the dot is up again), with a beat between."""
-        d = dx if x_lo <= P.at[0] + dx <= x_hi else ((x_hi if dx > 0 else x_lo) - P.at[0])
+    def room(dx):
+        """A roll of dx that stays on T's top: if it would run out of top, it goes the other way."""
+        x = P.at[0]
+        for c in (dx, -dx):
+            if x_lo <= x + c <= x_hi:
+                return c
+        return max(x_lo, min(x_hi, x + dx)) - x
+
+    def beat_pair(dx, n1, n2, gl=None, mid=6):
+        """A roll out and the same roll back (the dot is up again), with a beat between: visible (10 to 14 px), like Wordle's idle."""
+        d = room(dx)
         P.roll_snap(d, n1, gl=gl)
         P.hold(mid, sway=math.radians(1.2), period=12)
         P.roll_snap(-d, n2, gl=0.0)
 
-    def beat_hop(n):
-        P.squash_to(-0.09, 9)                                  # a visible gather, then the count
-        P.hop((P.at[0], ty, P.at[2]), n, gather=0.09, stretch=0.04, H=26.0, land_amp=0.15, label="little hop on T")
-        P.land(0.0, 20, 0.15)
+    def beat_hop(n, dx=0.0):
+        """A count: a small hop that travels dx along T's top (10 to 14 px), with a visible gather, landing into a short roll."""
+        d = room(dx)
+        P.squash_to(-0.09, 9)
+        vx_, *_ = P.hop((P.at[0] + d, ty, P.at[2]), n, gather=0.09, stretch=0.04, H=34.0, land_amp=0.15, label="little hop on T")
+        P.land(0.9 * vx_, 22, 0.15)
 
-    beats = [lambda: (P.glance_to(math.radians(-10), 7), P.hold(4, sway=math.radians(1.0), period=14)),
-             lambda: beat_pair(-24, 13, 14, gl=math.radians(-5)),
-             lambda: beat_hop(24),
-             lambda: beat_pair(+32, 15, 15, gl=math.radians(8), mid=6),
-             lambda: (P.glance_to(math.radians(-6), 7), P.hold(3, sway=math.radians(1.0), period=12)),
-             lambda: beat_hop(24),
-             lambda: beat_pair(-18, 12, 12)]
+    beats = [lambda: (P.glance_to(math.radians(-10), 5), P.hold(1, sway=math.radians(1.0), period=14)),
+             lambda: beat_pair(-13, 12, 12, gl=math.radians(-5), mid=3),
+             lambda: beat_hop(30, +12),
+             lambda: beat_pair(+14, 12, 12, gl=math.radians(8), mid=3),
+             lambda: beat_hop(30, -12),
+             lambda: beat_pair(-12, 12, 12, mid=3)]
     k = 0
     while P.now < f_h3 - 12:
         n_before = P.now
@@ -749,7 +759,15 @@ def build(doc, scene, sheet):
         if P.now > f_h3 - 8:                                   # that beat does not fit: leave it out and settle
             P.truncate(n_before)
             break
+    while f_h3 - P.now > 44:                                   # what is left of the wait is filled with rolls, never a still stretch
+        d = room(-12 if P.at[0] > 880 else 12)
+        P.roll_snap(d, 14)
+        P.hold(8, sway=math.radians(1.2), period=12)
+    R_ = f_h3 - P.now
     P.glance_to(0.0, 6)
+    R_ = f_h3 - P.now
+    if R_ >= 12:                                               # one last roll that takes up what is left of the wait
+        P.roll_to(P.at[0] + room(-10 if P.at[0] > 880 else 10), R_)
     assert P.now <= f_h3, ("the idle runs over", P.now, f_h3)
     P.hold(f_h3 - P.now, sway=math.radians(1.0), period=16)
     seg("move", "it idles on T's top, rolling and glancing; F1 turns a quarter, a beat, a quarter", f_idle0)
@@ -759,8 +777,8 @@ def build(doc, scene, sheet):
     P.squash_to(-0.10, 9)
     kf = 0.12 * 22 / 2                                         # the landing roll carries it on by kf of the flight's sideways speed
     xs3 = P.at[0]
-    ON_L0 = ((639.0 + kf * xs3 / 26) / (1 + kf / 26), YT, 96.0)    # land so the roll ends at about x 639, clear of F1's open lid
-    T3, zp3, xp3, H3 = run_hop(ON_L0, list(range(24, 41)) + list(range(41, 70, 2)), poses_for_plan(), [None, (0.0, 0.5), (0.3, 0.8)], [None, (0.0, 1.0), (0.1, 1.0)])
+    ON_L0 = ((634.0 + kf * xs3 / 26) / (1 + kf / 26), YT, 96.0)    # land so the roll ends at about x 639, clear of F1's open lid
+    T3, zp3, xp3, H3 = run_hop(ON_L0, list(range(32, 41)) + list(range(41, 70, 2)), poses_for_plan(), [None, (0.0, 0.5), (0.3, 0.8)], [None, (0.0, 1.0), (0.1, 1.0)], Hs=HIGH)
     f_h3b = P.now
     vx3, *_ = P.hop(ON_L0, T3, gather=0.10, stretch=0.05, zp=zp3, xp=xp3, H=H3, land_amp=0.18, label="across to L0")
     marks["h3"] = (f_h3b, P.now - 1)
@@ -769,16 +787,17 @@ def build(doc, scene, sheet):
 
     # ------------------------------------------------------------ 4 in: F1's lid opens, the ball jumps in, the lid shuts at once
     n0 = P.now
-    P.glance_to(GL_UP * 1.6, 10)
+    x_l0 = P.at[0]
+    P.roll_to(x_l0 + 10.0, 14, gl=GL_UP * 1.6)                 # it rolls a touch right, its dot looking up at F1 ...
     f_open4 = P.now
     lid_f1.append((P.now, "open", FULL))
-    P.glance_to(math.radians(6), 12)
+    P.roll_to(x_l0, 16, gl=math.radians(6))                    # ... and back as the lid swings up
     P.squash_to(-0.10, 12)                                     # the big leap: a bigger, longer gather
     P.hold(max(0, open_n(FULL) - 30 + 2))
     seg("move", "L0's top: the ball looks at F1, whose lid opens, and gathers", n0)
     n0 = P.now
     sh4 = poses_for_plan(F1={"lid": OPEN_PLAN})
-    T4, zp4, xp4, H4 = run_hop(LAND_F1, range(30, 100, 2), sh4, [None, (0.0, 0.4), (0.1, 0.5), (0.2, 0.6)],
+    T4, zp4, xp4, H4 = run_hop(LAND_F1, range(30, 140, 2), sh4, [None, (0.0, 0.4), (0.1, 0.5), (0.2, 0.6), (0.0, 0.7), (0.2, 0.8)],
                                [(a_, 1.0) for a_ in (0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7)], under=(("F1", "left"),))
     f_h4 = P.now
     P.hop(LAND_F1, T4, gather=0.10, stretch=0.04, flip=FLIP, zp=zp4, xp=xp4, H=H4, land_amp=0.10,
@@ -855,9 +874,9 @@ def build(doc, scene, sheet):
     n0 = P.now
     f_lift = P.now
     lid_l0.append((P.now, "open", FULL))
-    P.glance_to(GL_UP * 1.4, 10)
-    P.glance_to(math.radians(4), 12)
-    P.hold(max(0, open_n(FULL) - 22 + 2))                     # the lid is swinging up
+    x_end = P.at[0]
+    P.roll_to(x_end - 9.0, 18, gl=GL_UP * 1.4)                  # it rolls back a touch, its dot looking up at the lid ...
+    P.roll_to(x_end, 16, gl=math.radians(4))                    # ... and forward again while the lid swings up
     P.roll_to(704.0, 14, gl=0.0)                               # it steps up to the edge
     P.squash_to(-0.10, 12)                                     # the big leap: a bigger, longer gather
     seg("move", "L0's lid lifts (hinged at the back); the ball looks and gathers", n0)
@@ -1213,6 +1232,11 @@ def build(doc, scene, sheet):
                 moving_tracks += 1
     pieces.append((art.id, "opacity", lambda g: 1.0, lambda fr: 0.0 if fr < LANDED else 1.0))
 
+    if os.environ.get("MINI_DUMP"):                           # the ball on the screen, frame by frame (for the stillness check)
+        with open(os.environ["MINI_DUMP"], "w") as fh_:
+            for g_ in range(Lc + 1):
+                x_, y_ = screen(P.p[g_])
+                fh_.write(f"{g_},{x_:.2f},{y_:.2f},{P.mode[g_]},{P.sq[g_]:.3f},{1 if g_ in hset else 0}\n")
     # ---------------------------------------------------------------- the ball's keys
     cyc = Cycle(Lc)
     for g in range(Lc + 1):
