@@ -331,6 +331,68 @@ class Face:
         return out
 
 
+# ---- a quarter turn, drawn --------------------------------------------------------------------------------------------------------
+SIDES = ("front", "left", "back", "right")
+QUARTER = math.pi / 2
+
+
+def twist_polys(cube, turn):
+    """The side faces and the top of a cube turned `turn` radians (negative: left to right), as flat polygons of six vertices (four for the
+    top), clockwise, in the drawing. A true rotation cannot be drawn in the art's oblique projection (the base would shear: the nearest
+    corner dips below the floor line, the far one rises, the top goes lopsided), so the turn is a construction that keeps these rules at
+    every angle and is exactly the art at 0 and 90 degrees: the bottom edge of the front stays on the floor line (no corner rises or dips),
+    every edge is vertical, horizontal or along the room's depth direction (so top and bottom edges are parallel and the receding edges
+    match every still cube), and the front widens to W (cos + sin), 41 percent more at 45 degrees, so the top never gets thinner.
+    Within a quarter turn by angle a (s = sin a, c = cos a) the old front A is the front face W c wide, the old left B takes the front from
+    its left end W s wide and keeps the rest (1 - s) of its length as the near part of the depth face, and the old back C is the far part
+    (s) of the depth face. Returns {side name: polygon, "top": polygon}."""
+    p = max(0.0, -turn / QUARTER)
+    k = int(math.floor(p + 1e-9))
+    u = p - k
+    a = u * QUARTER
+    s, c = math.sin(a), math.cos(a)
+    W = 2 * cube.hx
+    Wf = W * (c + s)
+    xL = cube.centre[0] - Wf / 2
+    xm, xR = xL + W * s, xL + Wf
+    yt, yb = cube.centre[1] - cube.hy, cube.centre[1] + cube.hy
+    Dx, Dy = cube.cam.d[0] * 2 * cube.hz, cube.cam.d[1] * 2 * cube.hz
+    fx, fy = xL + (1 - s) * Dx, (1 - s) * Dy
+    far = (xL + Dx, Dy)
+    xD = xR + u * (far[0] - xR)                                     # D goes from where A ends (at xR) to where C begins (at the far edge): no jump out of sight
+    roles = {
+        0: [(xm, yt), (xm, yt), (xR, yt), (xR, yb), (xm, yb), (xm, yb)],                                             # A: the front
+        1: [(fx, yt + fy), (xL, yt), (xm, yt), (xm, yb), (xL, yb), (fx, yb + fy)],                                    # B: bends round the corner
+        2: [(far[0], yt + far[1]), (fx, yt + fy), (fx, yt + fy), (fx, yb + fy), (fx, yb + fy), (far[0], yb + far[1])],   # C (corner for corner what B is a quarter on)
+        3: [(xD, yt + u * Dy), (xD, yt + u * Dy), (xD, yt + u * Dy), (xD, yb + u * Dy), (xD, yb + u * Dy), (xD, yb + u * Dy)],   # D: out of sight
+    }
+    out = {SIDES[i]: roles[(i - k) % 4] for i in range(4)}
+    out["top"] = [(xL + Dx, yt + Dy), (xR + Dx, yt + Dy), (xR, yt), (xL, yt)]
+    return out
+
+
+class TurnSide(Face):
+    """A side face of a cube that turns, drawn by twist_polys: always six vertices, so its shape keeps one path whatever the angle."""
+
+    def __init__(self, cube, face, **kw):
+        kw.setdefault("glide_min", 10 ** 6)       # its corners move continuously, even out of sight: nothing to glide
+        super().__init__(cube, face, None, **kw)
+
+    def outline(self, pose):
+        pose = self.fixed if self.fixed is not None else pose
+        return twist_polys(self.cube, pose.get("turn", 0.0))[self.face]
+
+    def parts(self, pose):
+        return [(self.name, self.outline(pose), self.fill, True)]
+
+
+class TurnTop(TurnSide):
+    """The top of a cube while it turns."""
+
+    def __init__(self, cube, **kw):
+        super().__init__(cube, "top", **kw)
+
+
 class Fixed:
     """A still shape shown only on some poses (the inside of a doorway): its points are fixed, only its opacity is keyed."""
 
